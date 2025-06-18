@@ -21,6 +21,7 @@ import { useCVStore } from '@/store/cv-store'
 import { pdf } from '@react-pdf/renderer'
 import { HarvardTemplate } from './pdf-templates'
 import { useRouter } from 'next/navigation'
+import { AdController } from '@/components/ads/ad-controller'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -64,6 +65,8 @@ export function ExportManager() {
   const [selectedFormats, setSelectedFormats] = useState<ExportFormat[]>(['pdf'])
   const [exportProgress, setExportProgress] = useState<ExportProgress[]>([])
   const [showPreview, setShowPreview] = useState(false)
+  const [propPushTrigger, setPropPushTrigger] = useState(false)
+  const [downloadCount, setDownloadCount] = useState(0)
   const router = useRouter()
 
   const handleFormatToggle = (format: ExportFormat) => {
