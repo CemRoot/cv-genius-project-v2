@@ -64,9 +64,9 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     preview: '/images/templates/dublin-professional.jpg',
     baseTemplate: 'cascade',
     styles: {
-      container: 'max-width: 800px; margin: 0 auto; background: white; min-height: 1000px; padding: 60px; font-family: "Times New Roman", serif; line-height: 1.6;',
-      header: 'text-align: left; margin-bottom: 30px;',
-      content: 'color: #2c3e50;',
+      container: 'display: table; width: 100%; table-layout: fixed; min-height: 792px; font-family: "Century Gothic", sans-serif; font-size: 10px; line-height: 15px;',
+      sidebar: 'display: table-cell; width: 154px; background: #2c3e50; color: white; padding: 15px; vertical-align: top;',
+      mainContent: 'display: table-cell; padding: 15px; letter-spacing: 0.2px; vertical-align: top;',
       colors: {
         primary: '#2c3e50',
         secondary: '#34495e', 
@@ -74,9 +74,9 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
         background: '#fff'
       }
     },
-    layout: 'irish-standard',
+    layout: 'cascade',
     description: 'Traditional Irish business letter format - most widely used in Dublin',
-    features: ['Irish standard format', 'Times New Roman typography', 'Formal business layout']
+    features: ['Irish standard format', 'Two-column layout', 'Professional sidebar']
   },
 
   // Template 2: Trinity Modern (Popular among graduates) - Based on Crisp
@@ -90,6 +90,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     styles: {
       container: 'max-width: 800px; margin: 0 auto; background: white; padding: 50px; font-family: "Arial", sans-serif; box-shadow: 0 2px 10px rgba(0,0,0,0.1);',
       header: 'text-align: center; margin-bottom: 40px; border-bottom: 3px solid #0066cc; padding-bottom: 20px;',
+      nameSection: 'font-size: 28px; font-weight: bold; color: #0066cc; margin-bottom: 10px;',
       content: 'line-height: 1.7; color: #333; text-align: justify;',
       colors: {
         primary: '#0066cc',
@@ -98,7 +99,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
         background: '#fff'
       }
     },
-    layout: 'centered-modern',
+    layout: 'crisp',
     description: 'Clean modern design favored by Irish university graduates',
     features: ['Centered header', 'Modern typography', 'Professional blue accent']
   },
@@ -187,6 +188,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     baseTemplate: 'enfold',
     styles: {
       container: 'max-width: 850px; margin: 0 auto; background: white; min-height: 1000px; font-family: "Garamond", serif;',
+      cardContainer: 'padding: 50px; background: white; border-radius: 8px;',
       header: 'background: #2c3e50; color: white; padding: 50px; text-align: center; margin: -50px -50px 50px -50px;',
       content: 'padding: 0 50px 50px 50px; line-height: 1.8; color: #2c3e50;',
       colors: {
@@ -738,8 +740,15 @@ export class DublinCoverLetterTemplateManager {
 
   // Base Template HTML Generation Methods
   private createCascadeHTML(content: CoverLetterContent, styles: TemplateStyles): string {
+    const cssVariables = `
+      --primary-color: ${styles.colors.primary};
+      --secondary-color: ${styles.colors.secondary};
+      --text-color: ${styles.colors.text};
+      --bg-color: ${styles.colors.background};
+    `;
+    
     return `
-      <div class="cover-letter-wrapper template-cascade" style="${styles.container}">
+      <div class="cover-letter-wrapper template-cascade" style="${styles.container}; ${cssVariables}">
         <div class="sidebar" style="${styles.sidebar}">
           <h2 class="name" style="font-size: 27px; line-height: 33px; font-weight: bold; margin-bottom: 10px;">${content.name}</h2>
           ${content.title ? `<p class="title" style="margin-bottom: 15px;">${content.title}</p>` : ''}
@@ -773,8 +782,15 @@ export class DublinCoverLetterTemplateManager {
   }
 
   private createCrispHTML(content: CoverLetterContent, styles: TemplateStyles): string {
+    const cssVariables = `
+      --primary-color: ${styles.colors.primary};
+      --secondary-color: ${styles.colors.secondary};
+      --text-color: ${styles.colors.text};
+      --bg-color: ${styles.colors.background};
+    `;
+    
     return `
-      <div class="cover-letter-wrapper template-crisp" style="${styles.container}">
+      <div class="cover-letter-wrapper template-crisp" style="${styles.container}; ${cssVariables}">
         <div class="header" style="${styles.header}">
           <h2 class="name" style="${styles.nameSection}">${content.name}</h2>
           ${content.title ? `<p class="title" style="margin-bottom: 15px;">${content.title}</p>` : ''}
@@ -807,8 +823,15 @@ export class DublinCoverLetterTemplateManager {
   }
 
   private createConceptHTML(content: CoverLetterContent, styles: TemplateStyles): string {
+    const cssVariables = `
+      --primary-color: ${styles.colors.primary};
+      --secondary-color: ${styles.colors.secondary};
+      --text-color: ${styles.colors.text};
+      --bg-color: ${styles.colors.background};
+    `;
+    
     return `
-      <div class="cover-letter-wrapper template-concept" style="border-left: 120px solid var(--primary-color); padding: 25px 12px; font-family: 'Century Gothic', sans-serif;">
+      <div class="cover-letter-wrapper template-concept" style="border-left: 120px solid var(--primary-color); padding: 25px 12px; font-family: 'Century Gothic', sans-serif; ${cssVariables}">
         <div class="header" style="margin-bottom: 20px;">
           <h2 class="name" style="font-size: 35px; line-height: 45px; color: var(--primary-color); font-weight: bold;">${content.name}</h2>
           ${content.title ? `<p class="title" style="font-size: 16px; margin-bottom: 15px;">${content.title}</p>` : ''}
@@ -853,8 +876,15 @@ export class DublinCoverLetterTemplateManager {
   }
 
   private createCubicHTML(content: CoverLetterContent, styles: TemplateStyles): string {
+    const cssVariables = `
+      --primary-color: ${styles.colors.primary};
+      --secondary-color: ${styles.colors.secondary};
+      --text-color: ${styles.colors.text};
+      --bg-color: ${styles.colors.background};
+    `;
+    
     return `
-      <div class="cover-letter-wrapper template-cubic" style="display: table; min-height: 792px; width: 100%; table-layout: fixed;">
+      <div class="cover-letter-wrapper template-cubic" style="display: table; min-height: 792px; width: 100%; table-layout: fixed; ${cssVariables}">
         <div class="top-section" style="background: var(--primary-color); color: white; padding: 15px;">
           <h2 class="name" style="font-size: 28px; margin: 0;">${content.name}</h2>
           ${content.title ? `<p class="title">${content.title}</p>` : ''}
@@ -893,8 +923,15 @@ export class DublinCoverLetterTemplateManager {
   }
 
   private createDiamondHTML(content: CoverLetterContent, styles: TemplateStyles): string {
+    const cssVariables = `
+      --primary-color: ${styles.colors.primary};
+      --secondary-color: ${styles.colors.secondary};
+      --text-color: ${styles.colors.text};
+      --bg-color: ${styles.colors.background};
+    `;
+    
     return `
-      <div class="cover-letter-wrapper template-diamond" style="padding: 60px 40px; margin-bottom: 24px; font-family: 'Century Gothic', sans-serif;">
+      <div class="cover-letter-wrapper template-diamond" style="padding: 60px 40px; margin-bottom: 24px; font-family: 'Century Gothic', sans-serif; ${cssVariables}">
         <div class="header-section" style="background: var(--primary-color); color: white; margin: -40px; padding: 40px; position: relative;">
           <h2 class="name" style="color: white; font-size: 35px; line-height: 45px; z-index: 2; position: relative; margin: 0;">${content.name}</h2>
           ${content.title ? `<p class="title" style="font-size: 18px; margin-top: 10px;">${content.title}</p>` : ''}
@@ -927,8 +964,15 @@ export class DublinCoverLetterTemplateManager {
   }
 
   private createEnfoldHTML(content: CoverLetterContent, styles: TemplateStyles): string {
+    const cssVariables = `
+      --primary-color: ${styles.colors.primary};
+      --secondary-color: ${styles.colors.secondary};
+      --text-color: ${styles.colors.text};
+      --bg-color: ${styles.colors.background};
+    `;
+    
     return `
-      <div class="cover-letter-wrapper template-enfold" style="${styles.container}">
+      <div class="cover-letter-wrapper template-enfold" style="${styles.container}; ${cssVariables}">
         <div class="card-container" style="${styles.cardContainer}">
           <div class="header" style="${styles.header}">
             <h2 class="name" style="font-size: 32px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px;">${content.name}</h2>
