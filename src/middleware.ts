@@ -4,8 +4,8 @@ import * as jose from 'jose'
 
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
-  // Admin panel access validation - ONLY in production
-  if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
+  // Admin panel access validation - DISABLED for easier access
+  if (false && request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
     const accessKey = request.nextUrl.searchParams.get('k')
     if (!accessKey) return false
 
@@ -127,10 +127,10 @@ export async function middleware(request: NextRequest) {
   })
   
   if (isAdminRoute) {
-    // 1. IP Whitelist Check for admin panel
-    if (pathname === '/admin' && !isAdminIPAllowed(request)) {
-      return new NextResponse('Forbidden - IP not allowed', { status: 403 })
-    }
+    // 1. IP Whitelist Check for admin panel (DISABLED for easier access)
+    // if (pathname === '/admin' && !isAdminIPAllowed(request)) {
+    //   return new NextResponse('Forbidden - IP not allowed', { status: 403 })
+    // }
 
     // 2. Rate Limiting
     const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
