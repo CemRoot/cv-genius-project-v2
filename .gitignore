@@ -50,3 +50,9 @@ Thumbs.db
 # Logs
 logs
 *.log
+
+# Security - 2FA state file (contains sensitive data)
+.2fa-state.json
+
+# Admin settings files (contains sensitive configuration)
+.ai-settings.json

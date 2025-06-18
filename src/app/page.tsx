@@ -6,6 +6,7 @@ import { Star, Zap, Shield, Heart, CheckCircle, ArrowRight, Users, Award, Clock,
 import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { AdController } from "@/components/ads/ad-controller"
+import { MainLayout } from "@/components/layout/main-layout"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -23,7 +24,8 @@ const staggerChildren = {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col">
+    <MainLayout>
+      <div className="flex flex-col">
       {/* Enhanced Hero Section */}
       <section className="py-20 lg:py-32 bg-gradient-to-br from-background via-muted/20 to-cvgenius-purple/10 relative overflow-hidden">
         {/* Background decoration */}
@@ -351,6 +353,7 @@ export default function HomePage() {
         </div>
       </section>
 
-    </div>
+      </div>
+    </MainLayout>
   )
 }
