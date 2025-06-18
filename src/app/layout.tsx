@@ -109,6 +109,25 @@ export default function RootLayout({
         {/* Performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* PropPush Global Script - Only load on production */}
+        {process.env.NODE_ENV === 'production' && (
+          <script 
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  var d = document;
+                  var s = d.createElement('script');
+                  s.type = 'text/javascript';
+                  s.async = true;
+                  s.src = 'https://propush.me/smart/2931632/script.js';
+                  var h = d.getElementsByTagName('head')[0];
+                  h.appendChild(s);
+                })();
+              `
+            }}
+          />
+        )}
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col`} suppressHydrationWarning>
         <ToastProvider>
