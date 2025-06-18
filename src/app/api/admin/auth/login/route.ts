@@ -89,9 +89,7 @@ export async function POST(request: NextRequest) {
       try {
         const secret = Admin2FAState.getSecret()
         
-        console.log('🔐 Debug - 2FA Secret available:', !!secret)
-        console.log('🔐 Debug - 2FA Token received:', twoFactorToken)
-        console.log('🔐 Debug - Token length:', twoFactorToken?.length)
+        // Debug logs removed for security
         
         if (!secret) {
           return NextResponse.json(
@@ -107,19 +105,13 @@ export async function POST(request: NextRequest) {
           window: 2 // Allow 2 time steps before/after for clock drift
         })
 
-        console.log('🔐 Debug - 2FA Verification result:', verified)
-
         if (!verified) {
-          console.log('❌ Invalid 2FA token during login:', twoFactorToken)
           return NextResponse.json(
             { error: 'Invalid 2FA token' },
             { status: 401 }
           )
         }
-
-        console.log('✅ 2FA token verified successfully during login')
       } catch (error) {
-        console.error('2FA verification error:', error)
         return NextResponse.json(
           { error: 'Invalid 2FA token' },
           { status: 401 }
@@ -178,8 +170,7 @@ export async function POST(request: NextRequest) {
       path: '/'
     })
 
-    // Log successful login
-    console.log(`🔐 Admin login successful from IP: ${clientIP}`)
+    // Login successful - no logs for security
 
     return NextResponse.json({
       success: true,

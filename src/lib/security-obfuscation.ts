@@ -105,24 +105,72 @@ const SecurityHooks = {
     }, 500)
   },
 
-  // Clear console periodically (DISABLED for debugging)
+  // Clear console periodically 
   clearConsole: () => {
-    // Temporarily disabled for debugging
-    // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-    //   setInterval(() => {
-    //     console.clear()
-    //   }, 10000)
-    // }
+    if (typeof window !== 'undefined') {
+      // Clear console every 5 seconds
+      setInterval(() => {
+        console.clear()
+        console.log('%c🔒 Admin Panel Protected', 'color: red; font-size: 20px; font-weight: bold;')
+      }, 5000)
+    }
   },
 
-  // Disable right-click in production (DISABLED for debugging)
+  // Ultra security: Disable all debugging methods
   disableRightClick: () => {
-    // Temporarily disabled for debugging
-    // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-    //   document.addEventListener('contextmenu', (e) => e.preventDefault())
-    //   document.addEventListener('selectstart', (e) => e.preventDefault())
-    //   document.addEventListener('dragstart', (e) => e.preventDefault())
-    // }
+    if (typeof window !== 'undefined') {
+      // Disable right-click
+      document.addEventListener('contextmenu', (e) => {
+        e.preventDefault()
+        window.close() // Try to close tab
+      })
+      
+      // Disable text selection
+      document.addEventListener('selectstart', (e) => e.preventDefault())
+      document.addEventListener('dragstart', (e) => e.preventDefault())
+      
+      // Disable F12 and other dev tool shortcuts
+      document.addEventListener('keydown', (e) => {
+        // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, etc.
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+            (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+            (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+            (e.ctrlKey && e.key === 'u') ||
+            (e.ctrlKey && e.key === 's') ||
+            (e.ctrlKey && e.key === 'a') ||
+            (e.ctrlKey && e.key === 'p')) {
+          e.preventDefault()
+          // Try multiple methods to close tab
+          window.close()
+          window.location.href = 'about:blank'
+          setTimeout(() => {
+            window.location.href = 'chrome://settings/'
+          }, 100)
+        }
+      })
+
+      // Detect if dev tools are open and close tab
+      let devtools = { open: false }
+      const element = new Image()
+      
+      setInterval(() => {
+        const start = new Date()
+        debugger // This will pause if dev tools are open
+        const end = new Date()
+        
+        if (end - start > 100) {
+          if (!devtools.open) {
+            devtools.open = true
+            alert('🚨 Developer tools detected! Closing for security.')
+            window.close()
+            window.location.href = 'about:blank'
+          }
+        } else {
+          devtools.open = false
+        }
+      }, 1000)
+    }
   }
 }
 
