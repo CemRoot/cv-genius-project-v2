@@ -119,6 +119,9 @@ export function TemplateSelector({
       ? `${personalInfo.firstName} ${personalInfo.lastName}`
       : 'John O\'Sullivan'
 
+    // Get the selected color value
+    const selectedColorValue = defaultColors[selectedColor as keyof typeof defaultColors] || defaultColors.color1
+
     const sampleData: CoverLetterContent = {
       name: name,
       title: 'Software Developer',
@@ -193,7 +196,7 @@ export function TemplateSelector({
             }}>
               <div style={{
                 width: '40%',
-                backgroundColor: '#2c3e50',
+                backgroundColor: selectedColorValue,
                 color: 'white',
                 padding: '25px 20px'
               }}>
@@ -203,7 +206,7 @@ export function TemplateSelector({
                   margin: '0 0 8px 0',
                   color: 'white'
                 }}>
-                  John O'Sullivan
+                  {name}
                 </h3>
                 <p style={{ 
                   fontSize: '14px', 
@@ -266,7 +269,7 @@ export function TemplateSelector({
             }}>
               <div style={{
                 textAlign: 'center',
-                borderBottom: '3px solid #0066cc',
+                borderBottom: `3px solid ${selectedColorValue}`,
                 paddingBottom: '20px',
                 marginBottom: '25px'
               }}>
@@ -274,9 +277,9 @@ export function TemplateSelector({
                   fontSize: '28px', 
                   fontWeight: 'bold', 
                   margin: '0 0 8px 0',
-                  color: '#0066cc'
+                  color: selectedColorValue
                 }}>
-                  John O'Sullivan
+                  {name}
                 </h3>
                 <p style={{ 
                   fontSize: '16px', 
@@ -327,7 +330,7 @@ export function TemplateSelector({
               overflow: 'hidden'
             }}>
               <div style={{
-                backgroundColor: '#0f172a',
+                backgroundColor: selectedColorValue,
                 color: 'white',
                 padding: '30px',
                 textAlign: 'center'
@@ -338,7 +341,7 @@ export function TemplateSelector({
                   margin: '0 0 8px 0',
                   color: 'white'
                 }}>
-                  John O'Sullivan
+                  {name}
                 </h3>
                 <p style={{ 
                   fontSize: '14px', 
@@ -396,7 +399,7 @@ export function TemplateSelector({
             }}>
               <div style={{
                 width: '45%',
-                background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                background: `linear-gradient(135deg, ${selectedColorValue} 0%, ${selectedColorValue}99 100%)`,
                 color: 'white',
                 padding: '25px 20px'
               }}>
@@ -406,7 +409,7 @@ export function TemplateSelector({
                   margin: '0 0 8px 0',
                   color: 'white'
                 }}>
-                  John O'Sullivan
+                  {name}
                 </h3>
                 <p style={{ 
                   fontSize: '14px', 
@@ -475,13 +478,13 @@ export function TemplateSelector({
                     fontSize: '26px', 
                     fontWeight: 'bold', 
                     margin: '0 0 8px 0',
-                    color: '#667eea'
+                    color: selectedColorValue
                   }}>
-                    Jane O'Sullivan
+                    {name}
                   </h3>
                   <p style={{ 
                     fontSize: '16px', 
-                    color: '#764ba2',
+                    color: selectedColorValue,
                     margin: '0 0 15px 0'
                   }}>
                     Graphic Designer
@@ -534,7 +537,7 @@ export function TemplateSelector({
               overflow: 'hidden'
             }}>
               <div style={{
-                backgroundColor: '#2c3e50',
+                backgroundColor: selectedColorValue,
                 color: 'white',
                 padding: '35px 30px',
                 textAlign: 'center'
@@ -545,7 +548,7 @@ export function TemplateSelector({
                   margin: '0 0 10px 0',
                   color: 'white'
                 }}>
-                  Michael O'Sullivan
+                  {name}
                 </h3>
                 <p style={{ 
                   fontSize: '16px', 
@@ -575,7 +578,7 @@ export function TemplateSelector({
                 </div>
                 <p style={{ margin: '0 0 15px 0', fontSize: '12px', fontWeight: 600 }}>Dear Mr. Kelly,</p>
                 <p style={{ 
-                  color: '#2c3e50',
+                  color: selectedColorValue,
                   lineHeight: '1.6',
                   fontSize: '11px',
                   margin: '0'
