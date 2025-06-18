@@ -179,22 +179,26 @@ export function TemplateSelector({
     return (
       <div style={{ 
         width: '100%', 
-        height: '200px', 
+        height: '450px', 
         position: 'relative',
         backgroundColor: '#f9fafb',
         border: '1px solid #e5e7eb',
         borderRadius: '4px',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
       }}>
         <div 
           className="template-preview"
           style={{
-            transform: 'scale(0.2)',
-            transformOrigin: 'top left',
-            width: '500%',
-            height: '500%',
+            transform: 'scale(0.55)',
+            transformOrigin: 'top center',
+            width: '182%',
+            height: '182%',
             pointerEvents: 'none',
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
+            position: 'absolute',
+            left: '50%',
+            marginLeft: '-91%'
           }}
           dangerouslySetInnerHTML={{ __html: previewHTML }}
         />
@@ -344,7 +348,7 @@ export function TemplateSelector({
                   </div>
 
                   {/* Template Preview */}
-                  <div className="bg-gray-50 rounded border overflow-hidden" style={{ height: '200px' }}>
+                  <div className="bg-gray-50 rounded border overflow-hidden" style={{ height: '450px' }}>
                     {generatePreview(template)}
                   </div>
 
