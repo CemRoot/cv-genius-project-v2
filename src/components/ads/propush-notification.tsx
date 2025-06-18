@@ -16,9 +16,18 @@ export function PropPushNotification({
   const [isTriggered, setIsTriggered] = useState(false)
   const [scriptLoaded, setScriptLoaded] = useState(false)
 
+  // PropPush Site ID - fallback to production ID
+  const PROPUSH_SITE_ID = process.env.NEXT_PUBLIC_PROPUSH_SITE_ID || '2931632'
+
   // Load PropPush script
   useEffect(() => {
     if (typeof window === 'undefined' || scriptLoaded) return
+
+    // Only load in production or when explicitly enabled
+    if (process.env.NODE_ENV !== 'production' && !process.env.NEXT_PUBLIC_ENABLE_PROPUSH) {
+      console.log('🚫 PropPush disabled in development mode')
+      return
+    }
 
     try {
       // PropPush Smart Tag Script
@@ -31,14 +40,14 @@ export function PropPushNotification({
           var s = d.createElement('script');
           s.type = 'text/javascript';
           s.async = true;
-          s.src = 'https://propush.me/smart/2931632/script.js';
+          s.src = 'https://propush.me/smart/${PROPUSH_SITE_ID}/script.js';
           var h = d.getElementsByTagName('head')[0];
           h.appendChild(s);
         })();
       `
       document.head.appendChild(script)
       
-      console.log('✅ PropPush script loaded successfully')
+      console.log('✅ PropPush script loaded successfully for site:', PROPUSH_SITE_ID)
       setScriptLoaded(true)
 
       return () => {
@@ -54,25 +63,58 @@ export function PropPushNotification({
     } catch (error) {
       console.error('❌ PropPush script loading error:', error)
     }
-  }, [scriptLoaded])
+  }, [scriptLoaded, PROPUSH_SITE_ID])
 
-  // Handle trigger with delay
+  // Handle trigger with delay and smart timing
   useEffect(() => {
     if (!trigger || isTriggered || !scriptLoaded) return
 
     const timer = setTimeout(() => {
       try {
-        // Check if PropPush is available
-        if (typeof window !== 'undefined' && window.propush) {
-          // Trigger PropPush notification request
-          window.propush.show()
-          console.log('✅ PropPush notification triggered after download')
-        } else {
-          // Fallback: Try direct notification request
-          if ('Notification' in window && Notification.permission === 'default') {
+        // Check if PropPush is available and ready
+        if (typeof window !== 'undefined') {
+          // Multiple fallback approaches for PropPush trigger
+          
+          // Method 1: Direct PropPush API
+          if (window.propush && typeof window.propush.show === 'function') {
+            window.propush.show()
+            console.log('✅ PropPush notification triggered (Method 1: Direct API)')
+          } 
+          // Method 2: Check for PropPush global functions
+          else if (window.pp && typeof window.pp === 'function') {
+            window.pp('init')
+            console.log('✅ PropPush notification triggered (Method 2: pp function)')
+          }
+          // Method 3: Browser notification permission request as fallback
+          else if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission().then((permission) => {
-              console.log('📱 Notification permission:', permission)
+              console.log('📱 Browser notification permission requested:', permission)
+              if (permission === 'granted') {
+                // Show a sample notification to test
+                new Notification('CVGenius', {
+                  body: 'Your CV has been downloaded successfully! Get updates on new features.',
+                  icon: '/favicon.svg'
+                })
+              }
             })
+          }
+          // Method 4: Try to manually trigger PropPush subscription
+          else {
+            // Look for PropPush elements and trigger click
+            const propushElements = document.querySelectorAll('[data-propush], .propush-notification, #propush-container')
+            if (propushElements.length > 0) {
+              propushElements[0].dispatchEvent(new Event('click'))
+              console.log('✅ PropPush notification triggered (Method 4: Element trigger)')
+            } else {
+              console.log('⚠️ PropPush not ready yet, will retry...')
+              // Retry after 2 more seconds
+              setTimeout(() => {
+                if (window.propush) {
+                  window.propush.show()
+                  console.log('✅ PropPush notification triggered (Retry)')
+                }
+              }, 2000)
+            }
           }
         }
         
@@ -90,12 +132,14 @@ export function PropPushNotification({
   return null
 }
 
-// PropPush global type declaration
+// PropPush global type declarations
 declare global {
   interface Window {
     propush?: {
       show: () => void
       init: (siteId: string) => void
+      subscribe: () => void
     }
+    pp?: (action: string) => void
   }
 } 

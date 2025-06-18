@@ -203,6 +203,15 @@ ${name}`
           title: 'PDF Downloaded',
           description: 'Your cover letter has been downloaded as PDF.'
         })
+
+        // 🎯 PropPush Trigger: Cover Letter PDF downloaded
+        setExportCount(prev => prev + 1)
+        if (exportCount === 0) {
+          setTimeout(() => {
+            console.log('🚀 Triggering PropPush after Cover Letter PDF download')
+            setPropPushTrigger(true)
+          }, 1500)
+        }
       }
     } catch (error) {
       addToast({
@@ -292,6 +301,15 @@ ${name}`
         title: 'DOCX Downloaded',
         description: 'Your cover letter has been downloaded as DOCX.'
       })
+
+      // 🎯 PropPush Trigger: Cover Letter DOCX downloaded
+      setExportCount(prev => prev + 1)
+      if (exportCount === 0) {
+        setTimeout(() => {
+          console.log('🚀 Triggering PropPush after Cover Letter DOCX download')
+          setPropPushTrigger(true)
+        }, 1500)
+      }
     } catch (error) {
       console.error('DOCX export error:', error)
       addToast({
@@ -408,6 +426,17 @@ ${name}`
             Start New Letter
           </Button>
         </div>
+
+        {/* 🎯 PropPush - Cover Letter Download Triggered Notification */}
+        <AdController 
+          type="propush" 
+          trigger={propPushTrigger}
+          onTrigger={() => {
+            console.log('✅ PropPush notification shown after Cover Letter download')
+            setTimeout(() => setPropPushTrigger(false), 5000)
+          }}
+          delay={2000}
+        />
       </div>
     </div>
   )
