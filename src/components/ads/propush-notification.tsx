@@ -4,9 +4,8 @@ import { useEffect } from 'react'
 
 const PropuShNotification = () => {
   useEffect(() => {
-    // Only load in production or when explicitly enabled
+    // Only load in production or when explicitly enabled for testing
     if (process.env.NODE_ENV !== 'production' && !process.env.NEXT_PUBLIC_ENABLE_PROPUSH) {
-      console.log('🚫 PropuSH disabled in development mode')
       return
     }
 
@@ -28,36 +27,50 @@ const PropuShNotification = () => {
         return (u: string) => window.location.replace([u, v].join(u.indexOf(a[7]) > -1 ? a[5] : a[7]))
       })([[a[8], a[9], a[10], a[11]], [a[12], a[13], a[14], a[15]]])
 
-      // Create and load PropuSH script
+      // Create and load PropuSH script with fallback
       const script = document.createElement('script')
       script.src = '//ahaurgoo.net/37a/7cd29/mw.min.js?z=9464966&sw=/sw-check-permissions-36fdf.js'
       
       script.onload = function(result: any) {
-        console.log('PropuSH script loaded:', result)
+        // PropuSH script loaded successfully
         
         switch (result) {
           case 'onPermissionDefault':
-            console.log('🔔 Push notification permission: Default')
+            // Push notification permission: Default
             break
           case 'onPermissionAllowed':
-            console.log('✅ Push notification permission: Allowed')
+            // Push notification permission: Allowed
             break
           case 'onPermissionDenied':
-            console.log('❌ Push notification permission: Denied')
+            // Push notification permission: Denied
             break
           case 'onAlreadySubscribed':
-            console.log('✅ User already subscribed to push notifications')
+            // User already subscribed to push notifications
             break
           case 'onNotificationUnsupported':
-            console.log('❌ Push notifications not supported on this device')
+            // Push notifications not supported on this device
             break
           default:
-            console.log('PropuSH notification status:', result)
+            // PropuSH notification status received
         }
       }
 
       script.onerror = function() {
-        console.error('❌ Failed to load PropuSH script')
+        // PropuSH script blocked (likely by ad blocker)
+        
+        // Fallback: Test basic push notification support
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+          // Browser supports push notifications
+          
+          // Register our service worker directly as fallback
+          navigator.serviceWorker.register('/sw-check-permissions-36fdf.js')
+            .then(() => {
+              // Service Worker registered as fallback
+            })
+            .catch(() => {
+              // Service Worker registration failed
+            })
+        }
       }
 
       document.head.appendChild(script)
