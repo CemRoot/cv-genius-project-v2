@@ -176,6 +176,17 @@ export function ExportManager() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    
+    // 🎯 PropPush Trigger: Download başarılı olduktan sonra
+    setDownloadCount(prev => prev + 1)
+    
+    // İlk download'da PropPush'u tetikle
+    if (downloadCount === 0) {
+      setTimeout(() => {
+        console.log('🚀 Triggering PropPush after successful download:', filename)
+        setPropPushTrigger(true)
+      }, 1500) // 1.5 saniye delay - user download'ı fark etsin
+    }
   }
 
   const updateProgress = (format: ExportFormat, progress: number) => {
@@ -516,6 +527,18 @@ export function ExportManager() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 🎯 PropPush - Download Triggered Notification */}
+      <AdController 
+        type="propush" 
+        trigger={propPushTrigger}
+        onTrigger={() => {
+          console.log('✅ PropPush notification shown to user')
+          // Reset trigger after showing
+          setTimeout(() => setPropPushTrigger(false), 5000)
+        }}
+        delay={2000}
+      />
     </div>
   )
 }

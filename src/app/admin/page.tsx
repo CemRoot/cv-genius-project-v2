@@ -394,6 +394,10 @@ Focus on information relevant for Irish job applications.`,
           setIpWhitelist(result.entries)
           setCurrentIP(result.currentIP)
           setIsFirstTimeSetup(result.isFirstTimeSetup)
+          
+          // Debug: Check IP whitelist data
+          console.log('IP Whitelist loaded:', result.entries)
+          console.log('Current IP:', result.currentIP)
         }
       }
     } catch (error) {
@@ -913,7 +917,7 @@ Focus on information relevant for Irish job applications.`,
                                 )}
                               </td>
                               <td className="py-3">
-                                {entry.isActive && currentIP !== entry.ip && !entry.ip.includes('127.0.0.1') && entry.ip !== '::1' && (
+                                {entry.isActive && currentIP !== entry.ip && !entry.ip.includes('127.0.0.1') && entry.ip !== '::1' ? (
                                   <Button
                                     variant="destructive"
                                     size="sm"
@@ -921,6 +925,12 @@ Focus on information relevant for Irish job applications.`,
                                   >
                                     Remove
                                   </Button>
+                                ) : (
+                                  <span className="text-sm text-gray-400">
+                                    {currentIP === entry.ip ? 'Current IP' : 
+                                     (entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Localhost' : 
+                                     !entry.isActive ? 'Disabled' : '-'}
+                                  </span>
                                 )}
                               </td>
                             </tr>
