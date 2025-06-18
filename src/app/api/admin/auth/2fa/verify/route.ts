@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     if (action === 'setup') {
       // Enable 2FA after successful verification
       Admin2FAState.setEnabled(true)
-      console.log('✅ 2FA successfully enabled for admin')
       
       return NextResponse.json({
         success: true,
@@ -50,7 +49,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Regular verification for login
-    console.log('✅ 2FA token verified successfully')
     return NextResponse.json({
       success: true,
       message: '2FA verification successful'

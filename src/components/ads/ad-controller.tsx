@@ -5,7 +5,7 @@ import { StickySideAds } from './sticky-side-ads'
 import { MobileAds } from './mobile-ads'
 import { SidebarAds } from './sidebar-ads'
 import { BannerAds } from './banner-ads'
-import { PropPushNotification } from './propush-notification'
+import PropuShNotification from './propush-notification'
 
 // Pages where ads should be disabled
 const NO_ADS_PAGES = [
@@ -80,7 +80,7 @@ export function AdController({ type, position, size, className, trigger, onTrigg
       return <BannerAds size={size} className={className} />
       
     case 'propush':
-      return <PropPushNotification trigger={trigger} onTrigger={onTrigger} delay={delay} />
+      return <PropuShNotification />
       
     default:
       return null
