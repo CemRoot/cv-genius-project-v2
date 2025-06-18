@@ -105,22 +105,24 @@ const SecurityHooks = {
     }, 500)
   },
 
-  // Clear console periodically
+  // Clear console periodically (DISABLED for debugging)
   clearConsole: () => {
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-      setInterval(() => {
-        console.clear()
-      }, 10000)
-    }
+    // Temporarily disabled for debugging
+    // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    //   setInterval(() => {
+    //     console.clear()
+    //   }, 10000)
+    // }
   },
 
-  // Disable right-click in production
+  // Disable right-click in production (DISABLED for debugging)
   disableRightClick: () => {
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-      document.addEventListener('contextmenu', (e) => e.preventDefault())
-      document.addEventListener('selectstart', (e) => e.preventDefault())
-      document.addEventListener('dragstart', (e) => e.preventDefault())
-    }
+    // Temporarily disabled for debugging
+    // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    //   document.addEventListener('contextmenu', (e) => e.preventDefault())
+    //   document.addEventListener('selectstart', (e) => e.preventDefault())
+    //   document.addEventListener('dragstart', (e) => e.preventDefault())
+    // }
   }
 }
 
