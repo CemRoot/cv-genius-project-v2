@@ -35,24 +35,27 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
   }, [])
 
   return (
-    <div className={`w-full max-w-xs space-y-6 ${className}`}>
+    <div className={`w-full max-w-xs mx-auto space-y-4 lg:space-y-6 ${className}`}>
       {/* PropellerAds Display Ad */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <div className="text-xs text-gray-500 mb-2 text-center">Advertisement</div>
-        <div id="propeller-display-ad" className="min-h-[250px] bg-white rounded border flex items-center justify-center">
-          <div className="text-gray-400 text-sm">Ad Space</div>
+      <div className="bg-gray-50 p-3 lg:p-4 rounded-lg shadow-sm">
+        <div className="text-xs text-gray-500 mb-2 text-center font-medium">Advertisement</div>
+        <div id="propeller-display-ad" className="min-h-[200px] lg:min-h-[250px] bg-white rounded border flex items-center justify-center">
+          <div className="text-gray-400 text-sm text-center">
+            <div className="mb-1">📢</div>
+            <div>Ad Space</div>
+          </div>
         </div>
       </div>
 
       {/* Amazon Affiliate Section */}
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h3 className="font-medium text-gray-900 mb-3">Recommended Resources</h3>
-        <div className="space-y-3">
+      <div className="bg-blue-50 p-3 lg:p-4 rounded-lg shadow-sm">
+        <h3 className="font-medium text-gray-900 mb-3 text-sm lg:text-base">Recommended Resources</h3>
+        <div className="space-y-2 lg:space-y-3">
           <a 
             href="https://amazon.com/dp/CV_BOOK_ID?tag=YOUR_AFFILIATE_TAG" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="block p-3 bg-white rounded border hover:shadow-md transition-shadow"
+            className="block p-2 lg:p-3 bg-white rounded border hover:shadow-md transition-shadow"
           >
             <div className="text-sm font-medium text-gray-900">CV Writing Guide</div>
             <div className="text-xs text-gray-600">Professional resume tips</div>
@@ -62,7 +65,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
             href="https://amazon.com/dp/INTERVIEW_BOOK_ID?tag=YOUR_AFFILIATE_TAG" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="block p-3 bg-white rounded border hover:shadow-md transition-shadow"
+            className="block p-2 lg:p-3 bg-white rounded border hover:shadow-md transition-shadow"
           >
             <div className="text-sm font-medium text-gray-900">Interview Success</div>
             <div className="text-xs text-gray-600">Ace your next interview</div>
