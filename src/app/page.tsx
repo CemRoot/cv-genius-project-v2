@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Star, Zap, Shield, Heart, CheckCircle, ArrowRight, Users, Award, Clock, FileText, Download, Target, Brain } from "lucide-react"
 import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
-import { SidebarAds } from "@/components/ads/sidebar-ads"
-import { BannerAds } from "@/components/ads/banner-ads"
+import { AdController } from "@/components/ads/ad-controller"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -199,7 +198,7 @@ export default function HomePage() {
             {/* Sidebar Ads */}
             <div className="lg:w-80">
               <div className="sticky top-8">
-                <SidebarAds />
+                <AdController type="sidebar" />
               </div>
             </div>
           </div>
@@ -348,7 +347,7 @@ export default function HomePage() {
       {/* Bottom Banner Ad */}
       <section className="bg-white py-6 border-t">
         <div className="container mx-auto px-4">
-          <BannerAds size="large" />
+          <AdController type="banner" size="large" />
         </div>
       </section>
 

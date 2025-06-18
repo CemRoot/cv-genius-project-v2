@@ -5,8 +5,7 @@ import { Navigation } from "@/components/layout/navigation"
 import { Footer } from "@/components/layout/footer"
 import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
-import { StickySideAds } from "@/components/ads/sticky-side-ads"
-import { MobileAds } from "@/components/ads/mobile-ads"
+import { AdController } from "@/components/ads/ad-controller"
 
 // Load professional fonts for CV/Resume use
 const inter = Inter({ subsets: ["latin"] })
@@ -137,7 +136,7 @@ export default function RootLayout({
         <ToastProvider>
           <ErrorBoundary>
             {/* Mobile Top Ad */}
-            <MobileAds position="top" />
+            <AdController type="mobile-top" />
             
             <Navigation />
             
@@ -148,13 +147,13 @@ export default function RootLayout({
             <Footer />
             
             {/* Mobile Bottom Ad */}
-            <MobileAds position="bottom" />
+            <AdController type="mobile-bottom" />
             
             {/* Mobile Floating Ad */}
-            <MobileAds position="floating" />
+            <AdController type="mobile-floating" />
             
             {/* Desktop Side Ads */}
-            <StickySideAds />
+            <AdController type="sticky-side" />
           </ErrorBoundary>
         </ToastProvider>
       </body>
