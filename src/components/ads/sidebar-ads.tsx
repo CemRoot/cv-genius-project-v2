@@ -52,23 +52,33 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
         <h3 className="font-medium text-gray-900 mb-3 text-sm lg:text-base">Recommended Resources</h3>
         <div className="space-y-2 lg:space-y-3">
           <a 
-            href="https://amazon.com/dp/CV_BOOK_ID?tag=YOUR_AFFILIATE_TAG" 
+            href="https://www.amazon.com/What-Color-Your-Parachute-2024/dp/1984860720?tag=cvgenius-ireland-20" 
             target="_blank" 
             rel="noopener noreferrer"
             className="block p-2 lg:p-3 bg-white rounded border hover:shadow-md transition-shadow"
           >
-            <div className="text-sm font-medium text-gray-900">CV Writing Guide</div>
-            <div className="text-xs text-gray-600">Professional resume tips</div>
+            <div className="text-sm font-medium text-gray-900">What Color Is Your Parachute?</div>
+            <div className="text-xs text-gray-600">Job search & career guidance</div>
           </a>
           
           <a 
-            href="https://amazon.com/dp/INTERVIEW_BOOK_ID?tag=YOUR_AFFILIATE_TAG" 
+            href="https://www.amazon.com/Great-Answers-Tough-Interview-Questions/dp/0749486406?tag=cvgenius-ireland-20" 
             target="_blank" 
             rel="noopener noreferrer"
             className="block p-2 lg:p-3 bg-white rounded border hover:shadow-md transition-shadow"
           >
-            <div className="text-sm font-medium text-gray-900">Interview Success</div>
-            <div className="text-xs text-gray-600">Ace your next interview</div>
+            <div className="text-sm font-medium text-gray-900">Great Interview Answers</div>
+            <div className="text-xs text-gray-600">Ace tough interview questions</div>
+          </a>
+          
+          <a 
+            href="https://www.amazon.com/Resume-Writing-2024-Complete-Guide/dp/B0CHQX5K8P?tag=cvgenius-ireland-20" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block p-2 lg:p-3 bg-white rounded border hover:shadow-md transition-shadow"
+          >
+            <div className="text-sm font-medium text-gray-900">Resume Writing Guide 2024</div>
+            <div className="text-xs text-gray-600">Complete CV writing guide</div>
           </a>
         </div>
       </div>
