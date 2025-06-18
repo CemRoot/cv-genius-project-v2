@@ -119,6 +119,9 @@ export default function RootLayout({
         {/* Performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* PropellerAds Domain Verification */}
+        <meta name="pushsdk" content="16c82cce82e6eb939b28190962fddb90" />
 
         {/* PropellerAds OnClick Ads */}
         <script 
