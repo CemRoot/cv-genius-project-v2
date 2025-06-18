@@ -5,6 +5,7 @@ import { StickySideAds } from './sticky-side-ads'
 import { MobileAds } from './mobile-ads'
 import { SidebarAds } from './sidebar-ads'
 import { BannerAds } from './banner-ads'
+import { PropPushNotification } from './propush-notification'
 
 // Pages where ads should be disabled
 const NO_ADS_PAGES = [
@@ -29,13 +30,16 @@ const MINIMAL_ADS_PAGES = [
 ]
 
 interface AdControllerProps {
-  type: 'sticky-side' | 'mobile-top' | 'mobile-bottom' | 'mobile-floating' | 'sidebar' | 'banner'
+  type: 'sticky-side' | 'mobile-top' | 'mobile-bottom' | 'mobile-floating' | 'sidebar' | 'banner' | 'propush'
   position?: 'top' | 'bottom' | 'floating'
   size?: 'large' | 'medium' | 'small'
   className?: string
+  trigger?: boolean
+  onTrigger?: () => void
+  delay?: number
 }
 
-export function AdController({ type, position, size, className }: AdControllerProps) {
+export function AdController({ type, position, size, className, trigger, onTrigger, delay }: AdControllerProps) {
   const pathname = usePathname()
 
   // Check if ads should be completely disabled
@@ -74,6 +78,9 @@ export function AdController({ type, position, size, className }: AdControllerPr
       
     case 'banner':
       return <BannerAds size={size} className={className} />
+      
+    case 'propush':
+      return <PropPushNotification trigger={trigger} onTrigger={onTrigger} delay={delay} />
       
     default:
       return null
