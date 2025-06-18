@@ -22,6 +22,28 @@ const nextConfig = {
       },
     ],
   },
+  // Headers for service worker and PropuSH
+  async headers() {
+    return [
+      {
+        source: '/sw-check-permissions-36fdf.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

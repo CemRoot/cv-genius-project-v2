@@ -221,7 +221,7 @@ Focus on information relevant for Irish job applications.`,
         }
       }
     } catch (error) {
-      console.error('Login error details:', error)
+      // Login error (removed for security)
       alert('Login failed: ' + (error instanceof Error ? error.message : 'Network error'))
     }
   }
@@ -284,7 +284,7 @@ Focus on information relevant for Irish job applications.`,
         setIs2FAEnabled(result.enabled)
       }
     } catch (error) {
-      console.log('2FA status check failed:', error)
+      // 2FA status check failed (removed for security)
     }
   }
 
@@ -395,9 +395,7 @@ Focus on information relevant for Irish job applications.`,
           setCurrentIP(result.currentIP)
           setIsFirstTimeSetup(result.isFirstTimeSetup)
           
-          // Debug: Check IP whitelist data
-          console.log('IP Whitelist loaded:', result.entries)
-          console.log('Current IP:', result.currentIP)
+          // Debug removed for security
         }
       }
     } catch (error) {
@@ -917,11 +915,15 @@ Focus on information relevant for Irish job applications.`,
                                 )}
                               </td>
                               <td className="py-3">
-                                {/* Debug: Show all conditions */}
-                                <div className="text-xs text-gray-500 mb-1">
-                                  Active: {entry.isActive ? 'Yes' : 'No'} | 
-                                  Current: {currentIP === entry.ip ? 'Yes' : 'No'} | 
-                                  Localhost: {(entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Yes' : 'No'}
+                                {/* Enhanced Debug: Show detailed conditions and data */}
+                                <div className="text-xs text-gray-500 mb-2 space-y-1">
+                                  <div>Entry IP: "{entry.ip}"</div>
+                                  <div>Current IP: "{currentIP}"</div>
+                                  <div>Active: {entry.isActive ? 'Yes' : 'No'}</div>
+                                  <div>Is Current: {currentIP === entry.ip ? 'Yes' : 'No'}</div>
+                                  <div>Is Localhost 127: {entry.ip.includes('127.0.0.1') ? 'Yes' : 'No'}</div>
+                                  <div>Is Localhost IPv6: {entry.ip === '::1' ? 'Yes' : 'No'}</div>
+                                  <div>Show Remove: {(!entry.ip.includes('127.0.0.1') && entry.ip !== '::1' && currentIP !== entry.ip) ? 'YES' : 'NO'}</div>
                                 </div>
                                 
                                 {/* Show remove button for non-localhost, non-current IPs */}
@@ -932,14 +934,19 @@ Focus on information relevant for Irish job applications.`,
                                     onClick={() => removeIP(entry.ip)}
                                     disabled={!entry.isActive}
                                   >
-                                    Remove
+                                    Remove IP
                                   </Button>
                                 ) : (
-                                  <span className="text-sm text-gray-400">
-                                    {currentIP === entry.ip ? 'Current IP' : 
-                                     (entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Localhost' : 
-                                     'Protected'}
-                                  </span>
+                                  <div className="space-y-1">
+                                    <span className="text-sm text-gray-400 block">
+                                      {currentIP === entry.ip ? 'Current IP' : 
+                                       (entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Localhost' : 
+                                       'Protected'}
+                                    </span>
+                                    <div className="text-xs text-red-500">
+                                      Cannot remove: {currentIP === entry.ip ? 'Your IP' : 'System IP'}
+                                    </div>
+                                  </div>
                                 )}
                               </td>
                             </tr>
