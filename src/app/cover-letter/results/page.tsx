@@ -10,6 +10,7 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx'
 import { saveAs } from 'file-saver'
+import { AdController } from '@/components/ads/ad-controller'
 
 interface CollectedData {
   templateData: {
@@ -46,6 +47,8 @@ export default function ResultsPage() {
   const [showContactInfo, setShowContactInfo] = useState(true)
   const [isExporting, setIsExporting] = useState(false)
   const [currentDate, setCurrentDate] = useState('')
+  const [propPushTrigger, setPropPushTrigger] = useState(false)
+  const [exportCount, setExportCount] = useState(0)
 
   // Initialize date on client side to avoid hydration mismatch
   useEffect(() => {
