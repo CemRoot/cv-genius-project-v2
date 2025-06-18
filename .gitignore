@@ -56,3 +56,6 @@ logs
 
 # Admin settings files (contains sensitive configuration)
 .ai-settings.json
+
+# IP whitelist file (contains security data)
+.ip-whitelist.json

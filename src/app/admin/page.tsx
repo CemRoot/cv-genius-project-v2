@@ -172,6 +172,13 @@ Focus on information relevant for Irish job applications.`,
   const [testOutput, setTestOutput] = useState('')
   const [testing, setTesting] = useState(false)
 
+  // IP Whitelist state
+  const [ipWhitelist, setIpWhitelist] = useState<any[]>([])
+  const [currentIP, setCurrentIP] = useState('')
+  const [isFirstTimeSetup, setIsFirstTimeSetup] = useState(false)
+  const [newIPAddress, setNewIPAddress] = useState('')
+  const [newIPLabel, setNewIPLabel] = useState('')
+
   // Enhanced authentication with smart 2FA flow
   const handleLogin = async () => {
     try {
@@ -247,7 +254,7 @@ Focus on information relevant for Irish job applications.`,
     // Check URL parameters for tab
     const urlParams = new URLSearchParams(window.location.search)
     const tabParam = urlParams.get('tab')
-    if (tabParam && ['settings', 'security', 'prompts', 'testing', 'analytics'].includes(tabParam)) {
+    if (tabParam && ['settings', 'security', 'ip-management', 'prompts', 'testing', 'analytics'].includes(tabParam)) {
       setActiveTab(tabParam)
     }
   }, [])
@@ -381,8 +388,111 @@ Focus on information relevant for Irish job applications.`,
       }
       // Also check 2FA status
       check2FAStatus()
+      // Load IP whitelist
+      loadIPWhitelist()
     } catch (error) {
       console.error('Failed to load settings:', error)
+    }
+  }
+
+  // Load IP whitelist
+  const loadIPWhitelist = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ip-whitelist')
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setIpWhitelist(result.entries)
+          setCurrentIP(result.currentIP)
+          setIsFirstTimeSetup(result.isFirstTimeSetup)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load IP whitelist:', error)
+    }
+  }
+
+  // Add current IP to whitelist
+  const addCurrentIP = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ip-whitelist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'add-current',
+          label: `Admin IP (${new Date().toLocaleDateString()})`
+        })
+      })
+      
+      const result = await response.json()
+      if (response.ok && result.success) {
+        alert(result.message)
+        loadIPWhitelist()
+      } else {
+        alert(result.error || 'Failed to add current IP')
+      }
+    } catch (error) {
+      alert('Failed to add current IP: Network error')
+    }
+  }
+
+  // Add custom IP to whitelist
+  const addCustomIP = async () => {
+    if (!newIPAddress.trim()) {
+      alert('Please enter an IP address')
+      return
+    }
+
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ip-whitelist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'add',
+          ip: newIPAddress.trim(),
+          label: newIPLabel.trim() || 'Admin IP'
+        })
+      })
+      
+      const result = await response.json()
+      if (response.ok && result.success) {
+        alert(result.message)
+        setNewIPAddress('')
+        setNewIPLabel('')
+        loadIPWhitelist()
+      } else {
+        alert(result.error || 'Failed to add IP')
+      }
+    } catch (error) {
+      alert('Failed to add IP: Network error')
+    }
+  }
+
+  // Remove IP from whitelist
+  const removeIP = async (ip: string) => {
+    if (!confirm(`Are you sure you want to remove IP ${ip} from whitelist?`)) {
+      return
+    }
+
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ip-whitelist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'remove',
+          ip: ip
+        })
+      })
+      
+      const result = await response.json()
+      if (response.ok && result.success) {
+        alert(result.message)
+        loadIPWhitelist()
+      } else {
+        alert(result.error || 'Failed to remove IP')
+      }
+    } catch (error) {
+      alert('Failed to remove IP: Network error')
     }
   }
 
@@ -519,7 +629,7 @@ Focus on information relevant for Irish job applications.`,
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="w-4 h-4" />
               <span>AI Settings</span>
@@ -527,6 +637,10 @@ Focus on information relevant for Irish job applications.`,
             <TabsTrigger value="security" className="flex items-center space-x-2">
               <Shield className="w-4 h-4" />
               <span>Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="ip-management" className="flex items-center space-x-2">
+              <Lock className="w-4 h-4" />
+              <span>IP Control</span>
             </TabsTrigger>
             <TabsTrigger value="prompts" className="flex items-center space-x-2">
               <FileText className="w-4 h-4" />
@@ -693,6 +807,140 @@ Focus on information relevant for Irish job applications.`,
                   <Save className="w-4 h-4 mr-2" />
                   Save {activeAIContext} Settings
                 </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* IP Management Tab */}
+          <TabsContent value="ip-management" className="space-y-6">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2">
+                <Lock className="w-5 h-5" />
+                <span>IP Access Control</span>
+              </h2>
+              
+              <div className="space-y-6">
+                {/* Current IP Info */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-medium text-blue-900 mb-2">Your Current IP Address</h3>
+                  <p className="text-blue-700 font-mono">{currentIP || 'Loading...'}</p>
+                  {isFirstTimeSetup && (
+                    <div className="mt-3">
+                      <p className="text-sm text-blue-700 mb-2">
+                        🔐 First time setup detected. Add your current IP to secure admin access.
+                      </p>
+                      <Button onClick={addCurrentIP} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Add Current IP to Whitelist
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Add Custom IP */}
+                <Card className="p-4">
+                  <h3 className="font-medium mb-4">Add New IP Address</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="newIP">IP Address</Label>
+                      <Input
+                        id="newIP"
+                        type="text"
+                        value={newIPAddress}
+                        onChange={(e) => setNewIPAddress(e.target.value)}
+                        placeholder="192.168.1.100"
+                        className="font-mono"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newIPLabel">Label (Optional)</Label>
+                      <Input
+                        id="newIPLabel"
+                        type="text"
+                        value={newIPLabel}
+                        onChange={(e) => setNewIPLabel(e.target.value)}
+                        placeholder="Home Office"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button onClick={addCustomIP} className="w-full">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Add IP
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* IP Whitelist Table */}
+                <Card className="p-4">
+                  <h3 className="font-medium mb-4">Allowed IP Addresses</h3>
+                  {ipWhitelist.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2">IP Address</th>
+                            <th className="text-left py-2">Label</th>
+                            <th className="text-left py-2">Added</th>
+                            <th className="text-left py-2">Status</th>
+                            <th className="text-left py-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ipWhitelist.map((entry, index) => (
+                            <tr key={index} className="border-b">
+                              <td className="py-3 font-mono">{entry.ip}</td>
+                              <td className="py-3">{entry.label}</td>
+                              <td className="py-3">{new Date(entry.addedAt).toLocaleDateString()}</td>
+                              <td className="py-3">
+                                <Badge variant={entry.isActive ? 'default' : 'secondary'}>
+                                  {entry.isActive ? 'Active' : 'Disabled'}
+                                </Badge>
+                                {currentIP === entry.ip && (
+                                  <Badge variant="outline" className="ml-2">Current</Badge>
+                                )}
+                              </td>
+                              <td className="py-3">
+                                {entry.isActive && currentIP !== entry.ip && !entry.ip.includes('127.0.0.1') && entry.ip !== '::1' && (
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => removeIP(entry.ip)}
+                                  >
+                                    Remove
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">No IP addresses in whitelist</p>
+                  )}
+                </Card>
+
+                {/* Quick Actions */}
+                <Card className="p-4 bg-yellow-50 border-yellow-200">
+                  <h3 className="font-medium text-yellow-800 mb-2">⚠️ Important Security Notes</h3>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• Only whitelisted IPs can access the admin panel</li>
+                    <li>• You cannot remove your current IP address</li>
+                    <li>• Localhost IPs (127.0.0.1, ::1) are always allowed in development</li>
+                    <li>• Changes take effect immediately</li>
+                    <li>• Make sure to add your home/office IPs before deploying</li>
+                  </ul>
+                  
+                  {!isFirstTimeSetup && (
+                    <div className="mt-4">
+                      <Button onClick={addCurrentIP} variant="outline" size="sm">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Add Current IP ({currentIP})
+                      </Button>
+                    </div>
+                  )}
+                </Card>
               </div>
             </Card>
           </TabsContent>
