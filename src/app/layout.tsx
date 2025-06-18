@@ -5,6 +5,8 @@ import { Navigation } from "@/components/layout/navigation"
 import { Footer } from "@/components/layout/footer"
 import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
+import { StickySideAds } from "@/components/ads/sticky-side-ads"
+import { MobileAds } from "@/components/ads/mobile-ads"
 
 // Load professional fonts for CV/Resume use
 const inter = Inter({ subsets: ["latin"] })
@@ -126,7 +128,7 @@ export default function RootLayout({
               (function(d,z,s){
                 s.src='//'+d+'/400/'+z;
                 try{(document.body||document.documentElement).appendChild(s)}catch(e){}
-              })('jsc.propellerads.com','YOUR_ZONE_ID',document.createElement('script'))
+              })('jsc.propellerads.com','REPLACE_WITH_YOUR_ZONE_ID',document.createElement('script'))
             `
           }}
         />
@@ -134,11 +136,25 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <ToastProvider>
           <ErrorBoundary>
+            {/* Mobile Top Ad */}
+            <MobileAds position="top" />
+            
             <Navigation />
+            
             <main className="flex-1">
               {children}
             </main>
+            
             <Footer />
+            
+            {/* Mobile Bottom Ad */}
+            <MobileAds position="bottom" />
+            
+            {/* Mobile Floating Ad */}
+            <MobileAds position="floating" />
+            
+            {/* Desktop Side Ads */}
+            <StickySideAds />
           </ErrorBoundary>
         </ToastProvider>
       </body>
