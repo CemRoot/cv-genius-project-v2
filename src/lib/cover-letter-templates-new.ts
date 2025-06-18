@@ -56,7 +56,7 @@ export interface CoverLetterContent {
 // 15 Dublin Ireland Professional Cover Letter Templates
 const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   // Template 1: Dublin Professional (Traditional Irish Business) - Based on Cascade
-  dublinProfessional: {
+  'dublin-professional': {
     id: 'dublin-professional',
     name: 'Dublin Professional',
     category: 'professional',
@@ -64,9 +64,9 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     preview: '/images/templates/dublin-professional.jpg',
     baseTemplate: 'cascade',
     styles: {
-      container: 'display: table; width: 100%; table-layout: fixed; min-height: 792px; font-family: "Century Gothic", sans-serif; font-size: 10px; line-height: 15px;',
-      sidebar: 'display: table-cell; width: 154px; background: #2c3e50; color: white; padding: 15px; vertical-align: top;',
-      mainContent: 'display: table-cell; padding: 15px; letter-spacing: 0.2px; vertical-align: top;',
+      container: 'display: table; width: 100%; table-layout: fixed; min-height: 950px; font-family: "Arial", sans-serif; font-size: 16px; line-height: 1.6;',
+      sidebar: 'display: table-cell; width: 200px; background: #2c3e50; color: white; padding: 30px; vertical-align: top;',
+      mainContent: 'display: table-cell; padding: 30px; vertical-align: top;',
       colors: {
         primary: '#2c3e50',
         secondary: '#34495e', 
@@ -80,7 +80,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 2: Trinity Modern (Popular among graduates) - Based on Crisp
-  trinityModern: {
+  'trinity-modern': {
     id: 'trinity-modern',
     name: 'Trinity Modern',
     category: 'modern',
@@ -88,10 +88,10 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     preview: '/images/templates/trinity-modern.jpg',
     baseTemplate: 'crisp',
     styles: {
-      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 50px; font-family: "Arial", sans-serif; box-shadow: 0 2px 10px rgba(0,0,0,0.1);',
-      header: 'text-align: center; margin-bottom: 40px; border-bottom: 3px solid #0066cc; padding-bottom: 20px;',
-      nameSection: 'font-size: 28px; font-weight: bold; color: #0066cc; margin-bottom: 10px;',
-      content: 'line-height: 1.7; color: #333; text-align: justify;',
+      container: 'max-width: 900px; margin: 0 auto; background: white; padding: 60px; font-family: "Arial", sans-serif; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-height: 950px;',
+      header: 'text-align: center; margin-bottom: 50px; border-bottom: 4px solid #0066cc; padding-bottom: 30px;',
+      nameSection: 'font-size: 40px; font-weight: bold; color: #0066cc; margin-bottom: 15px;',
+      content: 'line-height: 1.7; color: #333; text-align: justify; font-size: 18px;',
       colors: {
         primary: '#0066cc',
         secondary: '#666666',
@@ -105,7 +105,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 3: Corporate Dublin (Multinational companies) - Based on Concept
-  corporateDublin: {
+  'corporate-dublin': {
     id: 'corporate-dublin',
     name: 'Corporate Dublin',
     category: 'professional',
@@ -113,9 +113,9 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     preview: '/images/templates/corporate-dublin.jpg',
     baseTemplate: 'concept',
     styles: {
-      container: 'max-width: 900px; margin: 0 auto; background: white; display: grid; grid-template-columns: 280px 1fr; min-height: 1000px; box-shadow: 0 0 20px rgba(0,0,0,0.1);',
-      sidebar: 'background: #1e3a8a; color: white; padding: 40px 30px;',
-      mainContent: 'padding: 40px; background: white; font-family: "Calibri", sans-serif;',
+      container: 'max-width: 1000px; margin: 0 auto; background: white; display: grid; grid-template-columns: 320px 1fr; min-height: 1100px; box-shadow: 0 0 20px rgba(0,0,0,0.1);',
+      sidebar: 'background: #1e3a8a; color: white; padding: 50px 40px;',
+      mainContent: 'padding: 50px; background: white; font-family: "Calibri", sans-serif; font-size: 18px;',
       colors: {
         primary: '#1e3a8a',
         secondary: '#3b82f6',
@@ -129,7 +129,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 4: Tech Dublin (For Irish tech companies) - Based on Cubic
-  techDublin: {
+  'tech-dublin': {
     id: 'tech-dublin',
     name: 'Tech Dublin',
     category: 'tech',
@@ -154,7 +154,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 5: Creative Cork (For creative industries) - Based on Diamond
-  creativeCork: {
+  'creative-cork': {
     id: 'creative-cork',
     name: 'Creative Cork',
     category: 'creative',
@@ -179,7 +179,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 6: Executive Dublin (C-level positions) - Based on Enfold
-  executiveDublin: {
+  'executive-dublin': {
     id: 'executive-dublin',
     name: 'Executive Dublin',
     category: 'executive',
@@ -205,7 +205,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 7: Banking Dublin (Financial services)
-  bankingDublin: {
+  'banking-dublin': {
     id: 'banking-dublin',
     name: 'Banking Dublin',
     category: 'professional',
@@ -228,7 +228,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 8: Healthcare Dublin (Medical professionals)
-  healthcareDublin: {
+  'healthcare-dublin': {
     id: 'healthcare-dublin',
     name: 'Healthcare Dublin',
     category: 'professional',
@@ -252,7 +252,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 9: Academic Dublin (Universities and research)
-  academicDublin: {
+  'academic-dublin': {
     id: 'academic-dublin',
     name: 'Academic Dublin',
     category: 'academic',
@@ -275,7 +275,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 10: Startup Dublin (Emerging companies)
-  startupDublin: {
+  'startup-dublin': {
     id: 'startup-dublin',
     name: 'Startup Dublin',
     category: 'casual',
@@ -299,7 +299,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 11: Legal Dublin (Law firms)
-  legalDublin: {
+  'legal-dublin': {
     id: 'legal-dublin',
     name: 'Legal Dublin',
     category: 'professional',
@@ -322,7 +322,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 12: Pharma Dublin (Pharmaceutical industry)
-  pharmaDublin: {
+  'pharma-dublin': {
     id: 'pharma-dublin',
     name: 'Pharma Dublin',
     category: 'professional',
@@ -345,7 +345,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 13: Government Dublin (Public sector)
-  governmentDublin: {
+  'government-dublin': {
     id: 'government-dublin',
     name: 'Government Dublin',
     category: 'professional',
@@ -368,7 +368,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 14: Consulting Dublin (Management consulting)
-  consultingDublin: {
+  'consulting-dublin': {
     id: 'consulting-dublin',
     name: 'Consulting Dublin',
     category: 'professional',
@@ -391,7 +391,7 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
   },
 
   // Template 15: Hospitality Dublin (Tourism and hospitality)
-  hospitalityDublin: {
+  'hospitality-dublin': {
     id: 'hospitality-dublin',
     name: 'Hospitality Dublin',
     category: 'casual',
@@ -438,7 +438,23 @@ export class DublinCoverLetterTemplateManager {
   }
 
   getTemplate(id: string): CoverLetterTemplate | null {
-    return this.templates[id] || null;
+    console.log('🔍 getTemplate called with ID:', id);
+    console.log('📋 Available template keys:', Object.keys(this.templates));
+    
+    // First try direct lookup
+    if (this.templates[id]) {
+      console.log('✅ Found template by key:', id);
+      return this.templates[id];
+    }
+    
+    // Then try finding by template ID
+    const template = Object.values(this.templates).find(t => t.id === id);
+    if (template) {
+      console.log('✅ Found template by ID search:', id);
+    } else {
+      console.log('❌ Template not found:', id);
+    }
+    return template || null;
   }
 
   generateHTML(templateId: string, content: CoverLetterContent): string {
@@ -750,30 +766,30 @@ export class DublinCoverLetterTemplateManager {
     return `
       <div class="cover-letter-wrapper template-cascade" style="${styles.container}; ${cssVariables}">
         <div class="sidebar" style="${styles.sidebar}">
-          <h2 class="name" style="font-size: 27px; line-height: 33px; font-weight: bold; margin-bottom: 10px;">${content.name}</h2>
-          ${content.title ? `<p class="title" style="margin-bottom: 15px;">${content.title}</p>` : ''}
-          <div class="contact">
-            <p style="margin: 4px 0;">${content.email}</p>
-            <p style="margin: 4px 0;">${content.phone}</p>
-            ${content.address ? `<p style="margin: 4px 0;">${content.address}</p>` : ''}
+          <h2 class="name" style="font-size: 42px; line-height: 48px; font-weight: bold; margin-bottom: 20px; color: white;">${content.name}</h2>
+          ${content.title ? `<p class="title" style="margin-bottom: 25px; font-size: 20px; opacity: 0.9;">${content.title}</p>` : ''}
+          <div class="contact" style="font-size: 18px;">
+            <p style="margin: 12px 0;">${content.email}</p>
+            <p style="margin: 12px 0;">${content.phone}</p>
+            ${content.address ? `<p style="margin: 12px 0;">${content.address}</p>` : ''}
           </div>
         </div>
-        <div class="main-content" style="${styles.mainContent}">
-          <div class="date" style="text-align: right; margin-bottom: 15px;">${content.date}</div>
+        <div class="main-content" style="${styles.mainContent}; font-size: 18px; line-height: 1.6;">
+          <div class="date" style="text-align: right; margin-bottom: 25px; font-size: 18px;">${content.date}</div>
           ${content.recipient ? `
-            <div class="recipient" style="margin-bottom: 20px;">
-              <p><strong>${content.recipient.name}</strong></p>
-              ${content.recipient.title ? `<p>${content.recipient.title}</p>` : ''}
-              <p>${content.recipient.company}</p>
-              ${content.recipient.address ? `<p>${content.recipient.address}</p>` : ''}
+            <div class="recipient" style="margin-bottom: 30px; font-size: 18px;">
+              <p style="margin: 6px 0;"><strong>${content.recipient.name}</strong></p>
+              ${content.recipient.title ? `<p style="margin: 6px 0;">${content.recipient.title}</p>` : ''}
+              <p style="margin: 6px 0;">${content.recipient.company}</p>
+              ${content.recipient.address ? `<p style="margin: 6px 0;">${content.recipient.address}</p>` : ''}
             </div>
           ` : ''}
-          <p class="salutation" style="margin-bottom: 15px;">${content.salutation}</p>
-          <p class="opening" style="margin-bottom: 12px;">${content.opening}</p>
-          ${content.body.map(paragraph => `<p class="body-paragraph" style="margin-bottom: 12px;">${paragraph}</p>`).join('')}
-          <p class="closing" style="margin-bottom: 20px;">${content.closing}</p>
-          <div class="signature">
-            <p style="margin-bottom: 30px;">Yours sincerely,</p>
+          <p class="salutation" style="margin-bottom: 25px; font-size: 18px; font-weight: 600;">${content.salutation}</p>
+          <p class="opening" style="margin-bottom: 20px; font-size: 18px;">${content.opening}</p>
+          ${content.body.map(paragraph => `<p class="body-paragraph" style="margin-bottom: 20px; font-size: 18px;">${paragraph}</p>`).join('')}
+          <p class="closing" style="margin-bottom: 30px; font-size: 18px;">${content.closing}</p>
+          <div class="signature" style="font-size: 18px;">
+            <p style="margin-bottom: 40px;">Yours sincerely,</p>
             <p style="font-weight: bold;">${content.name}</p>
           </div>
         </div>
@@ -793,14 +809,14 @@ export class DublinCoverLetterTemplateManager {
       <div class="cover-letter-wrapper template-crisp" style="${styles.container}; ${cssVariables}">
         <div class="header" style="${styles.header}">
           <h2 class="name" style="${styles.nameSection}">${content.name}</h2>
-          ${content.title ? `<p class="title" style="margin-bottom: 15px;">${content.title}</p>` : ''}
-          <div class="contact">
+          ${content.title ? `<p class="title" style="margin-bottom: 20px; font-size: 22px; color: #666;">${content.title}</p>` : ''}
+          <div class="contact" style="font-size: 18px; color: #666;">
             <span>${content.email}</span> | <span>${content.phone}</span>
             ${content.address ? ` | <span>${content.address}</span>` : ''}
           </div>
         </div>
         <div class="content" style="${styles.content}">
-          <div class="date" style="text-align: right; margin-bottom: 20px;">${content.date}</div>
+          <div class="date" style="text-align: right; margin-bottom: 25px; font-size: 18px;">${content.date}</div>
           ${content.recipient ? `
             <div class="recipient" style="margin-bottom: 25px;">
               <p><strong>${content.recipient.name}</strong></p>
@@ -831,43 +847,43 @@ export class DublinCoverLetterTemplateManager {
     `;
     
     return `
-      <div class="cover-letter-wrapper template-concept" style="border-left: 120px solid var(--primary-color); padding: 25px 12px; font-family: 'Century Gothic', sans-serif; ${cssVariables}">
-        <div class="header" style="margin-bottom: 20px;">
-          <h2 class="name" style="font-size: 35px; line-height: 45px; color: var(--primary-color); font-weight: bold;">${content.name}</h2>
-          ${content.title ? `<p class="title" style="font-size: 16px; margin-bottom: 15px;">${content.title}</p>` : ''}
-          <div class="contact-section" style="display: table; width: 40%;">
-            <div class="icon-row" style="display: flex; align-items: center; margin-bottom: 8px;">
-              <span style="width: 20px; height: 20px; margin-right: 8px;">📧</span>
+      <div class="cover-letter-wrapper template-concept" style="border-left: 200px solid var(--primary-color); padding: 40px 30px; font-family: 'Arial', sans-serif; min-height: 950px; ${cssVariables}">
+        <div class="header" style="margin-bottom: 35px;">
+          <h2 class="name" style="font-size: 50px; line-height: 58px; color: var(--primary-color); font-weight: bold; margin-bottom: 15px;">${content.name}</h2>
+          ${content.title ? `<p class="title" style="font-size: 24px; margin-bottom: 25px; color: #666;">${content.title}</p>` : ''}
+          <div class="contact-section" style="display: table; width: 60%;">
+            <div class="icon-row" style="display: flex; align-items: center; margin-bottom: 15px; font-size: 18px;">
+              <span style="width: 30px; height: 30px; margin-right: 15px; font-size: 22px;">📧</span>
               <span>${content.email}</span>
             </div>
-            <div class="icon-row" style="display: flex; align-items: center; margin-bottom: 8px;">
-              <span style="width: 20px; height: 20px; margin-right: 8px;">📞</span>
+            <div class="icon-row" style="display: flex; align-items: center; margin-bottom: 15px; font-size: 18px;">
+              <span style="width: 30px; height: 30px; margin-right: 15px; font-size: 22px;">📞</span>
               <span>${content.phone}</span>
             </div>
             ${content.address ? `
-              <div class="icon-row" style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span style="width: 20px; height: 20px; margin-right: 8px;">📍</span>
+              <div class="icon-row" style="display: flex; align-items: center; margin-bottom: 15px; font-size: 18px;">
+                <span style="width: 30px; height: 30px; margin-right: 15px; font-size: 22px;">📍</span>
                 <span>${content.address}</span>
               </div>
             ` : ''}
           </div>
         </div>
-        <div class="content">
-          <div class="date" style="text-align: right; margin-bottom: 20px;">${content.date}</div>
+        <div class="content" style="font-size: 18px;">
+          <div class="date" style="text-align: right; margin-bottom: 25px; font-size: 18px;">${content.date}</div>
           ${content.recipient ? `
-            <div class="recipient" style="margin-bottom: 25px;">
-              <p><strong>${content.recipient.name}</strong></p>
-              ${content.recipient.title ? `<p>${content.recipient.title}</p>` : ''}
-              <p>${content.recipient.company}</p>
-              ${content.recipient.address ? `<p>${content.recipient.address}</p>` : ''}
+            <div class="recipient" style="margin-bottom: 30px; font-size: 18px;">
+              <p style="margin: 6px 0;"><strong>${content.recipient.name}</strong></p>
+              ${content.recipient.title ? `<p style="margin: 6px 0;">${content.recipient.title}</p>` : ''}
+              <p style="margin: 6px 0;">${content.recipient.company}</p>
+              ${content.recipient.address ? `<p style="margin: 6px 0;">${content.recipient.address}</p>` : ''}
             </div>
           ` : ''}
-          <p class="salutation" style="margin-bottom: 18px; font-weight: 600;">${content.salutation}</p>
-          <p class="opening" style="margin-bottom: 16px;">${content.opening}</p>
-          ${content.body.map(paragraph => `<p class="body-paragraph" style="margin-bottom: 16px;">${paragraph}</p>`).join('')}
-          <p class="closing" style="margin-bottom: 25px;">${content.closing}</p>
-          <div class="signature">
-            <p style="margin-bottom: 40px;">Yours sincerely,</p>
+          <p class="salutation" style="margin-bottom: 22px; font-weight: 600; font-size: 18px;">${content.salutation}</p>
+          <p class="opening" style="margin-bottom: 20px; font-size: 18px;">${content.opening}</p>
+          ${content.body.map(paragraph => `<p class="body-paragraph" style="margin-bottom: 20px; font-size: 18px;">${paragraph}</p>`).join('')}
+          <p class="closing" style="margin-bottom: 30px; font-size: 18px;">${content.closing}</p>
+          <div class="signature" style="font-size: 18px;">
+            <p style="margin-bottom: 45px;">Yours sincerely,</p>
             <p style="font-weight: 600;">${content.name}</p>
           </div>
         </div>
