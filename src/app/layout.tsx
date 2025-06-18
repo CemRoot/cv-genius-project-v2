@@ -1,21 +1,11 @@
 import type { Metadata } from "next"
-import { Inter, Source_Serif_4, Merriweather, Playfair_Display, Roboto, Open_Sans, Lato, Montserrat } from "next/font/google"
+import { Inter } from "next/font/google"
 import "./globals.css"
-import { Navigation } from "@/components/layout/navigation"
-import { Footer } from "@/components/layout/footer"
 import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
-import { AdController } from "@/components/ads/ad-controller"
 
-// Load professional fonts for CV/Resume use
+// Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
-const sourceSerif4 = Source_Serif_4({ subsets: ["latin"], weight: ['400', '700'] })
-const merriweather = Merriweather({ subsets: ["latin"], weight: ['400', '700'] })
-const playfairDisplay = Playfair_Display({ subsets: ["latin"], weight: ['400', '700'] })
-const roboto = Roboto({ subsets: ["latin"], weight: ['400', '700'] })
-const openSans = Open_Sans({ subsets: ["latin"], weight: ['400', '700'] })
-const lato = Lato({ subsets: ["latin"], weight: ['400', '700'] })
-const montserrat = Montserrat({ subsets: ["latin"], weight: ['400', '700'] })
 
 export const metadata: Metadata = {
   title: "CVGenius - AI-Powered CV Builder for Irish Job Market",
@@ -119,44 +109,11 @@ export default function RootLayout({
         {/* Performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
-        {/* PropellerAds Domain Verification */}
-        <meta name="pushsdk" content="16c82cce82e6eb939b28190962fddb90" />
-
-        {/* PropellerAds OnClick Ads */}
-        <script 
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(d,z,s){
-                s.src='//'+d+'/400/'+z;
-                try{(document.body||document.documentElement).appendChild(s)}catch(e){}
-              })('jsc.propellerads.com','REPLACE_WITH_YOUR_ZONE_ID',document.createElement('script'))
-            `
-          }}
-        />
       </head>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${inter.className} min-h-screen flex flex-col`} suppressHydrationWarning>
         <ToastProvider>
           <ErrorBoundary>
-            {/* Mobile Top Ad */}
-            <AdController type="mobile-top" />
-            
-            <Navigation />
-            
-            <main className="flex-1">
-              {children}
-            </main>
-            
-            <Footer />
-            
-            {/* Mobile Bottom Ad */}
-            <AdController type="mobile-bottom" />
-            
-            {/* Mobile Floating Ad */}
-            <AdController type="mobile-floating" />
-            
-            {/* Desktop Side Ads */}
-            <AdController type="sticky-side" />
+            {children}
           </ErrorBoundary>
         </ToastProvider>
       </body>

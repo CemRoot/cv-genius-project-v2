@@ -412,6 +412,223 @@ const dublinCoverLetterTemplates: Record<string, CoverLetterTemplate> = {
     layout: 'hospitality-warm',
     description: 'Warm welcoming design for hospitality and tourism industry',
     features: ['Welcoming design', 'Warm colors', 'Hospitality appropriate']
+  },
+
+  // 2025 Modern Templates
+  'minimalist-pro-2025': {
+    id: 'minimalist-pro-2025',
+    name: 'Minimalist Pro 2025',
+    category: 'minimal',
+    recommended: true,
+    preview: '/images/templates/minimalist-pro-2025.jpg',
+    layout: 'minimal-clean',
+    baseTemplate: 'minimal-base',
+    description: 'Ultra-clean minimalist design with strategic white space and subtle accents',
+    features: ['Minimalist Design', 'ATS-Friendly', 'Clean Typography', 'Strategic White Space'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 60px; font-family: "Inter", sans-serif; min-height: 1000px;',
+      header: 'text-align: left; margin-bottom: 50px; color: #1a202c;',
+      content: 'line-height: 1.8; color: #2d3748; font-size: 14px;',
+      colors: {
+        primary: '#1a202c',
+        secondary: '#4a5568',
+        accent: '#3182ce',
+        text: '#2d3748',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'modern-columns-2025': {
+    id: 'modern-columns-2025',
+    name: 'Modern Columns 2025',
+    category: 'modern',
+    recommended: true,
+    preview: '/images/templates/modern-columns-2025.jpg',
+    layout: 'two-column-modern',
+    baseTemplate: 'columns-base',
+    description: 'Two-column layout with contact info sidebar and main content area',
+    features: ['Two-Column Layout', 'Modern Design', 'Visual Hierarchy', 'Professional Structure'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; display: flex; min-height: 1000px; font-family: "Inter", sans-serif;',
+      sidebar: 'width: 35%; background: #0f766e; color: white; padding: 40px 30px;',
+      content: 'flex: 1; padding: 40px; line-height: 1.7; color: #1f2937;',
+      colors: {
+        primary: '#0f766e',
+        secondary: '#14b8a6',
+        accent: '#06d6a0',
+        text: '#1f2937',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'creative-accent-2025': {
+    id: 'creative-accent-2025',
+    name: 'Creative Accent 2025',
+    category: 'creative',
+    recommended: false,
+    preview: '/images/templates/creative-accent-2025.jpg',
+    layout: 'creative-header',
+    baseTemplate: 'creative-base',
+    description: 'Creative template with subtle color accents and modern typography',
+    features: ['Color Accents', 'Creative Header', 'Modern Fonts', 'Visual Elements'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 50px; font-family: "Poppins", sans-serif; min-height: 1000px;',
+      header: 'text-align: center; margin-bottom: 40px; color: #7c3aed; border-bottom: 3px solid #a855f7; padding-bottom: 20px;',
+      content: 'line-height: 1.7; color: #374151;',
+      colors: {
+        primary: '#7c3aed',
+        secondary: '#a855f7',
+        accent: '#ec4899',
+        text: '#374151',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'tech-forward-2025': {
+    id: 'tech-forward-2025',
+    name: 'Tech Forward 2025',
+    category: 'tech',
+    recommended: true,
+    preview: '/images/templates/tech-forward-2025.jpg',
+    layout: 'tech-modern',
+    baseTemplate: 'tech-base',
+    description: 'Modern tech-focused design with clean lines and contemporary feel',
+    features: ['Tech Industry', 'Clean Lines', 'Modern Layout', 'Innovation Focus'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 50px; font-family: "JetBrains Mono", monospace; border-left: 5px solid #0ea5e9; min-height: 1000px;',
+      header: 'text-align: left; margin-bottom: 30px; color: #0ea5e9; font-weight: bold;',
+      content: 'line-height: 1.6; color: #0f172a; font-family: "Inter", sans-serif;',
+      colors: {
+        primary: '#0ea5e9',
+        secondary: '#0284c7',
+        accent: '#06b6d4',
+        text: '#0f172a',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'executive-modern-2025': {
+    id: 'executive-modern-2025',
+    name: 'Executive Modern 2025',
+    category: 'executive',
+    recommended: false,
+    preview: '/images/templates/executive-modern-2025.jpg',
+    layout: 'executive-modern',
+    baseTemplate: 'executive-modern-base',
+    description: 'Contemporary executive template with sophisticated minimalism',
+    features: ['Executive Level', 'Modern Sophistication', 'Leadership Style', 'Premium Feel'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 60px; font-family: "Playfair Display", serif; min-height: 1000px;',
+      header: 'text-align: center; margin-bottom: 50px; color: #1e293b; border-bottom: 1px solid #f59e0b; padding-bottom: 30px;',
+      content: 'line-height: 1.8; color: #0f172a; font-size: 15px;',
+      colors: {
+        primary: '#1e293b',
+        secondary: '#334155',
+        accent: '#f59e0b',
+        text: '#0f172a',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'professional-grid-2025': {
+    id: 'professional-grid-2025',
+    name: 'Professional Grid 2025',
+    category: 'professional',
+    recommended: false,
+    preview: '/images/templates/professional-grid-2025.jpg',
+    layout: 'grid-modern',
+    baseTemplate: 'grid-base',
+    description: 'Grid-based layout with organized sections and professional aesthetics',
+    features: ['Grid Layout', 'Organized Sections', 'Professional Look', 'Clear Structure'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 50px; font-family: "Roboto", sans-serif; display: grid; grid-template-columns: 1fr 2fr; gap: 40px; min-height: 1000px;',
+      sidebar: 'background: #f8fafc; padding: 30px; border-radius: 8px;',
+      content: 'line-height: 1.7; color: #111827;',
+      colors: {
+        primary: '#059669',
+        secondary: '#10b981',
+        accent: '#34d399',
+        text: '#111827',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'minimal-accent-2025': {
+    id: 'minimal-accent-2025',
+    name: 'Minimal Accent 2025',
+    category: 'minimal',
+    recommended: false,
+    preview: '/images/templates/minimal-accent-2025.jpg',
+    layout: 'minimal-accent',
+    baseTemplate: 'minimal-accent-base',
+    description: 'Ultra-minimal design with single accent color and perfect typography',
+    features: ['Ultra Minimal', 'Single Accent', 'Perfect Typography', 'White Space Focus'],
+    styles: {
+      container: 'max-width: 700px; margin: 0 auto; background: white; padding: 80px 60px; font-family: "Inter", sans-serif; min-height: 1000px;',
+      header: 'text-align: left; margin-bottom: 60px; color: #dc2626; border-left: 4px solid #dc2626; padding-left: 20px;',
+      content: 'line-height: 2; color: #1f2937; font-size: 14px;',
+      colors: {
+        primary: '#dc2626',
+        secondary: '#991b1b',
+        accent: '#f87171',
+        text: '#1f2937',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'corporate-sleek-2025': {
+    id: 'corporate-sleek-2025',
+    name: 'Corporate Sleek 2025',
+    category: 'professional',
+    recommended: true,
+    preview: '/images/templates/corporate-sleek-2025.jpg',
+    layout: 'corporate-sleek',
+    baseTemplate: 'corporate-base',
+    description: 'Sleek corporate design with professional styling and modern elements',
+    features: ['Corporate Style', 'Sleek Design', 'Professional', 'Modern Elements'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: white; padding: 50px; font-family: "Source Sans Pro", sans-serif; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-height: 1000px;',
+      header: 'text-align: left; margin-bottom: 40px; color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 15px;',
+      content: 'line-height: 1.7; color: #1e293b;',
+      colors: {
+        primary: '#1e40af',
+        secondary: '#3b82f6',
+        accent: '#60a5fa',
+        text: '#1e293b',
+        background: '#ffffff'
+      }
+    }
+  },
+
+  'creative-modern-2025': {
+    id: 'creative-modern-2025',
+    name: 'Creative Modern 2025',
+    category: 'creative',
+    recommended: false,
+    preview: '/images/templates/creative-modern-2025.jpg',
+    layout: 'creative-modern',
+    baseTemplate: 'creative-modern-base',
+    description: 'Modern creative template with unique layout and artistic elements',
+    features: ['Creative Design', 'Unique Layout', 'Artistic Elements', 'Personal Brand'],
+    styles: {
+      container: 'max-width: 800px; margin: 0 auto; background: linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%); padding: 50px; font-family: "Nunito", sans-serif; border-radius: 12px; min-height: 1000px;',
+      header: 'text-align: center; margin-bottom: 40px; color: #be185d; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);',
+      content: 'line-height: 1.7; color: #374151;',
+      colors: {
+        primary: '#be185d',
+        secondary: '#ec4899',
+        accent: '#f9a8d4',
+        text: '#374151',
+        background: '#ffffff'
+      }
+    }
   }
 };
 

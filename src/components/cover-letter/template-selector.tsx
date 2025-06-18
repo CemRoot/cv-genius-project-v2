@@ -589,6 +589,1091 @@ export function TemplateSelector({
             </div>
           )
 
+        // 2025 Modern Templates
+        case 'minimalist-pro-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '60px 50px'
+            }}>
+              <div style={{
+                borderLeft: `4px solid ${selectedColorValue}`,
+                paddingLeft: '20px',
+                marginBottom: '50px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '28px', 
+                  fontWeight: '300', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue,
+                  letterSpacing: '1px'
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#4a5568',
+                  margin: '0',
+                  fontWeight: '300'
+                }}>
+                  Software Developer
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '2', color: '#2d3748' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#718096',
+                  margin: '0 0 30px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 20px 0', fontSize: '11px', color: '#4a5568' }}>Dear Hiring Manager,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.8'
+                }}>
+                  I am writing to express my interest in the Software Developer position. My expertise in modern technologies and clean code practices...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'modern-columns-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              display: 'flex',
+              fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: '35%',
+                backgroundColor: selectedColorValue,
+                color: 'white',
+                padding: '30px 25px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '20px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: 'white'
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '12px', 
+                  margin: '0 0 20px 0',
+                  opacity: 0.9
+                }}>
+                  Frontend Developer
+                </p>
+                <div style={{ fontSize: '10px', lineHeight: '1.6' }}>
+                  <p style={{ margin: '0 0 8px 0' }}>📧 john@email.com</p>
+                  <p style={{ margin: '0 0 8px 0' }}>📱 +353 1 234 5678</p>
+                  <p style={{ margin: '0' }}>📍 Dublin, Ireland</p>
+                </div>
+              </div>
+              <div style={{
+                flex: 1,
+                padding: '30px 25px',
+                backgroundColor: 'white',
+                fontSize: '11px',
+                lineHeight: '1.7'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#666',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Hiring Manager,</p>
+                <p style={{ 
+                  color: '#1f2937',
+                  lineHeight: '1.6',
+                  fontSize: '10px',
+                  margin: '0'
+                }}>
+                  I am excited to apply for the Frontend Developer position. My experience with React and modern development practices...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'tech-forward-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderLeft: `5px solid ${selectedColorValue}`,
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '40px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '30px',
+                paddingBottom: '20px',
+                borderBottom: `1px solid ${selectedColorValue}20`
+              }}>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  backgroundColor: selectedColorValue,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '20px',
+                  color: 'white',
+                  fontSize: '24px',
+                  fontWeight: 'bold'
+                }}>
+                  {name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div>
+                  <h3 style={{ 
+                    fontSize: '24px', 
+                    fontWeight: 'bold', 
+                    margin: '0 0 4px 0',
+                    color: selectedColorValue
+                  }}>
+                    {name}
+                  </h3>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#0f172a',
+                    margin: '0'
+                  }}>
+                    Full Stack Developer
+                  </p>
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.6', color: '#0f172a' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#64748b',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Tech Team,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.6'
+                }}>
+                  I am writing to apply for the Full Stack Developer position. My passion for innovative technologies and scalable solutions...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'corporate-sleek-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Source Sans Pro, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '40px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                paddingBottom: '25px',
+                marginBottom: '30px',
+                borderBottom: `2px solid ${selectedColorValue}`
+              }}>
+                <h3 style={{ 
+                  fontSize: '26px', 
+                  fontWeight: '600', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#1e293b',
+                  margin: '0 0 10px 0'
+                }}>
+                  Business Analyst
+                </p>
+                <p style={{ 
+                  fontSize: '11px', 
+                  color: '#64748b',
+                  margin: '0'
+                }}>
+                  john@email.com | +353 1 234 5678 | Dublin, Ireland
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#1e293b' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#64748b',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Hiring Manager,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.6'
+                }}>
+                  I am writing to express my interest in the Business Analyst position. My analytical skills and business acumen...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'creative-accent-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Poppins, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '40px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '30px',
+                paddingBottom: '20px',
+                borderBottom: `3px solid ${selectedColorValue}`,
+                background: `linear-gradient(135deg, ${selectedColorValue}10 0%, transparent 100%)`
+              }}>
+                <h3 style={{ 
+                  fontSize: '26px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#374151',
+                  margin: '0'
+                }}>
+                  Creative Designer
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#374151' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Creative Team,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.6'
+                }}>
+                  I am excited to apply for the Creative Designer position. My passion for innovative design and visual storytelling...
+                </p>
+              </div>
+            </div>
+          )
+
+        // Dublin Industry-Specific Templates
+        case 'banking-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Times, serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '50px 40px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '40px',
+                paddingBottom: '25px',
+                borderBottom: `2px solid ${selectedColorValue}`
+              }}>
+                <h3 style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#1f2937',
+                  margin: '0'
+                }}>
+                  Financial Analyst
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 25px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Hiring Manager,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.7'
+                }}>
+                  I am writing to express my interest in the Financial Analyst position. My expertise in financial modeling and risk analysis...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'healthcare-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Arial, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '45px'
+            }}>
+              <div style={{
+                borderLeft: `4px solid ${selectedColorValue}`,
+                paddingLeft: '20px',
+                marginBottom: '35px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#374151',
+                  margin: '0'
+                }}>
+                  Registered Nurse
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Nurse Manager,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.7'
+                }}>
+                  I am writing to apply for the Registered Nurse position. My compassionate patient care approach and clinical expertise...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'academic-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Georgia, serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '50px 45px'
+            }}>
+              <div style={{
+                textAlign: 'left',
+                marginBottom: '40px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '26px', 
+                  fontWeight: 'normal', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue,
+                  fontFamily: 'Georgia, serif'
+                }}>
+                  Dr. {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#4b5563',
+                  margin: '0',
+                  fontStyle: 'italic'
+                }}>
+                  Assistant Professor of Computer Science
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.8', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 25px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Search Committee,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.8',
+                  textAlign: 'justify'
+                }}>
+                  I am writing to express my interest in the Assistant Professor position. My research in machine learning and dedication to education...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'startup-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                background: `linear-gradient(135deg, ${selectedColorValue} 0%, ${selectedColorValue}99 100%)`,
+                color: 'white',
+                padding: '35px 30px',
+                textAlign: 'center'
+              }}>
+                <h3 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: 'white'
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  margin: '0',
+                  opacity: 0.9
+                }}>
+                  Product Manager
+                </p>
+              </div>
+              <div style={{
+                padding: '30px',
+                fontSize: '11px',
+                lineHeight: '1.6'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Hey there! 🚀</p>
+                <p style={{ 
+                  color: '#1f2937',
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.6'
+                }}>
+                  I'm excited to apply for the Product Manager role at your startup. My passion for building innovative products and agile mindset...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'legal-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Times New Roman, serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '60px 50px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '50px',
+                paddingBottom: '30px',
+                borderBottom: `1px solid ${selectedColorValue}`
+              }}>
+                <h3 style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'normal', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue,
+                  letterSpacing: '1px'
+                }}>
+                  {name}, LL.B.
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#374151',
+                  margin: '0'
+                }}>
+                  Solicitor
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.8', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 30px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 20px 0', fontSize: '11px' }}>Dear Partner,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.8',
+                  textAlign: 'justify'
+                }}>
+                  I am writing to express my interest in the Solicitor position at your esteemed firm. My expertise in corporate law and litigation...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'pharma-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Arial, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '45px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '35px',
+                paddingBottom: '20px',
+                borderBottom: `2px solid ${selectedColorValue}`
+              }}>
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  backgroundColor: selectedColorValue,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '20px',
+                  color: 'white',
+                  fontSize: '20px',
+                  fontWeight: 'bold'
+                }}>
+                  ℞
+                </div>
+                <div>
+                  <h3 style={{ 
+                    fontSize: '22px', 
+                    fontWeight: 'bold', 
+                    margin: '0 0 4px 0',
+                    color: selectedColorValue
+                  }}>
+                    {name}
+                  </h3>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#374151',
+                    margin: '0'
+                  }}>
+                    Pharmaceutical Research Scientist
+                  </p>
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Research Director,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.7'
+                }}>
+                  I am writing to apply for the Pharmaceutical Research Scientist position. My expertise in drug development and clinical trials...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'government-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Arial, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '60px 50px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '50px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '26px', 
+                  fontWeight: 'normal', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#4b5563',
+                  margin: '0'
+                }}>
+                  Civil Servant
+                </p>
+                <div style={{
+                  width: '100px',
+                  height: '2px',
+                  backgroundColor: selectedColorValue,
+                  margin: '20px auto 0 auto'
+                }}></div>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.8', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 30px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 20px 0', fontSize: '11px' }}>Dear Hiring Panel,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.8',
+                  textAlign: 'justify'
+                }}>
+                  I am writing to express my interest in the Civil Servant position. My commitment to public service and policy development...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'consulting-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Helvetica, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                backgroundColor: '#f8fafc',
+                padding: '30px',
+                borderBottom: `4px solid ${selectedColorValue}`
+              }}>
+                <h3 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#374151',
+                  margin: '0'
+                }}>
+                  Management Consultant
+                </p>
+              </div>
+              <div style={{
+                padding: '30px',
+                fontSize: '11px',
+                lineHeight: '1.6'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Consulting Team,</p>
+                <p style={{ 
+                  color: '#1f2937',
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.6'
+                }}>
+                  I am writing to apply for the Management Consultant position. My analytical skills and strategic thinking approach...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'hospitality-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Georgia, serif',
+              background: `linear-gradient(135deg, ${selectedColorValue}15 0%, #ffffff 100%)`,
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '40px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '35px',
+                backgroundColor: 'white',
+                padding: '25px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+              }}>
+                <h3 style={{ 
+                  fontSize: '26px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#92400e',
+                  margin: '0'
+                }}>
+                  Hotel Manager
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#451a03' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#92400e',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Hospitality Director,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.7'
+                }}>
+                  I am delighted to apply for the Hotel Manager position. My passion for exceptional guest service and operational excellence...
+                </p>
+              </div>
+            </div>
+          )
+
+        // Remaining 2025 Templates
+        case 'executive-modern-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Playfair Display, serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '60px 50px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '50px',
+                paddingBottom: '30px',
+                borderBottom: `1px solid ${selectedColorValue}`
+              }}>
+                <h3 style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'normal', 
+                  margin: '0 0 12px 0',
+                  color: selectedColorValue,
+                  letterSpacing: '2px'
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '16px', 
+                  color: '#0f172a',
+                  margin: '0',
+                  fontWeight: '300'
+                }}>
+                  Chief Technology Officer
+                </p>
+              </div>
+              <div style={{ fontSize: '12px', lineHeight: '1.8', color: '#0f172a' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#64748b',
+                  margin: '0 0 30px 0',
+                  fontSize: '11px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 20px 0', fontSize: '12px', fontWeight: '600' }}>Dear Board of Directors,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '11px',
+                  lineHeight: '1.8',
+                  textAlign: 'justify'
+                }}>
+                  I am writing to express my interest in the Chief Technology Officer position. My visionary leadership in technology strategy...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'professional-grid-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Roboto, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              display: 'grid',
+              gridTemplateColumns: '1fr 2fr',
+              gap: '0'
+            }}>
+              <div style={{
+                backgroundColor: '#f8fafc',
+                padding: '30px 25px',
+                borderRight: `3px solid ${selectedColorValue}`
+              }}>
+                <h3 style={{ 
+                  fontSize: '20px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '12px', 
+                  color: '#111827',
+                  margin: '0 0 20px 0'
+                }}>
+                  Project Manager
+                </p>
+                <div style={{ fontSize: '10px', lineHeight: '1.6', color: '#4b5563' }}>
+                  <p style={{ margin: '0 0 8px 0' }}>📧 john@email.com</p>
+                  <p style={{ margin: '0 0 8px 0' }}>📱 +353 1 234 5678</p>
+                  <p style={{ margin: '0' }}>📍 Dublin, Ireland</p>
+                </div>
+              </div>
+              <div style={{
+                padding: '30px 25px',
+                fontSize: '11px',
+                lineHeight: '1.7'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#6b7280',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Dear Hiring Manager,</p>
+                <p style={{ 
+                  color: '#111827',
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.7'
+                }}>
+                  I am writing to apply for the Project Manager position. My systematic approach to project delivery and team coordination...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'minimal-accent-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '80px 60px'
+            }}>
+              <div style={{
+                borderLeft: `4px solid ${selectedColorValue}`,
+                paddingLeft: '20px',
+                marginBottom: '60px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '30px', 
+                  fontWeight: '200', 
+                  margin: '0 0 12px 0',
+                  color: selectedColorValue,
+                  letterSpacing: '3px'
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#1f2937',
+                  margin: '0',
+                  fontWeight: '300'
+                }}>
+                  UX Designer
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '2', color: '#1f2937' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#9ca3af',
+                  margin: '0 0 40px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 30px 0', fontSize: '11px' }}>Dear Design Team,</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '2'
+                }}>
+                  I am writing to express my interest in the UX Designer position. My user-centered design approach and attention to detail...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'creative-modern-2025':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Nunito, sans-serif',
+              background: `linear-gradient(135deg, ${selectedColorValue}08 0%, #ffffff 100%)`,
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              padding: '40px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '35px',
+                backgroundColor: 'white',
+                padding: '30px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                border: `2px solid ${selectedColorValue}20`
+              }}>
+                <h3 style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: selectedColorValue
+                }}>
+                  {name}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#374151',
+                  margin: '0'
+                }}>
+                  Brand Designer
+                </p>
+              </div>
+              <div style={{ fontSize: '11px', lineHeight: '1.7', color: '#374151' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#9ca3af',
+                  margin: '0 0 20px 0',
+                  fontSize: '10px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '11px' }}>Hello Creative Team! 🎨</p>
+                <p style={{ 
+                  margin: '0',
+                  fontSize: '10px',
+                  lineHeight: '1.7'
+                }}>
+                  I'm thrilled to apply for the Brand Designer position. My innovative approach to visual identity and storytelling...
+                </p>
+              </div>
+            </div>
+          )
+
         default:
           return (
             <div style={{ 
