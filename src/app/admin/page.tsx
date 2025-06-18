@@ -917,11 +917,20 @@ Focus on information relevant for Irish job applications.`,
                                 )}
                               </td>
                               <td className="py-3">
-                                {entry.isActive && currentIP !== entry.ip && !entry.ip.includes('127.0.0.1') && entry.ip !== '::1' ? (
+                                {/* Debug: Show all conditions */}
+                                <div className="text-xs text-gray-500 mb-1">
+                                  Active: {entry.isActive ? 'Yes' : 'No'} | 
+                                  Current: {currentIP === entry.ip ? 'Yes' : 'No'} | 
+                                  Localhost: {(entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Yes' : 'No'}
+                                </div>
+                                
+                                {/* Show remove button for non-localhost, non-current IPs */}
+                                {!entry.ip.includes('127.0.0.1') && entry.ip !== '::1' && currentIP !== entry.ip ? (
                                   <Button
                                     variant="destructive"
                                     size="sm"
                                     onClick={() => removeIP(entry.ip)}
+                                    disabled={!entry.isActive}
                                   >
                                     Remove
                                   </Button>
@@ -929,7 +938,7 @@ Focus on information relevant for Irish job applications.`,
                                   <span className="text-sm text-gray-400">
                                     {currentIP === entry.ip ? 'Current IP' : 
                                      (entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Localhost' : 
-                                     !entry.isActive ? 'Disabled' : '-'}
+                                     'Protected'}
                                   </span>
                                 )}
                               </td>
