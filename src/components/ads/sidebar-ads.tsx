@@ -13,7 +13,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
     script.type = 'text/javascript'
     script.innerHTML = `
       atOptions = {
-        'key' : 'YOUR_DISPLAY_AD_KEY',
+        'key' : 'REPLACE_WITH_YOUR_DISPLAY_KEY',
         'format' : 'iframe',
         'height' : 250,
         'width' : 300,
@@ -24,7 +24,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
 
     const adScript = document.createElement('script')
     adScript.type = 'text/javascript'
-    adScript.src = '//www.topcreativeformat.com/YOUR_AD_ID/invoke.js'
+    adScript.src = '//www.topcreativeformat.com/REPLACE_WITH_YOUR_AD_ID/invoke.js'
     document.head.appendChild(adScript)
 
     return () => {

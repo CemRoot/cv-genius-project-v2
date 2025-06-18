@@ -176,34 +176,437 @@ export function TemplateSelector({
       )
     }
 
-    return (
-      <div style={{ 
-        width: '100%', 
-        height: '450px', 
-        position: 'relative',
-        backgroundColor: '#f9fafb',
-        border: '1px solid #e5e7eb',
-        borderRadius: '4px',
-        overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-      }}>
-        <div 
-          className="template-preview"
-          style={{
-            transform: 'scale(0.55)',
-            transformOrigin: 'top center',
-            width: '182%',
-            height: '182%',
-            pointerEvents: 'none',
-            backgroundColor: '#fff',
-            position: 'absolute',
-            left: '50%',
-            marginLeft: '-91%'
-          }}
-          dangerouslySetInnerHTML={{ __html: previewHTML }}
-        />
-      </div>
-    )
+    // Create static preview instead of scaled template
+    const createStaticPreview = () => {
+      switch (template.id) {
+        case 'dublin-professional':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              display: 'flex',
+              fontFamily: 'Arial, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: '40%',
+                backgroundColor: '#2c3e50',
+                color: 'white',
+                padding: '25px 20px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '22px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: 'white'
+                }}>
+                  John O'Sullivan
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#3498db',
+                  margin: '0 0 20px 0'
+                }}>
+                  Software Engineer
+                </p>
+                <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                  <p style={{ margin: '0 0 8px 0' }}>📧 john@email.com</p>
+                  <p style={{ margin: '0 0 8px 0' }}>📱 +353 1 234 5678</p>
+                  <p style={{ margin: '0' }}>📍 Dublin 2, Ireland</p>
+                </div>
+              </div>
+              <div style={{
+                flex: 1,
+                padding: '25px 20px',
+                backgroundColor: 'white',
+                fontSize: '12px',
+                lineHeight: '1.5'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#666',
+                  margin: '0 0 20px 0',
+                  fontSize: '11px'
+                }}>
+                  18 June 2025
+                </p>
+                <div style={{ marginBottom: '15px', fontSize: '11px' }}>
+                  <p style={{ margin: '0 0 3px 0', fontWeight: 'bold' }}>Ms. Sarah Murphy</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Hiring Manager</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Tech Ireland Ltd</p>
+                  <p style={{ margin: '0' }}>IFSC, Dublin 1</p>
+                </div>
+                <p style={{ margin: '0 0 12px 0', fontSize: '12px' }}>Dear Ms. Murphy,</p>
+                <p style={{ 
+                  color: '#333',
+                  lineHeight: '1.4',
+                  fontSize: '11px',
+                  margin: '0'
+                }}>
+                  I am writing to express my strong interest in the Software Engineer position at Tech Ireland Ltd. With my experience in modern web technologies...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'trinity-modern':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Arial, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              padding: '30px 25px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                borderBottom: '3px solid #0066cc',
+                paddingBottom: '20px',
+                marginBottom: '25px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: '#0066cc'
+                }}>
+                  John O'Sullivan
+                </h3>
+                <p style={{ 
+                  fontSize: '16px', 
+                  color: '#666',
+                  margin: '0 0 10px 0'
+                }}>
+                  Frontend Developer
+                </p>
+                <p style={{ 
+                  fontSize: '12px', 
+                  color: '#999',
+                  margin: '0'
+                }}>
+                  john@email.com | +353 1 234 5678
+                </p>
+              </div>
+              <div style={{ textAlign: 'left', fontSize: '12px', lineHeight: '1.5' }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#666',
+                  margin: '0 0 20px 0',
+                  fontSize: '11px'
+                }}>
+                  18 June 2025
+                </p>
+                <p style={{ margin: '0 0 15px 0', fontSize: '12px' }}>Dear Hiring Manager,</p>
+                <p style={{ 
+                  color: '#333',
+                  lineHeight: '1.4',
+                  fontSize: '11px',
+                  margin: '0'
+                }}>
+                  I am excited to apply for the Frontend Developer position. My experience with React, TypeScript, and modern development practices...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'tech-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                backgroundColor: '#0f172a',
+                color: 'white',
+                padding: '30px',
+                textAlign: 'center'
+              }}>
+                <h3 style={{ 
+                  fontSize: '26px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: 'white'
+                }}>
+                  John O'Sullivan
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  margin: '0',
+                  opacity: 0.9
+                }}>
+                  Software Developer
+                </p>
+              </div>
+              <div style={{
+                backgroundColor: 'white',
+                margin: '15px',
+                padding: '25px 20px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                lineHeight: '1.5'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#64748b',
+                  margin: '0 0 20px 0',
+                  fontSize: '11px'
+                }}>
+                  18 June 2025
+                </p>
+                <div style={{ marginBottom: '15px', fontSize: '11px' }}>
+                  <p style={{ margin: '0 0 3px 0', fontWeight: 'bold' }}>Mr. Sean O'Connor</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Tech Lead</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Dublin Tech Hub</p>
+                </div>
+                <p style={{ margin: '0 0 12px 0', fontSize: '12px' }}>Dear Mr. O'Connor,</p>
+                <p style={{ 
+                  color: '#1e293b',
+                  lineHeight: '1.4',
+                  fontSize: '11px',
+                  margin: '0'
+                }}>
+                  I am writing to apply for the Software Developer position at Dublin Tech Hub. My expertise in React, Node.js, and cloud technologies...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'corporate-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              display: 'flex',
+              fontFamily: 'Arial, sans-serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: '45%',
+                background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                color: 'white',
+                padding: '25px 20px'
+              }}>
+                <h3 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 8px 0',
+                  color: 'white'
+                }}>
+                  John O'Sullivan
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  margin: '0 0 25px 0',
+                  opacity: 0.9
+                }}>
+                  Financial Analyst
+                </p>
+                <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+                  <p style={{ margin: '0 0 10px 0' }}>📧 john@email.com</p>
+                  <p style={{ margin: '0 0 10px 0' }}>📱 +353 1 234 5678</p>
+                  <p style={{ margin: '0' }}>📍 Dublin 2, Ireland</p>
+                </div>
+              </div>
+              <div style={{
+                flex: 1,
+                padding: '25px 20px',
+                backgroundColor: 'white',
+                fontSize: '12px',
+                lineHeight: '1.5'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#666',
+                  margin: '0 0 20px 0',
+                  fontSize: '11px'
+                }}>
+                  18 June 2025
+                </p>
+                <div style={{ marginBottom: '15px', fontSize: '11px' }}>
+                  <p style={{ margin: '0 0 3px 0', fontWeight: 'bold' }}>Ms. Claire Walsh</p>
+                  <p style={{ margin: '0 0 3px 0' }}>HR Director</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Finance Corp Ireland</p>
+                </div>
+                <p style={{ margin: '0 0 12px 0', fontSize: '12px' }}>Dear Ms. Walsh,</p>
+                <p style={{ 
+                  color: '#333',
+                  lineHeight: '1.4',
+                  fontSize: '11px',
+                  margin: '0'
+                }}>
+                  I am writing to apply for the Financial Analyst position at Finance Corp Ireland. My strong analytical skills and experience...
+                </p>
+              </div>
+            </div>
+          )
+
+        case 'creative-cork':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              padding: '2px',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                backgroundColor: 'white',
+                height: '100%',
+                padding: '30px 25px',
+                fontFamily: 'Georgia, serif'
+              }}>
+                <div style={{ marginBottom: '25px' }}>
+                  <h3 style={{ 
+                    fontSize: '26px', 
+                    fontWeight: 'bold', 
+                    margin: '0 0 8px 0',
+                    color: '#667eea'
+                  }}>
+                    Jane O'Sullivan
+                  </h3>
+                  <p style={{ 
+                    fontSize: '16px', 
+                    color: '#764ba2',
+                    margin: '0 0 15px 0'
+                  }}>
+                    Graphic Designer
+                  </p>
+                  <p style={{ 
+                    fontSize: '12px', 
+                    color: '#666',
+                    margin: '0'
+                  }}>
+                    jane@email.com | +353 1 234 5678 | Cork, Ireland
+                  </p>
+                </div>
+                <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
+                  <p style={{ 
+                    textAlign: 'right', 
+                    color: '#666',
+                    margin: '0 0 20px 0',
+                    fontSize: '11px'
+                  }}>
+                    18 June 2025
+                  </p>
+                  <div style={{ marginBottom: '15px', fontSize: '11px' }}>
+                    <p style={{ margin: '0 0 3px 0', fontWeight: 'bold' }}>Mr. David Walsh</p>
+                    <p style={{ margin: '0 0 3px 0' }}>Creative Director</p>
+                    <p style={{ margin: '0 0 3px 0' }}>Cork Design Studio</p>
+                  </div>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '12px' }}>Dear Mr. Walsh,</p>
+                  <p style={{ 
+                    color: '#4a5568',
+                    lineHeight: '1.4',
+                    fontSize: '11px',
+                    margin: '0'
+                  }}>
+                    I am thrilled to apply for the Graphic Designer position at Cork Design Studio. My creative background in visual design and branding...
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+
+        case 'executive-dublin':
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              fontFamily: 'Garamond, serif',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                backgroundColor: '#2c3e50',
+                color: 'white',
+                padding: '35px 30px',
+                textAlign: 'center'
+              }}>
+                <h3 style={{ 
+                  fontSize: '30px', 
+                  fontWeight: 'bold', 
+                  margin: '0 0 10px 0',
+                  color: 'white'
+                }}>
+                  Michael O'Sullivan
+                </h3>
+                <p style={{ 
+                  fontSize: '16px', 
+                  margin: '0',
+                  opacity: 0.9
+                }}>
+                  Chief Executive Officer
+                </p>
+              </div>
+              <div style={{
+                padding: '30px 25px',
+                fontSize: '12px',
+                lineHeight: '1.6'
+              }}>
+                <p style={{ 
+                  textAlign: 'right', 
+                  color: '#666',
+                  margin: '0 0 25px 0',
+                  fontSize: '11px'
+                }}>
+                  18 June 2025
+                </p>
+                <div style={{ marginBottom: '18px', fontSize: '11px' }}>
+                  <p style={{ margin: '0 0 3px 0', fontWeight: 'bold' }}>Mr. Patrick Kelly</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Chairman of the Board</p>
+                  <p style={{ margin: '0 0 3px 0' }}>Enterprise Ireland Ltd</p>
+                </div>
+                <p style={{ margin: '0 0 15px 0', fontSize: '12px', fontWeight: 600 }}>Dear Mr. Kelly,</p>
+                <p style={{ 
+                  color: '#2c3e50',
+                  lineHeight: '1.6',
+                  fontSize: '11px',
+                  margin: '0'
+                }}>
+                  I am writing to express my interest in the Chief Executive Officer position at Enterprise Ireland Ltd. With over 15 years of executive leadership experience...
+                </p>
+              </div>
+            </div>
+          )
+
+        default:
+          return (
+            <div style={{ 
+              width: '100%', 
+              height: '500px', 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              fontSize: '14px',
+              color: '#666'
+            }}>
+              Template Preview
+            </div>
+          )
+      }
+    }
+
+    return createStaticPreview()
   }
 
   return (
@@ -306,71 +709,202 @@ export function TemplateSelector({
             </Button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            className="template-grid-zety"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+              gap: '30px',
+              maxWidth: '1400px',
+              margin: '0 auto',
+              padding: '0 20px'
+            }}
+          >
             {templates.map((template) => (
-              <Card
+              <div
                 key={template.id}
-                className={`cursor-pointer transition-all duration-200 hover:shadow-lg group ${
-                  selectedTemplate === template.id
-                    ? 'ring-2 ring-blue-500 shadow-lg'
-                    : 'hover:scale-[1.02]'
-                }`}
-                onClick={() => onTemplateSelect(template.id)}
+                className="template-card-zety group"
+                style={{
+                  position: 'relative',
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  border: selectedTemplate === template.id ? '3px solid #3b82f6' : '1px solid #e5e7eb'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+                  const overlay = e.currentTarget.querySelector('.template-hover-overlay');
+                  if (overlay) {
+                    overlay.style.opacity = '1';
+                    const button = overlay.querySelector('button');
+                    if (button) button.style.transform = 'translateY(0)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                  const overlay = e.currentTarget.querySelector('.template-hover-overlay');
+                  if (overlay) {
+                    overlay.style.opacity = '0';
+                    const button = overlay.querySelector('button');
+                    if (button) button.style.transform = 'translateY(10px)';
+                  }
+                }}
               >
-                <div className="p-4">
-                  {/* Template Header */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600">
-                        {template.name}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant={template.recommended ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {template.category}
-                        </Badge>
-                        {template.recommended && (
-                          <Badge variant="outline" className="text-xs">
-                            ⭐ Recommended
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+                {/* Template Header */}
+                <div style={{ padding: '20px 20px 15px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <h4 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: '600', 
+                      color: '#1f2937',
+                      margin: '0'
+                    }}>
+                      {template.name}
+                    </h4>
                     {selectedTemplate === template.id && (
-                      <div className="text-blue-500">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <div style={{ color: '#3b82f6' }}>
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       </div>
                     )}
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '4px 10px',
+                      backgroundColor: template.recommended ? '#3b82f6' : '#6b7280',
+                      color: 'white',
+                      borderRadius: '20px',
+                      fontSize: '11px',
+                      fontWeight: '500',
+                      textTransform: 'uppercase'
+                    }}>
+                      {template.category}
+                    </span>
+                    {template.recommended && (
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 8px',
+                        backgroundColor: '#fbbf24',
+                        color: '#92400e',
+                        borderRadius: '15px',
+                        fontSize: '10px',
+                        fontWeight: '600'
+                      }}>
+                        ⭐ Recommended
+                      </span>
+                    )}
+                  </div>
+                </div>
 
+                {/* Template Preview with Hover Overlay */}
+                <div style={{ 
+                  position: 'relative',
+                  height: '500px',
+                  backgroundColor: '#f8f9fa',
+                  overflow: 'hidden'
+                }}>
                   {/* Template Preview */}
-                  <div className="bg-gray-50 rounded border overflow-hidden" style={{ height: '450px' }}>
+                  <div style={{ height: '100%' }}>
                     {generatePreview(template)}
                   </div>
-
-                  {/* Template Features */}
-                  {template.features && template.features.length > 0 && (
-                    <div className="mt-3">
-                      <div className="flex flex-wrap gap-1">
-                        {template.features.slice(0, 3).map((feature, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                        {template.features.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{template.features.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  
+                  {/* Hover Overlay */}
+                  <div 
+                    className="template-hover-overlay"
+                    style={{
+                      position: 'absolute',
+                      top: '0',
+                      left: '0',
+                      right: '0',
+                      bottom: '0',
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: '0',
+                      transition: 'opacity 0.3s ease',
+                      pointerEvents: 'none'
+                    }}
+                  >
+                    <button
+                      style={{
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px 24px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transform: 'translateY(10px)',
+                        transition: 'all 0.3s ease',
+                        pointerEvents: 'auto'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTemplateSelect(template.id);
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#2563eb';
+                        e.target.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#3b82f6';
+                        e.target.style.transform = 'scale(1)';
+                      }}
+                    >
+                      Use This Template
+                    </button>
+                  </div>
                 </div>
-              </Card>
+
+                {/* Template Features */}
+                {template.features && template.features.length > 0 && (
+                  <div style={{ padding: '15px 20px 20px 20px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {template.features.slice(0, 3).map((feature, index) => (
+                        <span
+                          key={index}
+                          style={{
+                            display: 'inline-block',
+                            padding: '3px 8px',
+                            backgroundColor: '#f3f4f6',
+                            color: '#374151',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                      {template.features.length > 3 && (
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '3px 8px',
+                          backgroundColor: '#f3f4f6',
+                          color: '#6b7280',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: '500'
+                        }}>
+                          +{template.features.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              </div>
             ))}
           </div>
         )}

@@ -6,6 +6,7 @@ import { Star, Zap, Shield, Heart, CheckCircle, ArrowRight, Users, Award, Clock,
 import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { SidebarAds } from "@/components/ads/sidebar-ads"
+import { BannerAds } from "@/components/ads/banner-ads"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -341,6 +342,13 @@ export default function HomePage() {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Bottom Banner Ad */}
+      <section className="bg-white py-6 border-t">
+        <div className="container mx-auto px-4">
+          <BannerAds size="large" />
         </div>
       </section>
 
