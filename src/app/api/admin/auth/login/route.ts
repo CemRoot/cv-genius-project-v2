@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as jose from 'jose'
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
+import speakeasy from 'speakeasy'
 import Admin2FAState from '@/lib/admin-2fa-state'
 
 // JWT secret
@@ -84,21 +85,41 @@ export async function POST(request: NextRequest) {
     }
     
     if (twoFactorToken && is2FAEnabled) {
-      // Verify 2FA token
+      // Verify 2FA token directly (avoid internal fetch issues)
       try {
-        const twoFAResponse = await fetch(`${request.nextUrl.origin}/api/admin/auth/2fa/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: twoFactorToken })
-        })
+        const secret = Admin2FAState.getSecret()
         
-        if (!twoFAResponse.ok) {
+        console.log('🔐 Debug - 2FA Secret available:', !!secret)
+        console.log('🔐 Debug - 2FA Token received:', twoFactorToken)
+        console.log('🔐 Debug - Token length:', twoFactorToken?.length)
+        
+        if (!secret) {
+          return NextResponse.json(
+            { error: '2FA not set up properly' },
+            { status: 401 }
+          )
+        }
+
+        const verified = speakeasy.totp.verify({
+          secret: secret,
+          encoding: 'base32',
+          token: twoFactorToken,
+          window: 2 // Allow 2 time steps before/after for clock drift
+        })
+
+        console.log('🔐 Debug - 2FA Verification result:', verified)
+
+        if (!verified) {
+          console.log('❌ Invalid 2FA token during login:', twoFactorToken)
           return NextResponse.json(
             { error: 'Invalid 2FA token' },
             { status: 401 }
           )
         }
+
+        console.log('✅ 2FA token verified successfully during login')
       } catch (error) {
+        console.error('2FA verification error:', error)
         return NextResponse.json(
           { error: 'Invalid 2FA token' },
           { status: 401 }
