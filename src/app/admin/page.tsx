@@ -182,7 +182,7 @@ Focus on information relevant for Irish job applications.`,
   // Enhanced authentication with smart 2FA flow
   const handleLogin = async () => {
     try {
-      console.log('Attempting login with password:', password.substring(0, 5) + '...')
+      // Debug logs removed for security
       
       const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
@@ -195,17 +195,12 @@ Focus on information relevant for Irish job applications.`,
         })
       })
 
-      console.log('Login response status:', response.status)
       const result = await response.json()
-      console.log('Login result:', result)
 
       if (response.ok && result.success) {
         ClientAdminAuth.setToken(result.token)
         setIsAuthenticated(true)
         setIs2FAEnabled(result.twoFactorEnabled)
-        
-        // Log CSRF token for debugging
-        console.log('CSRF token available:', ClientAdminAuth.getCsrfToken())
         
         loadSettings()
         
@@ -217,8 +212,6 @@ Focus on information relevant for Irish job applications.`,
             setActiveTab('security')
           }, 1000)
         }
-        
-        console.log('Login successful!')
       } else if (result.require2FA) {
         setRequire2FA(true)
       } else {
@@ -298,10 +291,6 @@ Focus on information relevant for Irish job applications.`,
   // 2FA Setup
   const setup2FA = async () => {
     try {
-      console.log('🔧 Starting 2FA setup...')
-      console.log('Token available:', !!ClientAdminAuth.getToken())
-      console.log('CSRF token available:', !!ClientAdminAuth.getCsrfToken())
-      
       const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/auth/2fa/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
