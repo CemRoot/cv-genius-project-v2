@@ -72,6 +72,29 @@ export default function TermsPage() {
           </section>
 
           <section>
+            <h2 className="text-2xl font-semibold mb-4">4a. Advertising and Third-Party Services</h2>
+            <p>
+              To provide CVGenius free of charge, we display advertisements through trusted partners:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>PropellerAds:</strong> Contextual advertising network</li>
+              <li><strong>Google AdSense:</strong> Personalized advertising service</li>
+              <li><strong>Media.net:</strong> Microsoft/Yahoo advertising network</li>
+              <li><strong>Amazon Associates:</strong> Affiliate marketing program</li>
+            </ul>
+            <p>
+              By using CVGenius, you acknowledge that:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Third-party advertising partners may use cookies and tracking technologies</li>
+              <li>Advertisements are served based on content context and user behavior</li>
+              <li>You can opt-out of personalized advertising through partner settings</li>
+              <li>Ad blocking software may be used but could affect site functionality</li>
+              <li>We are not responsible for the content or practices of advertiser websites</li>
+            </ul>
+          </section>
+
+          <section>
             <h2 className="text-2xl font-semibold mb-4">5. AI Services</h2>
             <p>
               Our AI features are provided through Google's Gemini API. When you use AI features:
