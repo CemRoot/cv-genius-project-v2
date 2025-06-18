@@ -568,7 +568,7 @@ Focus on information relevant for Irish job applications.`,
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                  onKeyPress={(e) => e.key === 'Enter' && (!require2FA || twoFactorToken.length === 6) && handleLogin()}
                   className="pr-10"
                 />
                 <button
@@ -580,9 +580,32 @@ Focus on information relevant for Irish job applications.`,
                 </button>
               </div>
             </div>
+
+            {require2FA && (
+              <div>
+                <Label htmlFor="twoFactorToken">2FA Code</Label>
+                <Input
+                  id="twoFactorToken"
+                  type="text"
+                  value={twoFactorToken}
+                  onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onKeyPress={(e) => e.key === 'Enter' && twoFactorToken.length === 6 && handleLogin()}
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                  className="text-center font-mono text-lg"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  Enter the 6-digit code from your authenticator app
+                </p>
+              </div>
+            )}
             
-            <Button onClick={handleLogin} className="w-full">
-              Login
+            <Button 
+              onClick={handleLogin} 
+              className="w-full"
+              disabled={require2FA && twoFactorToken.length !== 6}
+            >
+              {require2FA ? 'Verify 2FA Code' : 'Login'}
             </Button>
           </div>
         </Card>
