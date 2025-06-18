@@ -915,18 +915,6 @@ Focus on information relevant for Irish job applications.`,
                                 )}
                               </td>
                               <td className="py-3">
-                                {/* Enhanced Debug: Show detailed conditions and data */}
-                                <div className="text-xs text-gray-500 mb-2 space-y-1">
-                                  <div>Entry IP: "{entry.ip}"</div>
-                                  <div>Current IP: "{currentIP}"</div>
-                                  <div>Active: {entry.isActive ? 'Yes' : 'No'}</div>
-                                  <div>Is Current: {currentIP === entry.ip ? 'Yes' : 'No'}</div>
-                                  <div>Is Localhost 127: {entry.ip.includes('127.0.0.1') ? 'Yes' : 'No'}</div>
-                                  <div>Is Localhost IPv6: {entry.ip === '::1' ? 'Yes' : 'No'}</div>
-                                  <div>Show Remove: {(!entry.ip.includes('127.0.0.1') && entry.ip !== '::1' && currentIP !== entry.ip) ? 'YES' : 'NO'}</div>
-                                </div>
-                                
-                                {/* Show remove button for non-localhost, non-current IPs */}
                                 {!entry.ip.includes('127.0.0.1') && entry.ip !== '::1' && currentIP !== entry.ip ? (
                                   <Button
                                     variant="destructive"
@@ -934,19 +922,14 @@ Focus on information relevant for Irish job applications.`,
                                     onClick={() => removeIP(entry.ip)}
                                     disabled={!entry.isActive}
                                   >
-                                    Remove IP
+                                    Remove
                                   </Button>
                                 ) : (
-                                  <div className="space-y-1">
-                                    <span className="text-sm text-gray-400 block">
-                                      {currentIP === entry.ip ? 'Current IP' : 
-                                       (entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Localhost' : 
-                                       'Protected'}
-                                    </span>
-                                    <div className="text-xs text-red-500">
-                                      Cannot remove: {currentIP === entry.ip ? 'Your IP' : 'System IP'}
-                                    </div>
-                                  </div>
+                                  <span className="text-sm text-gray-400">
+                                    {currentIP === entry.ip ? 'Current IP' : 
+                                     (entry.ip.includes('127.0.0.1') || entry.ip === '::1') ? 'Localhost' : 
+                                     'Protected'}
+                                  </span>
                                 )}
                               </td>
                             </tr>
