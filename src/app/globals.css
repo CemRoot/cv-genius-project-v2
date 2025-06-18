@@ -1,0 +1,892 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Professional font class utilities for CV/Resume */
+.font-source-serif-4 { font-family: 'Source Serif 4', serif; }
+.font-merriweather { font-family: 'Merriweather', serif; }
+.font-playfair-display { font-family: 'Playfair Display', serif; }
+.font-inter { font-family: 'Inter', sans-serif; }
+.font-roboto { font-family: 'Roboto', sans-serif; }
+.font-open-sans { font-family: 'Open Sans', sans-serif; }
+.font-lato { font-family: 'Lato', sans-serif; }
+.font-montserrat { font-family: 'Montserrat', sans-serif; }
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* CVGenius specific styles */
+.cvgenius-gradient {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+.cvgenius-text-gradient {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Print styles for CV export */
+@media print {
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+  
+  body {
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break-before {
+    page-break-before: always;
+  }
+  
+  .print-break-after {
+    page-break-after: always;
+  }
+  
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+}
+
+/* Cover Letter Templates Global Styles */
+
+/* Base Template Styles */
+.cover-letter-wrapper {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 8.5in;
+  min-height: 11in;
+}
+
+.cover-letter-wrapper * {
+  box-sizing: border-box;
+}
+
+/* Layout Styles */
+.cover-letter-wrapper.two-column-left {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+}
+
+.cover-letter-wrapper.two-column-left .sidebar {
+  display: table-cell;
+  width: 200px;
+  vertical-align: top;
+  padding: 30px 20px;
+}
+
+.cover-letter-wrapper.two-column-left .main-content {
+  display: table-cell;
+  vertical-align: top;
+  padding: 30px;
+}
+
+.cover-letter-wrapper.single-column {
+  padding: 40px;
+}
+
+.cover-letter-wrapper.creative-border {
+  position: relative;
+  padding: 40px;
+}
+
+.cover-letter-wrapper.executive-header .header-section {
+  margin: -40px -40px 40px -40px;
+  padding: 40px;
+}
+
+/* Typography */
+.cover-letter-wrapper .name {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.cover-letter-wrapper .title {
+  font-size: 16px;
+  margin: 0 0 20px 0;
+  opacity: 0.9;
+}
+
+.cover-letter-wrapper .contact {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.cover-letter-wrapper .contact p {
+  margin: 4px 0;
+}
+
+.cover-letter-wrapper .date {
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: right;
+}
+
+.cover-letter-wrapper .recipient {
+  margin-bottom: 20px;
+}
+
+.cover-letter-wrapper .recipient p {
+  margin: 2px 0;
+  font-size: 14px;
+}
+
+.cover-letter-wrapper .salutation {
+  font-size: 16px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.cover-letter-wrapper .opening,
+.cover-letter-wrapper .body-paragraph,
+.cover-letter-wrapper .closing {
+  font-size: 15px;
+  margin-bottom: 16px;
+  text-align: justify;
+  line-height: 1.7;
+}
+
+.cover-letter-wrapper .signature {
+  font-size: 16px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.cover-letter-wrapper .postscript {
+  font-size: 14px;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* Template-specific Cascade Styles */
+.template-cascade {
+  font-family: 'Century Gothic', sans-serif;
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.template-cascade .sidebar {
+  background: var(--primary-color, #102a73);
+  color: white;
+  width: 154px;
+  padding: 15px;
+}
+
+.template-cascade .main-content {
+  padding: 15px;
+  letter-spacing: 0.2px;
+}
+
+.template-cascade .name {
+  font-size: 27px;
+  line-height: 33px;
+  font-weight: bold;
+}
+
+/* Template-specific Crisp Styles */
+.template-crisp {
+  font-family: 'Century Gothic', sans-serif;
+  padding: 24px 40px;
+}
+
+.template-crisp .header {
+  border-bottom: 1px solid var(--secondary-color, #d5d6d6);
+  padding-bottom: 2px;
+  margin-bottom: 10px;
+}
+
+.template-crisp .name {
+  font-size: 35px;
+  line-height: 38px;
+  color: var(--primary-color, #102a73);
+}
+
+/* Template-specific Cascade Styles */
+.template-cascade {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  min-height: 792px;
+  font-family: 'Century Gothic', sans-serif;
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.template-cascade .sidebar {
+  display: table-cell;
+  width: 154px;
+  background: var(--primary-color, #102a73);
+  color: white;
+  padding: 15px;
+  vertical-align: top;
+}
+
+.template-cascade .main-content {
+  display: table-cell;
+  padding: 15px;
+  letter-spacing: 0.2px;
+  vertical-align: top;
+}
+
+.template-cascade .name {
+  font-size: 27px;
+  line-height: 33px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Template-specific Enfold Styles */
+.template-enfold {
+  max-width: 850px;
+  margin: 0 auto;
+  background: #f8f9fa;
+  padding: 40px;
+  min-height: 1000px;
+}
+
+.template-enfold .card-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 50px;
+  border-top: 6px solid var(--primary-color, #102a73);
+}
+
+.template-enfold .header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.template-enfold .name {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary-color, #102a73);
+  margin-bottom: 10px;
+}
+
+/* Card-based Layout */
+.cover-letter-wrapper.card-based {
+  background: #f8f9fa;
+  padding: 40px;
+}
+
+.cover-letter-wrapper.card-based .card-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 50px;
+}
+
+/* Template-specific Concept Styles */
+.template-concept {
+  border-left: 120px solid var(--primary-color, #102a73);
+  padding: 25px 12px;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.template-concept .name {
+  font-size: 35px;
+  line-height: 45px;
+  color: var(--primary-color, #102a73);
+}
+
+.template-concept .contact-section {
+  display: table;
+  width: 40%;
+}
+
+.template-concept .icon-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.template-concept .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+/* Template-specific Gradient Flow Styles */
+.template-gradient-flow {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 40px;
+}
+
+.template-gradient-flow .header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.template-gradient-flow .content {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+/* Cover Letter Responsive Design */
+@media (max-width: 768px) {
+  .cover-letter-wrapper {
+    padding: 20px !important;
+    font-size: 14px !important;
+  }
+  
+  .cover-letter-wrapper.two-column-left {
+    display: block !important;
+  }
+  
+  .cover-letter-wrapper.two-column-left .sidebar {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+  
+  .cover-letter-wrapper.two-column-left .main-content {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .cover-letter-wrapper .name {
+    font-size: 24px !important;
+  }
+  
+  .template-concept {
+    border-left-width: 20px !important;
+    padding: 20px 15px !important;
+  }
+  
+  .template-concept .name {
+    font-size: 28px !important;
+  }
+  
+  .template-cascade .name {
+    font-size: 22px !important;
+  }
+  
+  .template-crisp .name {
+    font-size: 28px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .cover-letter-wrapper {
+    padding: 15px !important;
+    font-size: 13px !important;
+  }
+  
+  .cover-letter-wrapper .name {
+    font-size: 20px !important;
+  }
+  
+  .cover-letter-wrapper .opening,
+  .cover-letter-wrapper .body-paragraph,
+  .cover-letter-wrapper .closing {
+    font-size: 14px !important;
+  }
+}
+
+/* Cover Letter Print Styles */
+@media print {
+  .cover-letter-wrapper {
+    margin: 0 !important;
+    padding: 0.5in !important;
+    font-size: 12pt !important;
+    line-height: 1.4 !important;
+    color: #000 !important;
+    background: #fff !important;
+    width: 8.5in !important;
+    height: 11in !important;
+    page-break-inside: avoid;
+  }
+  
+  .cover-letter-wrapper * {
+    color: inherit !important;
+    background: transparent !important;
+  }
+  
+  .cover-letter-wrapper .name {
+    font-size: 18pt !important;
+  }
+  
+  .cover-letter-wrapper .opening,
+  .cover-letter-wrapper .body-paragraph,
+  .cover-letter-wrapper .closing {
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    text-align: justify !important;
+  }
+  
+  .template-cascade .sidebar {
+    background: #f0f0f0 !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .template-concept {
+    border-left: 10px solid #000 !important;
+  }
+  
+  .template-gradient-flow {
+    background: #fff !important;
+  }
+  
+  .template-gradient-flow .content {
+    background: #fff !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* Template Preview Specific Styles */
+.template-preview {
+  pointer-events: none;
+  overflow: hidden;
+  background: #fff;
+  position: relative;
+}
+
+.template-preview .cover-letter-wrapper {
+  padding: 20px !important;
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+  min-height: 300px !important;
+  max-height: 400px !important;
+}
+
+.template-preview .name {
+  font-size: 12px !important;
+  margin-bottom: 4px !important;
+}
+
+.template-preview .title {
+  font-size: 8px !important;
+  margin-bottom: 6px !important;
+}
+
+.template-preview .contact {
+  font-size: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+.template-preview .contact p {
+  margin: 2px 0 !important;
+}
+
+.template-preview .date {
+  font-size: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+.template-preview .recipient {
+  font-size: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+.template-preview .recipient p {
+  margin: 1px 0 !important;
+}
+
+.template-preview .salutation {
+  font-size: 7px !important;
+  margin-bottom: 6px !important;
+}
+
+.template-preview .opening,
+.template-preview .body-paragraph,
+.template-preview .closing {
+  font-size: 6px !important;
+  margin-bottom: 4px !important;
+  line-height: 1.3 !important;
+}
+
+.template-preview .signature {
+  font-size: 7px !important;
+  margin-top: 8px !important;
+}
+
+/* Template-specific preview adjustments */
+.template-preview .cover-letter-wrapper.corporate-sidebar {
+  display: grid !important;
+  grid-template-columns: 80px 1fr !important;
+}
+
+.template-preview .cover-letter-wrapper.corporate-sidebar .sidebar {
+  padding: 15px 10px !important;
+}
+
+.template-preview .cover-letter-wrapper.corporate-sidebar .main-content {
+  padding: 15px !important;
+}
+
+.template-preview .cover-letter-wrapper.tech-modern .header {
+  padding: 15px !important;
+}
+
+.template-preview .cover-letter-wrapper.tech-modern .content {
+  padding: 15px !important;
+  margin: 8px !important;
+}
+
+.template-preview .cover-letter-wrapper.executive-header .header {
+  padding: 20px !important;
+  margin: -20px -20px 20px -20px !important;
+}
+
+.template-preview .cover-letter-wrapper.startup-modern .header {
+  padding: 15px !important;
+  margin: -20px -20px 15px -20px !important;
+}
+
+/* Dublin Template Layouts */
+
+/* Irish Standard Layout */
+.cover-letter-wrapper.irish-standard {
+  font-family: "Times New Roman", serif;
+  line-height: 1.6;
+  padding: 60px;
+  background: white;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 1000px;
+}
+
+/* Centered Modern Layout */
+.cover-letter-wrapper.centered-modern {
+  font-family: "Arial", sans-serif;
+  padding: 50px;
+  background: white;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.cover-letter-wrapper.centered-modern .header {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 3px solid #0066cc;
+  padding-bottom: 20px;
+}
+
+/* Corporate Sidebar Layout */
+.cover-letter-wrapper.corporate-sidebar {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  min-height: 1000px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.cover-letter-wrapper.corporate-sidebar .sidebar {
+  background: #1e3a8a;
+  color: white;
+  padding: 40px 30px;
+}
+
+.cover-letter-wrapper.corporate-sidebar .main-content {
+  padding: 40px;
+  background: white;
+  font-family: "Calibri", sans-serif;
+}
+
+/* Tech Modern Layout */
+.cover-letter-wrapper.tech-modern {
+  font-family: "Inter", sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.tech-modern .header {
+  background: #0f172a;
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.cover-letter-wrapper.tech-modern .content {
+  background: white;
+  padding: 40px;
+  margin: 20px;
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+/* Creative Gradient Layout */
+.cover-letter-wrapper.creative-gradient {
+  max-width: 800px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2px;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.creative-gradient .inner-container {
+  background: white;
+  padding: 50px;
+  height: 100%;
+  font-family: "Georgia", serif;
+}
+
+/* Executive Header Layout */
+.cover-letter-wrapper.executive-header {
+  max-width: 850px;
+  margin: 0 auto;
+  background: white;
+  min-height: 1000px;
+  font-family: "Garamond", serif;
+}
+
+.cover-letter-wrapper.executive-header .header {
+  background: #2c3e50;
+  color: white;
+  padding: 50px;
+  text-align: center;
+  margin: -50px -50px 50px -50px;
+}
+
+.cover-letter-wrapper.executive-header .content {
+  padding: 0 50px 50px 50px;
+  line-height: 1.8;
+  color: #2c3e50;
+}
+
+/* Banking Formal Layout */
+.cover-letter-wrapper.banking-formal {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 60px;
+  font-family: "Arial", sans-serif;
+  border: 2px solid #1a365d;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.banking-formal .header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #1a365d;
+}
+
+/* Healthcare Standard Layout */
+.cover-letter-wrapper.healthcare-standard {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 50px;
+  font-family: "Times New Roman", serif;
+  border-left: 8px solid #059669;
+  min-height: 1000px;
+}
+
+/* Academic Formal Layout */
+.cover-letter-wrapper.academic-formal {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 60px;
+  font-family: "Times New Roman", serif;
+  line-height: 2;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.academic-formal .header {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #6b7280;
+  padding-bottom: 20px;
+}
+
+/* Startup Modern Layout */
+.cover-letter-wrapper.startup-modern {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border: 3px solid #8b5cf6;
+  border-radius: 12px;
+  padding: 40px;
+  font-family: "Inter", sans-serif;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.startup-modern .header {
+  background: #8b5cf6;
+  color: white;
+  padding: 30px;
+  margin: -40px -40px 30px -40px;
+  border-radius: 9px 9px 0 0;
+}
+
+/* Legal Formal Layout */
+.cover-letter-wrapper.legal-formal {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 60px;
+  font-family: "Times New Roman", serif;
+  border: 1px solid #4b5563;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.legal-formal .header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 3px double #4b5563;
+}
+
+/* Pharma Standard Layout */
+.cover-letter-wrapper.pharma-standard {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 50px;
+  font-family: "Calibri", sans-serif;
+  border-top: 6px solid #dc2626;
+  min-height: 1000px;
+}
+
+/* Government Formal Layout */
+.cover-letter-wrapper.government-formal {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 60px;
+  font-family: "Arial", sans-serif;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.government-formal .header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #065f46;
+  border-bottom: 2px solid #065f46;
+  padding-bottom: 20px;
+}
+
+/* Consulting Modern Layout */
+.cover-letter-wrapper.consulting-modern {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 50px;
+  font-family: "Helvetica", sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.consulting-modern .header {
+  text-align: left;
+  margin-bottom: 30px;
+  color: #7c2d12;
+  border-left: 4px solid #ea580c;
+  padding-left: 20px;
+}
+
+/* Hospitality Warm Layout */
+.cover-letter-wrapper.hospitality-warm {
+  max-width: 800px;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, #fef3c7, #ffffff);
+  padding: 50px;
+  font-family: "Georgia", serif;
+  border-radius: 8px;
+  min-height: 1000px;
+}
+
+.cover-letter-wrapper.hospitality-warm .header {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #92400e;
+}
