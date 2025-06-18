@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!verified) {
-      console.log('❌ Invalid 2FA token attempted')
       return NextResponse.json(
         { error: 'Invalid 2FA token' },
         { status: 401 }
