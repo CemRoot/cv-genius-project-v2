@@ -196,8 +196,8 @@ export default function HomePage() {
             </div>
 
             {/* Sidebar Ads */}
-            <div className="lg:w-80">
-              <div className="sticky top-8">
+            <div className="lg:w-80 w-full flex justify-center lg:justify-start">
+              <div className="sticky top-8 w-full max-w-xs mx-auto lg:mx-0">
                 <AdController type="sidebar" />
               </div>
             </div>
