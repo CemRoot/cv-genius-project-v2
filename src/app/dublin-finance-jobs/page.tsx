@@ -1,3 +1,5 @@
+'use client'
+
 import type { Metadata } from 'next'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -7,7 +9,7 @@ import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { MainLayout } from "@/components/layout/main-layout"
 import GentleMonetization from "@/components/ads/gentle-monetization"
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "Dublin Finance Jobs 2025 | Banking & Financial Services CV Templates Ireland",
   description: "Discover Dublin's finance job opportunities 2025! Complete guide to banking, fintech, investment roles. Professional CV templates for Dublin financial services careers.",
   keywords: [
