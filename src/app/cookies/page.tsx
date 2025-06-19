@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { MainLayout } from "@/components/layout/main-layout"
 
 export default function CookiesPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-12">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Cookie Policy</h1>
         <p className="text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString('en-IE')}</p>
@@ -207,5 +209,6 @@ export default function CookiesPage() {
         </div>
       </div>
     </div>
+    </MainLayout>
   )
 }
