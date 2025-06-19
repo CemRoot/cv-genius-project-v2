@@ -10,6 +10,8 @@ const footerLinks = {
     { label: "Templates", href: "/templates" },
   ],
   resources: [
+    { label: "Dublin Jobs Guide", href: "/dublin-jobs" },
+    { label: "Dublin Tech Jobs", href: "/dublin-tech-jobs" },
     { label: "Examples", href: "/examples" },
     { label: "FAQ", href: "/faq" },
     { label: "Tips & Guides", href: "/guides" },
