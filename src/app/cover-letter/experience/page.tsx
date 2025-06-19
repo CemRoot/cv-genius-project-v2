@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { MainLayout } from '@/components/layout/main-layout'
 
 type ExperienceLevel = 'no-experience' | 'less-than-3' | '3-5-years' | '5-10-years' | '10-plus-years'
 type StudentStatus = 'yes' | 'no' | 'recent-graduate'
@@ -280,7 +281,8 @@ export default function ExperiencePage() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <MainLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
@@ -309,6 +311,7 @@ export default function ExperiencePage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </MainLayout>
   )
 }

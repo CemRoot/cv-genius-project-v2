@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Info, Upload } from 'lucide-react'
+import { MainLayout } from '@/components/layout/main-layout'
 
 const signatureFonts = [
   { name: 'Mrs Saint Delafield', value: 'Mrs Saint Delafield' },
@@ -147,7 +148,8 @@ export default function SignaturePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <MainLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
@@ -381,6 +383,7 @@ export default function SignaturePage() {
           </div>
         </Card>
       </div>
-    </div>
+      </div>
+    </MainLayout>
   )
 }
