@@ -8,7 +8,11 @@ import { SettingsModalSimple } from "@/components/settings/settings-modal-simple
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
 import { useRouter } from "next/navigation"
 
-export function CVToolbar() {
+interface CVToolbarProps {
+  isMobile?: boolean
+}
+
+export function CVToolbar({ isMobile = false }: CVToolbarProps) {
   const { currentCV, undo, redo, canUndo, canRedo, deleteCurrentCV } = useCVStore()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -49,26 +53,58 @@ export function CVToolbar() {
 
   return (
     <>
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="sm" onClick={handleUndo} disabled={!canUndo}>
-          <Undo2 className="h-4 w-4" />
-        </Button>
+      <div className={`${isMobile ? 'space-y-4' : 'flex items-center gap-1'}`}>
+        {isMobile && (
+          <h3 className="text-lg font-semibold text-gray-900">Design Controls</h3>
+        )}
         
-        <Button variant="ghost" size="sm" onClick={handleRedo} disabled={!canRedo}>
-          <Redo2 className="h-4 w-4" />
-        </Button>
-        
-        <div className="w-px h-4 bg-border mx-1" />
-        
-        <Button variant="ghost" size="sm" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4" />
-        </Button>
-        
-        <div className="w-px h-4 bg-border mx-1" />
-        
-        <Button variant="ghost" size="sm" onClick={handleSettings}>
-          <Settings className="h-4 w-4" />
-        </Button>
+        <div className={`${isMobile ? 'grid grid-cols-2 gap-2' : 'flex items-center gap-1'}`}>
+          <Button 
+            variant={isMobile ? "outline" : "ghost"} 
+            size={isMobile ? "default" : "sm"} 
+            onClick={handleUndo} 
+            disabled={!canUndo}
+            className={isMobile ? "flex items-center justify-center gap-2 touch-manipulation" : ""}
+          >
+            <Undo2 className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+            {isMobile && "Undo"}
+          </Button>
+          
+          <Button 
+            variant={isMobile ? "outline" : "ghost"} 
+            size={isMobile ? "default" : "sm"} 
+            onClick={handleRedo} 
+            disabled={!canRedo}
+            className={isMobile ? "flex items-center justify-center gap-2 touch-manipulation" : ""}
+          >
+            <Redo2 className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+            {isMobile && "Redo"}
+          </Button>
+          
+          {!isMobile && <div className="w-px h-4 bg-border mx-1" />}
+          
+          <Button 
+            variant={isMobile ? "outline" : "ghost"} 
+            size={isMobile ? "default" : "sm"} 
+            onClick={handleDelete}
+            className={isMobile ? "flex items-center justify-center gap-2 touch-manipulation text-red-600 border-red-200 hover:bg-red-50" : ""}
+          >
+            <Trash2 className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+            {isMobile && "Delete CV"}
+          </Button>
+          
+          {!isMobile && <div className="w-px h-4 bg-border mx-1" />}
+          
+          <Button 
+            variant={isMobile ? "cvgenius" : "ghost"} 
+            size={isMobile ? "default" : "sm"} 
+            onClick={handleSettings}
+            className={isMobile ? "flex items-center justify-center gap-2 touch-manipulation" : ""}
+          >
+            <Settings className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+            {isMobile && "Settings"}
+          </Button>
+        </div>
       </div>
 
       <SettingsModalSimple 
