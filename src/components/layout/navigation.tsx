@@ -72,8 +72,8 @@ export function Navigation() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mobile-safe-top">
-      <div className="container mx-auto mobile-container">
+    <nav className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4">
         <div className="flex h-16 lg:h-20 items-center justify-between">
           <Logo />
           
@@ -151,7 +151,7 @@ export function Navigation() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="lg:hidden absolute left-0 right-0 top-full bg-background/98 backdrop-blur-md border-t shadow-lg"
+                className="lg:hidden absolute left-0 right-0 top-full bg-background border-t shadow-xl z-40"
                 onTouchStart={handleTouchStart}
                 style={{ height: 'calc(var(--mobile-vh) - 64px)' }}
               >
