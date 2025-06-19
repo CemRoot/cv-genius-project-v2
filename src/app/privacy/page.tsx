@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { MainLayout } from "@/components/layout/main-layout"
 
 export default function PrivacyPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-12">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
         
@@ -145,5 +147,6 @@ export default function PrivacyPage() {
         </div>
       </div>
     </div>
+    </MainLayout>
   )
 }

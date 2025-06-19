@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ChevronDown, ChevronRight, Star, Users, Shield, Zap, HelpCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { MainLayout } from "@/components/layout/main-layout"
 
 interface FAQItem {
   id: string
@@ -154,7 +155,8 @@ export default function FAQPage() {
     : faqData.filter(item => item.category === selectedCategory)
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div 
@@ -307,5 +309,6 @@ export default function FAQPage() {
         </div>
       </div>
     </div>
+    </MainLayout>
   )
 }
