@@ -5,10 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MobileInput } from "@/components/ui/mobile-input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useCVStore } from "@/store/cv-store"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, ChevronDown, ChevronUp, GraduationCap } from "lucide-react"
 import { Education } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
@@ -27,11 +28,28 @@ const educationSchema = z.object({
 
 type EducationFormData = z.infer<typeof educationSchema>
 
-export function EducationForm() {
+interface EducationFormProps {
+  isMobile?: boolean
+}
+
+export function EducationForm({ isMobile = false }: EducationFormProps) {
   const { currentCV, addEducation, updateEducation, removeEducation } = useCVStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const isMobileView = isMobile || isMobileDevice
 
   const {
     register,
@@ -252,11 +270,13 @@ export function EducationForm() {
                               <Label htmlFor={`institution-${education.id}`}>
                                 Institution <span className="text-red-500">*</span>
                               </Label>
-                              <Input
+                              <MobileInput
                                 id={`institution-${education.id}`}
                                 {...register("institution")}
                                 placeholder="Trinity College Dublin"
                                 className={errors.institution ? "border-red-500" : ""}
+                                enableAutocomplete={true}
+                                autocompleteType="university"
                               />
                               {errors.institution && (
                                 <p className="text-sm text-red-500">{errors.institution.message}</p>
@@ -267,11 +287,13 @@ export function EducationForm() {
                               <Label htmlFor={`location-${education.id}`}>
                                 Location <span className="text-red-500">*</span>
                               </Label>
-                              <Input
+                              <MobileInput
                                 id={`location-${education.id}`}
                                 {...register("location")}
                                 placeholder="Dublin, Ireland"
                                 className={errors.location ? "border-red-500" : ""}
+                                enableAutocomplete={true}
+                                autocompleteType="location"
                               />
                               {errors.location && (
                                 <p className="text-sm text-red-500">{errors.location.message}</p>
@@ -424,11 +446,13 @@ export function EducationForm() {
                 <Label htmlFor="institution">
                   Institution <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <MobileInput
                   id="institution"
                   {...register("institution")}
                   placeholder="Trinity College Dublin"
                   className={errors.institution ? "border-red-500" : ""}
+                  enableAutocomplete={true}
+                  autocompleteType="university"
                 />
                 {errors.institution && (
                   <p className="text-sm text-red-500">{errors.institution.message}</p>
@@ -439,11 +463,13 @@ export function EducationForm() {
                 <Label htmlFor="location">
                   Location <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <MobileInput
                   id="location"
                   {...register("location")}
                   placeholder="Dublin, Ireland"
                   className={errors.location ? "border-red-500" : ""}
+                  enableAutocomplete={true}
+                  autocompleteType="location"
                 />
                 {errors.location && (
                   <p className="text-sm text-red-500">{errors.location.message}</p>
