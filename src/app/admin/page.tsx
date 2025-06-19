@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Eye, EyeOff, Save, TestTube, Settings, FileText, BarChart3, Lock, Shield, LogOut, Smartphone, QrCode } from 'lucide-react'
 import { ClientAdminAuth } from '@/lib/admin-auth'
+import { useToast, createToastUtils } from '@/components/ui/toast'
 
 interface AISettings {
   temperature: number
@@ -65,6 +66,8 @@ export default function AdminPanel() {
   const [securityCheck, setSecurityCheck] = useState(false)
   
   const router = useRouter()
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -1317,6 +1320,7 @@ Focus on information relevant for Irish job applications.`,
               </div>
             </Card>
           </TabsContent>
+
         </Tabs>
       </div>
     </div>

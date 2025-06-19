@@ -1,16 +1,38 @@
+'use client'
+
 import { ATSAnalyzer } from '@/components/ats/ats-analyzer'
+import { MobileATSAnalyzer } from '@/components/ats/mobile-ats-analyzer'
+import { MainLayout } from '@/components/layout/main-layout'
+import { useMobileKeyboard } from '@/components/mobile'
+import { useState, useEffect } from 'react'
 
 export default function ATSCheckPage() {
+  const [isMobile, setIsMobile] = useState(false)
+  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <MainLayout>
+      <div 
+        className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
+        style={{ height: isMobile && isKeyboardOpen ? adjustedViewHeight : 'auto' }}
+      >
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4">
               ATS Compatibility Checker
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
               Analyze your CV for Applicant Tracking System (ATS) compatibility and get 
               optimization recommendations for the Irish job market.
             </p>
@@ -18,9 +40,14 @@ export default function ATSCheckPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <ATSAnalyzer />
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 md:py-12">
+        {isMobile ? (
+          <MobileATSAnalyzer isMobile={isMobile} />
+        ) : (
+          <ATSAnalyzer isMobile={isMobile} />
+        )}
       </div>
     </div>
+    </MainLayout>
   )
 }
