@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ChevronRight, Star, Users, MapPin, Briefcase, ExternalLink, BookOpen, CheckCircle, AlertCircle, Info } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { MainLayout } from "@/components/layout/main-layout"
 
 interface GuideItem {
   id: string
@@ -649,7 +650,8 @@ export default function CareerGuidePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <MainLayout>
+      <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -843,5 +845,6 @@ export default function CareerGuidePage() {
         </div>
       </div>
     </div>
+    </MainLayout>
   )
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Star, Eye, Download, Sparkles, Briefcase, Palette, Crown, GraduationCap, RefreshCw, Users, CheckCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { MainLayout } from "@/components/layout/main-layout"
 
 interface Template {
   id: string
@@ -97,7 +98,8 @@ const staggerChildren = {
 
 export default function TemplatesPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-12">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div 
@@ -340,5 +342,6 @@ export default function TemplatesPage() {
         </div>
       </div>
     </div>
+    </MainLayout>
   )
 }
