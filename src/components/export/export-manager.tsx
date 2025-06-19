@@ -22,6 +22,8 @@ import { pdf } from '@react-pdf/renderer'
 import { HarvardTemplate } from './pdf-templates'
 import { useRouter } from 'next/navigation'
 import { AdController } from '@/components/ads/ad-controller'
+import { useDownloadWithRedirect } from '@/components/ads/download-redirect-handler'
+import { useToast, createToastUtils } from '@/components/ui/toast'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -32,6 +34,10 @@ interface ExportProgress {
   error?: string
 }
 
+
+interface ExportManagerProps {
+  isMobile?: boolean
+}
 
 const exportFormats = [
   {
@@ -60,14 +66,17 @@ const exportFormats = [
   }
 ]
 
-export function ExportManager() {
+export function ExportManager({ isMobile = false }: ExportManagerProps) {
   const { currentCV } = useCVStore()
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
   const [selectedFormats, setSelectedFormats] = useState<ExportFormat[]>(['pdf'])
   const [exportProgress, setExportProgress] = useState<ExportProgress[]>([])
   const [showPreview, setShowPreview] = useState(false)
-  const [propPushTrigger, setPropPushTrigger] = useState(false)
   const [downloadCount, setDownloadCount] = useState(0)
+  const [showRedirectMessage, setShowRedirectMessage] = useState(false)
   const router = useRouter()
+  const { handleDownload } = useDownloadWithRedirect()
 
   const handleFormatToggle = (format: ExportFormat) => {
     setSelectedFormats(prev => 
@@ -168,25 +177,59 @@ export function ExportManager() {
   }
 
   const downloadFile = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    // Check if user has been redirected for ads
+    const hasVisitedAd = localStorage.getItem(`download_${filename}_visited`)
     
-    // 🎯 PropPush Trigger: Download başarılı olduktan sonra
-    setDownloadCount(prev => prev + 1)
-    
-    // İlk download'da PropPush'u tetikle
-    if (downloadCount === 0) {
+    if (!hasVisitedAd) {
+      // First time downloading - show redirect message and redirect to ad
+      setShowRedirectMessage(true)
+      localStorage.setItem(`download_${filename}_visited`, 'true')
+      
+      // Save the blob for later download
+      const url = URL.createObjectURL(blob)
+      localStorage.setItem(`pending_download_${filename}`, url)
+      
+      // Redirect to monetization page
       setTimeout(() => {
-        console.log('🚀 Triggering PropPush after successful download:', filename)
-        setPropPushTrigger(true)
-      }, 1500) // 1.5 saniye delay - user download'ı fark etsin
+        window.open('https://n91hg.com/4/9465036', '_blank') // Replace with your ad URL
+        setShowRedirectMessage(false)
+        
+        // Show message to user
+        alert('Please visit our sponsor page. Click the download button again after returning to complete your download.')
+      }, 1000)
+      
+      return
     }
+    
+    // Check if there's a pending download
+    const pendingUrl = localStorage.getItem(`pending_download_${filename}`)
+    if (pendingUrl) {
+      // Use the previously created blob URL
+      const a = document.createElement('a')
+      a.href = pendingUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      
+      // Clean up
+      localStorage.removeItem(`pending_download_${filename}`)
+      localStorage.removeItem(`download_${filename}_visited`)
+      URL.revokeObjectURL(pendingUrl)
+    } else {
+      // Normal download
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+    
+    // Download tamamlandı
+    setDownloadCount(prev => prev + 1)
   }
 
   const updateProgress = (format: ExportFormat, progress: number) => {
@@ -231,12 +274,15 @@ export function ExportManager() {
     
     // Validate CV data before export
     if (!currentCV.personal.fullName || !currentCV.personal.email) {
-      const shouldRedirect = confirm('Please fill in at least your name and email before exporting.\n\nWould you like to go back to the CV builder to complete your information?')
+      toast.warning('Eksik Bilgiler', 'Export işlemi için en azından ad ve email bilgilerinizi doldurun.')
+      const shouldRedirect = confirm('CV Builder\'a giderek bilgilerinizi tamamlamak ister misiniz?')
       if (shouldRedirect) {
         router.push('/builder')
       }
       return
     }
+    
+    toast.info('Export Başlatıldı', 'CV\'niz oluşturuluyor, lütfen bekleyin...')
     
     // Initialize progress tracking
     setExportProgress(
@@ -309,13 +355,13 @@ export function ExportManager() {
     setTimeout(() => {
       if (successCount > 0 && failureCount === 0) {
         // All successful
-        console.log(`Successfully exported ${successCount} file(s)`)
+        toast.success('Export Tamamlandı', `${successCount} dosya başarıyla indirildi.`)
       } else if (successCount > 0 && failureCount > 0) {
         // Partial success
-        alert(`${successCount} file(s) exported successfully, ${failureCount} failed. Check the progress above for details.`)
+        toast.warning('Kısmi Başarı', `${successCount} dosya başarılı, ${failureCount} dosya başarısız oldu.`)
       } else {
         // All failed
-        alert('All exports failed. Please check your internet connection and try again.')
+        toast.error('Export Başarısız', 'Tüm dosyalar başarısız oldu. İnternet bağlantınızı kontrol edin.')
       }
     }, 1000)
   }
@@ -342,9 +388,10 @@ export function ExportManager() {
       }
       
       setTimeout(() => setShowPreview(false), 1000)
+      toast.success('Önizleme Açıldı', 'PDF önizleme yeni sekmede açıldı.')
     } catch (error) {
       console.error('Preview error:', error)
-      alert('Preview generation failed. Please try again.')
+      toast.error('Önizleme Hatası', 'PDF önizleme oluşturulamadı. Tekrar deneyin.')
       setShowPreview(false)
     }
   }
@@ -372,6 +419,32 @@ export function ExportManager() {
 
   return (
     <div className="space-y-6">
+      {/* Redirect Message */}
+      <AnimatePresence>
+        {showRedirectMessage && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          >
+            <Card className="max-w-md mx-4">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-4xl mb-4">📢</div>
+                  <h3 className="text-lg font-semibold mb-2">Preparing Your Download</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Please visit our sponsor page to support free CV services. 
+                    Your download will be ready when you return!
+                  </p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cvgenius-purple mx-auto"></div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Info Card - Harvard Template */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="pt-6">
@@ -528,17 +601,6 @@ export function ExportManager() {
         </CardContent>
       </Card>
 
-      {/* 🎯 PropPush - Download Triggered Notification */}
-      <AdController 
-        type="propush" 
-        trigger={propPushTrigger}
-        onTrigger={() => {
-          console.log('✅ PropPush notification shown to user')
-          // Reset trigger after showing
-          setTimeout(() => setPropPushTrigger(false), 5000)
-        }}
-        delay={2000}
-      />
     </div>
   )
 }
