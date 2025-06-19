@@ -8,6 +8,7 @@ import FacebookBrowserRedirect from "@/components/ads/facebook-browser-redirect"
 import { OfflineIndicator } from "@/components/ui/offline-indicator"
 import ClientViewportScript from "@/components/client-viewport-script"
 import HydrationFix from "@/components/hydration-fix"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
@@ -175,6 +176,9 @@ export default function RootLayout({
         
         {/* Facebook Browser Redirect */}
         <FacebookBrowserRedirect />
+        
+        {/* Vercel Speed Insights */}
+        <SpeedInsights />
       </body>
     </html>
   )
