@@ -1,86 +1,80 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app.vercel.app'
+  const baseUrl = 'https://cvgenius.ie'
+  
+  // Priority Dublin jobs keywords
+  const dublinJobsPages = [
+    'dublin-cv-builder',
+    'dublin-resume-templates', 
+    'dublin-jobs-cv-guide',
+    'dublin-tech-jobs-cv',
+    'dublin-finance-jobs-resume',
+    'dublin-healthcare-jobs-cv',
+    'dublin-engineering-jobs-cv',
+    'dublin-it-jobs-resume',
+    'dublin-accountant-cv-template',
+    'dublin-software-engineer-cv'
+  ]
 
-  return [
+  const basePages = [
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
+      changeFrequency: 'daily' as const,
+      priority: 1.0
     },
     {
       url: `${baseUrl}/builder`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
+      changeFrequency: 'daily' as const,
+      priority: 0.9
     },
     {
       url: `${baseUrl}/templates`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/examples`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/guides`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8
     },
     {
       url: `${baseUrl}/ats-check`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8
     },
     {
       url: `${baseUrl}/cover-letter`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7
+    },
+    {
+      url: `${baseUrl}/examples`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7
+    },
+    {
+      url: `${baseUrl}/guides`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6
     },
     {
       url: `${baseUrl}/ai-tools`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/community`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/faq`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/cookies`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
+      changeFrequency: 'monthly' as const,
+      priority: 0.6
+    }
   ]
+
+  // Generate Dublin jobs landing pages
+  const dublinJobsEntries = dublinJobsPages.map(page => ({
+    url: `${baseUrl}/${page}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8
+  }))
+
+  return [...basePages, ...dublinJobsEntries]
 } 

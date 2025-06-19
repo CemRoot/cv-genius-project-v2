@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { AdController } from "@/components/ads/ad-controller"
 import { MainLayout } from "@/components/layout/main-layout"
+import { MobileOnboarding, useMobileOnboarding } from "@/components/mobile"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -23,25 +24,26 @@ const staggerChildren = {
 }
 
 export default function HomePage() {
-  return (
-    <MainLayout>
+  const { showOnboarding, completeOnboarding, closeOnboarding } = useMobileOnboarding()
+      return (
+      <MainLayout>
       <div className="flex flex-col">
-      {/* Enhanced Hero Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-background via-muted/20 to-cvgenius-purple/10 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
-        <div className="absolute top-0 right-0 -mt-40 -mr-40 w-80 h-80 cvgenius-gradient rounded-full blur-3xl opacity-20" />
-        <div className="absolute bottom-0 left-0 -mb-40 -ml-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl opacity-20" />
+      {/* Enhanced Hero Section - Mobile Optimized */}
+      <section className="py-12 md:py-20 lg:py-32 bg-gradient-to-br from-background via-muted/20 to-cvgenius-purple/10 relative overflow-hidden">
+        {/* Background decoration - Reduced on mobile */}
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px] md:bg-[size:50px_50px]" />
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 md:-mt-40 md:-mr-40 w-40 h-40 md:w-80 md:h-80 cvgenius-gradient rounded-full blur-2xl md:blur-3xl opacity-20" />
+        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 md:-mb-40 md:-ml-40 w-40 h-40 md:w-80 md:h-80 bg-blue-500/20 rounded-full blur-2xl md:blur-3xl opacity-20" />
         
         <div className="container mx-auto px-4 text-center relative">
           <motion.div 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center mb-6"
+            className="flex justify-center mb-4 md:mb-6"
           >
             <div className="relative">
-              <Star className="h-16 w-16 text-cvgenius-purple fill-cvgenius-purple animate-pulse" />
+              <Star className="h-12 w-12 md:h-16 md:w-16 text-cvgenius-purple fill-cvgenius-purple animate-pulse" />
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -52,51 +54,63 @@ export default function HomePage() {
           
           <motion.h1 
             {...fadeInUp}
-            className="text-4xl lg:text-6xl font-bold mb-6 leading-tight"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight px-2"
           >
             Create <span className="cvgenius-text-gradient">ATS-Friendly CVs</span>
             <br />
-            with AI for <span className="text-green-600 flex items-center gap-2 justify-center">
-              Dublin Jobs <IrishFlag size="md" />
+            with AI for{' '}
+            <span className="text-green-600 inline-flex items-center gap-1 md:gap-2 justify-center flex-wrap">
+              Dublin Jobs <IrishFlag size="sm" className="md:hidden" /><IrishFlag size="md" className="hidden md:inline" />
             </span>
           </motion.h1>
           
           <motion.p 
             {...fadeInUp}
             transition={{ delay: 0.2 }}
-            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+            className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto px-4"
           >
             Build professional CVs optimized for the Irish job market. 
             AI-powered, privacy-first, and completely free. No signup required.
-            <ShamrockIcon className="inline-block ml-2 h-5 w-5" />
+            <ShamrockIcon className="inline-block ml-2 h-4 w-4 md:h-5 md:w-5" />
           </motion.p>
           
           <motion.div 
             {...fadeInUp}
             transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
+            className="flex flex-col gap-3 md:gap-4 justify-center mb-8 md:mb-12 px-4"
           >
-            <Button variant="cvgenius" size="lg" className="group" asChild>
+            <Button 
+              variant="cvgenius" 
+              size="lg" 
+              className="group w-full sm:w-auto min-h-[48px] text-base font-semibold touch-manipulation" 
+              asChild
+            >
               <Link href="/builder">
                 <Zap className="mr-2 h-5 w-5" />
                 Start Building Now
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/examples">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="w-full sm:w-auto min-h-[48px] text-base touch-manipulation" 
+              asChild
+            >
+              <Link href="/dublin-jobs">
                 <FileText className="mr-2 h-4 w-4" />
-                View Examples
+                <span className="hidden sm:inline">Dublin Jobs Guide 2025</span>
+                <span className="sm:hidden">Jobs Guide 2025</span>
               </Link>
             </Button>
           </motion.div>
 
-          {/* Key Benefits */}
+          {/* Key Benefits - Mobile Optimized */}
           <motion.div 
             variants={staggerChildren}
             initial="initial"
             animate="animate"
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto px-4"
           >
             {[
               { icon: Brain, title: "AI-Powered", desc: "Smart suggestions tailored for Irish job market" },
@@ -106,13 +120,13 @@ export default function HomePage() {
               <motion.div 
                 key={item.title}
                 variants={fadeInUp}
-                className="text-center group"
+                className="text-center group p-4 md:p-0"
               >
-                <div className="w-12 h-12 cvgenius-gradient rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <item.icon className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 md:w-14 md:h-14 cvgenius-gradient rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform touch-manipulation">
+                  <item.icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
                 </div>
-                <h3 className="font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <h3 className="font-semibold mb-2 text-base md:text-lg">{item.title}</h3>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -120,15 +134,15 @@ export default function HomePage() {
       </section>
 
 
-      {/* Quick Tools Section */}
-      <section className="py-16 bg-muted/30">
+      {/* Quick Tools Section - Mobile Optimized */}
+      <section className="py-12 md:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Main Content */}
             <div className="lg:flex-1">
               <motion.h2 
                 {...fadeInUp}
-                className="text-3xl font-bold text-center mb-12"
+                className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12 px-4"
               >
                 Everything You Need to Land Your Dream Job
               </motion.h2>
@@ -208,17 +222,17 @@ export default function HomePage() {
       </section>
 
 
-      {/* Community Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Community Section - Mobile Optimized */}
+      <section className="py-12 md:py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4">
           <motion.div 
             {...fadeInUp}
-            className="text-center mb-12"
+            className="text-center mb-8 md:mb-12"
           >
-            <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-4">
               Join Ireland's Leading Career Community
             </h2>
-            <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto px-4">
               Connect with job seekers, share insights, and accelerate your career journey with Ireland's most supportive professional network.
             </p>
           </motion.div>
@@ -226,10 +240,10 @@ export default function HomePage() {
           <motion.div 
             {...fadeInUp}
             transition={{ delay: 0.2 }}
-            className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto mb-8 md:mb-12"
           >
             {/* WhatsApp Community */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
                   <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
@@ -237,28 +251,28 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">WhatsApp Community</h3>
-                  <p className="text-green-600 font-medium">Instant Networking</p>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900">WhatsApp Community</h3>
+                  <p className="text-green-600 font-medium text-sm md:text-base">Instant Networking</p>
                 </div>
               </div>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
                 Join our active WhatsApp group for real-time job alerts, quick networking, and immediate support from fellow professionals.
               </p>
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="h-4 w-4 mr-2 text-green-500" />
+              <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 mr-2 text-green-500 flex-shrink-0" />
                   Real-time job postings & alerts
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Users className="h-4 w-4 mr-2 text-green-500" />
+                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                  <Users className="h-3 w-3 md:h-4 md:w-4 mr-2 text-green-500 flex-shrink-0" />
                   Active community discussions
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Award className="h-4 w-4 mr-2 text-green-500" />
+                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                  <Award className="h-3 w-3 md:h-4 md:w-4 mr-2 text-green-500 flex-shrink-0" />
                   Quick interview tips & advice
                 </div>
               </div>
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white" asChild>
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white min-h-[44px] touch-manipulation" asChild>
                 <Link href="https://chat.whatsapp.com/COtiAFIipkHA9PLo6G3pTT" target="_blank" rel="noopener noreferrer">
                   Join WhatsApp Group
                   <span className="ml-2 bg-green-800 text-green-100 text-xs px-2 py-1 rounded-full">250+ Members</span>
@@ -267,7 +281,7 @@ export default function HomePage() {
             </div>
 
             {/* Slack Community */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
                   <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
@@ -275,28 +289,28 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Slack Workspace</h3>
-                  <p className="text-purple-600 font-medium">Professional Hub</p>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900">Slack Workspace</h3>
+                  <p className="text-purple-600 font-medium text-sm md:text-base">Professional Hub</p>
                 </div>
               </div>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
                 Access our comprehensive Slack workspace with dedicated channels for different industries, CV reviews, and structured networking.
               </p>
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center text-sm text-gray-600">
-                  <FileText className="h-4 w-4 mr-2 text-purple-500" />
+              <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                  <FileText className="h-3 w-3 md:h-4 md:w-4 mr-2 text-purple-500 flex-shrink-0" />
                   Structured CV feedback & reviews
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Target className="h-4 w-4 mr-2 text-purple-500" />
+                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                  <Target className="h-3 w-3 md:h-4 md:w-4 mr-2 text-purple-500 flex-shrink-0" />
                   Industry-specific job channels
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Brain className="h-4 w-4 mr-2 text-purple-500" />
+                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                  <Brain className="h-3 w-3 md:h-4 md:w-4 mr-2 text-purple-500 flex-shrink-0" />
                   Expert career coaching sessions
                 </div>
               </div>
-              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" asChild>
+              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[44px] touch-manipulation" asChild>
                 <Link href="https://join.slack.com/t/corporatecare-x2t7491/shared_invite/zt-36v0dw0pf-5Pic~nMl_soYczCI3hZIXw" target="_blank" rel="noopener noreferrer">
                   Join Slack Workspace
                   <span className="ml-2 bg-purple-800 text-purple-100 text-xs px-2 py-1 rounded-full">800+ Members</span>
@@ -311,35 +325,35 @@ export default function HomePage() {
             transition={{ delay: 0.4 }}
             className="text-center"
           >
-            <h3 className="text-xl font-semibold mb-6 text-gray-800">Why Join Our Communities?</h3>
-            <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Clock className="h-6 w-6 text-blue-600" />
+            <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800 px-4">Why Join Our Communities?</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
+              <div className="text-center px-2">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
+                  <Clock className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1">Daily Updates</h4>
-                <p className="text-sm text-gray-600">Fresh job postings every day</p>
+                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Daily Updates</h4>
+                <p className="text-xs md:text-sm text-gray-600">Fresh job postings every day</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Users className="h-6 w-6 text-green-600" />
+              <div className="text-center px-2">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
+                  <Users className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1">Peer Support</h4>
-                <p className="text-sm text-gray-600">Connect with like-minded professionals</p>
+                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Peer Support</h4>
+                <p className="text-xs md:text-sm text-gray-600">Connect with like-minded professionals</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Award className="h-6 w-6 text-purple-600" />
+              <div className="text-center px-2">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
+                  <Award className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1">Expert Advice</h4>
-                <p className="text-sm text-gray-600">Tips from industry professionals</p>
+                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Expert Advice</h4>
+                <p className="text-xs md:text-sm text-gray-600">Tips from industry professionals</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle className="h-6 w-6 text-orange-600" />
+              <div className="text-center px-2">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
+                  <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1">Success Stories</h4>
-                <p className="text-sm text-gray-600">Learn from successful job searches</p>
+                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Success Stories</h4>
+                <p className="text-xs md:text-sm text-gray-600">Learn from successful job searches</p>
               </div>
             </div>
           </motion.div>
@@ -354,6 +368,14 @@ export default function HomePage() {
       </section>
 
       </div>
+
+      {/* Mobile Onboarding */}
+      <MobileOnboarding
+        isOpen={showOnboarding}
+        onClose={closeOnboarding}
+        onComplete={completeOnboarding}
+        currentPage="homepage"
+      />
     </MainLayout>
   )
 }
