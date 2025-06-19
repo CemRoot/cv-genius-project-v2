@@ -76,8 +76,23 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
   const [analysisMode, setAnalysisMode] = useState<'basic' | 'enterprise'>('enterprise')
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [isOnline, setIsOnline] = useState(true)
 
   const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+
+  // Monitor online status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   // Mobile file upload hook
   const {
@@ -152,10 +167,23 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
       return
     }
 
+    // Performance optimization: Warn for very large CVs on mobile
+    if (isMobile && cvText.length > 8000) {
+      const proceed = window.confirm(
+        'Your CV is quite large. This may take longer to analyze on mobile. Continue?'
+      )
+      if (!proceed) return
+    }
+
     setIsAnalyzing(true)
     setError(null)
 
     try {
+      // Optimize payload for mobile
+      const optimizedCvText = isMobile && cvText.length > 10000 
+        ? cvText.substring(0, 10000) + '...' 
+        : cvText.trim()
+
       const response = await fetch('/api/ats/analyze', {
         method: 'POST',
         headers: {
@@ -164,7 +192,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           'User-Agent': navigator.userAgent
         },
         body: JSON.stringify({
-          cvText: cvText.trim(),
+          cvText: optimizedCvText,
           jobDescription: jobDescription.trim(),
           analysisMode,
           targetATS: selectedATS,
@@ -184,7 +212,22 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
         throw new Error('ATS analysis failed')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to analyze CV for ATS compatibility')
+      let errorMessage = 'Failed to analyze CV for ATS compatibility'
+      
+      // Handle specific error types
+      if (err instanceof Error) {
+        if (err.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.'
+        } else if (err.message.includes('timeout')) {
+          errorMessage = 'Request timed out. Please try again with a shorter CV.'
+        } else {
+          errorMessage = err.message
+        }
+      } else if (!navigator.onLine) {
+        errorMessage = 'No internet connection. Please check your network and try again.'
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsAnalyzing(false)
     }
@@ -218,6 +261,14 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
     setExpandedSection(null)
   }
 
+  // Clear analysis when switching modes
+  const handleModeChange = (mode: 'basic' | 'enterprise') => {
+    setAnalysisMode(mode)
+    if (analysis) {
+      setAnalysis(null) // Clear previous analysis when mode changes
+    }
+  }
+
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section)
   }
@@ -235,6 +286,11 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           <CardTitle className="flex items-center gap-2 text-lg">
             <Target className="h-5 w-5 text-cvgenius-primary" />
             Mobile ATS Analyzer
+            {!isOnline && (
+              <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                Offline
+              </span>
+            )}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Quick ATS compatibility check optimized for mobile
@@ -245,7 +301,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           <div className="flex gap-2">
             <Button
               variant={analysisMode === 'basic' ? 'default' : 'outline'}
-              onClick={() => setAnalysisMode('basic')}
+              onClick={() => handleModeChange('basic')}
               size="sm"
               className="flex-1"
             >
@@ -253,7 +309,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
             </Button>
             <Button
               variant={analysisMode === 'enterprise' ? 'default' : 'outline'}
-              onClick={() => setAnalysisMode('enterprise')}
+              onClick={() => handleModeChange('enterprise')}
               size="sm"
               className="flex-1"
             >
@@ -266,17 +322,19 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
             <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <label className="text-base font-medium flex items-center gap-2">
+                  <label htmlFor="ats-control-level" className="text-base font-medium flex items-center gap-2">
                     <Target className="h-5 w-5" />
                     ATS Control Level
                   </label>
                   <p className="text-sm text-gray-600">Select how strictly your CV will be evaluated</p>
                   <div className="relative">
                     <select
+                      id="ats-control-level"
                       value={selectedATS}
                       onChange={(e) => setSelectedATS(e.target.value)}
-                      className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary"
+                      className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
                       style={{ minHeight: '48px' }}
+                      aria-describedby="ats-control-description"
                     >
                       {atsOptions.map(option => (
                         <option key={option.value} value={option.value}>
@@ -291,24 +349,26 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                     </div>
                   </div>
                   {atsOptions.find(opt => opt.value === selectedATS)?.description && (
-                    <p className="text-sm text-gray-500 bg-white p-2 rounded-md border">
+                    <p id="ats-control-description" className="text-sm text-gray-500 bg-white p-2 rounded-md border">
                       {atsOptions.find(opt => opt.value === selectedATS)?.description}
                     </p>
                   )}
                 </div>
                 
                 <div className="space-y-3">
-                  <label className="text-base font-medium flex items-center gap-2">
+                  <label htmlFor="target-industry" className="text-base font-medium flex items-center gap-2">
                     <FileText className="h-5 w-5" />
                     Target Industry
                   </label>
                   <p className="text-sm text-gray-600">Select which industry to optimize your CV for</p>
                   <div className="relative">
                     <select
+                      id="target-industry"
                       value={selectedIndustry}
                       onChange={(e) => setSelectedIndustry(e.target.value)}
-                      className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary"
+                      className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
                       style={{ minHeight: '48px' }}
+                      aria-describedby="industry-description"
                     >
                       {industryOptions.map(option => (
                         <option key={option.value} value={option.value}>
@@ -323,7 +383,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                     </div>
                   </div>
                   {industryOptions.find(opt => opt.value === selectedIndustry)?.description && (
-                    <p className="text-sm text-gray-500 bg-white p-2 rounded-md border">
+                    <p id="industry-description" className="text-sm text-gray-500 bg-white p-2 rounded-md border">
                       {industryOptions.find(opt => opt.value === selectedIndustry)?.description}
                     </p>
                   )}
@@ -335,7 +395,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           {/* CV Input Section */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-base font-medium">CV Content</label>
+              <label htmlFor="cv-content" className="text-base font-medium">CV Content</label>
               <Button
                 variant="outline"
                 size="sm"
@@ -349,30 +409,58 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
 
             {/* File Upload Section */}
             {showFileUpload && (
-              <MobileCVUpload
-                onTextExtracted={(text, fileName) => {
-                  setCvText(text)
-                  setShowFileUpload(false)
-                  if (fileName) {
-                    setError(null) // Clear any previous errors
-                  }
-                }}
-                onError={(error) => {
-                  setError(error)
-                }}
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
                 className="mt-2"
-              />
+              >
+                <MobileCVUpload
+                  onTextExtracted={(text, fileName) => {
+                    setCvText(text)
+                    setShowFileUpload(false)
+                    if (fileName) {
+                      setError(null) // Clear any previous errors
+                      // Show success message
+                      const successDiv = document.createElement('div')
+                      successDiv.className = 'text-green-600 text-sm mt-2'
+                      successDiv.textContent = `✓ Successfully extracted text from ${fileName}`
+                      setTimeout(() => successDiv.remove(), 3000)
+                    }
+                  }}
+                  onError={(error) => {
+                    setError(error)
+                    setShowFileUpload(false) // Close upload on error
+                  }}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg"
+                />
+                <div className="flex justify-between mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFileUpload(false)}
+                    className="text-gray-500"
+                  >
+                    Cancel Upload
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    PDF, DOC, DOCX supported (max 5MB)
+                  </span>
+                </div>
+              </motion.div>
             )}
 
             <textarea
+              id="cv-content"
               placeholder="Paste your CV text here or upload PDF above..."
               value={cvText}
               onChange={(e) => setCvText(e.target.value)}
               rows={6}
-              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary"
-              style={{ minHeight: '120px' }}
+              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
+              style={{ minHeight: '140px' }}
+              aria-describedby="cv-content-help"
             />
-            <div className="flex justify-between text-sm text-muted-foreground">
+            <div id="cv-content-help" className="flex justify-between text-sm text-muted-foreground">
               <span>Paste CV text or upload PDF file</span>
               <span className={cvText.length < 100 ? 'text-red-500' : ''}>
                 {cvText.length} characters {cvText.length < 100 && '(minimum 100)'}
@@ -382,16 +470,18 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
 
           {/* Job Description */}
           <div className="space-y-3">
-            <label className="text-base font-medium">Job Description (Recommended)</label>
+            <label htmlFor="job-description" className="text-base font-medium">Job Description (Recommended)</label>
             <textarea
+              id="job-description"
               placeholder="Paste job description to improve keyword matching..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={4}
-              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary"
-              style={{ minHeight: '100px' }}
+              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
+              style={{ minHeight: '120px' }}
+              aria-describedby="job-description-help"
             />
-            <p className="text-sm text-gray-600">
+            <p id="job-description-help" className="text-sm text-gray-600">
               Adding job description provides more detailed analysis and keyword suggestions
             </p>
           </div>
@@ -400,19 +490,20 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           <div className="flex gap-3">
             <Button 
               onClick={analyzeATS}
-              disabled={isAnalyzing || cvText.trim().length < 100}
+              disabled={isAnalyzing || cvText.trim().length < 100 || !isOnline}
               className="flex-1 h-12"
               size="lg"
+              aria-label={isAnalyzing ? 'Analysis in progress' : 'Start ATS analysis'}
             >
               {isAnalyzing ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Analyzing...
+                  {analysisMode === 'enterprise' ? 'Running Enterprise Analysis...' : 'Analyzing ATS Compatibility...'}
                 </>
               ) : (
                 <>
                   <Search className="h-5 w-5 mr-2" />
-                  Analyze CV
+                  {analysisMode === 'enterprise' ? 'Run Enterprise Analysis' : 'Analyze ATS Compatibility'}
                 </>
               )}
             </Button>
@@ -423,6 +514,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                 onClick={clearAnalysis}
                 size="lg"
                 className="h-12 px-6"
+                aria-label="Clear analysis results"
               >
                 Clear
               </Button>
@@ -450,6 +542,8 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4"
+            role="region"
+            aria-label="ATS Analysis Results"
           >
             {/* Score Card */}
             <Card>

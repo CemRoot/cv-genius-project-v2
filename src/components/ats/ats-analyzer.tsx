@@ -159,6 +159,14 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
     setError(null)
   }
 
+  // Clear analysis when switching modes
+  const handleModeChange = (mode: 'basic' | 'enterprise') => {
+    setAnalysisMode(mode)
+    if (analysis) {
+      setAnalysis(null) // Clear previous analysis when mode changes
+    }
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -182,7 +190,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                   name="analysisMode"
                   value="basic"
                   checked={analysisMode === 'basic'}
-                  onChange={(e) => setAnalysisMode(e.target.value as 'basic' | 'enterprise')}
+                  onChange={(e) => handleModeChange(e.target.value as 'basic' | 'enterprise')}
                   className="h-4 w-4"
                 />
                 <Label htmlFor="basic" className="text-sm">Basic Analysis</Label>
@@ -194,7 +202,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                   name="analysisMode"
                   value="enterprise"
                   checked={analysisMode === 'enterprise'}
-                  onChange={(e) => setAnalysisMode(e.target.value as 'basic' | 'enterprise')}
+                  onChange={(e) => handleModeChange(e.target.value as 'basic' | 'enterprise')}
                   className="h-4 w-4"
                 />
                 <Label htmlFor="enterprise" className="text-sm font-medium text-cvgenius-primary">
@@ -303,7 +311,8 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               value={cvText}
               onChange={(e) => setCvText(e.target.value)}
               rows={8}
-              className="resize-none"
+              className="resize-none touch-manipulation"
+              style={{ minHeight: '200px' }}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Paste CV text or upload PDF file</span>
@@ -321,7 +330,8 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={4}
-              className="resize-none"
+              className="resize-none touch-manipulation"
+              style={{ minHeight: '120px' }}
             />
             <p className="text-xs text-muted-foreground">
               Including job description enables advanced keyword matching and ATS simulation

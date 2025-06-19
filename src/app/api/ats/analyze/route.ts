@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/gemini-client'
+import { getHuggingFaceClient } from '@/lib/integrations/huggingface-client'
 import { 
-  analyzeFileFormat, 
   generateATSReport, 
   calculateIrishMarketRelevance,
   validateATSFormat,
   analyzeEnterpriseATSCompatibility
 } from '@/lib/ats-utils'
-// import { HuggingFaceATSClient } from '@/lib/integrations/huggingface-client' // AI integration coming soon
 
 // ATS Keywords for Irish market
 const ATS_KEYWORDS = {
@@ -26,14 +25,6 @@ const ATS_KEYWORDS = {
     'work permit', 'stamp 4', 'eligible to work', 'fluent english', 'irish market',
     'multinational', 'sme', 'enterprise ireland', 'ida ireland'
   ]
-}
-
-// Common section headers that ATS systems look for
-const ATS_SECTIONS = {
-  contact: ['contact', 'personal', 'details', 'information'],
-  experience: ['experience', 'employment', 'work', 'career', 'professional'],
-  skills: ['skills', 'technical', 'competencies', 'expertise', 'abilities'],
-  education: ['education', 'qualifications', 'academic', 'training', 'certifications']
 }
 
 interface ATSAnalysisRequest {
@@ -71,12 +62,6 @@ interface IrishMarketAnalysis {
   suggestions: string[]
 }
 
-interface FormatValidation {
-  isValid: boolean
-  issues: string[]
-  recommendations: string[]
-}
-
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   
@@ -87,7 +72,7 @@ export async function POST(request: NextRequest) {
     const isMobileRequest = /Mobile|Android|iPhone|iPad/.test(userAgent)
     
     // Check rate limit (more lenient for mobile)
-    const rateLimit = checkRateLimit(userId, isMobileRequest ? 'mobile' : 'desktop')
+    const rateLimit = checkRateLimit(userId)
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
@@ -121,17 +106,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Analyze the CV with mobile optimizations
-    const analysis = await analyzeATSCompatibility(
-      cvText, 
-      jobDescription, 
-      fileName, 
-      fileSize, 
-      analysisMode,
-      targetATS,
-      industry,
-      isMobileRequest
-    )
+    // Clean up PDF extraction artifacts before analysis
+    const cleanedCvText = cleanPDFExtractionArtifacts(cvText)
+
+    // Try HuggingFace analysis first, fallback to traditional analysis
+    let analysis
+    try {
+      analysis = await analyzeWithHuggingFace(
+        cleanedCvText, 
+        jobDescription, 
+        fileName, 
+        fileSize, 
+        analysisMode,
+        targetATS,
+        industry,
+        isMobileRequest
+      )
+    } catch (error) {
+      console.warn('HuggingFace analysis failed, using fallback:', error)
+      // Fallback to traditional analysis
+      analysis = await analyzeATSCompatibility(
+        cleanedCvText, 
+        jobDescription, 
+        fileName, 
+        fileSize, 
+        analysisMode,
+        targetATS,
+        industry,
+        isMobileRequest
+      )
+    }
 
     const processingTime = Date.now() - startTime
 
@@ -141,7 +145,8 @@ export async function POST(request: NextRequest) {
       meta: {
         processingTime,
         isMobile: isMobileRequest,
-        version: '2.0'
+        version: '2.0',
+        provider: 'hybrid' // HuggingFace + fallback
       }
     }, {
       headers: {
@@ -156,13 +161,17 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('ATS Analysis API Error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? (error as Error)?.message : undefined
+      },
       { status: 500 }
     )
   }
 }
 
-async function analyzeATSCompatibility(
+// Enhanced analysis using HuggingFace AI
+async function analyzeWithHuggingFace(
   cvText: string, 
   jobDescription?: string, 
   fileName?: string, 
@@ -172,53 +181,79 @@ async function analyzeATSCompatibility(
   industry: string = 'technology',
   isMobile: boolean = false
 ) {
-  // Use enhanced analysis for all modes (much better than previous version)
-      return await enhancedSmartAnalysis(cvText, jobDescription, targetATS, industry, analysisMode, isMobile, fileName, fileSize)
-}
+  const hfClient = getHuggingFaceClient()
+  
+  // Health check first
+  const isHealthy = await hfClient.healthCheck()
+  if (!isHealthy) {
+    throw new Error('HuggingFace service unavailable')
+  }
 
-async function enhancedSmartAnalysis(
-  cvText: string,
-  jobDescription?: string,
-  targetATS: string = 'workday',
-  industry: string = 'technology',
-  analysisMode: 'basic' | 'enterprise' = 'basic',
-  isMobile: boolean = false,
-  fileName?: string,
-  fileSize?: number
-) {
-  // Enhanced analysis that works with any CV format
+  // Get AI analysis
+  const aiAnalysis = await hfClient.analyzeCVForATS(cvText, jobDescription)
+  
+  // Traditional analysis for validation
   const keywordAnalysis = analyzeKeywords(cvText, jobDescription || '')
   const formatAnalysis = analyzeFormat(cvText)
   const sectionAnalysis = analyzeSections(cvText)
   
-  // File Format Analysis
-  const fileFormatAnalysis = null // Will be added when fileName is available
-  
   // Irish Market Relevance
   const irishMarketAnalysis = calculateIrishMarketRelevance(cvText)
   
-  // 6. Format Validation
+  // Format Validation
   const formatValidation = validateATSFormat(cvText)
   
-  // 7. Calculate overall score
-  const overallScore = calculateOverallScore(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis)
-  
-  // 8. Generate suggestions and warnings
-  const suggestions = generateSuggestions(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis, formatValidation)
-  const warnings = generateWarnings(keywordAnalysis, formatAnalysis, sectionAnalysis, formatValidation, fileFormatAnalysis || undefined)
-  const strengths = generateStrengths(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis)
-  
-  // 9. Generate comprehensive report
-  const report = generateATSReport(overallScore, keywordAnalysis, formatAnalysis, sectionAnalysis, suggestions, warnings)
+  // Combine AI and traditional analysis
+  const enhancedKeywordAnalysis = {
+    total: Math.max(keywordAnalysis.total, aiAnalysis.keywordAnalysis.extractedKeywords.length),
+    matched: Math.max(keywordAnalysis.matched, aiAnalysis.keywordAnalysis.extractedKeywords.length),
+    missing: [...new Set([...keywordAnalysis.missing, ...aiAnalysis.keywordAnalysis.missingKeywords])],
+    density: {
+      ...keywordAnalysis.density,
+      // Add AI-extracted keywords
+      ...aiAnalysis.keywordAnalysis.extractedKeywords.reduce((acc, keyword) => {
+        acc[keyword] = 2.5 // AI-weighted keywords
+        return acc
+      }, {} as Record<string, number>)
+    }
+  }
 
-  // 10. Enterprise Analysis Features (optimized for mobile)
+  // Enhanced format analysis
+  const enhancedFormatAnalysis = {
+    score: Math.round((formatAnalysis.score + aiAnalysis.atsCompatibility.formatScore) / 2),
+    details: {
+      score: Math.round((formatAnalysis.score + aiAnalysis.atsCompatibility.formatScore) / 2),
+      issues: [...formatAnalysis.details.issues, ...aiAnalysis.atsCompatibility.warnings]
+    }
+  }
+
+  // Calculate overall score with AI weighting
+  const overallScore = Math.round(
+    (enhancedKeywordAnalysis.matched / enhancedKeywordAnalysis.total * 100 * 0.35) + 
+    (enhancedFormatAnalysis.score * 0.25) + 
+    (aiAnalysis.contentAnalysis.structureScore * 0.25) +
+    (irishMarketAnalysis.score * 0.15)
+  )
+
+  // Generate enhanced suggestions
+  const suggestions = [
+    ...generateSuggestions(enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, irishMarketAnalysis, formatValidation),
+    ...aiAnalysis.contentAnalysis.suggestions
+  ]
+
+  const warnings = generateWarnings(enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, formatValidation)
+  const strengths = generateStrengths(enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, irishMarketAnalysis)
+  
+  // Generate comprehensive report
+  const report = generateATSReport(overallScore, enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, suggestions, warnings)
+
+  // Enterprise Analysis Features
   let enterpriseFeatures = {}
   if (analysisMode === 'enterprise') {
     try {
-      // Mobile optimization: Skip heavy analysis if on mobile and CV is large
       if (isMobile && cvText.length > 5000) {
         // Simplified enterprise analysis for mobile
-        const basicAnalysis = {
+        enterpriseFeatures = {
           atsSystemScores: {
             workday: Math.round(overallScore * 0.95),
             taleo: Math.round(overallScore * 0.90),
@@ -234,9 +269,8 @@ async function enhancedSmartAnalysis(
             parsingErrors: formatValidation.issues
           }
         }
-        enterpriseFeatures = basicAnalysis
       } else {
-        // Full enterprise analysis
+        // Full enterprise analysis with AI
         const enterpriseAnalysis = await analyzeEnterpriseATSCompatibility(cvText, {
           targetATS: targetATS as any,
           jobDescription,
@@ -245,25 +279,31 @@ async function enhancedSmartAnalysis(
           fileSize
         })
         
-        // ATS Simulation (if job description provided and not on mobile)
-        let simulation = null
-        if (jobDescription && (!isMobile || cvText.length < 3000)) {
-          const { simulateATSProcessing } = await import('@/lib/ats-utils')
-          simulation = simulateATSProcessing(cvText, jobDescription, targetATS as any)
+        // Enhanced job matching with AI
+        let jobMatch = null
+        if (jobDescription) {
+          jobMatch = await hfClient.checkJobMatch(cvText, jobDescription)
         }
         
         enterpriseFeatures = {
           atsSystemScores: enterpriseAnalysis.atsSystemScores,
           rejectionRisk: enterpriseAnalysis.rejectionRisk,
           industryAlignment: enterpriseAnalysis.industryAlignment,
-          simulation,
+          simulation: jobMatch ? {
+            passed: jobMatch.matchScore > 70,
+            stage: jobMatch.matchScore > 70 ? 'human_review' : 'keyword_matching',
+            feedback: jobMatch.recommendations,
+            nextSteps: jobMatch.matchScore > 70 ? 
+              ['Prepare for interview', 'Research company culture'] :
+              ['Improve keyword matching', 'Add missing skills']
+          } : null,
           parsing: enterpriseAnalysis.parsing,
-          enterpriseRecommendations: enterpriseAnalysis.recommendations
+          jobMatch
         }
       }
     } catch (error) {
       console.error('Enterprise analysis error:', error)
-      // Fallback to basic enterprise features
+      // Fallback enterprise features
       enterpriseFeatures = {
         atsSystemScores: {
           workday: Math.round(overallScore * 0.95),
@@ -285,6 +325,79 @@ async function enhancedSmartAnalysis(
 
   return {
     overallScore,
+    keywordDensity: enhancedKeywordAnalysis,
+    formatScore: enhancedFormatAnalysis.score,
+    sectionScore: aiAnalysis.contentAnalysis.structureScore,
+    irishMarketScore: irishMarketAnalysis.score,
+    suggestions: [...new Set(suggestions)], // Remove duplicates
+    strengths,
+    warnings,
+    report,
+    formatValidation,
+    aiInsights: {
+      professionalismScore: aiAnalysis.contentAnalysis.professionalismScore,
+      clarityScore: aiAnalysis.contentAnalysis.clarityScore,
+      parsingProbability: aiAnalysis.atsCompatibility.parsingProbability
+    },
+    ...enterpriseFeatures,
+    details: {
+      contactInfo: sectionAnalysis.details.contactInfo,
+      experience: sectionAnalysis.details.experience,
+      skills: sectionAnalysis.details.skills,
+      education: sectionAnalysis.details.education,
+      formatting: enhancedFormatAnalysis.details
+    }
+  }
+}
+
+// Fallback traditional analysis (moved from existing code)
+async function analyzeATSCompatibility(
+  cvText: string, 
+  jobDescription?: string, 
+  _fileName?: string, 
+  _fileSize?: number,
+  analysisMode: 'basic' | 'enterprise' = 'basic',
+  _targetATS: string = 'workday',
+  industry: string = 'technology',
+  _isMobile: boolean = false
+) {
+  const keywordAnalysis = analyzeKeywords(cvText, jobDescription || '')
+  const formatAnalysis = analyzeFormat(cvText)
+  const sectionAnalysis = analyzeSections(cvText)
+  const irishMarketAnalysis = calculateIrishMarketRelevance(cvText)
+  const formatValidation = validateATSFormat(cvText)
+  
+  const overallScore = calculateOverallScore(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis)
+  
+  const suggestions = generateSuggestions(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis, formatValidation)
+  const warnings = generateWarnings(keywordAnalysis, formatAnalysis, sectionAnalysis, formatValidation)
+  const strengths = generateStrengths(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis)
+  
+  const report = generateATSReport(overallScore, keywordAnalysis, formatAnalysis, sectionAnalysis, suggestions, warnings)
+
+  // Enterprise features for fallback
+  let enterpriseFeatures = {}
+  if (analysisMode === 'enterprise') {
+    enterpriseFeatures = {
+      atsSystemScores: {
+        workday: Math.round(overallScore * 0.95),
+        taleo: Math.round(overallScore * 0.90),
+        greenhouse: Math.round(overallScore),
+        bamboohr: Math.round(overallScore * 1.05)
+      },
+      rejectionRisk: overallScore >= 70 ? 'low' : overallScore >= 50 ? 'medium' : 'high' as const,
+      industryAlignment: calculateIndustryAlignment(cvText, industry),
+      simulation: null,
+      parsing: {
+        success: formatValidation.isValid,
+        extractedData: extractBasicData(cvText),
+        parsingErrors: formatValidation.issues
+      }
+    }
+  }
+
+  return {
+    overallScore,
     keywordDensity: keywordAnalysis,
     formatScore: formatAnalysis.score,
     sectionScore: sectionAnalysis.score,
@@ -293,11 +406,10 @@ async function enhancedSmartAnalysis(
     strengths,
     warnings,
     report,
-    fileFormat: fileFormatAnalysis,
     formatValidation,
     ...enterpriseFeatures,
     details: {
-      contactInfo: sectionAnalysis.details.contact,
+      contactInfo: sectionAnalysis.details.contactInfo,
       experience: sectionAnalysis.details.experience,
       skills: sectionAnalysis.details.skills,
       education: sectionAnalysis.details.education,
@@ -306,84 +418,24 @@ async function enhancedSmartAnalysis(
   }
 }
 
-// Helper functions for enterprise features
-function calculateSystemCompatibility(overallScore: number, system: string): number {
-  // Simulate different ATS system strictness
-  const systemModifiers: Record<string, number> = {
-    workday: 0.95,   // High strictness
-    taleo: 0.90,     // Very high strictness  
-    greenhouse: 1.0, // Medium strictness
-    bamboohr: 1.05   // Low strictness
-  }
-  
-  const modifier = systemModifiers[system] || 1.0
-  return Math.min(Math.round(overallScore * modifier), 100)
-}
-
-function calculateRejectionRisk(
-  overallScore: number, 
-  keywordAnalysis: any, 
-  formatAnalysis: any
-): 'low' | 'medium' | 'high' | 'critical' {
-  if (overallScore >= 80 && keywordAnalysis.matched > 5 && formatAnalysis.score >= 80) {
-    return 'low'
-  } else if (overallScore >= 60 && keywordAnalysis.matched > 3 && formatAnalysis.score >= 60) {
-    return 'medium'
-  } else if (overallScore >= 40) {
-    return 'high'
-  } else {
-    return 'critical'
-  }
-}
-
-function calculateIndustryAlignment(cvText: string, industry: string): number {
-  const industryKeywords: Record<string, string[]> = {
-    technology: ['software', 'developer', 'programming', 'code', 'technical', 'agile', 'api', 'cloud'],
-    finance: ['financial', 'banking', 'investment', 'analysis', 'risk', 'compliance', 'audit'],
-    healthcare: ['medical', 'clinical', 'patient', 'healthcare', 'treatment', 'diagnosis', 'care']
-  }
-  
-  const keywords = industryKeywords[industry] || []
-  const cvLower = cvText.toLowerCase()
-  
-  const foundKeywords = keywords.filter(keyword => cvLower.includes(keyword))
-  return Math.round((foundKeywords.length / keywords.length) * 100)
-}
-
-function extractBasicData(cvText: string): Record<string, any> {
-  // Basic data extraction (can be enhanced with more sophisticated parsing)
-  const emailRegex = /[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}/g
-  const phoneRegex = /[\+]?[1-9]?[\d\s\-\(\)]{10,}/g
-  
-  return {
-    emails: cvText.match(emailRegex) || [],
-    phones: cvText.match(phoneRegex) || [],
-    wordCount: cvText.split(/\s+/).length,
-    hasContactInfo: !!(cvText.match(emailRegex) && cvText.match(phoneRegex))
-  }
-}
-
+// Helper functions (imported from existing logic)
 function analyzeKeywords(cvText: string, jobDescription?: string) {
   const allKeywords = [...ATS_KEYWORDS.technical, ...ATS_KEYWORDS.soft, ...ATS_KEYWORDS.irish]
   
-  // Enhanced keyword extraction from job description
   let targetKeywords = allKeywords
   let jobSpecificKeywords: string[] = []
   
   if (jobDescription) {
-    // Extract specific keywords from job description
     const jobLower = jobDescription.toLowerCase()
     
     // Add job-specific keywords for AI/Python roles
     const aiKeywords = ['python', 'ai', 'api', 'llm', 'openai', 'hugging face', 'langchain', 'nodejs', 'backend', 'integration', 'prompt', 'engineering', 'machine learning', 'automation', 'workflow']
     jobSpecificKeywords = aiKeywords.filter(keyword => jobLower.includes(keyword))
     
-    // Filter existing keywords that appear in job description
     targetKeywords = allKeywords.filter(keyword => 
       jobLower.includes(keyword.toLowerCase())
     )
     
-    // Combine with job-specific keywords
     targetKeywords = [...new Set([...targetKeywords, ...jobSpecificKeywords])]
   }
 
@@ -396,9 +448,8 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
     const count = matches ? matches.length : 0
     
     if (count > 0) {
-      // Calculate density as percentage
       const wordCount = cvText.split(/\s+/).length
-      const density = Math.round((count / wordCount) * 1000) / 10 // Round to 1 decimal
+      const density = Math.round((count / wordCount) * 1000) / 10
       matchedKeywords[keyword] = density
     } else {
       missingKeywords.push(keyword)
@@ -417,27 +468,23 @@ function analyzeFormat(cvText: string) {
   let score = 100
   const issues: string[] = []
 
-  // Check for problematic characters or symbols
   const problematicChars = /[●◆▪▫■□◦‣⁃]/g
   if (problematicChars.test(cvText)) {
     score -= 10
     issues.push('Contains special bullet characters that may not be ATS-friendly')
   }
 
-  // Check for excessive formatting
   const htmlTags = /<[^>]*>/g
   if (htmlTags.test(cvText)) {
     score -= 15
     issues.push('Contains HTML tags or rich formatting')
   }
 
-  // Check for tables or complex structures
   if (cvText.includes('\t') || cvText.match(/\|.*\|/)) {
     score -= 10
     issues.push('May contain tables or complex formatting')
   }
 
-  // Check for appropriate length
   const wordCount = cvText.split(/\s+/).length
   if (wordCount < 200) {
     score -= 20
@@ -447,14 +494,12 @@ function analyzeFormat(cvText: string) {
     issues.push('CV may be too long for optimal ATS parsing')
   }
 
-  // Check for phone number format
   const irishPhoneRegex = /(\+353|0)[1-9][0-9]{7,9}/
   if (!irishPhoneRegex.test(cvText)) {
     score -= 5
     issues.push('Irish phone number format not detected')
   }
 
-  // Check for email
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
   if (!emailRegex.test(cvText)) {
     score -= 15
@@ -481,18 +526,14 @@ function analyzeSections(cvText: string) {
   let contactScore = 0
   const contactIssues: string[] = []
   
-  // Check for email
   if (/@/.test(cvText)) contactScore += 30
   else contactIssues.push('Email address missing')
   
-  // Check for phone (more flexible pattern)
   if (/[\+]?[\d\s\-\(\)]{10,}/.test(cvText)) contactScore += 30
   else contactIssues.push('Phone number missing')
   
-  // Check for location indicators
   if (/dublin|ireland|ie\b/i.test(cvText)) contactScore += 20
   
-  // Check for LinkedIn
   if (/linkedin/i.test(cvText)) contactScore += 20
   
   sectionScores.contactInfo = { score: contactScore, issues: contactIssues }
@@ -501,17 +542,14 @@ function analyzeSections(cvText: string) {
   let experienceScore = 0
   const experienceIssues: string[] = []
   
-  // Look for experience indicators
   if (/experience|employment|work|career/i.test(cvText)) experienceScore += 30
   
-  // Look for date patterns (more flexible)
   const datePattern = /\b(20\d{2}|19\d{2})\b|\b(present|current)\b/gi
   const dates = cvText.match(datePattern)
   if (dates && dates.length >= 2) experienceScore += 35
   else experienceIssues.push('Employment dates not clearly specified')
   
-  // Look for job titles (more comprehensive)
-  const jobTitleIndicators = ['developer', 'engineer', 'manager', 'analyst', 'coordinator', 'specialist', 'officer', 'founder', 'ceo', 'director', 'consultant', 'guard', 'security']
+  const jobTitleIndicators = ['developer', 'engineer', 'manager', 'analyst', 'coordinator', 'specialist', 'officer', 'founder', 'ceo', 'director', 'consultant']
   if (jobTitleIndicators.some(title => cvText.toLowerCase().includes(title))) experienceScore += 35
   else experienceIssues.push('Job titles not clearly identified')
   
@@ -521,17 +559,14 @@ function analyzeSections(cvText: string) {
   let skillsScore = 0
   const skillsIssues: string[] = []
   
-  // Check for skills section
   if (/skills|competencies|expertise|abilities|programming|frameworks|tools/i.test(cvText)) skillsScore += 40
   
-  // Look for technical skills
-  const techSkills = ['python', 'javascript', 'java', 'html', 'css', 'sql', 'git', 'docker', 'aws', 'api', 'flask', 'django', 'react', 'node']
+  const techSkills = ['python', 'javascript', 'java', 'html', 'css', 'sql', 'git', 'docker', 'aws', 'api']
   const foundTechSkills = techSkills.filter(skill => cvText.toLowerCase().includes(skill))
   if (foundTechSkills.length >= 5) skillsScore += 40
   else if (foundTechSkills.length >= 3) skillsScore += 25
   else skillsIssues.push('Insufficient skills listed for ATS detection')
   
-  // Look for soft skills
   const softSkills = ['leadership', 'communication', 'team', 'management', 'problem', 'analytical']
   const foundSoftSkills = softSkills.filter(skill => cvText.toLowerCase().includes(skill))
   if (foundSoftSkills.length >= 2) skillsScore += 20
@@ -542,34 +577,28 @@ function analyzeSections(cvText: string) {
   let educationScore = 0
   const educationIssues: string[] = []
   
-  // Check for education section
   if (/education|qualifications|academic|training|university|college/i.test(cvText)) educationScore += 40
   
-  // Look for degree types
-  const educationKeywords = ['university', 'college', 'degree', 'bachelor', 'master', 'phd', 'diploma', 'certificate', 'artificial intelligence', 'software engineering']
+  const educationKeywords = ['university', 'college', 'degree', 'bachelor', 'master', 'phd', 'diploma', 'certificate']
   if (educationKeywords.some(edu => cvText.toLowerCase().includes(edu))) educationScore += 40
   else educationIssues.push('Educational qualifications not clearly specified')
   
-  // Look for GPA or grades
   if (/gpa|grade|3\.|4\./i.test(cvText)) educationScore += 20
   
   sectionScores.education = { score: educationScore, issues: educationIssues }
 
   // Formatting Analysis
-  let formattingScore = 60 // Base score
+  let formattingScore = 60
   const formattingIssues: string[] = []
   
-  // Check word count
   const wordCount = cvText.split(/\s+/).length
   if (wordCount >= 200) formattingScore += 20
   else formattingIssues.push('CV appears too short (under 200 words)')
   
-  // Check for Irish context
   if (!/dublin|ireland|irish|ie\b/i.test(cvText)) formattingIssues.push('Irish location not clearly specified')
   
   sectionScores.formatting = { score: formattingScore, issues: formattingIssues }
 
-  // Calculate total score
   totalScore = Object.values(sectionScores).reduce((sum, section) => sum + section.score, 0)
 
   return {
@@ -590,7 +619,6 @@ function calculateOverallScore(
 
   const irishScore = irishMarketAnalysis?.score || 50
 
-  // Weighted average: Keywords 35%, Format 25%, Sections 25%, Irish Market 15%
   const overallScore = Math.round(
     (keywordScore * 0.35) + 
     (formatAnalysis.score * 0.25) + 
@@ -601,10 +629,9 @@ function calculateOverallScore(
   return Math.min(100, Math.max(0, overallScore))
 }
 
-function generateSuggestions(keywordAnalysis: KeywordAnalysis, formatAnalysis: FormatAnalysis, sectionAnalysis: SectionAnalysis, irishMarketAnalysis?: IrishMarketAnalysis, formatValidation?: FormatValidation): string[] {
+function generateSuggestions(keywordAnalysis: KeywordAnalysis, formatAnalysis: FormatAnalysis, sectionAnalysis: SectionAnalysis, irishMarketAnalysis?: IrishMarketAnalysis, _formatValidation?: any): string[] {
   const suggestions: string[] = []
 
-  // Keyword suggestions
   if (keywordAnalysis.matched < keywordAnalysis.total * 0.6) {
     suggestions.push('Include more relevant keywords from the job description naturally in your content')
   }
@@ -613,26 +640,18 @@ function generateSuggestions(keywordAnalysis: KeywordAnalysis, formatAnalysis: F
     suggestions.push(`Consider adding these missing keywords: ${keywordAnalysis.missing.slice(0, 3).join(', ')}`)
   }
 
-  // Format suggestions
   if (formatAnalysis.score < 80) {
     suggestions.push('Use standard formatting with simple bullet points and clear section headers')
     suggestions.push('Avoid tables, graphics, and complex layouts that ATS systems cannot parse')
   }
 
-  // Section suggestions
   if (sectionAnalysis.score < 70) {
     suggestions.push('Use clear, standard section headings like "Experience", "Skills", and "Education"')
     suggestions.push('Ensure each section contains relevant, detailed information')
   }
 
-  // Irish market specific suggestions
   if (irishMarketAnalysis && irishMarketAnalysis.score < 60) {
     suggestions.push(...irishMarketAnalysis.suggestions)
-  }
-
-  // Format validation suggestions
-  if (formatValidation && !formatValidation.isValid) {
-    suggestions.push(...formatValidation.recommendations.slice(0, 2))
   }
 
   suggestions.push('Include your work authorization status clearly if you are not an EU citizen')
@@ -641,7 +660,7 @@ function generateSuggestions(keywordAnalysis: KeywordAnalysis, formatAnalysis: F
   return suggestions
 }
 
-function generateWarnings(keywordAnalysis: KeywordAnalysis, formatAnalysis: FormatAnalysis, sectionAnalysis: SectionAnalysis, formatValidation?: FormatValidation, fileFormatAnalysis?: { compatible: boolean; warnings: string[] }): string[] {
+function generateWarnings(keywordAnalysis: KeywordAnalysis, formatAnalysis: FormatAnalysis, sectionAnalysis: SectionAnalysis, formatValidation?: any): string[] {
   const warnings: string[] = []
 
   if (formatAnalysis.score < 50) {
@@ -660,14 +679,8 @@ function generateWarnings(keywordAnalysis: KeywordAnalysis, formatAnalysis: Form
     warnings.push('Work experience section needs improvement for ATS compatibility')
   }
 
-  // Add format validation warnings
   if (formatValidation && !formatValidation.isValid) {
     warnings.push(...formatValidation.issues.slice(0, 2))
-  }
-
-  // Add file format warnings
-  if (fileFormatAnalysis && !fileFormatAnalysis.compatible) {
-    warnings.push(...fileFormatAnalysis.warnings.slice(0, 2))
   }
 
   return warnings
@@ -703,310 +716,255 @@ function generateStrengths(keywordAnalysis: KeywordAnalysis, formatAnalysis: For
   return strengths
 }
 
-// AI-powered analysis functions (temporarily disabled)
-/*
-async function analyzeWithHuggingFace(
-  cvText: string,
-  jobDescription?: string,
-  targetATS: string = 'workday',
-  industry: string = 'technology'
-) {
-  try {
-    const hfClient = new HuggingFaceATSClient()
-    
-    // Use AI to analyze CV content and structure
-    const aiAnalysis = await hfClient.analyzeCVForATS(cvText, jobDescription)
-    
-    // Combine AI analysis with traditional methods
-    const sectionAnalysis = analyzeSmartSections(cvText)
-    const formatAnalysis = analyzeFormat(cvText)
-    
-    // Enhanced keyword analysis using AI
-    const keywordAnalysis = {
-      total: aiAnalysis.keywordAnalysis.extractedKeywords.length + aiAnalysis.keywordAnalysis.missingKeywords.length,
-      matched: aiAnalysis.keywordAnalysis.extractedKeywords.length,
-      missing: aiAnalysis.keywordAnalysis.missingKeywords,
-      density: aiAnalysis.keywordAnalysis.extractedKeywords.reduce((acc, keyword) => {
-        acc[keyword] = 2.5 // Placeholder density
-        return acc
-      }, {} as Record<string, number>)
-    }
-    
-    // Calculate overall score using AI insights
-    const overallScore = Math.round(
-      (aiAnalysis.atsCompatibility.formatScore * 0.3) +
-      (aiAnalysis.keywordAnalysis.relevanceScore * 0.4) +
-      (aiAnalysis.contentAnalysis.structureScore * 0.3)
-    )
-    
-    return {
-      overallScore,
-      keywordDensity: keywordAnalysis,
-      formatScore: aiAnalysis.atsCompatibility.formatScore,
-      sectionScore: aiAnalysis.contentAnalysis.structureScore,
-      suggestions: [
-        ...aiAnalysis.contentAnalysis.suggestions,
-        'Use AI-enhanced keyword optimization',
-        'Leverage modern CV formatting best practices'
-      ],
-      strengths: [
-        `Professional content quality: ${aiAnalysis.contentAnalysis.professionalismScore}/100`,
-        `AI-detected parsing compatibility: ${aiAnalysis.atsCompatibility.parsingProbability * 100}%`
-      ],
-      warnings: aiAnalysis.atsCompatibility.warnings,
-      details: sectionAnalysis.details,
-      atsSystemScores: {
-        [targetATS]: Math.max(70, overallScore - 5),
-        'ai_optimized': overallScore
-      },
-      rejectionRisk: overallScore >= 80 ? 'low' : overallScore >= 60 ? 'medium' : 'high' as 'low' | 'medium' | 'high',
-      industryAlignment: aiAnalysis.keywordAnalysis.relevanceScore
-    }
-  } catch (error) {
-    console.error('Hugging Face analysis failed, falling back to basic analysis:', error)
-    // Fallback to enhanced basic analysis
-    return await enhancedBasicAnalysis(cvText, jobDescription, targetATS, industry)
+function calculateIndustryAlignment(cvText: string, industry: string): number {
+  const industryKeywords: Record<string, string[]> = {
+    technology: ['software', 'developer', 'programming', 'code', 'technical', 'agile', 'api', 'cloud'],
+    finance: ['financial', 'banking', 'investment', 'analysis', 'risk', 'compliance', 'audit'],
+    healthcare: ['medical', 'clinical', 'patient', 'healthcare', 'treatment', 'diagnosis', 'care']
   }
-}
-
-async function analyzeKeywordsWithAI(cvText: string, jobDescription?: string) {
-  // Enhanced keyword analysis that adapts to different CV formats
-  const smartKeywords = extractSmartKeywords(cvText, jobDescription)
   
-  return {
-    total: smartKeywords.total,
-    matched: smartKeywords.matched,
-    missing: smartKeywords.missing,
-    density: smartKeywords.density
-  }
-}
-
-function extractSmartKeywords(cvText: string, jobDescription?: string) {
+  const keywords = industryKeywords[industry] || []
   const cvLower = cvText.toLowerCase()
-  const jobLower = jobDescription?.toLowerCase() || ''
   
-  // Dynamic keyword extraction based on content
-  const detectedSkills = []
-  const techPatterns = [
-    /\b(python|javascript|java|c\+\+|react|node|django|flask|api|sql|html|css|git|docker|aws|azure)\b/gi,
-    /\b(machine learning|ai|artificial intelligence|data science|automation|backend|frontend)\b/gi,
-    /\b(agile|scrum|devops|ci\/cd|testing|debugging|optimization)\b/gi
-  ]
-  
-  techPatterns.forEach(pattern => {
-    const matches = cvText.match(pattern) || []
-    detectedSkills.push(...matches.map(m => m.toLowerCase()))
-  })
-  
-  // Extract from job description if provided
-  let targetKeywords = [...new Set(detectedSkills)]
-  if (jobDescription) {
-    const jobKeywords = jobLower.match(/\b\w{3,}\b/g) || []
-    const relevantJobKeywords = jobKeywords.filter(keyword => 
-      cvLower.includes(keyword) && keyword.length > 3
-    )
-    targetKeywords = [...new Set([...targetKeywords, ...relevantJobKeywords])]
-  }
-  
-  const matchedKeywords: Record<string, number> = {}
-  const missingKeywords: string[] = []
-  
-  targetKeywords.forEach(keyword => {
-    if (cvLower.includes(keyword)) {
-      const wordCount = cvText.split(/\s+/).length
-      const occurrences = (cvLower.match(new RegExp(keyword, 'g')) || []).length
-      matchedKeywords[keyword] = Math.round((occurrences / wordCount) * 1000) / 10
-    } else {
-      missingKeywords.push(keyword)
-    }
-  })
+  const foundKeywords = keywords.filter(keyword => cvLower.includes(keyword))
+  return Math.round((foundKeywords.length / keywords.length) * 100)
+}
+
+function extractBasicData(cvText: string): Record<string, any> {
+  const emailRegex = /[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}/g
+  const phoneRegex = /[\+]?[1-9]?[\d\s\-\(\)]{10,}/g
   
   return {
-    total: targetKeywords.length,
-    matched: Object.keys(matchedKeywords).length,
-    missing: missingKeywords,
-    density: matchedKeywords
+    emails: cvText.match(emailRegex) || [],
+    phones: cvText.match(phoneRegex) || [],
+    wordCount: cvText.split(/\s+/).length,
+    hasContactInfo: !!(cvText.match(emailRegex) && cvText.match(phoneRegex))
   }
 }
 
-function analyzeSmartSections(cvText: string) {
-  // Smart section detection that works with any CV format
-  const sections = {
-    contactInfo: analyzeContactSection(cvText),
-    experience: analyzeExperienceSection(cvText),
-    skills: analyzeSkillsSection(cvText),
-    education: analyzeEducationSection(cvText),
-    formatting: analyzeFormattingSection(cvText)
-  }
-  
-  const totalScore = Object.values(sections).reduce((sum, section) => sum + section.score, 0)
-  
-  return {
-    score: Math.round(totalScore / Object.keys(sections).length),
-    details: sections
-  }
-}
+// Clean up PDF extraction artifacts and reconstruct broken words
+function cleanPDFExtractionArtifacts(text: string): string {
+  let cleaned = text
 
-function analyzeContactSection(cvText: string) {
-  let score = 0
-  const issues: string[] = []
+  // Step 1: Fix common PDF extraction issues
+  // Remove excessive whitespace and normalize line breaks
+  cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
   
-  // Email detection (flexible)
-  if (/@/.test(cvText)) score += 25
-  else issues.push('Email address not found')
-  
-  // Phone detection (very flexible)
-  if (/[\+]?[\d\s\-\(\)]{8,}/.test(cvText)) score += 25
-  else issues.push('Phone number not found')
-  
-  // Location detection
-  if (/\b(dublin|ireland|london|uk|usa|canada|germany|france|spain|italy)\b/i.test(cvText)) score += 25
-  
-  // Professional links
-  if (/linkedin|github|portfolio|website/i.test(cvText)) score += 25
-  
-  return { score, issues }
-}
+  // Step 2: Fix broken words - common patterns from PDF extraction
+  const brokenWordPatterns: { [key: string]: string } = {
+    // Technology terms
+    'artifi cial': 'artificial',
+    'artifi cal': 'artificial', 
+    'intel ligence': 'intelligence',
+    'mach ine': 'machine',
+    'learn ing': 'learning',
+    'develop ment': 'development',
+    'develop er': 'developer',
+    'program ming': 'programming',
+    'program mer': 'programmer',
+    'java script': 'javascript',
+    'type script': 'typescript',
+    'data base': 'database',
+    'front end': 'frontend',
+    'back end': 'backend',
+    'full stack': 'fullstack',
+    'work flow': 'workflow',
+    'frame work': 'framework',
+    'frame works': 'frameworks',
+    'micro services': 'microservices',
+    'micro service': 'microservice',
+    'cloud computing': 'cloud computing', // Already correct but check for breaks
+    'cloud comput ing': 'cloud computing',
+    'soft ware': 'software',
+    'hard ware': 'hardware',
+    'net work': 'network',
+    'net working': 'networking',
+    'cyber security': 'cybersecurity',
+    'cyber secur ity': 'cybersecurity',
+    
+    // Business terms
+    'manage ment': 'management',
+    'manage r': 'manager',
+    'lead ership': 'leadership',
+    'commun ication': 'communication',
+    'commun ications': 'communications',
+    'organ ization': 'organization',
+    'organ izations': 'organizations',
+    'admin istration': 'administration',
+    'admin istrator': 'administrator',
+    'coord ination': 'coordination',
+    'coord inator': 'coordinator',
+    'oper ations': 'operations',
+    'oper ational': 'operational',
+    'strat egy': 'strategy',
+    'strat egic': 'strategic',
+    'project manage ment': 'project management',
+    'project manager': 'project manager',
+    'quality assur ance': 'quality assurance',
+    'quality control': 'quality control',
+    'custom er': 'customer',
+    'custom ers': 'customers',
+    'custom er service': 'customer service',
+    
+    // Education terms
+    'univ ersity': 'university',
+    'univ ersities': 'universities',
+    'bach elor': 'bachelor',
+    'mast er': 'master',
+    'mast ers': 'masters',
+    'doc torate': 'doctorate',
+    'certif ication': 'certification',
+    'certif icate': 'certificate',
+    'grad uate': 'graduate',
+    'grad uation': 'graduation',
+    'under graduate': 'undergraduate',
+    'post graduate': 'postgraduate',
+    
+    // Location terms (Irish context)
+    'dub lin': 'dublin',
+    'ire land': 'ireland',
+    'cork city': 'cork',
+    'gal way': 'galway',
+    'limer ick': 'limerick',
+    'water ford': 'waterford',
+    
+    // Common broken patterns
+    'respon sible': 'responsible',
+    'respon sibility': 'responsibility',
+    'exper ience': 'experience',
+    'exper ienced': 'experienced',
+    'achieve ment': 'achievement',
+    'achieve ments': 'achievements',
+    'improve ment': 'improvement',
+    'improve ments': 'improvements',
+    'require ment': 'requirement',
+    'require ments': 'requirements',
+    'environ ment': 'environment',
+    'environ mental': 'environmental',
+    'profess ional': 'professional',
+    'profess ionals': 'professionals',
+    'intern ational': 'international',
+    'nation al': 'national',
+    'region al': 'regional',
+    'glob al': 'global'
+  }
 
-function analyzeExperienceSection(cvText: string) {
-  let score = 0
-  const issues: string[] = []
-  
-  // Date patterns (very flexible)
-  const datePatterns = [
-    /\b(20\d{2}|19\d{2})\b/g,
-    /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/gi,
-    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/gi,
-    /\b(present|current|now)\b/gi
-  ]
-  
-  let datesFound = false
-  datePatterns.forEach(pattern => {
-    if (pattern.test(cvText)) datesFound = true
+  // Apply broken word fixes (case insensitive)
+  Object.entries(brokenWordPatterns).forEach(([broken, fixed]) => {
+    const regex = new RegExp('\\b' + broken.replace(/\s/g, '\\s+') + '\\b', 'gi')
+    cleaned = cleaned.replace(regex, fixed)
   })
+
+  // Step 3: Fix spacing around common punctuation
+  cleaned = cleaned.replace(/\s+([.,;:!?])/g, '$1') // Remove space before punctuation
+  cleaned = cleaned.replace(/([.,;:!?])([A-Za-z])/g, '$1 $2') // Add space after punctuation
+
+  // Step 4: Fix email and phone number breaks
+  // Email fixes: john @ example.com → john@example.com
+  cleaned = cleaned.replace(/(\w+)\s*@\s*(\w+)/g, '$1@$2')
   
-  if (datesFound) score += 30
-  else issues.push('Employment dates not clearly specified')
+  // Phone number fixes: +353 1 234 5678 (this is correct, but fix weird breaks)
+  cleaned = cleaned.replace(/\+\s*(\d+)\s+(\d+)/g, '+$1 $2')
+
+  // Step 5: Fix common URL breaks
+  cleaned = cleaned.replace(/https?\s*:\s*\/\s*\/\s*/g, 'https://')
+  cleaned = cleaned.replace(/www\s*\.\s*/g, 'www.')
+
+  // Step 6: Normalize multiple spaces to single spaces
+  cleaned = cleaned.replace(/[ \t]+/g, ' ')
   
-  // Job title indicators (comprehensive)
-  const jobTitles = /\b(developer|engineer|manager|analyst|specialist|coordinator|director|officer|consultant|founder|ceo|cto|lead|senior|junior|intern)\b/gi
-  if (jobTitles.test(cvText)) score += 35
-  else issues.push('Job titles not clearly identified')
+  // Step 7: Clean up multiple line breaks
+  cleaned = cleaned.replace(/\n\s*\n\s*\n+/g, '\n\n')
   
-  // Company indicators
-  if (/\b(company|corporation|ltd|inc|llc|group|systems|technologies|solutions)\b/i.test(cvText)) score += 35
+  // Step 8: Apply advanced technical term reconstruction
+  cleaned = reconstructTechnicalTerms(cleaned)
   
-  return { score, issues }
+  // Step 9: Trim whitespace
+  cleaned = cleaned.trim()
+
+  return cleaned
 }
 
-function analyzeSkillsSection(cvText: string) {
-  let score = 0
-  const issues: string[] = []
-  
-  // Technical skills (adaptive detection)
-  const techSkillPatterns = [
-    /\b(programming|languages|frameworks|tools|technologies)\b/i,
-    /\b(python|javascript|java|c\+\+|html|css|sql|git|docker|aws)\b/i,
-    /\b(react|angular|vue|node|django|flask|spring|laravel)\b/i
+// Advanced keyword reconstruction for better ATS matching
+function reconstructTechnicalTerms(text: string): string {
+  // Common technical term patterns that get broken in PDFs
+  const technicalPatterns = [
+    // AI/ML terms
+    { pattern: /\b(artificial|artifi\s*cial)\s+(intelligence|intel\s*ligence)\b/gi, replacement: 'artificial intelligence' },
+    { pattern: /\b(machine|mach\s*ine)\s+(learning|learn\s*ing)\b/gi, replacement: 'machine learning' },
+    { pattern: /\b(deep|dee\s*p)\s+(learning|learn\s*ing)\b/gi, replacement: 'deep learning' },
+    { pattern: /\b(neural|neur\s*al)\s+(network|net\s*work)\b/gi, replacement: 'neural network' },
+    { pattern: /\b(natural|natur\s*al)\s+(language|lang\s*uage)\b/gi, replacement: 'natural language' },
+    
+    // Programming languages
+    { pattern: /\b(java|jav\s*a)\s+(script|scr\s*ipt)\b/gi, replacement: 'javascript' },
+    { pattern: /\b(type|typ\s*e)\s+(script|scr\s*ipt)\b/gi, replacement: 'typescript' },
+    { pattern: /\b(object|obj\s*ect)\s+(oriented|ori\s*ented)\b/gi, replacement: 'object oriented' },
+    
+    // Frameworks & Technologies
+    { pattern: /\b(react|rea\s*ct)\s+(js|j\s*s)\b/gi, replacement: 'react' },
+    { pattern: /\b(node|nod\s*e)\s+(js|j\s*s)\b/gi, replacement: 'nodejs' },
+    { pattern: /\b(angular|ang\s*ular)\s+(js|j\s*s)\b/gi, replacement: 'angular' },
+    { pattern: /\b(vue|vu\s*e)\s+(js|j\s*s)\b/gi, replacement: 'vue' },
+    
+    // Cloud & DevOps
+    { pattern: /\b(amazon|amaz\s*on)\s+(web|we\s*b)\s+(services|serv\s*ices)\b/gi, replacement: 'aws' },
+    { pattern: /\b(microsoft|micr\s*osoft)\s+(azure|az\s*ure)\b/gi, replacement: 'azure' },
+    { pattern: /\b(google|goog\s*le)\s+(cloud|clo\s*ud)\b/gi, replacement: 'google cloud' },
+    { pattern: /\b(docker|dock\s*er)\s+(container|cont\s*ainer)\b/gi, replacement: 'docker container' },
+    { pattern: /\b(kubernetes|kuber\s*netes)\b/gi, replacement: 'kubernetes' },
+    
+    // Databases
+    { pattern: /\b(mongo|mong\s*o)\s+(db|d\s*b)\b/gi, replacement: 'mongodb' },
+    { pattern: /\b(postgre|postgr\s*e)\s+(sql|s\s*ql)\b/gi, replacement: 'postgresql' },
+    { pattern: /\b(my|m\s*y)\s+(sql|s\s*ql)\b/gi, replacement: 'mysql' },
+    
+    // Methodologies
+    { pattern: /\b(agile|ag\s*ile)\s+(development|develop\s*ment)\b/gi, replacement: 'agile development' },
+    { pattern: /\b(scrum|scr\s*um)\s+(master|mast\s*er)\b/gi, replacement: 'scrum master' },
+    { pattern: /\b(test|tes\s*t)\s+(driven|driv\s*en)\b/gi, replacement: 'test driven' },
+    { pattern: /\b(behavior|behav\s*ior)\s+(driven|driv\s*en)\b/gi, replacement: 'behavior driven' },
   ]
-  
-  let techSkillsFound = 0
-  techSkillPatterns.forEach(pattern => {
-    if (pattern.test(cvText)) techSkillsFound++
+
+  let result = text
+  technicalPatterns.forEach(({ pattern, replacement }) => {
+    result = result.replace(pattern, replacement)
   })
-  
-  if (techSkillsFound >= 2) score += 50
-  else if (techSkillsFound >= 1) score += 30
-  else issues.push('Technical skills not clearly identified')
-  
-  // Soft skills
-  const softSkills = /\b(leadership|communication|teamwork|problem|analytical|creative|management)\b/i
-  if (softSkills.test(cvText)) score += 30
-  
-  // Certifications
-  if (/\b(certified|certification|license|training|course)\b/i.test(cvText)) score += 20
-  
-  return { score, issues }
+
+  return result
 }
 
-function analyzeEducationSection(cvText: string) {
-  let score = 0
-  const issues: string[] = []
-  
-  // Education keywords (comprehensive)
-  const educationPatterns = [
-    /\b(university|college|institute|school|academy)\b/i,
-    /\b(bachelor|master|phd|doctorate|degree|diploma|certificate)\b/i,
-    /\b(bsc|msc|ba|ma|engineering|science|technology|business)\b/i
-  ]
-  
-  let educationFound = false
-  educationPatterns.forEach(pattern => {
-    if (pattern.test(cvText)) educationFound = true
-  })
-  
-  if (educationFound) score += 60
-  else issues.push('Educational qualifications not clearly specified')
-  
-  // GPA or grades
-  if (/\b(gpa|grade|3\.|4\.|first|second|honours)\b/i.test(cvText)) score += 20
-  
-  // Graduation years
-  if (/\b(20\d{2}|19\d{2})\b/.test(cvText)) score += 20
-  
-  return { score, issues }
-}
-
-function analyzeFormattingSection(cvText: string) {
-  let score = 70 // Base score
-  const issues: string[] = []
-  
-  // Word count analysis
-  const wordCount = cvText.split(/\s+/).length
-  if (wordCount >= 200) score += 15
-  else if (wordCount >= 100) score += 10
-  else issues.push('CV appears too short')
-  
-  // Structure indicators
-  if (/\n\s*\n/.test(cvText)) score += 15 // Has paragraph breaks
-  
-  return { score, issues }
-}
-
-async function enhancedBasicAnalysis(
-  cvText: string,
-  jobDescription?: string,
-  targetATS: string = 'workday',
-  industry: string = 'technology'
-) {
-  // Fallback enhanced analysis when AI fails
-  const keywordAnalysis = await analyzeKeywordsWithAI(cvText, jobDescription)
-  const formatAnalysis = analyzeFormat(cvText)
-  const sectionAnalysis = analyzeSmartSections(cvText)
-  
-  const overallScore = calculateOverallScore(keywordAnalysis, formatAnalysis, sectionAnalysis)
-  
-  return {
-    overallScore,
-    keywordDensity: keywordAnalysis,
-    formatScore: formatAnalysis.score,
-    sectionScore: sectionAnalysis.score,
-    suggestions: [
-      'Consider adding more relevant keywords from the job description',
-      'Ensure clear section headings for better ATS parsing',
-      'Use standard formatting with bullet points'
-    ],
-    strengths: [
-      'CV structure is compatible with modern ATS systems',
-      'Content appears professional and well-organized'
-    ],
-    warnings: [],
-    details: sectionAnalysis.details,
-    atsSystemScores: {
-      [targetATS]: Math.max(60, overallScore - 10)
-    },
-    rejectionRisk: overallScore >= 75 ? 'low' : overallScore >= 50 ? 'medium' : 'high' as 'low' | 'medium' | 'high',
-    industryAlignment: 70
+// GET endpoint for health check
+export async function GET() {
+  try {
+    const hfClient = getHuggingFaceClient()
+    const isHealthy = await hfClient.healthCheck()
+    
+    return NextResponse.json({
+      status: 'healthy',
+      service: 'ats-analyzer',
+      version: '2.0',
+      providers: {
+        huggingface: isHealthy ? 'available' : 'degraded',
+        fallback: 'available'
+      },
+      features: {
+        basicAnalysis: true,
+        enterpriseAnalysis: true,
+        aiEnhanced: isHealthy,
+        jobMatching: true,
+        irishMarketOptimization: true
+      },
+      lastChecked: new Date().toISOString()
+    })
+  } catch (error) {
+    return NextResponse.json({
+      status: 'degraded',
+      error: 'Partial service availability',
+      providers: {
+        huggingface: 'unavailable',
+        fallback: 'available'
+      }
+    }, { status: 206 }) // Partial Content
   }
 }
-*/
