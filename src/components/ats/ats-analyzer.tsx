@@ -71,7 +71,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [analysisMode, setAnalysisMode] = useState<'basic' | 'enterprise'>('enterprise')
+  const analysisMode = 'enterprise' // Always use enterprise mode
   const [showFileUpload, setShowFileUpload] = useState(false)
 
   const industryOptions = [
@@ -151,13 +151,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
     setError(null)
   }
 
-  // Clear analysis when switching modes
-  const handleModeChange = (mode: 'basic' | 'enterprise') => {
-    setAnalysisMode(mode)
-    if (analysis) {
-      setAnalysis(null) // Clear previous analysis when mode changes
-    }
-  }
+  // Clear analysis when switching modes (removed since we only have enterprise mode)
 
   return (
     <div className="space-y-6">
@@ -172,40 +166,8 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <Label>Analysis Mode</Label>
-            <div className="flex gap-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="basic"
-                  name="analysisMode"
-                  value="basic"
-                  checked={analysisMode === 'basic'}
-                  onChange={(e) => handleModeChange(e.target.value as 'basic' | 'enterprise')}
-                  className="h-4 w-4"
-                />
-                <Label htmlFor="basic" className="text-sm">Basic Analysis</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="enterprise"
-                  name="analysisMode"
-                  value="enterprise"
-                  checked={analysisMode === 'enterprise'}
-                  onChange={(e) => handleModeChange(e.target.value as 'basic' | 'enterprise')}
-                  className="h-4 w-4"
-                />
-                <Label htmlFor="enterprise" className="text-sm font-medium text-cvgenius-primary">
-                  Enterprise Analysis (Recommended)
-                </Label>
-              </div>
-            </div>
-          </div>
-
-          {analysisMode === 'enterprise' && (
-            <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
+          {/* Enterprise Analysis Section */}
+          <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
               <div className="space-y-4">
                 <div className="space-y-3">
                   <Label htmlFor="industry" className="flex items-center gap-2 text-base font-medium">
@@ -246,7 +208,6 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                 </div>
               </div>
             </div>
-          )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">

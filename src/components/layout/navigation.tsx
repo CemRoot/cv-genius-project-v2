@@ -44,6 +44,20 @@ export function Navigation() {
     }
   }, [isOpen])
 
+  // Handle navigation with smooth scroll to top
+  const handleNavigation = (href: string) => {
+    setIsOpen(false)
+    
+    // If navigating to same page, scroll to top
+    if (href === pathname) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    
+    // Navigate to new page
+    router.push(href)
+  }
+
   // Swipe gesture handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isOpen) return
@@ -72,167 +86,174 @@ export function Navigation() {
   }
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 lg:h-20 items-center justify-between">
-          <Logo />
-          
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-cvgenius-purple touch-target ${
-                  pathname === link.href ? 'text-cvgenius-purple' : ''
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Button variant="cvgenius" size="sm" className="touch-target" asChild>
-              <Link href="/builder">Start Building</Link>
+    <div>
+      <nav className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 lg:h-20 items-center justify-between">
+            <Logo />
+            
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  scroll={false}
+                  onClick={() => handleNavigation(link.href)}
+                  className={`text-sm font-medium transition-colors hover:text-cvgenius-purple touch-target ${
+                    pathname === link.href ? 'text-cvgenius-purple' : ''
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Button variant="cvgenius" size="sm" className="touch-target" asChild>
+                <Link href="/builder" scroll={false} onClick={() => handleNavigation('/builder')}>
+                  Start Building
+                </Link>
+              </Button>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden relative z-50 touch-target-large touch-feedback"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
+            >
+              <AnimatePresence mode="wait">
+                {isOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X size={24} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu size={24} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden relative z-50 touch-target-large touch-feedback"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isOpen}
-          >
-            <AnimatePresence mode="wait">
-              {isOpen ? (
+          {/* Mobile Navigation Overlay */}
+          <AnimatePresence>
+            {isOpen && (
+              <>
+                {/* Backdrop */}
                 <motion.div
-                  key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                >
-                  <X size={24} />
-                </motion.div>
-              ) : (
+                  className="fixed inset-0 bg-black/20 backdrop-blur-sm lg:hidden"
+                  onClick={() => setIsOpen(false)}
+                  style={{ top: '64px' }}
+                />
+                
+                {/* Mobile Menu */}
                 <motion.div
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="lg:hidden absolute left-0 right-0 top-full bg-background border-t shadow-xl z-40"
+                  onTouchStart={handleTouchStart}
+                  style={{ height: 'calc(var(--mobile-vh) - 64px)' }}
                 >
-                  <Menu size={24} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Button>
-        </div>
-
-        {/* Mobile Navigation Overlay */}
-        <AnimatePresence>
-          {isOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm lg:hidden"
-                onClick={() => setIsOpen(false)}
-                style={{ top: '64px' }}
-              />
-              
-              {/* Mobile Menu */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="lg:hidden absolute left-0 right-0 top-full bg-background border-t shadow-xl z-40"
-                onTouchStart={handleTouchStart}
-                style={{ height: 'calc(var(--mobile-vh) - 64px)' }}
-              >
-                <div className="mobile-container py-6 h-full overflow-y-auto mobile-overflow-scroll">
-                  <nav className="mobile-stack" role="navigation" aria-label="Mobile navigation">
-                    {navLinks.map((link, index) => (
+                  <div className="mobile-container py-6 h-full overflow-y-auto mobile-overflow-scroll">
+                    <nav className="mobile-stack" role="navigation" aria-label="Mobile navigation">
+                      {navLinks.map((link, index) => (
+                        <motion.div
+                          key={link.href}
+                          initial={{ opacity: 0, x: -30 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + index * 0.05, duration: 0.2 }}
+                        >
+                          <Link
+                            href={link.href}
+                            scroll={false}
+                            className={`block mobile-body font-medium transition-all duration-200 py-4 px-6 rounded-touch hover:bg-muted/50 touch-target touch-feedback ${
+                              pathname === link.href 
+                                ? 'text-cvgenius-purple bg-cvgenius-purple/10 border-l-4 border-cvgenius-purple' 
+                                : 'hover:text-cvgenius-purple'
+                            }`}
+                            onClick={() => handleNavigation(link.href)}
+                          >
+                            {link.label}
+                          </Link>
+                        </motion.div>
+                      ))}
+                      
                       <motion.div
-                        key={link.href}
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 + index * 0.05, duration: 0.2 }}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.3 }}
+                        className="mt-8 px-6"
                       >
-                        <Link
-                          href={link.href}
-                          className={`block mobile-body font-medium transition-all duration-200 py-4 px-6 rounded-touch hover:bg-muted/50 touch-target touch-feedback ${
-                            pathname === link.href 
-                              ? 'text-cvgenius-purple bg-cvgenius-purple/10 border-l-4 border-cvgenius-purple' 
-                              : 'hover:text-cvgenius-purple'
-                          }`}
-                          onClick={() => setIsOpen(false)}
+                        <Button 
+                          variant="cvgenius" 
+                          size="lg" 
+                          className="w-full mobile-button-primary touch-feedback" 
+                          asChild
                         >
-                          {link.label}
-                        </Link>
+                          <Link href="/builder" scroll={false} onClick={() => handleNavigation('/builder')}>
+                            Start Building CV
+                          </Link>
+                        </Button>
                       </motion.div>
-                    ))}
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4, duration: 0.3 }}
-                      className="mt-8 px-6"
-                    >
-                      <Button 
-                        variant="cvgenius" 
-                        size="lg" 
-                        className="w-full mobile-button-primary touch-feedback" 
-                        asChild
-                      >
-                        <Link href="/builder" onClick={() => setIsOpen(false)}>
-                          Start Building CV
-                        </Link>
-                      </Button>
-                    </motion.div>
 
-                    {/* Mobile-specific quick actions */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5, duration: 0.3 }}
-                      className="mt-6 px-6 pt-6 border-t border-border/50"
-                    >
-                      <div className="mobile-grid-2 gap-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="mobile-button-secondary touch-feedback" 
-                          asChild
-                        >
-                          <Link href="/templates" onClick={() => setIsOpen(false)}>
-                            Browse Templates
-                          </Link>
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="mobile-button-secondary touch-feedback" 
-                          asChild
-                        >
-                          <Link href="/ats-check" onClick={() => setIsOpen(false)}>
-                            ATS Check
-                          </Link>
-                        </Button>
-                      </div>
-                    </motion.div>
-                  </nav>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
-    </nav>
+                      {/* Mobile-specific quick actions */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.3 }}
+                        className="mt-6 px-6 pt-6 border-t border-border/50"
+                      >
+                        <div className="mobile-grid-2 gap-3">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mobile-button-secondary touch-feedback" 
+                            asChild
+                          >
+                            <Link href="/templates" scroll={false} onClick={() => handleNavigation('/templates')}>
+                              Browse Templates
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mobile-button-secondary touch-feedback" 
+                            asChild
+                          >
+                            <Link href="/ats-check" scroll={false} onClick={() => handleNavigation('/ats-check')}>
+                              ATS Check
+                            </Link>
+                          </Button>
+                        </div>
+                      </motion.div>
+                    </nav>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+      </nav>
+    </div>
   )
 }

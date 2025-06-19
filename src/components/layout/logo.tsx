@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useRouter, usePathname } from "next/navigation"
 
 interface LogoProps {
   className?: string
@@ -7,6 +10,9 @@ interface LogoProps {
 }
 
 export function Logo({ className = "", size = "md", showText = true }: LogoProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  
   const sizeClasses = {
     sm: "text-lg",
     md: "text-xl",
@@ -19,8 +25,24 @@ export function Logo({ className = "", size = "md", showText = true }: LogoProps
     lg: 28
   }
 
+  const handleLogoClick = () => {
+    // If already on home page, scroll to top
+    if (pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    
+    // Navigate to home page
+    router.push('/')
+  }
+
   return (
-    <Link href="/" className={`flex items-center gap-2 hover:opacity-80 transition-opacity ${className}`}>
+    <Link 
+      href="/" 
+      scroll={false}
+      onClick={handleLogoClick}
+      className={`flex items-center gap-2 hover:opacity-80 transition-opacity ${className}`}
+    >
       <svg
         width={iconSizes[size]}
         height={iconSizes[size]}

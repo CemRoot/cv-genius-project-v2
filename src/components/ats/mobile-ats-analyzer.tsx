@@ -72,7 +72,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [analysisMode, setAnalysisMode] = useState<'basic' | 'enterprise'>('enterprise')
+  const analysisMode = 'enterprise' // Always use enterprise mode
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [isOnline, setIsOnline] = useState(true)
@@ -254,13 +254,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
     setExpandedSection(null)
   }
 
-  // Clear analysis when switching modes
-  const handleModeChange = (mode: 'basic' | 'enterprise') => {
-    setAnalysisMode(mode)
-    if (analysis) {
-      setAnalysis(null) // Clear previous analysis when mode changes
-    }
-  }
+  // Clear analysis when switching modes (removed since we only have enterprise mode)
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section)
@@ -290,29 +284,8 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Analysis Mode Toggle */}
-          <div className="flex gap-2">
-            <Button
-              variant={analysisMode === 'basic' ? 'default' : 'outline'}
-              onClick={() => handleModeChange('basic')}
-              size="sm"
-              className="flex-1"
-            >
-              Basic
-            </Button>
-            <Button
-              variant={analysisMode === 'enterprise' ? 'default' : 'outline'}
-              onClick={() => handleModeChange('enterprise')}
-              size="sm"
-              className="flex-1"
-            >
-              Enterprise
-            </Button>
-          </div>
-
-          {/* Industry Selection (Enterprise) */}
-          {analysisMode === 'enterprise' && (
-            <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
+          {/* Enterprise Analysis Section */}
+          <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
               <div className="space-y-3">
                 <label htmlFor="target-industry" className="text-base font-medium flex items-center gap-2">
                   <FileText className="h-5 w-5" />
@@ -352,7 +325,6 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                 </div>
               </div>
             </div>
-          )}
 
           {/* CV Input Section */}
           <div className="space-y-3">
