@@ -1,25 +1,36 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
 import PropuShNotification from "@/components/ads/propush-notification"
+import FacebookBrowserRedirect from "@/components/ads/facebook-browser-redirect"
+import { WebAppStructuredData, LocalBusinessStructuredData } from "@/components/seo/structured-data"
+import { OfflineIndicator } from "@/components/ui/offline-indicator"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CVGenius - AI-Powered CV Builder for Irish Job Market",
-  description: "Create ATS-friendly CVs with AI specifically designed for Dublin and Irish job market. 100% free, no signup required, privacy-first approach.",
+  title: "CV Genius - Dublin Jobs CV Builder | Professional Irish Resume Templates 2025",
+  description: "Create winning CVs for Dublin jobs market 2025. AI-powered CV builder with Irish-focused templates. Perfect for Dublin tech, finance, healthcare & engineering jobs. ATS-optimized.",
   keywords: [
-    "CV builder",
-    "resume builder", 
-    "Dublin jobs",
-    "Irish job market",
-    "ATS friendly",
-    "AI CV",
-    "free CV builder",
-    "Ireland jobs"
+    "Dublin jobs CV builder 2025",
+    "Irish resume templates",
+    "Dublin tech jobs CV",
+    "Dublin finance jobs resume", 
+    "Dublin healthcare jobs CV",
+    "Dublin engineering jobs CV",
+    "Irish IT jobs resume",
+    "Dublin software engineer CV",
+    "Dublin accountant CV template",
+    "ATS friendly CV Dublin",
+    "Irish job market CV 2025",
+    "Dublin recruitment CV builder",
+    "Irish professional resume",
+    "Dublin employment CV maker",
+    "CV builder Ireland",
+    "resume builder Dublin"
   ],
   authors: [{ name: "CVGenius Team" }],
   creator: "CVGenius",
@@ -34,8 +45,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "CVGenius - AI-Powered CV Builder for Irish Job Market",
-    description: "Create ATS-friendly CVs with AI specifically designed for Dublin and Irish job market. 100% free, no signup required.",
+    title: "CV Genius - Dublin Jobs CV Builder | Professional Irish Resume Templates 2025",
+    description: "Create winning CVs for Dublin jobs market 2025. AI-powered CV builder with Irish-focused templates. Perfect for Dublin tech, finance, healthcare & engineering jobs. ATS-optimized.",
     url: "https://cvgenius.ie",
     siteName: "CVGenius",
     locale: "en_IE",
@@ -60,8 +71,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CVGenius - AI-Powered CV Builder for Irish Job Market",
-    description: "Create ATS-friendly CVs with AI specifically designed for Dublin and Irish job market. 100% free, no signup required.",
+    title: "CV Genius - Dublin Jobs CV Builder | Professional Irish Resume Templates 2025",
+    description: "Create winning CVs for Dublin jobs market 2025. AI-powered CV builder with Irish-focused templates. Perfect for Dublin tech, finance, healthcare & engineering jobs. ATS-optimized.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -78,13 +89,15 @@ export const metadata: Metadata = {
   verification: {
     google: "your-google-verification-code",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-    viewportFit: "cover",
-  },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+  themeColor: "#8B5CF6",
 }
 
 export default function RootLayout({
@@ -133,6 +146,10 @@ export default function RootLayout({
         <link rel="serviceworker" href="/sw-check-permissions-36fdf.js" />
         <meta name="propush-sw" content="/sw-check-permissions-36fdf.js" />
         
+        {/* Structured Data for SEO */}
+        <WebAppStructuredData />
+        <LocalBusinessStructuredData />
+        
         {/* Mobile Keyboard Avoidance */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
         
@@ -158,8 +175,14 @@ export default function RootLayout({
           </ErrorBoundary>
         </ToastProvider>
         
+        {/* Offline Indicator */}
+        <OfflineIndicator />
+        
         {/* PropuSH Push Notifications */}
         <PropuShNotification />
+        
+        {/* Facebook Browser Redirect */}
+        <FacebookBrowserRedirect />
       </body>
     </html>
   )
