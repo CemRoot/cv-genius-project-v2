@@ -5,10 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MobileInput } from "@/components/ui/mobile-input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useCVStore } from "@/store/cv-store"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, ChevronDown, ChevronUp } from "lucide-react"
 import { Experience } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
@@ -181,9 +182,11 @@ function SortableExperienceItem({
                     <Label htmlFor={`position-${experience.id}`}>
                       Position <span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <MobileInput
                       id={`position-${experience.id}`}
                       {...register("position")}
+                      enableAutocomplete={true}
+                      autocompleteType="job-title"
                       className={errors.position ? "border-red-500" : ""}
                     />
                     {errors.position && (
@@ -195,9 +198,11 @@ function SortableExperienceItem({
                     <Label htmlFor={`company-${experience.id}`}>
                       Company <span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <MobileInput
                       id={`company-${experience.id}`}
                       {...register("company")}
+                      enableAutocomplete={true}
+                      autocompleteType="company"
                       className={errors.company ? "border-red-500" : ""}
                     />
                     {errors.company && (
@@ -209,9 +214,12 @@ function SortableExperienceItem({
                     <Label htmlFor={`location-${experience.id}`}>
                       Location <span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <MobileInput
                       id={`location-${experience.id}`}
                       {...register("location")}
+                      enableAutocomplete={true}
+                      autocompleteType="location"
+                      placeholder="Dublin, Ireland"
                       className={errors.location ? "border-red-500" : ""}
                     />
                     {errors.location && (
@@ -227,11 +235,14 @@ function SortableExperienceItem({
                       id={`startDate-${experience.id}`}
                       type="date"
                       {...register("startDate")}
-                      className={errors.startDate ? "border-red-500" : ""}
+                      className={`h-12 ${errors.startDate ? "border-red-500" : ""}`}
                     />
                     {errors.startDate && (
                       <p className="text-sm text-red-500">{errors.startDate.message}</p>
                     )}
+                    <p className="text-xs text-muted-foreground">
+                      Date will be displayed as DD/MM/YYYY
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -243,18 +254,21 @@ function SortableExperienceItem({
                       type="date"
                       {...register("endDate")}
                       disabled={watchCurrent}
-                      className={errors.endDate ? "border-red-500" : ""}
+                      className={`h-12 ${errors.endDate ? "border-red-500" : ""} ${watchCurrent ? "opacity-50" : ""}`}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Leave empty if current position
+                    </p>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 bg-gray-50">
                     <input
                       type="checkbox"
                       id={`current-${experience.id}`}
                       {...register("current")}
-                      className="rounded border-gray-300"
+                      className="w-5 h-5 rounded border-gray-300 text-cvgenius-primary focus:ring-cvgenius-primary focus:ring-2"
                     />
-                    <Label htmlFor={`current-${experience.id}`} className="font-normal">
+                    <Label htmlFor={`current-${experience.id}`} className="font-normal cursor-pointer select-none">
                       I currently work here
                     </Label>
                   </div>
@@ -267,12 +281,16 @@ function SortableExperienceItem({
                   <Textarea
                     id={`description-${experience.id}`}
                     {...register("description")}
-                    rows={3}
-                    className={`resize-none ${errors.description ? "border-red-500" : ""}`}
+                    rows={4}
+                    placeholder="Describe your key responsibilities and daily tasks..."
+                    className={`resize-none min-h-[100px] ${errors.description ? "border-red-500" : ""}`}
                   />
                   {errors.description && (
                     <p className="text-sm text-red-500">{errors.description.message}</p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 10 characters required
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -283,20 +301,28 @@ function SortableExperienceItem({
                     id={`achievements-${experience.id}`}
                     {...register("achievements")}
                     placeholder="• Increased sales by 25%&#10;• Led team of 5 developers&#10;• Implemented new processes"
-                    rows={3}
-                    className="resize-none"
+                    rows={4}
+                    className="resize-none min-h-[100px]"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Enter each achievement on a new line
+                    Enter each achievement on a new line (optional but recommended)
                   </p>
                 </div>
 
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={onCancel}>
+                <div className="flex flex-col sm:flex-row justify-end gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={onCancel}
+                    className="h-12 w-full sm:w-auto order-2 sm:order-1"
+                  >
                     <X className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
-                  <Button type="submit">
+                  <Button 
+                    type="submit"
+                    className="h-12 w-full sm:w-auto order-1 sm:order-2"
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
@@ -325,11 +351,28 @@ function SortableExperienceItem({
   )
 }
 
-export function ExperienceForm() {
+interface ExperienceFormProps {
+  isMobile?: boolean
+}
+
+export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
   const { currentCV, addExperience, updateExperience, removeExperience, reorderExperience } = useCVStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const isMobileView = isMobile || isMobileDevice
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -505,10 +548,12 @@ export function ExperienceForm() {
                 <Label htmlFor="position">
                   Position <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <MobileInput
                   id="position"
                   {...register("position")}
                   placeholder="Software Engineer"
+                  enableAutocomplete={true}
+                  autocompleteType="job-title"
                   className={errors.position ? "border-red-500" : ""}
                 />
                 {errors.position && (
@@ -520,10 +565,12 @@ export function ExperienceForm() {
                 <Label htmlFor="company">
                   Company <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <MobileInput
                   id="company"
                   {...register("company")}
                   placeholder="Tech Corp Ireland"
+                  enableAutocomplete={true}
+                  autocompleteType="company"
                   className={errors.company ? "border-red-500" : ""}
                 />
                 {errors.company && (
@@ -535,10 +582,12 @@ export function ExperienceForm() {
                 <Label htmlFor="location">
                   Location <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <MobileInput
                   id="location"
                   {...register("location")}
                   placeholder="Dublin, Ireland"
+                  enableAutocomplete={true}
+                  autocompleteType="location"
                   className={errors.location ? "border-red-500" : ""}
                 />
                 {errors.location && (

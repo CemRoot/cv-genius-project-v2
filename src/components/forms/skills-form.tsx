@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCVStore } from "@/store/cv-store"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, Star, StarOff, Code, Briefcase, Globe, Users, Wrench } from "lucide-react"
 import { Skill } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
@@ -38,11 +38,28 @@ const skillLevels = [
   { value: 'Expert', label: 'Expert', stars: 4 }
 ] as const
 
-export function SkillsForm() {
+interface SkillsFormProps {
+  isMobile?: boolean
+}
+
+export function SkillsForm({ isMobile = false }: SkillsFormProps) {
   const { currentCV, addSkill, updateSkill, removeSkill } = useCVStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('Technical')
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const isMobileView = isMobile || isMobileDevice
 
   const {
     register,

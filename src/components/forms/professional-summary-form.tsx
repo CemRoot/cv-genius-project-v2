@@ -17,11 +17,28 @@ const professionalSummarySchema = z.object({
 
 type ProfessionalSummaryFormData = z.infer<typeof professionalSummarySchema>
 
-export function ProfessionalSummaryForm() {
+interface ProfessionalSummaryFormProps {
+  isMobile?: boolean
+}
+
+export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummaryFormProps) {
   const { currentCV, updatePersonalInfo } = useCVStore()
   const isInitialMount = useRef(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const isMobileView = isMobile || isMobileDevice
   const [questionnaireData, setQuestionnaireData] = useState({
     experienceYears: '',
     currentRole: '',
@@ -197,37 +214,44 @@ export function ProfessionalSummaryForm() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="space-y-2">
-        <Label htmlFor="summary">
+    <div className={`${isMobileView ? 'space-y-4 p-0' : 'space-y-4 p-4'}`}>
+      {/* Mobile Header */}
+      {isMobileView && (
+        <div className="px-4 py-3 bg-purple-50 border-l-4 border-purple-400 rounded-r-lg mx-4">
+          <h4 className="font-medium text-purple-900 text-sm">Professional Summary</h4>
+          <p className="text-purple-700 text-xs mt-1">Brief overview of your background and goals</p>
+        </div>
+      )}
+      <div className={`${isMobileView ? 'space-y-3 px-4' : 'space-y-2'}`}>
+        <Label htmlFor="summary" className={`${isMobileView ? 'text-base font-semibold text-gray-900' : ''}`}>
           Professional Summary
         </Label>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
+        <div className={`${isMobileView ? 'space-y-3' : 'flex items-center justify-between'}`}>
+          <p className={`text-sm ${isMobileView ? 'text-gray-600' : 'text-muted-foreground'}`}>
             Write a brief overview of your professional background, key skills, and career objectives.
           </p>
-          <div className="flex gap-2">
+          <div className={`flex gap-2 ${isMobileView ? 'mt-2' : ''}`}>
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size={isMobileView ? "default" : "sm"}
               onClick={showAIQuestionnaire}
               disabled={isGenerating}
-              className="text-xs"
+              className={`${isMobileView ? 'flex-1 touch-manipulation' : 'text-xs'}`}
             >
-              <MessageSquare className="h-3 w-3 mr-1" />
+              <MessageSquare className={`${isMobileView ? 'h-4 w-4 mr-2' : 'h-3 w-3 mr-1'}`} />
               {isGenerating ? 'Generating...' : 'AI Generate'}
             </Button>
             {watchedFields.summary && (
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size={isMobileView ? "default" : "sm"}
                 onClick={improveWithAI}
                 disabled={isGenerating}
-                className="text-xs"
+                className={`${isMobileView ? 'flex-1 touch-manipulation' : 'text-xs'}`}
               >
-                <Wand2 className="h-3 w-3 mr-1" />
+                <Wand2 className={`${isMobileView ? 'h-4 w-4 mr-2' : 'h-3 w-3 mr-1'}`} />
                 AI Improve
               </Button>
             )}
@@ -237,7 +261,7 @@ export function ProfessionalSummaryForm() {
           id="summary"
           {...register('summary')}
           placeholder="I am a dedicated professional with expertise in..."
-          className="min-h-[120px] resize-none"
+          className={`${isMobileView ? 'min-h-[140px] text-base' : 'min-h-[120px]'} resize-none`}
           maxLength={500}
           onPaste={(e) => {
             // Get the pasted text directly from clipboard
