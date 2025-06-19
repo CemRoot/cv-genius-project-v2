@@ -11,6 +11,10 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    // Only show on mobile devices
+    const isMobile = window.innerWidth < 768
+    if (!isMobile && position !== 'floating') return
+
     // PropellerAds mobile configuration
     const script = document.createElement('script')
     script.type = 'text/javascript'
@@ -80,19 +84,29 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
   if (!isVisible) return null
 
   return (
-    <div className={`lg:hidden ${positionStyles[position]} ${className}`}>
-      <div className={`${sizeStyles[position]} mx-auto bg-gray-100 border border-gray-200 flex items-center justify-center`}>
-        <div className="text-center text-gray-500 text-xs">
-          <div className="mb-1">📱 Mobile Ad</div>
-          <div className="text-xs opacity-70">Loading...</div>
+    <div className={`md:hidden ${positionStyles[position]} ${className}`}>
+      <div className={`${sizeStyles[position]} mx-auto bg-white border border-gray-200 flex items-center justify-center relative`}>
+        {/* Ad placeholder content */}
+        <div className="text-center text-gray-400 text-xs p-2">
+          <div className="mb-1 text-lg">📱</div>
+          <div className="font-medium">Mobile Ad</div>
+          <div className="text-xs opacity-70 mt-1">
+            {position === 'floating' ? '300x250' : '320x50'}
+          </div>
         </div>
+        
+        {/* Ad script will inject content here */}
+        <div 
+          id={`mobile-ad-${position}`} 
+          className="absolute inset-0 w-full h-full"
+        />
       </div>
       
       {/* Close button for floating ads */}
       {position === 'floating' && (
         <button 
           onClick={() => setIsVisible(false)}
-          className="absolute top-2 right-2 w-6 h-6 bg-gray-800 text-white rounded-full text-xs flex items-center justify-center hover:bg-gray-900"
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600 shadow-lg z-10"
           aria-label="Close ad"
         >
           ×

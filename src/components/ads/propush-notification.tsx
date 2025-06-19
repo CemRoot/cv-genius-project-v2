@@ -33,25 +33,32 @@ const PropuShNotification = () => {
       
       script.onload = function(result: any) {
         // PropuSH script loaded successfully
+        console.log('✅ PropuSH script loaded successfully')
         
         switch (result) {
           case 'onPermissionDefault':
-            // Push notification permission: Default
+            console.log('🔔 Push notification permission: Default')
+            // Track analytics: permission prompt shown
             break
           case 'onPermissionAllowed':
-            // Push notification permission: Allowed
+            console.log('✅ Push notification permission: Allowed')
+            // Track analytics: user subscribed
             break
           case 'onPermissionDenied':
-            // Push notification permission: Denied
+            console.log('❌ Push notification permission: Denied')
+            // Track analytics: user denied permission
             break
           case 'onAlreadySubscribed':
-            // User already subscribed to push notifications
+            console.log('🔔 User already subscribed to push notifications')
+            // Track analytics: returning subscriber
             break
           case 'onNotificationUnsupported':
-            // Push notifications not supported on this device
+            console.log('❌ Push notifications not supported on this device')
+            // Track analytics: unsupported device
             break
           default:
-            // PropuSH notification status received
+            console.log('📊 PropuSH notification status received:', result)
+            // Track analytics: general status
         }
       }
 
