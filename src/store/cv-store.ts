@@ -119,7 +119,7 @@ const createDefaultCV = (): CVData => ({
     margins: 0.5,
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
-    fontFamily: 'Source Serif 4',
+    fontFamily: 'Source Serif Pro',
     fontSize: 10,
     lineHeight: 1.2
   },

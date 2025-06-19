@@ -4,9 +4,9 @@ import { Font } from '@react-pdf/renderer'
 // These are the best alternatives to Times New Roman and Arial available on Google Fonts
 const FONT_URLS = {
   // Times New Roman alternatives (Serif fonts)
-  'Source Serif 4': {
-    normal: 'https://fonts.gstatic.com/s/sourceserif4/v8/vEFy2_tTDB4M7-auWDN0ahZJW1ge5HjoQALF5xwg.woff2',
-    bold: 'https://fonts.gstatic.com/s/sourceserif4/v8/vEF12_tTDB4M7-auWDN0ahZJW1gexVtcgAL-9f6L8q0.woff2'
+  'Source Serif Pro': {
+    normal: 'https://fonts.gstatic.com/s/sourceserifpro/v28/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwlxdu.woff2',
+    bold: 'https://fonts.gstatic.com/s/sourceserifpro/v28/6xKwdSBYKcSV-LCoeQqfX1RYOo3qO6ZqthhEm4Q.woff2'
   },
   'Merriweather': {
     normal: 'https://fonts.gstatic.com/s/merriweather/v30/u-440qyriQwlOrhSvowK_l5-fCZM.woff2',
@@ -83,13 +83,14 @@ export const getFontFamilyForPDF = (fontFamily: string): string => {
   // Fallback mapping for system fonts and best alternatives
   const fontMap: { [key: string]: string } = {
     // System fonts (not available on Google Fonts)
-    'Times New Roman': fontsRegistered ? 'Source Serif 4' : 'Times-Roman',
+    'Times New Roman': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
     'Arial': fontsRegistered ? 'Inter' : 'Helvetica',
-    'Georgia': fontsRegistered ? 'Source Serif 4' : 'Times-Roman',
+    'Georgia': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
     'Calibri': fontsRegistered ? 'Inter' : 'Helvetica',
     
     // Professional Google Fonts (available)
-    'Source Serif 4': fontsRegistered ? 'Source Serif 4' : 'Times-Roman',
+    'Source Serif 4': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
+    'Source Serif Pro': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
     'Merriweather': fontsRegistered ? 'Merriweather' : 'Times-Roman',
     'Playfair Display': fontsRegistered ? 'Playfair Display' : 'Times-Roman',
     'Inter': fontsRegistered ? 'Inter' : 'Helvetica',

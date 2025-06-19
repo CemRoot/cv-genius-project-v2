@@ -57,7 +57,7 @@ export function DesignControls() {
   const marginOptions = [0.5, 0.75, 1, 1.25, 1.5]
   const fontOptions = [
     // Professional serif fonts (Times New Roman alternatives)
-    'Source Serif 4', 'Merriweather', 'Playfair Display',
+    'Source Serif Pro', 'Merriweather', 'Playfair Display',
     // Professional sans-serif fonts (Arial alternatives) 
     'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat',
     // System fonts (fallback)
