@@ -67,20 +67,12 @@ interface ATSAnalyzerProps {
 export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
   const [cvText, setCvText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
-  const [selectedATS, setSelectedATS] = useState<string>('auto')
   const [selectedIndustry, setSelectedIndustry] = useState<string>('general')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [analysisMode, setAnalysisMode] = useState<'basic' | 'enterprise'>('enterprise')
   const [showFileUpload, setShowFileUpload] = useState(false)
-
-  const atsOptions = [
-    { value: 'auto', label: '🤖 Auto Detection', description: 'Tests against most common ATS systems' },
-    { value: 'strict', label: '🔴 Strict Control', description: 'Applies strictest ATS parsing rules' },
-    { value: 'moderate', label: '🟡 Moderate Level', description: 'Standard ATS compatibility check' },
-    { value: 'flexible', label: '🟢 Flexible', description: 'Basic ATS compatibility check' }
-  ]
 
   const industryOptions = [
     { value: 'technology', label: '💻 Technology', description: 'Software, IT, Engineering' },
@@ -109,7 +101,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
           cvText: cvText.trim(),
           jobDescription: jobDescription.trim(),
           analysisMode,
-          targetATS: selectedATS,
+          targetATS: 'auto', // Always use auto-detection
           industry: selectedIndustry
         })
       })
@@ -130,7 +122,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
     } finally {
       setIsAnalyzing(false)
     }
-  }, [cvText, jobDescription, analysisMode, selectedATS, selectedIndustry])
+  }, [cvText, jobDescription, analysisMode, selectedIndustry])
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600'
@@ -214,38 +206,13 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
 
           {analysisMode === 'enterprise' && (
             <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label htmlFor="atsSystem" className="flex items-center gap-2 text-base font-medium">
-                    <Target className="h-5 w-5" />
-                    ATS Control Level
-                  </Label>
-                  <p className="text-sm text-gray-600">Select how strictly your CV will be evaluated</p>
-                  <select
-                    id="atsSystem"
-                    value={selectedATS}
-                    onChange={(e) => setSelectedATS(e.target.value)}
-                    className="w-full p-3 text-sm border rounded-md bg-white focus:ring-2 focus:ring-cvgenius-primary"
-                  >
-                    {atsOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {atsOptions.find(opt => opt.value === selectedATS)?.description && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      {atsOptions.find(opt => opt.value === selectedATS)?.description}
-                    </p>
-                  )}
-                </div>
-                
+              <div className="space-y-4">
                 <div className="space-y-3">
                   <Label htmlFor="industry" className="flex items-center gap-2 text-base font-medium">
                     <FileText className="h-5 w-5" />
                     Target Industry
                   </Label>
-                  <p className="text-sm text-gray-600">Select which industry to optimize your CV for</p>
+                  <p className="text-sm text-gray-600">Select your industry for specialized ATS optimization</p>
                   <select
                     id="industry"
                     value={selectedIndustry}
@@ -263,6 +230,19 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                       {industryOptions.find(opt => opt.value === selectedIndustry)?.description}
                     </p>
                   )}
+                </div>
+                
+                <div className="p-4 bg-white rounded-lg border">
+                  <h4 className="font-medium text-gray-900 mb-2">Enterprise ATS Analysis</h4>
+                  <p className="text-sm text-gray-600">
+                    Automatically tests your CV against major ATS systems used by Irish employers:
+                  </p>
+                  <ul className="text-sm text-gray-600 mt-2 space-y-1">
+                    <li>• <strong>Workday</strong> - Used by multinational corporations</li>
+                    <li>• <strong>Oracle Taleo</strong> - Enterprise recruitment platform</li>
+                    <li>• <strong>Greenhouse</strong> - Tech company favorite</li>
+                    <li>• <strong>BambooHR</strong> - SME and startup choice</li>
+                  </ul>
                 </div>
               </div>
             </div>

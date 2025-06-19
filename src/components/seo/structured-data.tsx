@@ -1,5 +1,3 @@
-'use client'
-
 interface StructuredDataProps {
   type: 'WebApplication' | 'LocalBusiness' | 'JobPosting' | 'Article' | 'FAQPage'
   data: any
@@ -87,8 +85,8 @@ export function StructuredData({ type, data }: StructuredDataProps) {
         "headline": data.title,
         "description": data.description,
         "url": data.url,
-        "datePublished": data.datePublished || new Date().toISOString(),
-        "dateModified": data.dateModified || new Date().toISOString(),
+        "datePublished": data.datePublished || "2024-01-01T00:00:00Z",
+        "dateModified": data.dateModified || "2024-01-01T00:00:00Z",
         "author": {
           "@type": "Organization",
           "name": "CV Genius",
