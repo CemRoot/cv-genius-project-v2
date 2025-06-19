@@ -1,4 +1,5 @@
-import type { Metadata } from 'next'
+'use client'
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Code, Database, Smartphone, Cloud, Brain, Shield, ArrowRight, FileText, Target, CheckCircle, TrendingUp } from "lucide-react"
@@ -7,32 +8,6 @@ import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { MainLayout } from "@/components/layout/main-layout"
 import { GentleMonetization } from "@/components/ads/gentle-monetization"
 import { DublinTechJobsArticleStructuredData } from "@/components/seo/structured-data"
-
-export const metadata: Metadata = {
-  title: "Dublin Tech Jobs 2025 | Software Engineer CV Templates & IT Career Guide",
-  description: "Land your dream tech job in Dublin 2025! Complete guide to Dublin's tech scene, top tech companies, salary insights, and professional CV templates for software engineers.",
-  keywords: [
-    "Dublin tech jobs 2025",
-    "Dublin software engineer jobs",
-    "Dublin IT careers",
-    "Dublin tech companies",
-    "Dublin startup jobs",
-    "Dublin developer positions",
-    "Dublin data scientist jobs",
-    "Dublin product manager roles",
-    "Dublin DevOps engineer",
-    "Dublin cloud engineer",
-    "Dublin fintech jobs",
-    "Dublin cybersecurity jobs",
-    "Tech CV Dublin",
-    "Software engineer CV Ireland"
-  ],
-  openGraph: {
-    title: "Dublin Tech Jobs 2025 | Software Engineer CV Templates & IT Career Guide",
-    description: "Land your dream tech job in Dublin 2025! Complete guide to Dublin's tech scene, top tech companies, salary insights, and professional CV templates for software engineers.",
-    type: "article"
-  }
-}
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },

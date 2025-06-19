@@ -68,7 +68,6 @@ interface MobileATSAnalyzerProps {
 export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
   const [cvText, setCvText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
-  const [selectedATS, setSelectedATS] = useState<string>('auto')
   const [selectedIndustry, setSelectedIndustry] = useState<string>('general')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null)
@@ -147,12 +146,6 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
     })
   }
 
-  const atsOptions = [
-    { value: 'auto', label: '🤖 Auto Detection', description: 'Tests against most common ATS systems' },
-    { value: 'strict', label: '🔴 Strict Control', description: 'Applies strictest ATS parsing rules' },
-    { value: 'moderate', label: '🟡 Moderate Level', description: 'Standard ATS compatibility check' },
-    { value: 'flexible', label: '🟢 Flexible', description: 'Basic ATS compatibility check' }
-  ]
 
   const industryOptions = [
     { value: 'technology', label: '💻 Technology', description: 'Software, IT, Engineering' },
@@ -195,7 +188,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
           cvText: optimizedCvText,
           jobDescription: jobDescription.trim(),
           analysisMode,
-          targetATS: selectedATS,
+          targetATS: 'auto', // Always use auto-detection
           industry: selectedIndustry
         })
       })
@@ -231,7 +224,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
     } finally {
       setIsAnalyzing(false)
     }
-  }, [cvText, jobDescription, analysisMode, selectedATS, selectedIndustry])
+  }, [cvText, jobDescription, analysisMode, selectedIndustry])
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600'
@@ -317,76 +310,45 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
             </Button>
           </div>
 
-          {/* ATS & Industry Selection (Enterprise) */}
+          {/* Industry Selection (Enterprise) */}
           {analysisMode === 'enterprise' && (
             <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <label htmlFor="ats-control-level" className="text-base font-medium flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    ATS Control Level
-                  </label>
-                  <p className="text-sm text-gray-600">Select how strictly your CV will be evaluated</p>
-                  <div className="relative">
-                    <select
-                      id="ats-control-level"
-                      value={selectedATS}
-                      onChange={(e) => setSelectedATS(e.target.value)}
-                      className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
-                      style={{ minHeight: '48px' }}
-                      aria-describedby="ats-control-description"
-                    >
-                      {atsOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
+              <div className="space-y-3">
+                <label htmlFor="target-industry" className="text-base font-medium flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Target Industry
+                </label>
+                <p className="text-sm text-gray-600">Select your industry for specialized ATS optimization</p>
+                <div className="relative">
+                  <select
+                    id="target-industry"
+                    value={selectedIndustry}
+                    onChange={(e) => setSelectedIndustry(e.target.value)}
+                    className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
+                    style={{ minHeight: '48px' }}
+                    aria-describedby="industry-description"
+                  >
+                    {industryOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                  {atsOptions.find(opt => opt.value === selectedATS)?.description && (
-                    <p id="ats-control-description" className="text-sm text-gray-500 bg-white p-2 rounded-md border">
-                      {atsOptions.find(opt => opt.value === selectedATS)?.description}
-                    </p>
-                  )}
                 </div>
-                
-                <div className="space-y-3">
-                  <label htmlFor="target-industry" className="text-base font-medium flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Target Industry
-                  </label>
-                  <p className="text-sm text-gray-600">Select which industry to optimize your CV for</p>
-                  <div className="relative">
-                    <select
-                      id="target-industry"
-                      value={selectedIndustry}
-                      onChange={(e) => setSelectedIndustry(e.target.value)}
-                      className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
-                      style={{ minHeight: '48px' }}
-                      aria-describedby="industry-description"
-                    >
-                      {industryOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                  {industryOptions.find(opt => opt.value === selectedIndustry)?.description && (
-                    <p id="industry-description" className="text-sm text-gray-500 bg-white p-2 rounded-md border">
-                      {industryOptions.find(opt => opt.value === selectedIndustry)?.description}
-                    </p>
-                  )}
+                {industryOptions.find(opt => opt.value === selectedIndustry)?.description && (
+                  <p id="industry-description" className="text-sm text-gray-500 bg-white p-2 rounded-md border">
+                    {industryOptions.find(opt => opt.value === selectedIndustry)?.description}
+                  </p>
+                )}
+                <div className="mt-3 p-3 bg-white rounded-md border">
+                  <p className="text-sm text-gray-700">
+                    <strong>Enterprise Analysis:</strong> Tests compatibility with major ATS systems (Workday, Taleo, Greenhouse, BambooHR) used by Irish employers.
+                  </p>
                 </div>
               </div>
             </div>

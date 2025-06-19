@@ -5,8 +5,9 @@ import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
 import PropuShNotification from "@/components/ads/propush-notification"
 import FacebookBrowserRedirect from "@/components/ads/facebook-browser-redirect"
-import { WebAppStructuredData, LocalBusinessStructuredData } from "@/components/seo/structured-data"
 import { OfflineIndicator } from "@/components/ui/offline-indicator"
+import ClientViewportScript from "@/components/client-viewport-script"
+import HydrationFix from "@/components/hydration-fix"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
@@ -150,27 +151,8 @@ export default function RootLayout({
         <link rel="serviceworker" href="/sw-check-permissions-36fdf.js" />
         <meta name="propush-sw" content="/sw-check-permissions-36fdf.js" />
         
-        {/* Structured Data for SEO */}
-        <WebAppStructuredData />
-        <LocalBusinessStructuredData />
-        
         {/* Mobile Keyboard Avoidance */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
-        
-        {/* Viewport Height CSS Variables */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            function setVH() {
-              let vh = window.innerHeight * 0.01;
-              document.documentElement.style.setProperty('--vh', vh + 'px');
-              document.documentElement.style.setProperty('--vh-full', window.innerHeight + 'px');
-              document.documentElement.style.setProperty('--vh-small', (window.innerHeight * 0.01) + 'px');
-            }
-            setVH();
-            window.addEventListener('resize', setVH);
-            window.addEventListener('orientationchange', () => setTimeout(setVH, 100));
-          `
-        }} />
       </head>
       <body className={`${inter.className} min-h-screen h-full flex flex-col antialiased touch-manipulation overscroll-none`} suppressHydrationWarning>
         <ToastProvider>
@@ -178,6 +160,12 @@ export default function RootLayout({
             {children}
           </ErrorBoundary>
         </ToastProvider>
+        
+        {/* Fix hydration issues caused by browser extensions */}
+        <HydrationFix />
+        
+        {/* Client-side viewport script to prevent hydration errors */}
+        <ClientViewportScript />
         
         {/* Offline Indicator */}
         <OfflineIndicator />
