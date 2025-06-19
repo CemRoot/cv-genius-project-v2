@@ -142,6 +142,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
+        {/* Google AdSense */}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1742989559393752"
+             crossOrigin="anonymous"></script>
+        
         {/* Service Worker for PropuSH Push Notifications */}
         <link rel="serviceworker" href="/sw-check-permissions-36fdf.js" />
         <meta name="propush-sw" content="/sw-check-permissions-36fdf.js" />
