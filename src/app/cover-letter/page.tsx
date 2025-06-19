@@ -3,33 +3,52 @@
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { MainLayout } from '@/components/layout/main-layout'
+import { useMobileKeyboard } from '@/components/mobile'
+import { useState, useEffect } from 'react'
 
 export default function CoverLetterPage() {
   const router = useRouter()
+  const [isMobile, setIsMobile] = useState(false)
+  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleStartBuilding = () => {
     router.push('/cover-letter/experience')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              AI Cover Letter Builder
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Create professional cover letters tailored to your experience and career goals. 
-              Our smart builder guides you through every step.
-            </p>
+    <MainLayout>
+      <div 
+        className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
+        style={{ height: isMobile && isKeyboardOpen ? adjustedViewHeight : 'auto' }}
+      >
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            <div className="text-center">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4">
+                AI Cover Letter Builder
+              </h1>
+              <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
+                Create professional cover letters tailored to your experience and career goals. 
+                Our smart builder guides you through every step.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
           <Card className="p-6 text-center">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,6 +99,7 @@ export default function CoverLetterPage() {
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </MainLayout>
   )
 }

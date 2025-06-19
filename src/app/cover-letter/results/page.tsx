@@ -11,6 +11,7 @@ import jsPDF from 'jspdf'
 import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx'
 import { saveAs } from 'file-saver'
 import { AdController } from '@/components/ads/ad-controller'
+import { MainLayout } from '@/components/layout/main-layout'
 
 interface CollectedData {
   templateData: {
@@ -324,18 +325,21 @@ ${name}`
 
   if (isGenerating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Generating Your Cover Letter</h2>
-          <p className="text-gray-600">Our AI is crafting your personalized cover letter...</p>
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Generating Your Cover Letter</h2>
+            <p className="text-gray-600">Our AI is crafting your personalized cover letter...</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <MainLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
@@ -438,6 +442,7 @@ ${name}`
           delay={2000}
         />
       </div>
-    </div>
+      </div>
+    </MainLayout>
   )
 }
