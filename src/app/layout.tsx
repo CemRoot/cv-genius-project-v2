@@ -5,6 +5,7 @@ import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
 import PropuShNotification from "@/components/ads/propush-notification"
 import FacebookBrowserRedirect from "@/components/ads/facebook-browser-redirect"
+import AdvancedMonetization from "@/components/ads/advanced-monetization"
 import { OfflineIndicator } from "@/components/ui/offline-indicator"
 import ClientViewportScript from "@/components/client-viewport-script"
 import HydrationFix from "@/components/hydration-fix"
@@ -148,9 +149,8 @@ export default function RootLayout({
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1742989559393752"
              crossOrigin="anonymous"></script>
         
-        {/* Monetag Advertising - Optimized for User Experience */}
+        {/* Monetag Advertising - Only Essential Zone */}
         <script src="https://fpyf8.com/88/tag.min.js" data-zone="153060" async data-cfasync="false"></script>
-        <script src="https://fpyf8.com/88/tag.min.js" data-zone="9469382" async data-cfasync="false"></script>
         
         {/* Service Worker for PropuSH Push Notifications */}
         <link rel="serviceworker" href="/sw-check-permissions-36fdf.js" />
@@ -177,6 +177,9 @@ export default function RootLayout({
         
         {/* PropuSH Push Notifications */}
         <PropuShNotification />
+        
+        {/* Advanced Monetization (Controlled Popups) */}
+        <AdvancedMonetization />
         
         {/* Facebook Browser Redirect */}
         <FacebookBrowserRedirect />
