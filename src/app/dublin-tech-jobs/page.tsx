@@ -6,7 +6,7 @@ import { Code, Database, Smartphone, Cloud, Brain, Shield, ArrowRight, FileText,
 import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { MainLayout } from "@/components/layout/main-layout"
-import { GentleMonetization } from "@/components/ads/gentle-monetization"
+
 import { DublinTechJobsArticleStructuredData } from "@/components/seo/structured-data"
 
 const fadeInUp = {
@@ -122,7 +122,6 @@ export default function DublinTechJobsPage() {
   return (
     <MainLayout>
       <DublinTechJobsArticleStructuredData />
-      <GentleMonetization />
       
       {/* Hero Section - Mobile Optimized */}
       <section className="py-12 md:py-20 lg:py-32 bg-gradient-to-br from-background via-blue-50/20 to-purple-50/20 relative overflow-hidden">

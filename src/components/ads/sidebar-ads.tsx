@@ -1,50 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 interface SidebarAdsProps {
   className?: string
 }
 
 export function SidebarAds({ className = '' }: SidebarAdsProps) {
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  useEffect(() => {
-    // Daha geç yükleme - sadece kullanıcı sayfada belirli süre kalırsa
-    const timer = setTimeout(() => {
-      const container = document.getElementById('monetag-sidebar-ad')
-      if (container && !container.hasChildNodes() && !isLoaded) {
-        // Create Monetag script for sidebar - Native banner zone
-        const script = document.createElement('script')
-        script.type = 'text/javascript'
-        script.src = 'https://fpyf8.com/88/tag.min.js'
-        script.setAttribute('data-zone', '9469381') // Native banner zone
-        script.setAttribute('data-cfasync', 'false')
-        container.appendChild(script)
-        setIsLoaded(true)
-      }
-    }, 8000) // 8 saniye gecikme
-
-    return () => clearTimeout(timer)
-  }, [isLoaded])
-
   return (
     <div className={`w-full max-w-xs mx-auto space-y-4 lg:space-y-6 ${className}`}>
-      {/* Monetag Sidebar Ad */}
-      <div className="bg-gray-50 p-3 lg:p-4 rounded-lg shadow-sm">
-        <div className="text-xs text-gray-500 mb-2 text-center font-medium">Advertisement</div>
-        <div id="monetag-sidebar-ad" className="min-h-[200px] lg:min-h-[250px] bg-white rounded border flex items-center justify-center">
-          {!isLoaded && (
-            <div className="text-gray-400 text-sm text-center">
-              <div className="mb-1">📢</div>
-              <div>Ad Space</div>
-              <div className="text-xs opacity-70 mt-1">Loading...</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Amazon Affiliate Section */}
+      {/* Amazon Affiliate Section - Non-intrusive */}
       <div className="bg-blue-50 p-3 lg:p-4 rounded-lg shadow-sm">
         <h3 className="font-medium text-gray-900 mb-3 text-sm lg:text-base">Recommended Resources</h3>
         <div className="space-y-2 lg:space-y-3">

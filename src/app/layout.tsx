@@ -3,9 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
-import PropuShNotification from "@/components/ads/propush-notification"
 import FacebookBrowserRedirect from "@/components/ads/facebook-browser-redirect"
-import AdvancedMonetization from "@/components/ads/advanced-monetization"
 import { OfflineIndicator } from "@/components/ui/offline-indicator"
 import ClientViewportScript from "@/components/client-viewport-script"
 import HydrationFix from "@/components/hydration-fix"
@@ -145,16 +143,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
-        {/* Google AdSense */}
+        {/* Google AdSense - Non-intrusive */}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1742989559393752"
              crossOrigin="anonymous"></script>
-        
-        {/* Monetag Advertising - Only Essential Zone */}
-        <script src="https://fpyf8.com/88/tag.min.js" data-zone="153060" async data-cfasync="false"></script>
-        
-        {/* Service Worker for PropuSH Push Notifications */}
-        <link rel="serviceworker" href="/sw-check-permissions-36fdf.js" />
-        <meta name="propush-sw" content="/sw-check-permissions-36fdf.js" />
         
         {/* Mobile Keyboard Avoidance */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
@@ -174,12 +165,6 @@ export default function RootLayout({
         
         {/* Offline Indicator */}
         <OfflineIndicator />
-        
-        {/* PropuSH Push Notifications */}
-        <PropuShNotification />
-        
-        {/* Advanced Monetization (Controlled Popups) */}
-        <AdvancedMonetization />
         
         {/* Facebook Browser Redirect */}
         <FacebookBrowserRedirect />
