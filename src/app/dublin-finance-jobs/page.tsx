@@ -6,7 +6,7 @@ import { TrendingUp, PieChart, DollarSign, Briefcase, Users, MapPin, ArrowRight,
 import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { MainLayout } from "@/components/layout/main-layout"
-import GentleMonetization from "@/components/ads/gentle-monetization"
+
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -114,7 +114,6 @@ const salaryRanges = [
 export default function DublinFinanceJobsPage() {
   return (
     <MainLayout>
-      <GentleMonetization />
       
       {/* Hero Section */}
       <section className="py-12 md:py-20 lg:py-32 bg-gradient-to-br from-background via-green-50/20 to-blue-50/20 relative overflow-hidden">
