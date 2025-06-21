@@ -30,12 +30,8 @@ interface CollectedData {
   strengths: string[]
   workStyle: string
   signature: {
-    type: 'typed' | 'drawn' | 'uploaded' | null
+    type: 'drawn' | 'uploaded' | null
     value: string
-    font?: string
-    align?: 'left' | 'center' | 'right'
-    color?: string
-    size?: 'small' | 'large'
   }
 }
 
@@ -45,7 +41,6 @@ export default function ResultsPage() {
   const [isGenerating, setIsGenerating] = useState(true)
   const [generatedLetter, setGeneratedLetter] = useState<string>('')
   const [collectedData, setCollectedData] = useState<CollectedData | null>(null)
-  const [showContactInfo, setShowContactInfo] = useState(true)
   const [isExporting, setIsExporting] = useState(false)
   const [currentDate, setCurrentDate] = useState('')
   const [propPushTrigger, setPropPushTrigger] = useState(false)
@@ -53,7 +48,12 @@ export default function ResultsPage() {
 
   // Initialize date on client side to avoid hydration mismatch
   useEffect(() => {
-    setCurrentDate(new Date().toLocaleDateString('en-IE'))
+    // Format date consistently as DD/MM/YYYY
+    const today = new Date()
+    const day = today.getDate().toString().padStart(2, '0')
+    const month = (today.getMonth() + 1).toString().padStart(2, '0')
+    const year = today.getFullYear()
+    setCurrentDate(`${day}/${month}/${year}`)
   }, [])
 
   useEffect(() => {
@@ -83,6 +83,19 @@ export default function ResultsPage() {
     performGeneration()
   }, []) // generateCoverLetter is stable as it doesn't depend on any state
 
+  // Check for edited cover letter text on mount only
+  useEffect(() => {
+    const editedText = localStorage.getItem('generated-cover-letter')
+    if (editedText) {
+      setGeneratedLetter(editedText)
+    }
+  }, []) // Only run on mount
+
+  // Update localStorage when letter is generated (but not from localStorage)
+  const updateLocalStorage = (letter: string) => {
+    localStorage.setItem('generated-cover-letter', letter)
+  }
+
   const generateCoverLetter = async (data: CollectedData) => {
     try {
       const response = await fetch('/api/ai/generate-cover-letter', {
@@ -91,12 +104,12 @@ export default function ResultsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          template: data.templateData.selectedTemplate || 'basic',
-          tone: data.workStyle,
+          template: getValidTemplate(data.templateData.selectedTemplate),
+          tone: getValidTone(data.workStyle),
           company: data.jobInfo.targetCompany || 'Your Target Company',
           position: data.jobInfo.jobTitle || 'Desired Position',
           applicantName: `${data.templateData.personalInfo?.firstName} ${data.templateData.personalInfo?.lastName}`,
-          background: `A dedicated professional with strengths in ${data.strengths.join(', ')}`,
+          background: `A dedicated professional with strength in ${data.strengths.length > 1 ? data.strengths.slice(0, -1).join(', ') + ', and ' + data.strengths.slice(-1) : data.strengths.join('')}`,
           achievements: data.strengths,
           jobDescription: data.jobDescription,
           customInstructions: `Working style: ${data.workStyle}`,
@@ -110,12 +123,17 @@ export default function ResultsPage() {
       const result = await response.json()
 
       if (result.success) {
-        setGeneratedLetter(result.coverLetter.content)
+        const newLetter = result.coverLetter.content
+        setGeneratedLetter(newLetter)
+        updateLocalStorage(newLetter)
       } else {
         throw new Error(result.error || 'Failed to generate cover letter')
       }
     } catch (error) {
-      console.error('Generation error:', error)
+      // Silently handle generation errors in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Generation error:', error)
+      }
       addToast({
         type: 'error',
         title: 'Generation Failed',
@@ -123,61 +141,83 @@ export default function ResultsPage() {
       })
       
       // Use fallback template
-      setGeneratedLetter(generateFallbackLetter(data))
+      const fallbackLetter = generateFallbackLetter(data)
+      setGeneratedLetter(fallbackLetter)
+      updateLocalStorage(fallbackLetter)
     } finally {
       setIsGenerating(false)
     }
   }
 
+  // Helper functions for template and tone validation
+  const getValidTemplate = (template: string) => {
+    const validTemplates = ['basic', 'highPerformer', 'creative', 'graduate', 'careerChange', 'executive']
+    return validTemplates.includes(template) ? template : 'basic'
+  }
+
+  const getValidTone = (workStyle: string) => {
+    const validTones = ['formal', 'friendly', 'enthusiastic']
+    // Map work styles to tones
+    const toneMap: { [key: string]: string } = {
+      'collaborative': 'friendly',
+      'independent': 'formal',
+      'leadership': 'enthusiastic',
+      'analytical': 'formal',
+      'creative': 'enthusiastic',
+      'detail-oriented': 'formal'
+    }
+    const mappedTone = toneMap[workStyle?.toLowerCase()] || 'formal'
+    return validTones.includes(mappedTone) ? mappedTone : 'formal'
+  }
+
   const generateFallbackLetter = (data: CollectedData) => {
     const name = `${data.templateData.personalInfo?.firstName} ${data.templateData.personalInfo?.lastName}`
     
-    return `${name}
-Dublin, Ireland
+    return `Dublin, Ireland
 +353 (0) 1 234 5678
 ${currentDate}
 
+Hiring Manager
 ${data.jobInfo.targetCompany || 'Company Name'}
 Dublin, Ireland
 
 Dear Hiring Manager,
 
-I am writing to express my interest in the ${data.jobInfo.jobTitle || 'position'} at ${data.jobInfo.targetCompany || 'your company'}. As a dedicated professional with strengths in ${data.strengths.join(', ')}, I believe I can contribute positively to your team.
+I am writing to express my interest in the ${data.jobInfo.jobTitle || 'position'} at ${data.jobInfo.targetCompany || 'your company'}. As a dedicated professional with strength in ${data.strengths.length > 1 ? data.strengths.slice(0, -1).join(', ') + ', and ' + data.strengths.slice(-1) : data.strengths.join('')}, I believe I can contribute positively to your team.
 
 My working style reflects my ${data.workStyle.toLowerCase()} approach. Throughout my career, I have consistently demonstrated these qualities through various projects and responsibilities.
 
-${data.jobDescription ? `Based on the job description provided, I am particularly excited about the opportunity to apply my skills in a role that aligns so well with my experience and interests.` : ''}
+${data.jobDescription ? `Based on the job description provided, I am particularly excited about the opportunity to apply my skills in a role that aligns so well with my experience and interests.` : 'I have enclosed my CV, which provides additional details about my qualifications and experience.'}
 
-I would welcome the opportunity to discuss how my background and skills can contribute to ${data.jobInfo.targetCompany || 'your organization'}'s continued success.
+I would welcome the opportunity to discuss how my background and skills can contribute to ${data.jobInfo.targetCompany || 'your organization'}'s continued success. I am available for interview at your convenience.
 
-Thank you for considering my application. I look forward to the possibility of discussing this opportunity further.
+Thank you for considering my application. I look forward to hearing from you.
 
-Sincerely,
+Yours sincerely,
+
 ${name}`
   }
 
   const renderSignature = () => {
-    if (!collectedData?.signature) return null
-
-    if (collectedData.signature.type === 'typed') {
+    if (!collectedData?.signature) {
+      // Default signature if none provided
       return (
-        <div 
-          style={{
-            fontFamily: collectedData.signature.font,
-            fontSize: collectedData.signature.size === 'large' ? '24px' : '18px',
-            color: collectedData.signature.color,
-            textAlign: collectedData.signature.align
-          }}
-        >
-          {collectedData.signature.value}
+        <div style={{ color: 'black', fontFamily: 'serif', fontSize: '16px' }}>
+          {`${collectedData?.templateData.personalInfo?.firstName} ${collectedData?.templateData.personalInfo?.lastName}`}
         </div>
       )
-    } else if (collectedData.signature.type === 'drawn' || collectedData.signature.type === 'uploaded') {
+    }
+
+    if (collectedData.signature.type === 'drawn' || collectedData.signature.type === 'uploaded') {
       return (
         <img 
           src={collectedData.signature.value} 
           alt="Signature" 
-          style={{ maxHeight: '60px', marginTop: '10px' }}
+          style={{ 
+            maxHeight: '50px', 
+            marginTop: '5px',
+            filter: 'contrast(1.2)' // Improve contrast
+          }}
         />
       )
     }
@@ -189,14 +229,78 @@ ${name}`
     try {
       const letterElement = document.getElementById('cover-letter-preview')
       if (letterElement) {
-        const canvas = await html2canvas(letterElement)
-        const imgData = canvas.toDataURL('image/png')
+        // Store original styles
+        const originalStyles = {
+          width: letterElement.style.width,
+          maxWidth: letterElement.style.maxWidth,
+          minWidth: letterElement.style.minWidth,
+          transform: letterElement.style.transform,
+          padding: letterElement.style.padding
+        }
+
+        // Apply fixed dimensions for consistent PDF export
+        letterElement.style.width = '794px' // A4 width in pixels
+        letterElement.style.maxWidth = '794px'
+        letterElement.style.minWidth = '794px'
+        letterElement.style.transform = 'none'
+        letterElement.style.padding = '40px'
+        
+        // Hide edit buttons during export
+        const editButtons = letterElement.querySelectorAll('.no-export')
+        editButtons.forEach(btn => (btn as HTMLElement).style.display = 'none')
+        
+        // Wait for layout to settle
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Mobile-optimized canvas options
+        const dpr = window.devicePixelRatio || 1
+        const isMobile = window.innerWidth < 768
+        
+        const canvas = await html2canvas(letterElement, {
+          scale: isMobile ? Math.max(dpr * 1.5, 2) : 2,
+          width: 794, // Fixed A4 width
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          removeContainer: true,
+          logging: false,
+          letterRendering: true,
+          foreignObjectRendering: false, // Better mobile compatibility
+          ignoreElements: (element) => {
+            return element.classList.contains('no-export') || element.classList.contains('print:hidden')
+          }
+        })
+        
+        // Restore original styles
+        Object.assign(letterElement.style, originalStyles)
+        
+        // Restore edit buttons after export
+        editButtons.forEach(btn => (btn as HTMLElement).style.display = '')
+        
+        const imgData = canvas.toDataURL('image/jpeg', 0.95)
         
         const pdf = new jsPDF('p', 'mm', 'a4')
         const pdfWidth = pdf.internal.pageSize.getWidth()
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+        const pdfHeight = pdf.internal.pageSize.getHeight()
         
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+        // Calculate proper scaling to maintain aspect ratio
+        const canvasAspectRatio = canvas.height / canvas.width
+        let finalWidth = pdfWidth
+        let finalHeight = pdfWidth * canvasAspectRatio
+        let xOffset = 0
+        let yOffset = 0
+        
+        // If height exceeds page, scale down proportionally
+        if (finalHeight > pdfHeight) {
+          finalHeight = pdfHeight
+          finalWidth = pdfHeight / canvasAspectRatio
+          xOffset = (pdfWidth - finalWidth) / 2 // Center horizontally
+        } else {
+          // Center vertically if content doesn't fill the page
+          yOffset = (pdfHeight - finalHeight) / 2
+        }
+        
+        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight)
         pdf.save(`Cover_Letter_${collectedData?.jobInfo.targetCompany || 'Document'}.pdf`)
         
         addToast({
@@ -205,11 +309,10 @@ ${name}`
           description: 'Your cover letter has been downloaded as PDF.'
         })
 
-        // 🎯 PropPush Trigger: Cover Letter PDF downloaded
+        // Trigger monetization after first download
         setExportCount(prev => prev + 1)
         if (exportCount === 0) {
           setTimeout(() => {
-            console.log('🚀 Triggering PropPush after Cover Letter PDF download')
             setPropPushTrigger(true)
           }, 1500)
         }
@@ -232,63 +335,31 @@ ${name}`
         sections: [{
           properties: {},
           children: [
-            // Header with contact info
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `${collectedData?.templateData.personalInfo?.firstName} ${collectedData?.templateData.personalInfo?.lastName}`,
-                  bold: true,
-                  size: 24
-                })
-              ],
-              spacing: { after: 200 }
-            }),
-            new Paragraph({
-              text: "Dublin, Ireland",
-              spacing: { after: 100 }
-            }),
-            new Paragraph({
-              text: "+353 (0) 1 234 5678",
-              spacing: { after: 300 }
-            }),
-            new Paragraph({
-              text: currentDate,
-              spacing: { after: 400 }
-            }),
-            
-            // Company info
-            new Paragraph({
-              text: collectedData?.jobInfo.targetCompany || 'Company Name',
-              spacing: { after: 100 }
-            }),
-            new Paragraph({
-              text: "Dublin, Ireland",
-              spacing: { after: 400 }
-            }),
-            
-            // Letter content
-            ...generatedLetter.split('\n').map(line => 
+            // Letter content (includes header from AI generation)
+            ...generatedLetter.split('\n').filter(line => line.trim()).map(line => 
               new Paragraph({
                 text: line,
                 spacing: { after: 200 }
               })
             ),
             
+            // Signature space
+            new Paragraph({
+              text: '',
+              spacing: { after: 300 }
+            }),
+            
             // Signature
             new Paragraph({
               children: [
                 new TextRun({
-                  text: collectedData?.signature.value || `${collectedData?.templateData.personalInfo?.firstName} ${collectedData?.templateData.personalInfo?.lastName}`,
-                  italics: collectedData?.signature.type === 'typed',
-                  size: collectedData?.signature.size === 'large' ? 28 : 24
+                  text: collectedData?.signature ? '[Signature]' : `${collectedData?.templateData.personalInfo?.firstName} ${collectedData?.templateData.personalInfo?.lastName}`,
+                  size: 24,
+                  color: '000000'
                 })
               ],
-              alignment: collectedData?.signature.align === 'center' 
-                ? AlignmentType.CENTER 
-                : collectedData?.signature.align === 'right' 
-                  ? AlignmentType.RIGHT 
-                  : AlignmentType.LEFT,
-              spacing: { before: 400 }
+              alignment: AlignmentType.LEFT,
+              spacing: { before: 200 }
             })
           ]
         }]
@@ -303,16 +374,18 @@ ${name}`
         description: 'Your cover letter has been downloaded as DOCX.'
       })
 
-      // 🎯 PropPush Trigger: Cover Letter DOCX downloaded
+      // Trigger monetization after first download
       setExportCount(prev => prev + 1)
       if (exportCount === 0) {
         setTimeout(() => {
-          console.log('🚀 Triggering PropPush after Cover Letter DOCX download')
           setPropPushTrigger(true)
         }, 1500)
       }
     } catch (error) {
-      console.error('DOCX export error:', error)
+      // Silently handle export errors in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('DOCX export error:', error)
+      }
       addToast({
         type: 'error',
         title: 'Export Failed',
@@ -354,89 +427,79 @@ ${name}`
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
           <Button
             variant="outline"
-            onClick={() => setShowContactInfo(!showContactInfo)}
-            className="flex items-center gap-2"
+            onClick={() => router.push('/cover-letter/edit')}
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
-            {showContactInfo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showContactInfo ? 'Hide' : 'Show'} Contact Info
+            <Edit className="w-4 h-4" />
+            Edit Cover Letter
           </Button>
           
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               onClick={exportToPDF}
               disabled={isExporting}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto min-w-[140px]"
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <FileText className="w-4 h-4" />
               )}
-              Export PDF
+              <span>Export PDF</span>
             </Button>
             <Button
               variant="outline"
               onClick={exportToDOCX}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto min-w-[140px]"
             >
               <Download className="w-4 h-4" />
-              Export DOCX
+              <span>Export DOCX</span>
             </Button>
           </div>
         </div>
 
-        <Card className="p-8" id="cover-letter-preview">
+        <Card className="p-4 sm:p-8" id="cover-letter-preview">
           <div className="space-y-6 font-serif">
-            {/* Header with contact info */}
-            {showContactInfo && (
-              <div className="text-sm">
-                <div className="font-semibold">
-                  {collectedData?.templateData.personalInfo?.firstName} {collectedData?.templateData.personalInfo?.lastName}
-                </div>
-                <div>Dublin, Ireland</div>
-                <div>+353 (0) 1 234 5678</div>
-                <div className="mt-4">{currentDate}</div>
-              </div>
-            )}
-
-            {/* Letter content */}
-            <div className="whitespace-pre-wrap leading-relaxed">
+            {/* Letter content - this contains the header already */}
+            <div className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
               {generatedLetter}
             </div>
 
             {/* Signature */}
             <div className="mt-8">
-              {renderSignature()}
+              <div style={{ color: 'black', fontFamily: 'serif' }}>
+                {renderSignature()}
+              </div>
             </div>
           </div>
         </Card>
 
-        <div className="mt-8 flex gap-4 justify-center">
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
           <Button
             variant="outline"
             onClick={() => router.push('/cover-letter/signature')}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto min-w-[160px]"
           >
             <Edit className="w-4 h-4" />
-            Edit Signature
+            <span>Edit Signature</span>
           </Button>
           <Button
             onClick={() => router.push('/cover-letter')}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto min-w-[160px]"
           >
-            Start New Letter
+            <FileText className="w-4 h-4" />
+            <span>Start New Letter</span>
           </Button>
         </div>
 
-        {/* 🎯 PropPush - Cover Letter Download Triggered Notification */}
+        {/* PropPush - Cover Letter Download Triggered Notification */}
         <AdController 
           type="propush" 
           trigger={propPushTrigger}
           onTrigger={() => {
-            console.log('✅ PropPush notification shown after Cover Letter download')
             setTimeout(() => setPropPushTrigger(false), 5000)
           }}
           delay={2000}

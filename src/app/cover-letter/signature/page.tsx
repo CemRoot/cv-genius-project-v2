@@ -7,29 +7,16 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Info, Upload } from 'lucide-react'
 import { MainLayout } from '@/components/layout/main-layout'
 
-const signatureFonts = [
-  { name: 'Mrs Saint Delafield', value: 'Mrs Saint Delafield' },
-  { name: 'Dancing Script', value: 'Dancing Script' },
-  { name: 'Great Vibes', value: 'Great Vibes' },
-  { name: 'Pacifico', value: 'Pacifico' },
-  { name: 'Allura', value: 'Allura' }
-]
 
 export default function SignaturePage() {
   const router = useRouter()
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [activeTab, setActiveTab] = useState('type')
+  const [activeTab, setActiveTab] = useState('draw')
   
-  // Type signature state
-  const [typedSignature, setTypedSignature] = useState('')
-  const [selectedFont, setSelectedFont] = useState(signatureFonts[0].value)
-  const [signatureAlign, setSignatureAlign] = useState<'left' | 'center' | 'right'>('left')
-  const [signatureColor, setSignatureColor] = useState('black')
-  const [signatureSize, setSignatureSize] = useState<'small' | 'large'>('small')
+  
   
   // Draw signature state
   const [isDrawing, setIsDrawing] = useState(false)
@@ -38,51 +25,71 @@ export default function SignaturePage() {
   // Upload signature state
   const [uploadedSignature, setUploadedSignature] = useState<string | null>(null)
 
-  // Get user's name from localStorage
-  useEffect(() => {
-    const templateData = localStorage.getItem('cover-letter-template-data')
-    if (templateData) {
-      const data = JSON.parse(templateData)
-      if (data.personalInfo) {
-        setTypedSignature(`${data.personalInfo.firstName} ${data.personalInfo.lastName}`)
-      }
-    }
-  }, [])
 
-  // Canvas drawing functionality
+  // Canvas drawing functionality with simplified scaling
   useEffect(() => {
     if (activeTab === 'draw' && canvasRef.current) {
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        ctx.lineWidth = 2
+        // Use simple 1:1 scaling for better touch responsiveness
+        canvas.width = 600
+        canvas.height = 200
+        
+        // Set CSS size to match
+        canvas.style.width = '100%'
+        canvas.style.height = '200px'
+        
+        // Configure drawing style
+        ctx.lineWidth = 3
         ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
         ctx.strokeStyle = 'black'
+        ctx.imageSmoothingEnabled = true
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, 600, 200)
       }
     }
   }, [activeTab])
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getCanvasCoordinates = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current
+    if (!canvas) return { x: 0, y: 0 }
+    
+    const rect = canvas.getBoundingClientRect()
+    
+    // Scale coordinates from CSS pixels to canvas pixels
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    
+    const x = (clientX - rect.left) * scaleX
+    const y = (clientY - rect.top) * scaleY
+    
+    return { x, y }
+  }
+
+  const startDrawing = (clientX: number, clientY: number) => {
     setIsDrawing(true)
     const canvas = canvasRef.current
     if (canvas) {
-      const rect = canvas.getBoundingClientRect()
+      const coords = getCanvasCoordinates(clientX, clientY)
       const ctx = canvas.getContext('2d')
       if (ctx) {
         ctx.beginPath()
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top)
+        ctx.moveTo(coords.x, coords.y)
       }
     }
   }
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (clientX: number, clientY: number) => {
     if (!isDrawing) return
     const canvas = canvasRef.current
     if (canvas) {
-      const rect = canvas.getBoundingClientRect()
+      const coords = getCanvasCoordinates(clientX, clientY)
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top)
+        ctx.lineTo(coords.x, coords.y)
         ctx.stroke()
       }
     }
@@ -100,6 +107,7 @@ export default function SignaturePage() {
     if (canvas) {
       const ctx = canvas.getContext('2d')
       if (ctx) {
+        // Clear the entire canvas area
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         setDrawnSignature(null)
       }
@@ -120,16 +128,7 @@ export default function SignaturePage() {
   const handleContinue = () => {
     let signatureData = null
     
-    if (activeTab === 'type' && typedSignature) {
-      signatureData = {
-        type: 'typed',
-        value: typedSignature,
-        font: selectedFont,
-        align: signatureAlign,
-        color: signatureColor,
-        size: signatureSize
-      }
-    } else if (activeTab === 'draw' && drawnSignature) {
+    if (activeTab === 'draw' && drawnSignature) {
       signatureData = {
         type: 'drawn',
         value: drawnSignature
@@ -166,126 +165,11 @@ export default function SignaturePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Card className="p-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="type">Type</TabsTrigger>
-              <TabsTrigger value="draw">Draw</TabsTrigger>
-              <TabsTrigger value="upload">Upload</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="draw">✍️ Draw Signature</TabsTrigger>
+              <TabsTrigger value="upload">📁 Upload Image</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="type" className="space-y-6 mt-6">
-              <div>
-                <Label htmlFor="signature-text">Signature Text</Label>
-                <Input
-                  id="signature-text"
-                  value={typedSignature}
-                  onChange={(e) => setTypedSignature(e.target.value)}
-                  placeholder="Enter your signature"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="font-select">Signature Font</Label>
-                <Select value={selectedFont} onValueChange={setSelectedFont}>
-                  <SelectTrigger id="font-select" className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {signatureFonts.map((font) => (
-                      <SelectItem key={font.value} value={font.value}>
-                        <span style={{ fontFamily: font.value }}>{font.name}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label>Alignment</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant={signatureAlign === 'left' ? 'default' : 'outline'}
-                      onClick={() => setSignatureAlign('left')}
-                    >
-                      Left
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={signatureAlign === 'center' ? 'default' : 'outline'}
-                      onClick={() => setSignatureAlign('center')}
-                    >
-                      Center
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={signatureAlign === 'right' ? 'default' : 'outline'}
-                      onClick={() => setSignatureAlign('right')}
-                    >
-                      Right
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Color</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant={signatureColor === 'black' ? 'default' : 'outline'}
-                      onClick={() => setSignatureColor('black')}
-                    >
-                      Black
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={signatureColor === '#2027aa' ? 'default' : 'outline'}
-                      onClick={() => setSignatureColor('#2027aa')}
-                      style={{ color: '#2027aa' }}
-                    >
-                      Blue
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Size</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant={signatureSize === 'small' ? 'default' : 'outline'}
-                      onClick={() => setSignatureSize('small')}
-                    >
-                      A
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={signatureSize === 'large' ? 'default' : 'outline'}
-                      onClick={() => setSignatureSize('large')}
-                    >
-                      <span className="text-lg">A</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preview */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm text-gray-500 mb-2">Preview:</p>
-                <div className={`text-${signatureAlign}`}>
-                  <span 
-                    style={{ 
-                      fontFamily: selectedFont, 
-                      color: signatureColor,
-                      fontSize: signatureSize === 'large' ? '24px' : '18px'
-                    }}
-                  >
-                    {typedSignature || 'Your Signature'}
-                  </span>
-                </div>
-              </div>
-            </TabsContent>
 
             <TabsContent value="draw" className="space-y-6 mt-6">
               <div>
@@ -296,10 +180,25 @@ export default function SignaturePage() {
                     width={600}
                     height={200}
                     className="w-full bg-white cursor-crosshair"
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
+                    style={{ touchAction: 'none' }}
+                    onMouseDown={(e) => startDrawing(e.clientX, e.clientY)}
+                    onMouseMove={(e) => draw(e.clientX, e.clientY)}
                     onMouseUp={stopDrawing}
                     onMouseLeave={stopDrawing}
+                    onTouchStart={(e) => {
+                      e.preventDefault()
+                      const touch = e.touches[0]
+                      startDrawing(touch.clientX, touch.clientY)
+                    }}
+                    onTouchMove={(e) => {
+                      e.preventDefault()
+                      const touch = e.touches[0]
+                      draw(touch.clientX, touch.clientY)
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault()
+                      stopDrawing()
+                    }}
                   />
                 </div>
                 <Button
@@ -372,7 +271,6 @@ export default function SignaturePage() {
             <Button
               onClick={handleContinue}
               disabled={
-                (activeTab === 'type' && !typedSignature) ||
                 (activeTab === 'draw' && !drawnSignature) ||
                 (activeTab === 'upload' && !uploadedSignature)
               }

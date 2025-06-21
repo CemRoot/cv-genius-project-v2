@@ -66,6 +66,9 @@ export default function CVBuilderPage() {
 
   // Enhanced mobile detection
   useEffect(() => {
+    // Ensure we're in the browser environment
+    if (typeof window === 'undefined') return
+    
     const checkMobile = () => {
       const width = window.innerWidth
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
@@ -134,9 +137,9 @@ export default function CVBuilderPage() {
   const handleSave = () => {
     try {
       saveCV()
-      toast.success('CV Kaydedildi', 'CV bilgileriniz başarıyla kaydedildi.')
+      toast.success('CV Saved', 'Your CV information has been saved successfully.')
     } catch (error) {
-      toast.error('Kayıt Hatası', 'CV kaydedilirken bir hata oluştu.')
+      toast.error('Save Error', 'An error occurred while saving your CV.')
     }
   }
 
@@ -144,11 +147,11 @@ export default function CVBuilderPage() {
     try {
       // Save current CV before exporting
       saveCV()
-      toast.success('CV Kaydedildi', 'Export sayfasına yönlendiriliyorsunuz.')
+      toast.success('CV Saved', 'Redirecting to export page.')
       // Navigate to export page
       router.push('/export')
     } catch (error) {
-      toast.error('Hata', 'Export işlemi başlatılamadı.')
+      toast.error('Error', 'Export process could not be started.')
     }
   }
 
