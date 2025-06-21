@@ -1,374 +1,345 @@
-"use client"
+'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 export interface KeyboardState {
   isVisible: boolean
   height: number
-  animating: boolean
-  lastActiveElement: Element | null
+  isAnimating: boolean
+  hasSupport: boolean
 }
 
-export interface MobileKeyboardOptions {
-  autoScroll?: boolean
-  scrollOffset?: number
-  adjustViewport?: boolean
-  detectFocusableElements?: string[]
-  preventBodyScroll?: boolean
-  restoreScrollOnHide?: boolean
+export interface KeyboardOptions {
+  enableViewportAdjustment?: boolean
+  enableScrollIntoView?: boolean
+  animationDuration?: number
+  onShow?: (height: number) => void
+  onHide?: () => void
+  onHeightChange?: (height: number) => void
 }
 
-const defaultOptions: Required<MobileKeyboardOptions> = {
-  autoScroll: true,
-  scrollOffset: 20,
-  adjustViewport: true,
-  detectFocusableElements: ['input', 'textarea', 'select', '[contenteditable]'],
-  preventBodyScroll: true,
-  restoreScrollOnHide: true,
+const defaultOptions: Required<KeyboardOptions> = {
+  enableViewportAdjustment: true,
+  enableScrollIntoView: true,
+  animationDuration: 300,
+  onShow: () => {},
+  onHide: () => {},
+  onHeightChange: () => {}
 }
 
-export function useMobileKeyboard(options: MobileKeyboardOptions = {}) {
+export function useMobileKeyboard(options: KeyboardOptions = {}) {
   const opts = { ...defaultOptions, ...options }
-  
-  // Enhanced mobile detection
-  const isMobileDevice = useRef(false)
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      isMobileDevice.current = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        ('ontouchstart' in window) ||
-        (window.innerWidth < 768)
-    }
-  }, [])
   
   const [keyboardState, setKeyboardState] = useState<KeyboardState>({
     isVisible: false,
     height: 0,
-    animating: false,
-    lastActiveElement: null,
+    isAnimating: false,
+    hasSupport: typeof window !== 'undefined' && 'visualViewport' in window
   })
 
   const initialViewportHeight = useRef<number>(0)
-  const currentViewportHeight = useRef<number>(0)
-  const savedScrollPosition = useRef<number>(0)
-  const animationTimer = useRef<NodeJS.Timeout | null>(null)
-  const resizeObserver = useRef<ResizeObserver | null>(null)
+  const currentActiveElement = useRef<Element | null>(null)
+  const resizeTimeout = useRef<NodeJS.Timeout | null>(null)
+  const animationTimeout = useRef<NodeJS.Timeout | null>(null)
 
-  // Initialize viewport height
+  // Store initial viewport height
   useEffect(() => {
     if (typeof window !== 'undefined') {
       initialViewportHeight.current = window.innerHeight
-      currentViewportHeight.current = window.innerHeight
     }
   }, [])
 
-  // Enhanced keyboard detection with multiple methods
-  const detectKeyboardVisibility = useCallback(() => {
-    if (typeof window === 'undefined' || !isMobileDevice.current) return
+  // Handle viewport changes for iOS
+  const handleVisualViewportChange = useCallback(() => {
+    if (!window.visualViewport) return
 
-    let currentHeight = window.innerHeight
-    let isKeyboardVisible = false
-    let keyboardHeight = 0
+    const { height: viewportHeight } = window.visualViewport
+    const keyboardHeight = initialViewportHeight.current - viewportHeight
+    const isKeyboardVisible = keyboardHeight > 100 // Threshold for keyboard detection
 
-    // Method 1: Visual Viewport API (most reliable on modern browsers)
-    if ('visualViewport' in window && window.visualViewport) {
-      currentHeight = window.visualViewport.height
-      const heightDifference = initialViewportHeight.current - currentHeight
-      isKeyboardVisible = heightDifference > 150
-      keyboardHeight = isKeyboardVisible ? heightDifference : 0
-    } else {
-      // Method 2: Window height detection (fallback)
-      const heightDifference = initialViewportHeight.current - currentHeight
-      const threshold = 150 // Minimum height change to consider keyboard open
-      isKeyboardVisible = heightDifference > threshold
-      keyboardHeight = isKeyboardVisible ? heightDifference : 0
-    }
-
-    if (isKeyboardVisible !== keyboardState.isVisible) {
-      setKeyboardState(prev => ({
-        ...prev,
-        isVisible: isKeyboardVisible,
-        height: keyboardHeight,
-        animating: true,
-      }))
-
-      // Clear existing animation timer
-      if (animationTimer.current) {
-        clearTimeout(animationTimer.current)
-      }
-
-      // End animation state after transition
-      animationTimer.current = setTimeout(() => {
-        setKeyboardState(prev => ({
+    setKeyboardState(prev => {
+      if (prev.isVisible !== isKeyboardVisible || prev.height !== keyboardHeight) {
+        // Set animating state
+        if (animationTimeout.current) {
+          clearTimeout(animationTimeout.current)
+        }
+        
+        const newState = {
           ...prev,
-          animating: false,
-        }))
-      }, 300)
+          isVisible: isKeyboardVisible,
+          height: Math.max(0, keyboardHeight),
+          isAnimating: true
+        }
 
-      // Update CSS custom property for keyboard height
-      document.documentElement.style.setProperty(
-        '--keyboard-height',
-        `${keyboardHeight}px`
-      )
+        // Clear animating state after animation duration
+        animationTimeout.current = setTimeout(() => {
+          setKeyboardState(current => ({ ...current, isAnimating: false }))
+        }, opts.animationDuration)
 
-      // Adjust viewport if enabled
-      if (opts.adjustViewport) {
-        document.documentElement.style.setProperty(
-          '--mobile-vh-keyboard',
-          `${currentHeight * 0.01}px`
-        )
+        // Call callbacks
+        if (isKeyboardVisible && !prev.isVisible) {
+          opts.onShow(keyboardHeight)
+        } else if (!isKeyboardVisible && prev.isVisible) {
+          opts.onHide()
+        }
+        
+        if (prev.height !== keyboardHeight) {
+          opts.onHeightChange(keyboardHeight)
+        }
+
+        return newState
+      }
+      return prev
+    })
+  }, [opts])
+
+  // Handle window resize for Android
+  const handleWindowResize = useCallback(() => {
+    // Clear existing timeout
+    if (resizeTimeout.current) {
+      clearTimeout(resizeTimeout.current)
+    }
+
+    // Debounce resize events
+    resizeTimeout.current = setTimeout(() => {
+      const currentHeight = window.innerHeight
+      const heightDifference = initialViewportHeight.current - currentHeight
+      const isKeyboardVisible = heightDifference > 100
+
+      setKeyboardState(prev => {
+        if (prev.isVisible !== isKeyboardVisible || prev.height !== heightDifference) {
+          const newState = {
+            ...prev,
+            isVisible: isKeyboardVisible,
+            height: Math.max(0, heightDifference),
+            isAnimating: true
+          }
+
+          // Clear animating state
+          if (animationTimeout.current) {
+            clearTimeout(animationTimeout.current)
+          }
+          animationTimeout.current = setTimeout(() => {
+            setKeyboardState(current => ({ ...current, isAnimating: false }))
+          }, opts.animationDuration)
+
+          // Call callbacks
+          if (isKeyboardVisible && !prev.isVisible) {
+            opts.onShow(heightDifference)
+          } else if (!isKeyboardVisible && prev.isVisible) {
+            opts.onHide()
+          }
+          
+          if (prev.height !== heightDifference) {
+            opts.onHeightChange(heightDifference)
+          }
+
+          return newState
+        }
+        return prev
+      })
+    }, 150) // Debounce delay
+  }, [opts])
+
+  // Set up event listeners
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // Use Visual Viewport API for iOS (more reliable)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleVisualViewportChange)
+      return () => {
+        window.visualViewport?.removeEventListener('resize', handleVisualViewportChange)
+      }
+    } else {
+      // Fallback to window resize for Android
+      window.addEventListener('resize', handleWindowResize)
+      return () => {
+        window.removeEventListener('resize', handleWindowResize)
+        if (resizeTimeout.current) {
+          clearTimeout(resizeTimeout.current)
+        }
+      }
+    }
+  }, [handleVisualViewportChange, handleWindowResize])
+
+  // Handle focus events to track active element
+  useEffect(() => {
+    const handleFocusIn = (e: FocusEvent) => {
+      currentActiveElement.current = e.target as Element
+      
+      // Scroll into view if enabled
+      if (opts.enableScrollIntoView && e.target instanceof HTMLElement) {
+        setTimeout(() => {
+          if (keyboardState.isVisible) {
+            e.target.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest'
+            })
+          }
+        }, opts.animationDuration + 100) // Wait for keyboard animation
       }
     }
 
-    currentViewportHeight.current = currentHeight
-  }, [keyboardState.isVisible, opts.adjustViewport])
+    const handleFocusOut = () => {
+      currentActiveElement.current = null
+    }
 
-  // Enhanced scroll element into view with keyboard awareness
-  const scrollElementIntoView = useCallback((element: Element) => {
-    if (!opts.autoScroll || !element || !isMobileDevice.current) return
+    document.addEventListener('focusin', handleFocusIn)
+    document.addEventListener('focusout', handleFocusOut)
 
-    const rect = element.getBoundingClientRect()
-    const viewportHeight = keyboardState.isVisible 
-      ? window.innerHeight - keyboardState.height 
-      : window.innerHeight
-    
-    const elementTop = rect.top
-    const elementBottom = rect.bottom + opts.scrollOffset
-    const elementCenter = elementTop + (rect.height / 2)
-    
-    // Calculate if element is in view considering keyboard
-    const isElementVisible = elementTop >= 0 && elementBottom <= viewportHeight
-    
-    if (!isElementVisible) {
-      // Save current scroll position
-      savedScrollPosition.current = window.scrollY
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn)
+      document.removeEventListener('focusout', handleFocusOut)
+    }
+  }, [keyboardState.isVisible, opts.enableScrollIntoView, opts.animationDuration])
+
+  // Adjust viewport when keyboard is visible
+  useEffect(() => {
+    if (!opts.enableViewportAdjustment) return
+
+    if (keyboardState.isVisible) {
+      // Set CSS custom property for keyboard height
+      document.documentElement.style.setProperty('--keyboard-height', `${keyboardState.height}px`)
+      document.documentElement.style.setProperty('--available-height', `${window.innerHeight - keyboardState.height}px`)
       
-      let scrollAmount = 0
+      // Add keyboard-visible class
+      document.body.classList.add('keyboard-visible')
       
-      if (elementBottom > viewportHeight) {
-        // Element is below visible area
-        scrollAmount = elementBottom - viewportHeight + 20
-      } else if (elementTop < 0) {
-        // Element is above visible area
-        scrollAmount = elementTop - 20
+      // Prevent body scroll on iOS
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100%'
+        document.body.style.top = '0'
       }
+    } else {
+      // Remove CSS properties
+      document.documentElement.style.removeProperty('--keyboard-height')
+      document.documentElement.style.removeProperty('--available-height')
       
-      // Enhanced smooth scroll with momentum
+      // Remove keyboard-visible class
+      document.body.classList.remove('keyboard-visible')
+      
+      // Restore body scroll
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.top = ''
+      }
+    }
+  }, [keyboardState.isVisible, keyboardState.height, opts.enableViewportAdjustment])
+
+  // Scroll active element into view
+  const scrollActiveElementIntoView = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (currentActiveElement.current && currentActiveElement.current instanceof HTMLElement) {
+      currentActiveElement.current.scrollIntoView({
+        behavior,
+        block: 'center',
+        inline: 'nearest'
+      })
+    }
+  }, [])
+
+  // Adjust scroll position to account for keyboard
+  const adjustScrollForKeyboard = useCallback((element?: HTMLElement) => {
+    if (!keyboardState.isVisible || typeof window === 'undefined') return
+
+    const targetElement = element || currentActiveElement.current
+    if (!targetElement || !(targetElement instanceof HTMLElement)) return
+
+    const rect = targetElement.getBoundingClientRect()
+    const availableHeight = window.innerHeight - keyboardState.height
+    const elementBottom = rect.bottom
+    
+    if (elementBottom > availableHeight) {
+      const scrollAmount = elementBottom - availableHeight + 20 // 20px padding
       window.scrollBy({
         top: scrollAmount,
         behavior: 'smooth'
       })
-      
-      // Add a small delay to ensure scroll completes before any further actions
-      setTimeout(() => {
-        // Double-check if element is now visible, if not, center it
-        const newRect = element.getBoundingClientRect()
-        const newViewportHeight = keyboardState.isVisible 
-          ? window.innerHeight - keyboardState.height 
-          : window.innerHeight
-        
-        if (newRect.bottom > newViewportHeight || newRect.top < 0) {
-          const centerOffset = (newViewportHeight / 2) - (newRect.height / 2)
-          const additionalScroll = newRect.top - centerOffset
-          
-          window.scrollBy({
-            top: additionalScroll,
-            behavior: 'smooth'
-          })
-        }
-      }, 300)
     }
-  }, [opts.autoScroll, opts.scrollOffset, keyboardState.isVisible, keyboardState.height])
+  }, [keyboardState.isVisible, keyboardState.height])
 
-  // Enhanced focus handling with better timing
-  const handleFocusIn = useCallback((event: FocusEvent) => {
-    const target = event.target as Element
-    
-    if (!isMobileDevice.current) return
-    
-    // Check if focused element is a focusable input
-    const isFocusableElement = opts.detectFocusableElements.some(selector => 
-      target.matches?.(selector)
-    )
-
-    if (isFocusableElement) {
-      setKeyboardState(prev => ({
-        ...prev,
-        lastActiveElement: target,
-      }))
-
-      // Prevent body scroll if enabled
-      if (opts.preventBodyScroll) {
-        document.body.style.overflow = 'hidden'
-        document.body.style.position = 'fixed'
-        document.body.style.width = '100%'
-      }
-
-      // Enhanced timing for keyboard appearance detection
-      const scrollTimeouts = [150, 300, 600] // Multiple attempts for better reliability
-      
-      scrollTimeouts.forEach((delay, index) => {
-        setTimeout(() => {
-          scrollElementIntoView(target)
-          
-          // Add haptic feedback on successful focus (mobile only)
-          if (index === 0 && 'vibrate' in navigator) {
-            navigator.vibrate([10])
-          }
-        }, delay)
-      })
-      
-      // Ensure element remains focused
-      setTimeout(() => {
-        if (document.activeElement !== target) {
-          (target as HTMLElement).focus()
-        }
-      }, 100)
+  // Get safe area for content when keyboard is visible
+  const getSafeArea = useCallback(() => {
+    const height = typeof window !== 'undefined' ? window.innerHeight : 0
+    return {
+      top: 0,
+      bottom: keyboardState.isVisible ? keyboardState.height : 0,
+      height: height - (keyboardState.isVisible ? keyboardState.height : 0)
     }
-  }, [opts.detectFocusableElements, opts.preventBodyScroll, scrollElementIntoView])
+  }, [keyboardState.isVisible, keyboardState.height])
 
-  // Enhanced focus out handling
-  const handleFocusOut = useCallback(() => {
-    if (!isMobileDevice.current) return
+  // Check if element is hidden behind keyboard
+  const isElementHiddenByKeyboard = useCallback((element: HTMLElement) => {
+    if (!keyboardState.isVisible || typeof window === 'undefined') return false
+
+    const rect = element.getBoundingClientRect()
+    const availableHeight = window.innerHeight - keyboardState.height
     
-    // Delay to check if focus moved to another input
-    setTimeout(() => {
-      const activeElement = document.activeElement
-      const isStillFocusedOnInput = opts.detectFocusableElements.some(selector => 
-        activeElement?.matches?.(selector)
-      )
-      
-      if (!isStillFocusedOnInput) {
-        // Restore body scroll
-        if (opts.preventBodyScroll) {
-          document.body.style.overflow = ''
-          document.body.style.position = ''
-          document.body.style.width = ''
-        }
+    return rect.bottom > availableHeight
+  }, [keyboardState.isVisible, keyboardState.height])
 
-        // Restore scroll position if enabled and keyboard is hidden
-        if (opts.restoreScrollOnHide && !keyboardState.isVisible) {
-          setTimeout(() => {
-            window.scrollTo({
-              top: savedScrollPosition.current,
-              behavior: 'smooth'
-            })
-          }, 400)
-        }
-      }
-    }, 100)
-  }, [opts.preventBodyScroll, opts.restoreScrollOnHide, opts.detectFocusableElements, keyboardState.isVisible])
-
-  // Setup event listeners
+  // Cleanup on unmount
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    // Viewport resize detection
-    window.addEventListener('resize', detectKeyboardVisibility)
-    
-    // Visual viewport API (better detection on iOS)
-    if ('visualViewport' in window) {
-      const visualViewport = window.visualViewport as any
-      visualViewport?.addEventListener('resize', detectKeyboardVisibility)
-    }
-
-    // Focus events
-    document.addEventListener('focusin', handleFocusIn)
-    document.addEventListener('focusout', handleFocusOut)
-
-    // ResizeObserver for additional detection
-    if ('ResizeObserver' in window) {
-      resizeObserver.current = new ResizeObserver(() => {
-        detectKeyboardVisibility()
-      })
-      resizeObserver.current.observe(document.documentElement)
-    }
-
     return () => {
-      window.removeEventListener('resize', detectKeyboardVisibility)
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current)
+      }
+      if (animationTimeout.current) {
+        clearTimeout(animationTimeout.current)
+      }
       
-      if ('visualViewport' in window) {
-        const visualViewport = window.visualViewport as any
-        visualViewport?.removeEventListener('resize', detectKeyboardVisibility)
-      }
-
-      document.removeEventListener('focusin', handleFocusIn)
-      document.removeEventListener('focusout', handleFocusOut)
-
-      if (resizeObserver.current) {
-        resizeObserver.current.disconnect()
-      }
-
-      if (animationTimer.current) {
-        clearTimeout(animationTimer.current)
-      }
-
       // Cleanup CSS properties
       document.documentElement.style.removeProperty('--keyboard-height')
-      document.documentElement.style.removeProperty('--mobile-vh-keyboard')
-      document.body.style.overflow = ''
-    }
-  }, [detectKeyboardVisibility, handleFocusIn, handleFocusOut])
-
-  // Manual control functions
-  const forceHideKeyboard = useCallback(() => {
-    // Blur active element to hide keyboard
-    if (document.activeElement && 'blur' in document.activeElement) {
-      (document.activeElement as HTMLElement).blur()
+      document.documentElement.style.removeProperty('--available-height')
+      document.body.classList.remove('keyboard-visible')
+      
+      // Restore body styles
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.top = ''
+      }
     }
   }, [])
 
-  const scrollToElement = useCallback((element: Element | string) => {
-    const targetElement = typeof element === 'string' 
-      ? document.querySelector(element)
-      : element
-
-    if (targetElement) {
-      scrollElementIntoView(targetElement)
-    }
-  }, [scrollElementIntoView])
+  const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 0
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : ''
 
   return {
     // State
-    isVisible: keyboardState.isVisible,
-    height: keyboardState.height,
-    animating: keyboardState.animating,
-    lastActiveElement: keyboardState.lastActiveElement,
-
+    ...keyboardState,
+    
+    // Active element
+    activeElement: currentActiveElement.current,
+    
+    // Utility functions
+    scrollActiveElementIntoView,
+    adjustScrollForKeyboard,
+    getSafeArea,
+    isElementHiddenByKeyboard,
+    
     // Computed values
-    isOpen: keyboardState.isVisible, // Alias for better readability
-    availableHeight: initialViewportHeight.current - keyboardState.height,
-    adjustedViewHeight: keyboardState.isVisible 
-      ? `${initialViewportHeight.current - keyboardState.height}px` 
-      : '100vh',
-    viewportHeightDifference: initialViewportHeight.current - currentViewportHeight.current,
-    isMobile: isMobileDevice.current,
+    availableHeight: windowHeight - keyboardState.height,
+    adjustedViewHeight: windowHeight - keyboardState.height,
+    keyboardOffset: keyboardState.isVisible ? keyboardState.height : 0,
     
-    // Control functions
-    forceHideKeyboard,
-    scrollToElement,
+    // Platform detection
+    isIOS: /iPad|iPhone|iPod/.test(userAgent),
+    isAndroid: /Android/.test(userAgent),
     
-    // Enhanced utility functions
-    isElementInView: (element: Element) => {
-      const rect = element.getBoundingClientRect()
-      const viewportHeight = keyboardState.isVisible 
-        ? window.innerHeight - keyboardState.height 
-        : window.innerHeight
-      return rect.top >= 0 && rect.bottom <= viewportHeight
+    // CSS helpers
+    keyboardAwareStyle: {
+      paddingBottom: keyboardState.isVisible ? `${keyboardState.height}px` : '0px',
+      transition: keyboardState.isAnimating ? `padding-bottom ${opts.animationDuration}ms ease-out` : 'none'
     },
     
-    isElementPartiallyInView: (element: Element) => {
-      const rect = element.getBoundingClientRect()
-      const viewportHeight = keyboardState.isVisible 
-        ? window.innerHeight - keyboardState.height 
-        : window.innerHeight
-      return rect.bottom > 0 && rect.top < viewportHeight
-    },
-    
-    getFocusableElements: () => {
-      const selector = opts.detectFocusableElements.join(', ')
-      return document.querySelectorAll(selector)
-    },
+    safeAreaStyle: {
+      height: `${windowHeight - keyboardState.height}px`,
+      transition: keyboardState.isAnimating ? `height ${opts.animationDuration}ms ease-out` : 'none'
+    }
   }
 }
 

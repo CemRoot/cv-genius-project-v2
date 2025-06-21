@@ -278,6 +278,9 @@ export function useMobileOnboarding() {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
 
   useEffect(() => {
+    // Ensure we're in the browser environment
+    if (typeof window === 'undefined') return
+    
     // Check if user has completed or skipped onboarding
     const completed = localStorage.getItem('cvgenius-mobile-onboarding-completed') === 'true'
     const skipped = localStorage.getItem('cvgenius-mobile-onboarding-skipped') === 'true'

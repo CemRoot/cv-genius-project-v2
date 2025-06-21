@@ -1,327 +1,336 @@
-"use client"
+'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 export type OrientationType = 'portrait' | 'landscape'
-export type OrientationAngle = 0 | 90 | 180 | 270
 
 export interface OrientationState {
-  type: OrientationType
-  angle: OrientationAngle
-  isLandscape: boolean
-  isPortrait: boolean
-  aspectRatio: number
-  width: number
-  height: number
+  orientation: OrientationType
+  angle: number
+  isSupported: boolean
+  isLocked: boolean
+  canLock: boolean
 }
 
-export interface DeviceOrientationOptions {
-  enableMotionData?: boolean
-  throttleMs?: number
-  onOrientationChange?: (state: OrientationState) => void
-  onMotionData?: (data: DeviceOrientationEvent) => void
-  adjustLayoutOnChange?: boolean
-  rememberPreference?: boolean
+export interface OrientationOptions {
+  enableLock?: boolean
+  autoAdjustContent?: boolean
+  onOrientationChange?: (orientation: OrientationType, angle: number) => void
+  onLockStateChange?: (isLocked: boolean) => void
 }
 
-const defaultOptions: Required<DeviceOrientationOptions> = {
-  enableMotionData: false,
-  throttleMs: 100,
+const defaultOptions: Required<OrientationOptions> = {
+  enableLock: true,
+  autoAdjustContent: true,
   onOrientationChange: () => {},
-  onMotionData: () => {},
-  adjustLayoutOnChange: true,
-  rememberPreference: false,
+  onLockStateChange: () => {}
 }
 
-export function useDeviceOrientation(options: DeviceOrientationOptions = {}) {
+export function useDeviceOrientation(options: OrientationOptions = {}) {
   const opts = { ...defaultOptions, ...options }
   
-  const [orientationState, setOrientationState] = useState<OrientationState>({
-    type: 'portrait',
-    angle: 0,
-    isLandscape: false,
-    isPortrait: true,
-    aspectRatio: 1,
-    width: 0,
-    height: 0,
-  })
-
-  const [motionData, setMotionData] = useState<DeviceOrientationEvent | null>(null)
-  const [supportsMotion, setSupportsMotion] = useState(false)
-  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null)
-  
-  const throttleTimer = useRef<NodeJS.Timeout | null>(null)
-  const lastUpdateTime = useRef<number>(0)
-
-  // Get current orientation info
-  const getOrientationInfo = useCallback((): OrientationState => {
+  const [orientationState, setOrientationState] = useState<OrientationState>(() => {
     if (typeof window === 'undefined') {
-      return orientationState
+      return {
+        orientation: 'portrait',
+        angle: 0,
+        isSupported: false,
+        isLocked: false,
+        canLock: false
+      }
     }
 
-    const { innerWidth: width, innerHeight: height } = window
-    const aspectRatio = width / height
-    
-    // Determine orientation
-    const isLandscape = width > height
-    const type: OrientationType = isLandscape ? 'landscape' : 'portrait'
-    
-    // Get orientation angle
-    let angle: OrientationAngle = 0
-    if ('orientation' in screen) {
-      angle = Math.abs(screen.orientation?.angle || 0) as OrientationAngle
-    } else if ('orientation' in window) {
-      // Fallback for older browsers
-      angle = Math.abs((window as any).orientation || 0) as OrientationAngle
+    const getInitialOrientation = (): OrientationType => {
+      if (screen.orientation) {
+        return screen.orientation.angle === 0 || screen.orientation.angle === 180 ? 'portrait' : 'landscape'
+      }
+      return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape'
+    }
+
+    const getInitialAngle = (): number => {
+      if (screen.orientation) {
+        return screen.orientation.angle
+      }
+      return 0
     }
 
     return {
-      type,
-      angle,
-      isLandscape,
-      isPortrait: !isLandscape,
-      aspectRatio,
-      width,
-      height,
+      orientation: getInitialOrientation(),
+      angle: getInitialAngle(),
+      isSupported: 'orientation' in screen,
+      isLocked: false,
+      canLock: 'lock' in screen.orientation
     }
-  }, [orientationState])
+  })
 
-  // Throttled orientation update
+  const lockPromiseRef = useRef<Promise<void> | null>(null)
+  const orientationChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Update orientation state
   const updateOrientation = useCallback(() => {
-    const now = Date.now()
-    
-    if (now - lastUpdateTime.current < opts.throttleMs) {
-      if (throttleTimer.current) return
-      
-      throttleTimer.current = setTimeout(() => {
-        updateOrientation()
-        throttleTimer.current = null
-      }, opts.throttleMs)
-      return
+    let newOrientation: OrientationType
+    let newAngle: number
+
+    if (screen.orientation) {
+      newAngle = screen.orientation.angle
+      newOrientation = newAngle === 0 || newAngle === 180 ? 'portrait' : 'landscape'
+    } else {
+      // Fallback for older browsers
+      newAngle = (window as any).orientation || 0
+      newOrientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape'
     }
 
-    lastUpdateTime.current = now
-    const newState = getOrientationInfo()
-    
-    setOrientationState(prevState => {
-      // Only update if state actually changed
-      if (
-        prevState.type !== newState.type ||
-        prevState.angle !== newState.angle ||
-        prevState.width !== newState.width ||
-        prevState.height !== newState.height
-      ) {
-        // Call change handler
-        opts.onOrientationChange(newState)
+    setOrientationState(prev => {
+      if (prev.orientation !== newOrientation || prev.angle !== newAngle) {
+        opts.onOrientationChange(newOrientation, newAngle)
         
-        // Adjust layout if enabled
-        if (opts.adjustLayoutOnChange) {
-          // Update CSS custom properties
-          document.documentElement.style.setProperty(
-            '--orientation-type',
-            newState.type
-          )
-          document.documentElement.style.setProperty(
-            '--orientation-angle',
-            `${newState.angle}deg`
-          )
-          document.documentElement.style.setProperty(
-            '--aspect-ratio',
-            newState.aspectRatio.toString()
-          )
-          
-          // Add orientation classes to body
-          document.body.classList.remove('orientation-portrait', 'orientation-landscape')
-          document.body.classList.add(`orientation-${newState.type}`)
+        return {
+          ...prev,
+          orientation: newOrientation,
+          angle: newAngle
         }
-
-        // Remember preference if enabled
-        if (opts.rememberPreference && typeof localStorage !== 'undefined') {
-          localStorage.setItem('preferred-orientation', newState.type)
-        }
-
-        return newState
       }
-      
-      return prevState
+      return prev
     })
-  }, [opts, getOrientationInfo])
-
-  // Handle device motion
-  const handleDeviceOrientation = useCallback((event: DeviceOrientationEvent) => {
-    if (!opts.enableMotionData) return
-    
-    setMotionData(event)
-    opts.onMotionData(event)
   }, [opts])
 
-  // Request motion permission (iOS 13+)
-  const requestMotionPermission = useCallback(async (): Promise<boolean> => {
-    if (typeof DeviceOrientationEvent === 'undefined') {
-      setSupportsMotion(false)
-      setPermissionGranted(false)
-      return false
+  // Handle orientation change with debouncing
+  const handleOrientationChange = useCallback(() => {
+    // Clear existing timeout
+    if (orientationChangeTimeoutRef.current) {
+      clearTimeout(orientationChangeTimeoutRef.current)
     }
 
-    // Check if permission is required (iOS 13+)
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-      try {
-        const permission = await (DeviceOrientationEvent as any).requestPermission()
-        const granted = permission === 'granted'
-        setPermissionGranted(granted)
-        setSupportsMotion(granted)
-        return granted
-      } catch (error) {
-        console.warn('Motion permission request failed:', error)
-        setPermissionGranted(false)
-        setSupportsMotion(false)
-        return false
+    // Debounce orientation changes to avoid rapid updates
+    orientationChangeTimeoutRef.current = setTimeout(() => {
+      updateOrientation()
+    }, 100)
+  }, [updateOrientation])
+
+  // Set up event listeners
+  useEffect(() => {
+    if (typeof window === 'undefined' || !orientationState.isSupported) return
+
+    // Modern browsers
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', handleOrientationChange)
+      return () => {
+        screen.orientation.removeEventListener('change', handleOrientationChange)
       }
     } else {
-      // No permission required (Android, older iOS)
-      setPermissionGranted(true)
-      setSupportsMotion(true)
-      return true
+      // Fallback for older browsers
+      window.addEventListener('orientationchange', handleOrientationChange)
+      window.addEventListener('resize', handleOrientationChange)
+      
+      return () => {
+        window.removeEventListener('orientationchange', handleOrientationChange)
+        window.removeEventListener('resize', handleOrientationChange)
+      }
     }
-  }, [])
+  }, [handleOrientationChange, orientationState.isSupported])
 
-  // Force orientation (when possible)
-  const requestOrientation = useCallback(async (orientation: OrientationType) => {
-    if (!('orientation' in screen) || !screen.orientation) {
-      console.warn('Screen Orientation API not supported')
+  // Auto-adjust content based on orientation
+  useEffect(() => {
+    if (!opts.autoAdjustContent) return
+
+    // Add orientation class to body
+    document.body.classList.remove('orientation-portrait', 'orientation-landscape')
+    document.body.classList.add(`orientation-${orientationState.orientation}`)
+
+    // Set CSS custom properties
+    document.documentElement.style.setProperty('--orientation', orientationState.orientation)
+    document.documentElement.style.setProperty('--orientation-angle', `${orientationState.angle}deg`)
+    document.documentElement.style.setProperty('--is-portrait', orientationState.orientation === 'portrait' ? '1' : '0')
+    document.documentElement.style.setProperty('--is-landscape', orientationState.orientation === 'landscape' ? '1' : '0')
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('orientation-portrait', 'orientation-landscape')
+      document.documentElement.style.removeProperty('--orientation')
+      document.documentElement.style.removeProperty('--orientation-angle')
+      document.documentElement.style.removeProperty('--is-portrait')
+      document.documentElement.style.removeProperty('--is-landscape')
+    }
+  }, [orientationState.orientation, orientationState.angle, opts.autoAdjustContent])
+
+  // Lock orientation to portrait
+  const lockToPortrait = useCallback(async (): Promise<boolean> => {
+    if (!orientationState.canLock || !screen.orientation.lock) {
+      console.warn('Screen orientation lock not supported')
       return false
     }
 
     try {
-      const lockOrientation = orientation === 'landscape' 
-        ? 'landscape' 
-        : 'portrait'
+      lockPromiseRef.current = screen.orientation.lock('portrait')
+      await lockPromiseRef.current
       
-      await screen.orientation.lock(lockOrientation as OrientationLockType)
+      setOrientationState(prev => ({ ...prev, isLocked: true }))
+      opts.onLockStateChange(true)
       return true
     } catch (error) {
-      console.warn('Failed to lock orientation:', error)
+      console.error('Failed to lock orientation to portrait:', error)
       return false
     }
-  }, [])
+  }, [orientationState.canLock, opts])
+
+  // Lock orientation to landscape
+  const lockToLandscape = useCallback(async (): Promise<boolean> => {
+    if (!orientationState.canLock || !screen.orientation.lock) {
+      console.warn('Screen orientation lock not supported')
+      return false
+    }
+
+    try {
+      lockPromiseRef.current = screen.orientation.lock('landscape')
+      await lockPromiseRef.current
+      
+      setOrientationState(prev => ({ ...prev, isLocked: true }))
+      opts.onLockStateChange(true)
+      return true
+    } catch (error) {
+      console.error('Failed to lock orientation to landscape:', error)
+      return false
+    }
+  }, [orientationState.canLock, opts])
+
+  // Lock to current orientation
+  const lockToCurrentOrientation = useCallback(async (): Promise<boolean> => {
+    return orientationState.orientation === 'portrait' 
+      ? await lockToPortrait() 
+      : await lockToLandscape()
+  }, [orientationState.orientation, lockToPortrait, lockToLandscape])
 
   // Unlock orientation
-  const unlockOrientation = useCallback(() => {
-    if (!('orientation' in screen) || !screen.orientation) {
-      console.warn('Screen Orientation API not supported')
+  const unlockOrientation = useCallback(async (): Promise<boolean> => {
+    if (!orientationState.canLock || !screen.orientation.unlock) {
+      console.warn('Screen orientation unlock not supported')
       return false
     }
 
     try {
+      // Cancel any pending lock operation
+      if (lockPromiseRef.current) {
+        try {
+          await lockPromiseRef.current
+        } catch {
+          // Ignore errors from cancelled lock
+        }
+        lockPromiseRef.current = null
+      }
+
       screen.orientation.unlock()
+      
+      setOrientationState(prev => ({ ...prev, isLocked: false }))
+      opts.onLockStateChange(false)
       return true
     } catch (error) {
-      console.warn('Failed to unlock orientation:', error)
+      console.error('Failed to unlock orientation:', error)
       return false
     }
-  }, [])
+  }, [orientationState.canLock, opts])
 
-  // Setup event listeners
+  // Toggle orientation lock
+  const toggleOrientationLock = useCallback(async (): Promise<boolean> => {
+    return orientationState.isLocked 
+      ? await unlockOrientation() 
+      : await lockToCurrentOrientation()
+  }, [orientationState.isLocked, unlockOrientation, lockToCurrentOrientation])
+
+  // Get orientation-specific styles
+  const getOrientationStyles = useCallback(() => {
+    return {
+      portrait: {
+        width: '100%',
+        height: '100vh',
+        flexDirection: 'column' as const
+      },
+      landscape: {
+        width: '100vw',
+        height: '100%',
+        flexDirection: 'row' as const
+      }
+    }[orientationState.orientation]
+  }, [orientationState.orientation])
+
+  // Get responsive dimensions
+  const getResponsiveDimensions = useCallback(() => {
+    const { innerWidth: vw, innerHeight: vh } = window
+    
+    return {
+      // Always use the smaller dimension as width in portrait mode
+      width: orientationState.orientation === 'portrait' ? Math.min(vw, vh) : Math.max(vw, vh),
+      height: orientationState.orientation === 'portrait' ? Math.max(vw, vh) : Math.min(vw, vh),
+      isWide: orientationState.orientation === 'landscape',
+      isTall: orientationState.orientation === 'portrait',
+      aspectRatio: orientationState.orientation === 'portrait' ? vh / vw : vw / vh
+    }
+  }, [orientationState.orientation])
+
+  // Check if orientation is optimal for current content
+  const isOptimalOrientation = useCallback((preferredOrientation?: OrientationType) => {
+    if (!preferredOrientation) return true
+    return orientationState.orientation === preferredOrientation
+  }, [orientationState.orientation])
+
+  // Suggest orientation change
+  const suggestOrientationChange = useCallback((targetOrientation: OrientationType) => {
+    if (orientationState.orientation === targetOrientation) return false
+
+    // Could trigger a notification or UI hint
+    console.log(`Consider rotating your device to ${targetOrientation} for better experience`)
+    return true
+  }, [orientationState.orientation])
+
+  // Cleanup on unmount
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    // Initial state
-    updateOrientation()
-
-    // Modern orientation API
-    if ('orientation' in screen && screen.orientation) {
-      screen.orientation.addEventListener('change', updateOrientation)
-    }
-
-    // Fallback orientation detection
-    window.addEventListener('orientationchange', updateOrientation)
-    window.addEventListener('resize', updateOrientation)
-
-    // Device motion (if enabled)
-    if (opts.enableMotionData) {
-      requestMotionPermission().then(granted => {
-        if (granted) {
-          window.addEventListener('deviceorientation', handleDeviceOrientation)
-        }
-      })
-    }
-
     return () => {
-      if ('orientation' in screen && screen.orientation) {
-        screen.orientation.removeEventListener('change', updateOrientation)
+      if (orientationChangeTimeoutRef.current) {
+        clearTimeout(orientationChangeTimeoutRef.current)
       }
       
-      window.removeEventListener('orientationchange', updateOrientation)
-      window.removeEventListener('resize', updateOrientation)
-      
-      if (opts.enableMotionData) {
-        window.removeEventListener('deviceorientation', handleDeviceOrientation)
-      }
-
-      if (throttleTimer.current) {
-        clearTimeout(throttleTimer.current)
-      }
-
-      // Cleanup CSS properties
-      if (opts.adjustLayoutOnChange) {
-        document.documentElement.style.removeProperty('--orientation-type')
-        document.documentElement.style.removeProperty('--orientation-angle')
-        document.documentElement.style.removeProperty('--aspect-ratio')
-        document.body.classList.remove('orientation-portrait', 'orientation-landscape')
+      // Auto-unlock on unmount if we locked it
+      if (orientationState.isLocked && opts.enableLock) {
+        unlockOrientation()
       }
     }
-  }, [opts.enableMotionData, updateOrientation, handleDeviceOrientation, requestMotionPermission])
-
-  // Get preferred orientation from storage
-  const getPreferredOrientation = useCallback((): OrientationType | null => {
-    if (!opts.rememberPreference || typeof localStorage === 'undefined') {
-      return null
-    }
-    
-    const stored = localStorage.getItem('preferred-orientation')
-    return stored === 'landscape' || stored === 'portrait' ? stored : null
-  }, [opts.rememberPreference])
-
-  // Check if device is likely a mobile device
-  const isMobileDevice = useCallback((): boolean => {
-    if (typeof window === 'undefined') return false
-    
-    return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    ) || (window.innerWidth <= 1024 && 'ontouchstart' in window)
-  }, [])
+  }, [orientationState.isLocked, opts.enableLock, unlockOrientation])
 
   return {
-    // Current state
+    // State
     ...orientationState,
     
-    // Motion data (if enabled)
-    motionData,
-    supportsMotion,
-    permissionGranted,
+    // Lock/unlock functions
+    lockToPortrait,
+    lockToLandscape,
+    lockToCurrentOrientation,
+    unlockOrientation,
+    toggleOrientationLock,
     
     // Utility functions
-    requestMotionPermission,
-    requestOrientation,
-    unlockOrientation,
-    getPreferredOrientation,
-    isMobileDevice,
+    getOrientationStyles,
+    getResponsiveDimensions,
+    isOptimalOrientation,
+    suggestOrientationChange,
     
     // Computed values
-    isFullscreen: () => {
-      return document.fullscreenElement !== null ||
-             (document as any).webkitFullscreenElement !== null ||
-             (document as any).msFullscreenElement !== null
-    },
+    isPortrait: orientationState.orientation === 'portrait',
+    isLandscape: orientationState.orientation === 'landscape',
+    degrees: orientationState.angle,
     
-    canLockOrientation: () => {
-      return 'orientation' in screen && 
-             screen.orientation &&
-             'lock' in screen.orientation
-    },
+    // CSS class helpers
+    orientationClass: `orientation-${orientationState.orientation}`,
     
-    // Manual refresh
-    refresh: updateOrientation,
+    // Responsive breakpoints
+    isMobile: orientationState.orientation === 'portrait' && window.innerWidth < 768,
+    isTablet: (orientationState.orientation === 'portrait' && window.innerWidth >= 768) || 
+              (orientationState.orientation === 'landscape' && window.innerWidth < 1024),
+    isDesktop: orientationState.orientation === 'landscape' && window.innerWidth >= 1024,
+    
+    // Specific device orientations
+    isPortraitPrimary: orientationState.angle === 0,
+    isPortraitSecondary: orientationState.angle === 180,
+    isLandscapeLeft: orientationState.angle === 90,
+    isLandscapeRight: orientationState.angle === 270
   }
 }
 
