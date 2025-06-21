@@ -163,29 +163,29 @@ Hiring Manager
 ${company}
 Dublin, Ireland
 
-Dear Sir/Madam,
+Dear Hiring Manager,
 
 OPENING PARAGRAPH: Identify yourself as an applicant, state the exact position applying for, and mention where you learned about the vacancy.
 
-SECOND PARAGRAPH: Explain why you are interested in this work and this organisation. Briefly mention your academic background, relevant qualifications, and related work experience that qualify you for the position. Summarise your talents and how they might benefit the employer.
+SECOND PARAGRAPH: Explain why you are interested in this work and this organisation. Briefly mention your academic background, relevant qualifications, and related work experience that qualify you for the position. Summarise your talents and how they might benefit the employer. Use proper grammar - if mentioning multiple strengths, use "strengths in [area1], [area2], and [area3]" or if a single area "strength in [area]".
 
 THIRD PARAGRAPH: Refer to the fact that you have enclosed your CV, and draw attention to any further points of relevance to your application.
 
 FINAL PARAGRAPH: Reiterate your interest and indicate your availability for interview. Close with a confident statement that encourages a positive response.
 
-${includeAddress && userAddress ? 'Yours sincerely' : 'Yours faithfully'} (use "sincerely" if addressing by name, "faithfully" if Dear Sir/Madam)
+Yours sincerely,
 
-[Signature space]
-
-${applicantName.toUpperCase()}
+${applicantName}
 
 CRITICAL FORMATTING RULES:
-- DO NOT include placeholder text like "[Company Address if available]" or "[Name]"
-- Use "Hiring Manager" if contact name is unknown
+- DO NOT include placeholder text like "[Company Address if available]" or "[Name]" or "[Signature space]"
+- Use "Hiring Manager" if contact name is unknown  
 - Use "${company}" as the company name
 - Use "Dublin, Ireland" as the default company address
 - The header format is EXACTLY as shown above - no brackets, no placeholders
-- Start the letter with the formatted header, then Dear Sir/Madam
+- Start the letter with the formatted header, then Dear Hiring Manager
+- Do NOT include "[Signature space]" text - leave blank space for signature
+- Use consistent name formatting throughout
 
 REQUIREMENTS:
 - Follow the exact 4-paragraph structure above
@@ -218,7 +218,7 @@ Hiring Manager
 Tech Company Ltd
 Dublin, Ireland
 
-Dear Sir/Madam,
+Dear Hiring Manager,
 
 [Your opening paragraph here...]
 
@@ -228,13 +228,11 @@ Dear Sir/Madam,
 
 [Your final paragraph here...]
 
-Yours faithfully,
-
-[Signature space]
+Yours sincerely,
 
 JOHN SMITH
 
-Write the complete cover letter following this exact Irish business format. Do not add explanations or comments. NO BRACKETS or PLACEHOLDER TEXT.`
+Write the complete cover letter following this exact Irish business format. Do not add explanations or comments. NO BRACKETS, PLACEHOLDER TEXT, or development notations like '[Signature space]'. Use consistent name formatting - do not use all capitals for the name at the end.`
 
     // Generate AI response with context-aware configuration
     const result = await generateContent(prompt, {

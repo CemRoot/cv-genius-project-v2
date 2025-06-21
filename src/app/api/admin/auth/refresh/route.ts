@@ -9,7 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const refreshToken = cookieStore.get('admin-refresh-token')?.value
 
     if (!refreshToken) {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
 
     // Generate new access token
     const newToken = await new jose.SignJWT({

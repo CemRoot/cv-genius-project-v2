@@ -3,14 +3,14 @@ import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     
     // Clear all admin-related cookies
     cookieStore.delete('admin-refresh-token')
     cookieStore.delete('csrf-token')
     
     // Log logout
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     console.log(`🔓 Admin logout from IP: ${clientIP}`)
 
     return NextResponse.json({
