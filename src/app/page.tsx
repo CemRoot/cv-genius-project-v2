@@ -6,6 +6,7 @@ import { Star, Zap, Shield, Heart, CheckCircle, ArrowRight, Users, Award, Clock,
 import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { AdController } from "@/components/ads/ad-controller"
+import { BannerAds } from "@/components/ads/banner-ads"
 import { MainLayout } from "@/components/layout/main-layout"
 import { MobileOnboarding, useMobileOnboarding } from "@/components/mobile"
 

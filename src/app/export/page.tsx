@@ -13,6 +13,9 @@ export default function ExportPage() {
 
   // Detect mobile device
   useEffect(() => {
+    // Ensure we're in the browser environment
+    if (typeof window === 'undefined') return
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }

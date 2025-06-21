@@ -24,7 +24,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { SecurityHooks } from '@/lib/security-obfuscation'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,6 +35,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Eye, EyeOff, Save, TestTube, Settings, FileText, BarChart3, Lock, Shield, LogOut, Smartphone, QrCode } from 'lucide-react'
 import { ClientAdminAuth } from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
+import { Switch } from '@/components/ui/switch'
+import { defaultAdConfigs } from '@/lib/ad-config'
 
 interface AISettings {
   temperature: number
@@ -211,7 +213,7 @@ Focus on information relevant for Irish job applications.`,
         if (!result.twoFactorEnabled) {
           setFirstTimeLogin(true)
           setTimeout(() => {
-            alert('🔐 İlk giriş tespiti! Güvenlik için 2FA kurulumu öneriliyor.')
+            alert('🔐 First login detected! 2FA setup is recommended for security.')
             setActiveTab('security')
           }, 1000)
         }
@@ -250,7 +252,7 @@ Focus on information relevant for Irish job applications.`,
     // Check URL parameters for tab
     const urlParams = new URLSearchParams(window.location.search)
     const tabParam = urlParams.get('tab')
-    if (tabParam && ['settings', 'security', 'ip-management', 'prompts', 'testing', 'analytics'].includes(tabParam)) {
+    if (tabParam && ['settings', 'ads', 'security', 'ip-management', 'prompts', 'testing', 'analytics'].includes(tabParam)) {
       setActiveTab(tabParam)
     }
   }, [])
@@ -331,7 +333,7 @@ Focus on information relevant for Irish job applications.`,
         setShow2FASetup(false)
         setTwoFactorToken('')
         setFirstTimeLogin(false)
-        alert('🎉 2FA başarıyla aktif edildi! Bundan sonra giriş yaparken 2FA kodu istenecek.')
+        alert('🎉 2FA successfully activated! You will need 2FA codes for future logins.')
       } else {
         alert(result.error || '2FA verification failed')
       }
@@ -342,7 +344,7 @@ Focus on information relevant for Irish job applications.`,
 
   // Disable 2FA
   const disable2FA = async () => {
-    if (!confirm('2FA\'yı devre dışı bırakmak istediğinizden emin misiniz? Bu hesabınızı daha az güvenli hale getirir.')) {
+    if (!confirm('Are you sure you want to disable 2FA? This will make your account less secure.')) {
       return
     }
     
@@ -359,7 +361,7 @@ Focus on information relevant for Irish job applications.`,
         setIs2FAEnabled(false)
         setTwoFactorToken('')
         setPassword('')
-        alert('2FA devre dışı bırakıldı')
+        alert('2FA has been disabled')
       } else {
         alert(result.error || '2FA disable failed')
       }
@@ -646,10 +648,14 @@ Focus on information relevant for Irish job applications.`,
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="w-4 h-4" />
               <span>AI Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="ads" className="flex items-center space-x-2">
+              <span>💰</span>
+              <span>Ads</span>
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center space-x-2">
               <Shield className="w-4 h-4" />
@@ -826,6 +832,11 @@ Focus on information relevant for Irish job applications.`,
                 </Button>
               </div>
             </Card>
+          </TabsContent>
+
+          {/* Ads Management Tab */}
+          <TabsContent value="ads" className="space-y-6">
+            <AdsManagementComponent />
           </TabsContent>
 
           {/* IP Management Tab */}
@@ -1324,5 +1335,359 @@ Focus on information relevant for Irish job applications.`,
         </Tabs>
       </div>
     </div>
+  )
+}
+
+// Ads Management Component
+function AdsManagementComponent() {
+  const [adConfigs, setAdConfigs] = useState(defaultAdConfigs)
+  const [loading, setLoading] = useState(false)
+
+  const toggleAd = (adId: string, enabled: boolean) => {
+    setAdConfigs(prev => prev.map(ad => 
+      ad.id === adId ? { ...ad, enabled } : ad
+    ))
+  }
+
+  const adTypeColors = {
+    banner: 'bg-blue-100 text-blue-800',
+    sidebar: 'bg-green-100 text-green-800', 
+    mobile: 'bg-cyan-100 text-cyan-800',
+    popup: 'bg-red-100 text-red-800',
+    native: 'bg-purple-100 text-purple-800',
+    push: 'bg-orange-100 text-orange-800',
+    inline: 'bg-indigo-100 text-indigo-800',
+    footer: 'bg-gray-100 text-gray-800',
+    interstitial: 'bg-pink-100 text-pink-800',
+    sticky: 'bg-yellow-100 text-yellow-800'
+  }
+
+  const platformIcons = {
+    adsense: '🟦',
+    monetag: '🔴',
+    propellerads: '🟠',
+    custom: '🟣'
+  }
+
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Advertisement Management</h1>
+        <p className="text-gray-600">Control advertisement settings across the entire site from here.</p>
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="web">🖥️ Web Ads</TabsTrigger>
+          <TabsTrigger value="mobile">📱 Mobile Ads</TabsTrigger>
+          <TabsTrigger value="popup">🚀 Popup/Push</TabsTrigger>
+          <TabsTrigger value="special">⚡ Special Ads</TabsTrigger>
+          <TabsTrigger value="settings">⚙️ Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {['banner', 'sidebar', 'mobile', 'popup', 'native'].map(type => {
+              const ads = adConfigs.filter(ad => ad.type === type)
+              const activeAds = ads.filter(ad => ad.enabled).length
+              
+              const typeIcons = {
+                banner: '🎯',
+                sidebar: '📌', 
+                mobile: '📱',
+                popup: '🚀',
+                native: '⭐'
+              }
+              
+              return (
+                <Card key={type}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-xl">{typeIcons[type as keyof typeof typeIcons]}</span>
+                          <Badge className={adTypeColors[type as keyof typeof adTypeColors]}>
+                            {type.toUpperCase()}
+                          </Badge>
+                        </div>
+                        <p className="text-2xl font-bold">{activeAds}/{ads.length}</p>
+                        <p className="text-xs text-gray-500">Active/Total</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Advertisements</CardTitle>
+              <CardDescription>All advertisement positions across the site</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {adConfigs.map(ad => (
+                  <div key={ad.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <Badge className={adTypeColors[ad.type]}>
+                        {ad.type}
+                      </Badge>
+                      <div>
+                        <h3 className="font-medium">{ad.name}</h3>
+                        <p className="text-sm text-gray-500">
+                          {ad.zone && `Zone: ${ad.zone}`}
+                          {ad.position && ` • Pozisyon: ${ad.position}`}
+                        </p>
+                        {ad.settings?.platform && (
+                          <span className="text-xs font-medium mt-1 inline-block">
+                            {platformIcons[ad.settings.platform]} {ad.settings.platform.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Switch
+                      checked={ad.enabled}
+                      onCheckedChange={(enabled) => toggleAd(ad.id, enabled)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="web" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎯 Banner Reklamları</CardTitle>
+                <CardDescription>Desktop banner reklamları (Header, Content arası)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {adConfigs.filter(ad => ad.type === 'banner').map(ad => (
+                    <div key={ad.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{ad.name}</h3>
+                        <p className="text-sm text-gray-500">
+                          Pozisyon: {ad.position || 'Genel'}
+                          {ad.settings?.size && ` • Boyut: ${ad.settings.size}`}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={ad.enabled}
+                        onCheckedChange={(enabled) => toggleAd(ad.id, enabled)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>📌 Sidebar Reklamları</CardTitle>
+                <CardDescription>Google AdSense yan panel reklamları</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {adConfigs.filter(ad => ad.type === 'sidebar').map(ad => (
+                    <div key={ad.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{ad.name}</h3>
+                        <p className="text-sm text-gray-500">
+                          AdSense Client: {ad.settings?.adSenseClient || ad.zone}
+                        </p>
+                        <p className="text-xs text-green-600">300x300 responsive</p>
+                      </div>
+                      <Switch
+                        checked={ad.enabled}
+                        onCheckedChange={(enabled) => toggleAd(ad.id, enabled)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="mobile" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>📱 Mobile Reklamları</CardTitle>
+              <CardDescription>Mobil cihazlara özel reklam yerleşimleri</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {adConfigs.filter(ad => ad.type === 'mobile').map(ad => (
+                  <div key={ad.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">{ad.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        Pozisyon: {ad.settings?.mobilePosition} • 
+                        Boyut: {ad.settings?.width}x{ad.settings?.height}
+                      </p>
+                      <p className="text-xs text-cyan-600">
+                        PropellerAds - {ad.settings?.mobilePosition === 'floating' ? 'Kapanabilir' : 'Sticky'}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={ad.enabled}
+                      onCheckedChange={(enabled) => toggleAd(ad.id, enabled)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="popup" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>🚀 Popup & Push Reklamları</CardTitle>
+              <CardDescription>Monetag agresif reklamları - dikkatli kullanın!</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {adConfigs.filter(ad => ['popup', 'push', 'native'].includes(ad.type)).map(ad => (
+                  <div key={ad.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">{ad.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        Zone: {ad.zone} • 
+                        Cooldown: {ad.settings?.cooldown ? `${ad.settings.cooldown / 60000} dk` : 'Yok'}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Badge variant="destructive" className="text-xs">Agresif</Badge>
+                        {ad.settings?.restrictedPages && (
+                          <Badge variant="outline" className="text-xs">
+                            {ad.settings.restrictedPages.length} sayfa kısıtlı
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <Switch
+                      checked={ad.enabled}
+                      onCheckedChange={(enabled) => toggleAd(ad.id, enabled)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="special" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>⚡ Download Monetization</CardTitle>
+                <CardDescription>PDF/DOCX indirme öncesi reklam yönlendirmesi</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">İndirme Öncesi Reklam</h3>
+                      <p className="text-sm text-gray-500">
+                        Export Manager entegrasyonu
+                      </p>
+                      <p className="text-xs text-blue-600">First-time visitor tracking</p>
+                    </div>
+                    <Switch checked={true} disabled />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>🌐 Facebook Browser</CardTitle>
+                <CardDescription>In-app browser optimizasyonu</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">Facebook Browser Redirect</h3>
+                      <p className="text-sm text-gray-500">
+                        External browser yönlendirmesi
+                      </p>
+                      <p className="text-xs text-green-600">Session-based dismiss</p>
+                    </div>
+                    <Switch checked={true} disabled />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>⚙️ Genel Ayarlar</CardTitle>
+                <CardDescription>Site geneli reklam ayarları</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h3 className="font-medium text-blue-900 mb-2">💡 Reklamsız Sayfalar</h3>
+                    <div className="text-sm text-blue-700 space-y-1">
+                      <p>• /builder - CV oluşturma sayfası</p>
+                      <p>• /cover-letter/* - Tüm cover letter sayfaları</p>
+                      <p>• /ats-check - ATS analiz sayfası</p>
+                      <p>• /export - Export sayfası</p>
+                      <p>• /admin - Admin paneli</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h3 className="font-medium text-yellow-800 mb-2">⚠️ Minimal Reklam Sayfaları</h3>
+                    <div className="text-sm text-yellow-700 space-y-1">
+                      <p>• /templates - Sadece sidebar reklamları</p>
+                      <p>• /examples - Sadece sidebar reklamları</p>
+                      <p>• /cover-letter/choose-template</p>
+                      <p>• /cover-letter/creation-mode</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>📊 Reklam İstatistikleri</CardTitle>
+                <CardDescription>Geçerli reklam durumu</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {Object.entries({
+                    'Web Reklamları': adConfigs.filter(ad => ['banner', 'sidebar'].includes(ad.type)),
+                    'Mobile Reklamları': adConfigs.filter(ad => ad.type === 'mobile'),
+                    'Agresif Reklamları': adConfigs.filter(ad => ['popup', 'push', 'native'].includes(ad.type))
+                  }).map(([category, ads]) => (
+                    <div key={category} className="flex items-center justify-between p-3 border rounded">
+                      <span className="font-medium">{category}</span>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-green-600">
+                          {ads.filter(ad => ad.enabled).length}
+                        </span>
+                        <span className="text-gray-500">/{ads.length}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </>
   )
 }
