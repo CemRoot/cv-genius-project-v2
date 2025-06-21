@@ -51,7 +51,7 @@ export const defaultAdConfigs: AdConfig[] = [
     zone: 'ca-pub-1742989559393752',
     settings: {
       adSenseClient: 'ca-pub-1742989559393752',
-      adSenseSlot: '1234567890',
+      adSenseSlot: 'SIDEBAR_AD_SLOT_ID', // AdSense'ten alacağınız gerçek slot ID
       delay: 2000
     }
   },
