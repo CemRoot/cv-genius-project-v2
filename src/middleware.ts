@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import * as jose from 'jose'
+import { jwtVerify } from 'jose'
 
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
@@ -71,7 +71,7 @@ const IP_WHITELIST = [
 const isAdminIPAllowed = (request: NextRequest): boolean => {
   if (process.env.NODE_ENV === 'development') return true
   
-  const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+  const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
   return IP_WHITELIST.some(allowedIP => clientIP.includes(allowedIP))
 }
 
@@ -133,7 +133,7 @@ export async function middleware(request: NextRequest) {
     // }
 
     // 2. Rate Limiting
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const identifier = clientIP
     const now = Date.now()
     const windowMs = 15 * 60 * 1000 // 15 minutes
@@ -171,7 +171,7 @@ export async function middleware(request: NextRequest) {
       
       try {
         // Verify JWT token
-        const { payload } = await jose.jwtVerify(token, JWT_SECRET, {
+        const { payload } = await jwtVerify(token, JWT_SECRET, {
           issuer: 'cvgenius-admin',
           audience: 'cvgenius-admin-api',
         })

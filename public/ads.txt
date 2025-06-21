@@ -1,0 +1,24 @@
+# ads.txt file for cvgenius.ie
+# This file specifies which ad networks are authorized to sell advertising on this site
+# Updated: 2024-06-21
+
+# Google AdSense - Primary ad network
+google.com, pub-1742989559393752, DIRECT, f08c47fec0942fa0
+
+# Google Ad Manager (DoubleClick for Publishers) - if using
+google.com, pub-1742989559393752, DIRECT, f08c47fec0942fa0
+
+# PropellerAds - Alternative ad network (if approved)
+# propellerads.com, YOUR_PROPELLER_PUBLISHER_ID, DIRECT
+
+# Monetag - Alternative ad network (if approved)  
+# monetag.com, YOUR_MONETAG_PUBLISHER_ID, DIRECT
+
+# Media.net - Microsoft/Yahoo ad network (if approved)
+# media.net, YOUR_MEDIA_NET_ID, DIRECT
+
+# Important Notes:
+# - Only uncomment and add lines for networks you're actually approved for
+# - Replace YOUR_XXX_ID with actual publisher IDs when you get approved
+# - Keep this file updated when adding new ad networks
+# - File must be accessible at https://yourdomain.com/ads.txt 
