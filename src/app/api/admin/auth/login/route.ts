@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get client IP for rate limiting
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     
     // Check if IP is locked out
     const attemptData = loginAttempts.get(clientIP)
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     const csrfToken = crypto.randomBytes(32).toString('hex')
 
     // Set secure cookies
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     
     // Set refresh token as httpOnly cookie
     cookieStore.set('admin-refresh-token', refreshToken, {

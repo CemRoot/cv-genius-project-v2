@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action, details, success = true } = body
 
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
     const adminId = request.headers.get('x-admin-id') || 'system'
     const adminEmail = request.headers.get('x-admin-email') || 'system@cvgenius.com'

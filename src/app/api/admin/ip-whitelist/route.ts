@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     const entries = IPWhitelistManager.getAllEntries()
-    const currentIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const currentIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     
     return NextResponse.json({
       success: true,
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action, ip, label } = body
 
-    const currentIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const currentIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
 
     if (action === 'add') {
       if (!ip) {
