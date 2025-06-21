@@ -1,249 +1,279 @@
-"use client"
+'use client'
 
-import { useCallback, useRef, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import useTouchGestures, { GestureEvent } from './use-touch-gestures'
+import { useState, useCallback, useRef, useEffect } from 'react'
 
-export interface SwipeNavigationOptions {
-  enabled?: boolean
-  horizontalThreshold?: number
-  verticalThreshold?: number
-  velocityThreshold?: number
-  enableBackGesture?: boolean
-  enableTabSwipe?: boolean
-  enableModalClose?: boolean
-  enableRefresh?: boolean
-  preventHorizontalScroll?: boolean
-  preventVerticalScroll?: boolean
+export interface SwipeDirection {
+  left: boolean
+  right: boolean
+  up: boolean
+  down: boolean
 }
 
-export interface SwipeNavigationHandlers {
-  onSwipeLeft?: () => void
-  onSwipeRight?: () => void
-  onSwipeUp?: () => void
-  onSwipeDown?: () => void
-  onBackGesture?: () => void
-  onRefresh?: () => Promise<void>
-  onTabChange?: (direction: 'left' | 'right') => void
-  onModalClose?: () => void
+export interface SwipeNavigationState {
+  isSwping: boolean
+  direction: keyof SwipeDirection | null
+  distance: number
+  velocity: number
+  progress: number // 0-1
+  canComplete: boolean
+}
+
+export interface SwipeNavigationOptions {
+  threshold?: number // Distance to trigger navigation
+  maxDistance?: number // Maximum swipe distance
+  velocity?: number // Minimum velocity to trigger
+  enabledDirections?: Partial<SwipeDirection>
+  onSwipeStart?: (direction: keyof SwipeDirection) => void
+  onSwipeProgress?: (progress: number, direction: keyof SwipeDirection) => void
+  onSwipeComplete?: (direction: keyof SwipeDirection) => void
+  onSwipeCancel?: () => void
+  enableHapticFeedback?: boolean
+  preventScrolling?: boolean
+  boundaryElement?: HTMLElement | null
 }
 
 const defaultOptions: Required<SwipeNavigationOptions> = {
-  enabled: true,
-  horizontalThreshold: 50,
-  verticalThreshold: 100,
-  velocityThreshold: 0.3,
-  enableBackGesture: true,
-  enableTabSwipe: true,
-  enableModalClose: true,
-  enableRefresh: true,
-  preventHorizontalScroll: false,
-  preventVerticalScroll: false,
+  threshold: 80,
+  maxDistance: 200,
+  velocity: 0.3,
+  enabledDirections: { left: true, right: true, up: false, down: false },
+  onSwipeStart: () => {},
+  onSwipeProgress: () => {},
+  onSwipeComplete: () => {},
+  onSwipeCancel: () => {},
+  enableHapticFeedback: true,
+  preventScrolling: false,
+  boundaryElement: null
 }
 
-export function useSwipeNavigation(
-  handlers: SwipeNavigationHandlers = {},
-  options: SwipeNavigationOptions = {}
-) {
+export function useSwipeNavigation(options: SwipeNavigationOptions = {}) {
   const opts = { ...defaultOptions, ...options }
-  const router = useRouter()
-  const pathname = usePathname()
-  const isRefreshing = useRef(false)
-  const startScrollY = useRef(0)
-  const refreshProgress = useRef(0)
+  
+  const [state, setState] = useState<SwipeNavigationState>({
+    isSwping: false,
+    direction: null,
+    distance: 0,
+    velocity: 0,
+    progress: 0,
+    canComplete: false
+  })
 
-  // Handle back gesture (swipe from left edge)
-  const handleBackGesture = useCallback(() => {
-    if (!opts.enableBackGesture) return
+  const startPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const currentPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const startTime = useRef<number>(0)
+  const lastTime = useRef<number>(0)
+  const lastPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const swipeElement = useRef<HTMLElement | null>(null)
+  const hasTriggeredHaptic = useRef<boolean>(false)
+
+  // Determine swipe direction
+  const getSwipeDirection = useCallback((deltaX: number, deltaY: number): keyof SwipeDirection | null => {
+    const absDeltaX = Math.abs(deltaX)
+    const absDeltaY = Math.abs(deltaY)
     
-    if (handlers.onBackGesture) {
-      handlers.onBackGesture()
+    // Determine if horizontal or vertical swipe
+    if (absDeltaX > absDeltaY) {
+      // Horizontal swipe
+      if (deltaX > 0 && opts.enabledDirections.right) return 'right'
+      if (deltaX < 0 && opts.enabledDirections.left) return 'left'
     } else {
-      // Default back navigation
-      if (window.history.length > 1) {
-        router.back()
+      // Vertical swipe
+      if (deltaY > 0 && opts.enabledDirections.down) return 'down'
+      if (deltaY < 0 && opts.enabledDirections.up) return 'up'
+    }
+    
+    return null
+  }, [opts.enabledDirections])
+
+  // Calculate velocity
+  const calculateVelocity = useCallback((distance: number, time: number): number => {
+    if (time === 0) return 0
+    return Math.abs(distance / time)
+  }, [])
+
+  // Update swipe state
+  const updateSwipeState = useCallback((
+    distance: number,
+    direction: keyof SwipeDirection | null,
+    velocity: number
+  ) => {
+    const progress = Math.min(distance / opts.threshold, 1)
+    const canComplete = distance >= opts.threshold || velocity >= opts.velocity
+
+    setState(prev => ({
+      ...prev,
+      distance,
+      direction,
+      velocity,
+      progress,
+      canComplete
+    }))
+
+    // Trigger haptic feedback when threshold is reached
+    if (canComplete && !hasTriggeredHaptic.current && opts.enableHapticFeedback) {
+      hasTriggeredHaptic.current = true
+      if ('vibrate' in navigator) {
+        navigator.vibrate([15, 10, 15])
       }
+    } else if (!canComplete) {
+      hasTriggeredHaptic.current = false
     }
-  }, [opts.enableBackGesture, handlers.onBackGesture, router])
 
-  // Handle pull-to-refresh
-  const handleRefresh = useCallback(async () => {
-    if (!opts.enableRefresh || isRefreshing.current) return
-    
-    isRefreshing.current = true
-    refreshProgress.current = 0
-    
-    try {
-      if (handlers.onRefresh) {
-        await handlers.onRefresh()
-      } else {
-        // Default refresh behavior
-        window.location.reload()
-      }
-    } catch (error) {
-      console.error('Refresh failed:', error)
-    } finally {
-      isRefreshing.current = false
-      refreshProgress.current = 0
-    }
-  }, [opts.enableRefresh, handlers.onRefresh])
-
-  // Handle tab swipe navigation
-  const handleTabSwipe = useCallback((direction: 'left' | 'right') => {
-    if (!opts.enableTabSwipe) return
-    
-    if (handlers.onTabChange) {
-      handlers.onTabChange(direction)
-    }
-  }, [opts.enableTabSwipe, handlers.onTabChange])
-
-  // Handle modal close gesture
-  const handleModalClose = useCallback(() => {
-    if (!opts.enableModalClose) return
-    
-    if (handlers.onModalClose) {
-      handlers.onModalClose()
-    }
-  }, [opts.enableModalClose, handlers.onModalClose])
-
-  // Main swipe handler
-  const handleSwipe = useCallback((event: GestureEvent) => {
-    if (!opts.enabled || event.type !== 'swipe') return
-
-    const { direction, distance = 0, velocity = 0, deltaX = 0, deltaY = 0 } = event
-
-    // Check velocity threshold
-    if (velocity < opts.velocityThreshold) return
-
-    switch (direction) {
-      case 'left':
-        if (Math.abs(deltaX) >= opts.horizontalThreshold) {
-          // Handle left swipe
-          if (handlers.onSwipeLeft) {
-            handlers.onSwipeLeft()
-          } else {
-            // Default: next tab or forward navigation
-            handleTabSwipe('left')
-          }
-        }
-        break
-
-      case 'right':
-        if (Math.abs(deltaX) >= opts.horizontalThreshold) {
-          // Check if this is a back gesture (swipe from left edge)
-          const isFromLeftEdge = (event as any).startX < 50 // Assuming startX is available
-          
-          if (isFromLeftEdge && opts.enableBackGesture) {
-            handleBackGesture()
-          } else if (handlers.onSwipeRight) {
-            handlers.onSwipeRight()
-          } else {
-            // Default: previous tab
-            handleTabSwipe('right')
-          }
-        }
-        break
-
-      case 'up':
-        if (Math.abs(deltaY) >= opts.verticalThreshold) {
-          if (handlers.onSwipeUp) {
-            handlers.onSwipeUp()
-          }
-        }
-        break
-
-      case 'down':
-        if (Math.abs(deltaY) >= opts.verticalThreshold) {
-          // Check if this is a pull-to-refresh gesture (from top of page)
-          const isFromTop = window.scrollY === 0 && deltaY > 0
-          
-          if (isFromTop && opts.enableRefresh) {
-            handleRefresh()
-          } else if (handlers.onSwipeDown) {
-            handlers.onSwipeDown()
-          } else if (opts.enableModalClose) {
-            // Default: close modal/overlay
-            handleModalClose()
-          }
-        }
-        break
-    }
-  }, [
-    opts,
-    handlers,
-    handleBackGesture,
-    handleRefresh,
-    handleTabSwipe,
-    handleModalClose
-  ])
-
-  // Pan handler for continuous gestures (like pull-to-refresh preview)
-  const handlePan = useCallback((event: GestureEvent) => {
-    if (!opts.enabled || event.type !== 'pan') return
-
-    const { deltaY = 0 } = event
-
-    // Handle pull-to-refresh visual feedback
-    if (opts.enableRefresh && window.scrollY === 0 && deltaY > 0) {
-      refreshProgress.current = Math.min(deltaY / opts.verticalThreshold, 1)
-      
-      // Trigger haptic feedback at certain thresholds
-      if (refreshProgress.current >= 0.5 && refreshProgress.current < 0.6) {
-        // Light feedback when halfway
-        if ('vibrate' in navigator) {
-          navigator.vibrate([5])
-        }
-      } else if (refreshProgress.current >= 1) {
-        // Strong feedback when ready to refresh
-        if ('vibrate' in navigator) {
-          navigator.vibrate([10, 5, 10])
-        }
-      }
-      
-      // Custom CSS variable for refresh indicator
-      document.documentElement.style.setProperty(
-        '--refresh-progress',
-        refreshProgress.current.toString()
-      )
+    // Call progress callback
+    if (direction) {
+      opts.onSwipeProgress(progress, direction)
     }
   }, [opts])
 
-  // Touch gesture configuration
-  const gestureHandlers = useTouchGestures(
-    {
-      onSwipe: handleSwipe,
-      onPan: handlePan,
-    },
-    {
-      swipeThreshold: Math.min(opts.horizontalThreshold, opts.verticalThreshold),
-      swipeVelocityThreshold: opts.velocityThreshold,
-      preventDefault: opts.preventHorizontalScroll || opts.preventVerticalScroll,
-      enableHapticFeedback: true,
-    }
-  )
+  // Handle touch start
+  const handleTouchStart = useCallback((event: TouchEvent) => {
+    const touch = event.touches[0]
+    startPosition.current = { x: touch.clientX, y: touch.clientY }
+    currentPosition.current = { x: touch.clientX, y: touch.clientY }
+    lastPosition.current = { x: touch.clientX, y: touch.clientY }
+    startTime.current = Date.now()
+    lastTime.current = startTime.current
 
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      isRefreshing.current = false
-      refreshProgress.current = 0
-      document.documentElement.style.removeProperty('--refresh-progress')
-    }
+    setState(prev => ({ ...prev, isSwping: true }))
   }, [])
 
-  return {
-    ...gestureHandlers,
-    // State getters
-    isRefreshing: () => isRefreshing.current,
-    refreshProgress: () => refreshProgress.current,
+  // Handle touch move
+  const handleTouchMove = useCallback((event: TouchEvent) => {
+    if (!state.isSwping && !startPosition.current) return
+
+    const touch = event.touches[0]
+    currentPosition.current = { x: touch.clientX, y: touch.clientY }
     
-    // Manual trigger functions
-    triggerRefresh: handleRefresh,
-    triggerBackGesture: handleBackGesture,
+    const deltaX = currentPosition.current.x - startPosition.current.x
+    const deltaY = currentPosition.current.y - startPosition.current.y
+    const direction = getSwipeDirection(deltaX, deltaY)
+    
+    if (!direction) return
+
+    // Prevent scrolling if enabled
+    if (opts.preventScrolling) {
+      event.preventDefault()
+    }
+
+    // Calculate distance and velocity
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+    const currentTime = Date.now()
+    const timeDelta = currentTime - lastTime.current
+    const positionDelta = Math.sqrt(
+      Math.pow(currentPosition.current.x - lastPosition.current.x, 2) +
+      Math.pow(currentPosition.current.y - lastPosition.current.y, 2)
+    )
+    const velocity = calculateVelocity(positionDelta, timeDelta)
+
+    // Limit distance to maxDistance
+    const limitedDistance = Math.min(distance, opts.maxDistance)
+
+    // Update state
+    updateSwipeState(limitedDistance, direction, velocity)
+
+    // Call start callback only once
+    if (!state.direction && direction) {
+      opts.onSwipeStart(direction)
+    }
+
+    // Update tracking variables
+    lastTime.current = currentTime
+    lastPosition.current = { ...currentPosition.current }
+  }, [state.isSwping, state.direction, getSwipeDirection, calculateVelocity, updateSwipeState, opts])
+
+  // Handle touch end
+  const handleTouchEnd = useCallback(() => {
+    if (!state.isSwping || !state.direction) return
+
+    const shouldComplete = state.canComplete
+    
+    if (shouldComplete) {
+      opts.onSwipeComplete(state.direction)
+    } else {
+      opts.onSwipeCancel()
+    }
+
+    // Reset state
+    setState({
+      isSwping: false,
+      direction: null,
+      distance: 0,
+      velocity: 0,
+      progress: 0,
+      canComplete: false
+    })
+
+    hasTriggeredHaptic.current = false
+  }, [state, opts])
+
+  // Setup event listeners
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const element = swipeElement.current || opts.boundaryElement || document.body
+
+    // Passive listeners for better performance
+    element.addEventListener('touchstart', handleTouchStart, { passive: true })
+    element.addEventListener('touchmove', handleTouchMove, { 
+      passive: !opts.preventScrolling 
+    })
+    element.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      element.removeEventListener('touchstart', handleTouchStart)
+      element.removeEventListener('touchmove', handleTouchMove)
+      element.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd, opts.boundaryElement, opts.preventScrolling])
+
+  // Set swipe element reference
+  const setSwipeElement = useCallback((element: HTMLElement | null) => {
+    swipeElement.current = element
+  }, [])
+
+  // Manual trigger functions
+  const triggerSwipe = useCallback((direction: keyof SwipeDirection) => {
+    if (opts.enabledDirections[direction]) {
+      opts.onSwipeComplete(direction)
+    }
+  }, [opts])
+
+  return {
+    // State
+    ...state,
+    
+    // Control functions
+    setSwipeElement,
+    triggerSwipe,
+    
+    // Computed values
+    isActive: state.isSwping,
+    swipeStyle: {
+      transform: state.direction && state.isSwping
+        ? `translate${state.direction === 'left' || state.direction === 'right' ? 'X' : 'Y'}(${
+            state.direction === 'left' || state.direction === 'up' ? '-' : ''
+          }${state.distance}px)`
+        : 'none',
+      transition: state.isSwping ? 'none' : 'transform 0.2s ease-out'
+    },
     
     // Configuration
-    isEnabled: opts.enabled,
-    canGoBack: () => window.history.length > 1,
+    threshold: opts.threshold,
+    maxDistance: opts.maxDistance,
+    enabledDirections: opts.enabledDirections,
+    
+    // Utility functions
+    reset: () => {
+      setState({
+        isSwping: false,
+        direction: null,
+        distance: 0,
+        velocity: 0,
+        progress: 0,
+        canComplete: false
+      })
+      hasTriggeredHaptic.current = false
+    }
   }
 }
 

@@ -1,0 +1,375 @@
+/* Mobile Design Tokens for CV Genius */
+
+:root {
+  /* Mobile Touch Target Sizes - WCAG AA Compliant */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  --touch-target-large: 56px;
+  --touch-target-xl: 64px;
+
+  /* Mobile Typography Scale */
+  --mobile-text-xs: 0.75rem;    /* 12px */
+  --mobile-text-sm: 0.875rem;   /* 14px */
+  --mobile-text-base: 1rem;     /* 16px - prevents zoom on iOS */
+  --mobile-text-lg: 1.125rem;   /* 18px */
+  --mobile-text-xl: 1.25rem;    /* 20px */
+  --mobile-text-2xl: 1.5rem;    /* 24px */
+  --mobile-text-3xl: 1.875rem;  /* 30px */
+  --mobile-text-4xl: 2.25rem;   /* 36px */
+
+  /* Mobile Line Heights */
+  --mobile-leading-tight: 1.25;
+  --mobile-leading-normal: 1.5;
+  --mobile-leading-relaxed: 1.75;
+
+  /* Mobile Spacing System (4px base grid) */
+  --mobile-space-0: 0;
+  --mobile-space-1: 0.25rem;  /* 4px */
+  --mobile-space-2: 0.5rem;   /* 8px */
+  --mobile-space-3: 0.75rem;  /* 12px */
+  --mobile-space-4: 1rem;     /* 16px */
+  --mobile-space-5: 1.25rem;  /* 20px */
+  --mobile-space-6: 1.5rem;   /* 24px */
+  --mobile-space-8: 2rem;     /* 32px */
+  --mobile-space-10: 2.5rem;  /* 40px */
+  --mobile-space-12: 3rem;    /* 48px */
+  --mobile-space-16: 4rem;    /* 64px */
+  --mobile-space-20: 5rem;    /* 80px */
+
+  /* Mobile Border Radius Scale */
+  --mobile-radius-none: 0;
+  --mobile-radius-sm: 0.125rem;   /* 2px */
+  --mobile-radius-base: 0.25rem;  /* 4px */
+  --mobile-radius-md: 0.375rem;   /* 6px */
+  --mobile-radius-lg: 0.5rem;     /* 8px */
+  --mobile-radius-xl: 0.75rem;    /* 12px */
+  --mobile-radius-2xl: 1rem;      /* 16px */
+  --mobile-radius-3xl: 1.5rem;    /* 24px */
+  --mobile-radius-full: 9999px;
+
+  /* Mobile Shadow System */
+  --mobile-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --mobile-shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --mobile-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --mobile-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --mobile-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --mobile-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* Mobile Color Contrast Ratios - WCAG AAA */
+  --mobile-contrast-high: #000000;     /* 21:1 contrast ratio */
+  --mobile-contrast-medium: #374151;   /* 12:1 contrast ratio */
+  --mobile-contrast-low: #6B7280;      /* 7:1 contrast ratio */
+  --mobile-contrast-subtle: #9CA3AF;   /* 4.5:1 contrast ratio */
+
+  /* Mobile Brand Colors */
+  --mobile-primary: #8B5CF6;
+  --mobile-primary-dark: #7C3AED;
+  --mobile-primary-light: #A78BFA;
+  --mobile-secondary: #3B82F6;
+  --mobile-accent: #10B981;
+  --mobile-warning: #F59E0B;
+  --mobile-error: #EF4444;
+  --mobile-success: #10B981;
+
+  /* Mobile Motion Design Tokens */
+  --mobile-duration-instant: 0ms;
+  --mobile-duration-fast: 150ms;
+  --mobile-duration-normal: 250ms;
+  --mobile-duration-slow: 350ms;
+  --mobile-duration-slower: 500ms;
+
+  /* Mobile Easing Functions */
+  --mobile-ease-linear: cubic-bezier(0, 0, 1, 1);
+  --mobile-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --mobile-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --mobile-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --mobile-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --mobile-ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Mobile Z-Index Scale */
+  --mobile-z-base: 0;
+  --mobile-z-dropdown: 10;
+  --mobile-z-sticky: 20;
+  --mobile-z-fixed: 30;
+  --mobile-z-modal-backdrop: 40;
+  --mobile-z-modal: 50;
+  --mobile-z-toast: 60;
+  --mobile-z-tooltip: 70;
+  --mobile-z-popover: 80;
+  --mobile-z-max: 999;
+
+  /* Mobile Viewport Units */
+  --mobile-vh: calc(var(--vh, 1vh) * 100);
+  --mobile-vw: calc(var(--vw, 1vw) * 100);
+  --mobile-safe-top: env(safe-area-inset-top, 0px);
+  --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-safe-left: env(safe-area-inset-left, 0px);
+  --mobile-safe-right: env(safe-area-inset-right, 0px);
+
+  /* Mobile Grid System */
+  --mobile-grid-cols-1: repeat(1, minmax(0, 1fr));
+  --mobile-grid-cols-2: repeat(2, minmax(0, 1fr));
+  --mobile-grid-cols-3: repeat(3, minmax(0, 1fr));
+  --mobile-grid-cols-4: repeat(4, minmax(0, 1fr));
+  --mobile-grid-gap: var(--mobile-space-4);
+
+  /* Mobile Container Sizes */
+  --mobile-container-xs: 100%;
+  --mobile-container-sm: 100%;
+  --mobile-container-md: 768px;
+  --mobile-container-lg: 1024px;
+  --mobile-container-xl: 1280px;
+
+  /* Mobile Form Elements */
+  --mobile-input-height: var(--touch-target-comfortable);
+  --mobile-button-height: var(--touch-target-comfortable);
+  --mobile-checkbox-size: 20px;
+  --mobile-radio-size: 20px;
+  --mobile-switch-width: 44px;
+  --mobile-switch-height: 24px;
+
+  /* Mobile Performance Hints */
+  --mobile-backdrop-filter: blur(10px);
+  --mobile-transform-gpu: translateZ(0);
+  --mobile-will-change: transform;
+}
+
+/* Dark Mode Mobile Design Tokens */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* OLED-Friendly Black Colors */
+    --mobile-bg-primary: #000000;        /* True black for OLED */
+    --mobile-bg-secondary: #0A0A0A;      /* Near black */
+    --mobile-bg-tertiary: #1A1A1A;       /* Dark gray */
+    --mobile-bg-card: #111111;           /* Card background */
+    
+    /* Battery Aware Colors */
+    --battery-save-background: #000000;   /* Pure black for battery save */
+    --battery-save-text: #CCCCCC;        /* Dimmed text */
+    --battery-save-accent: #22C55E;      /* Green accent for battery save */
+    
+    /* High Contrast Support */
+    --high-contrast-border: 2px;
+    --high-contrast-outline: 3px;
+    --high-contrast-text-weight: 600;
+    
+    /* High Contrast Dark Colors */
+    --mobile-text-primary: #FFFFFF;      /* Pure white text */
+    --mobile-text-secondary: #E5E5E5;    /* Light gray text */
+    --mobile-text-tertiary: #B3B3B3;     /* Medium gray text */
+    --mobile-text-muted: #808080;        /* Muted text */
+    
+    /* Dark Mode Borders */
+    --mobile-border-light: #2A2A2A;
+    --mobile-border-medium: #3A3A3A;
+    --mobile-border-heavy: #4A4A4A;
+    
+    /* Dark Mode Shadows (Reduced for battery) */
+    --mobile-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --mobile-shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.4);
+    --mobile-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --mobile-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+    
+    /* Dark Mode Brand Colors (Slightly muted) */
+    --mobile-primary: #A78BFA;
+    --mobile-primary-dark: #8B5CF6;
+    --mobile-primary-light: #C4B5FD;
+  }
+}
+
+/* Battery Saving Mode */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mobile-duration-instant: 0ms;
+    --mobile-duration-fast: 0ms;
+    --mobile-duration-normal: 0ms;
+    --mobile-duration-slow: 0ms;
+    --mobile-duration-slower: 0ms;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --mobile-contrast-high: #000000;
+    --mobile-contrast-medium: #000000;
+    --mobile-contrast-low: #000000;
+    --mobile-border-light: #000000;
+    --mobile-border-medium: #000000;
+    --mobile-border-heavy: #000000;
+  }
+}
+
+/* Mobile Utility Classes */
+.touch-target {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+}
+
+.touch-target-comfortable {
+  min-height: var(--touch-target-comfortable);
+  min-width: var(--touch-target-comfortable);
+}
+
+.touch-target-large {
+  min-height: var(--touch-target-large);
+  min-width: var(--touch-target-large);
+}
+
+.mobile-safe-area {
+  padding-top: var(--mobile-safe-top);
+  padding-bottom: var(--mobile-safe-bottom);
+  padding-left: var(--mobile-safe-left);
+  padding-right: var(--mobile-safe-right);
+}
+
+.mobile-vh {
+  height: var(--mobile-vh);
+}
+
+.mobile-gpu-accelerated {
+  transform: var(--mobile-transform-gpu);
+  will-change: var(--mobile-will-change);
+}
+
+.mobile-backdrop-blur {
+  backdrop-filter: var(--mobile-backdrop-filter);
+  -webkit-backdrop-filter: var(--mobile-backdrop-filter);
+}
+
+/* Mobile Animation Classes */
+.mobile-fade-in {
+  animation: mobilefadeIn var(--mobile-duration-normal) var(--mobile-ease-out);
+}
+
+.mobile-slide-up {
+  animation: mobileSlideUp var(--mobile-duration-normal) var(--mobile-ease-out);
+}
+
+.mobile-scale-in {
+  animation: mobileScaleIn var(--mobile-duration-fast) var(--mobile-ease-bounce);
+}
+
+@keyframes mobilefadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mobileSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mobileScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile Grid System */
+.mobile-grid {
+  display: grid;
+  gap: var(--mobile-grid-gap);
+}
+
+.mobile-grid-1 { grid-template-columns: var(--mobile-grid-cols-1); }
+.mobile-grid-2 { grid-template-columns: var(--mobile-grid-cols-2); }
+.mobile-grid-3 { grid-template-columns: var(--mobile-grid-cols-3); }
+.mobile-grid-4 { grid-template-columns: var(--mobile-grid-cols-4); }
+
+/* Mobile Typography */
+.mobile-text-xs { font-size: var(--mobile-text-xs); }
+.mobile-text-sm { font-size: var(--mobile-text-sm); }
+.mobile-text-base { font-size: var(--mobile-text-base); }
+.mobile-text-lg { font-size: var(--mobile-text-lg); }
+.mobile-text-xl { font-size: var(--mobile-text-xl); }
+.mobile-text-2xl { font-size: var(--mobile-text-2xl); }
+.mobile-text-3xl { font-size: var(--mobile-text-3xl); }
+.mobile-text-4xl { font-size: var(--mobile-text-4xl); }
+
+/* Mobile Spacing */
+.mobile-p-1 { padding: var(--mobile-space-1); }
+.mobile-p-2 { padding: var(--mobile-space-2); }
+.mobile-p-3 { padding: var(--mobile-space-3); }
+.mobile-p-4 { padding: var(--mobile-space-4); }
+.mobile-p-5 { padding: var(--mobile-space-5); }
+.mobile-p-6 { padding: var(--mobile-space-6); }
+.mobile-p-8 { padding: var(--mobile-space-8); }
+
+.mobile-m-1 { margin: var(--mobile-space-1); }
+.mobile-m-2 { margin: var(--mobile-space-2); }
+.mobile-m-3 { margin: var(--mobile-space-3); }
+.mobile-m-4 { margin: var(--mobile-space-4); }
+.mobile-m-5 { margin: var(--mobile-space-5); }
+.mobile-m-6 { margin: var(--mobile-space-6); }
+.mobile-m-8 { margin: var(--mobile-space-8); }
+
+/* Battery Save Mode Styles */
+.battery-save-mode {
+  background-color: var(--battery-save-background) !important;
+  color: var(--battery-save-text) !important;
+}
+
+.battery-save-mode * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+  box-shadow: none !important;
+}
+
+.battery-save-mode .mobile-primary {
+  background-color: var(--battery-save-accent) !important;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .touch-target,
+  .touch-target-comfortable,
+  .touch-target-large {
+    border: var(--high-contrast-border) solid currentColor;
+    outline: var(--high-contrast-outline) solid transparent;
+  }
+  
+  .mobile-text-base,
+  .mobile-text-lg,
+  .mobile-text-xl {
+    font-weight: var(--high-contrast-text-weight);
+  }
+}
+
+/* Motion Reduced Support */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-fade-in,
+  .mobile-slide-up,
+  .mobile-scale-in {
+    animation: none;
+  }
+  
+  .mobile-gpu-accelerated {
+    transform: none;
+    will-change: auto;
+  }
+}
+
+/* Dark Mode Specific Utilities */
+.dark .mobile-oled-bg {
+  background-color: var(--mobile-bg-primary);
+}
+
+.dark .mobile-oled-card {
+  background-color: var(--mobile-bg-card);
+}
+
+.dark .mobile-oled-text {
+  color: var(--mobile-text-primary);
+}

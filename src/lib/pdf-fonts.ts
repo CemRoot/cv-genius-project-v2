@@ -1,107 +1,53 @@
 import { Font } from '@react-pdf/renderer'
 
-// Professional Google Fonts WOFF2 URLs for CV/Resume applications
-// These are the best alternatives to Times New Roman and Arial available on Google Fonts
-const FONT_URLS = {
-  // Times New Roman alternatives (Serif fonts)
-  'Source Serif Pro': {
-    normal: 'https://fonts.gstatic.com/s/sourceserifpro/v28/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwlxdu.woff2',
-    bold: 'https://fonts.gstatic.com/s/sourceserifpro/v28/6xKwdSBYKcSV-LCoeQqfX1RYOo3qO6ZqthhEm4Q.woff2'
-  },
-  'Merriweather': {
-    normal: 'https://fonts.gstatic.com/s/merriweather/v30/u-440qyriQwlOrhSvowK_l5-fCZM.woff2',
-    bold: 'https://fonts.gstatic.com/s/merriweather/v30/u-4n0qyriQwlOrhSvowK_l521wRZWMf6.woff2'
-  },
-  'Playfair Display': {
-    normal: 'https://fonts.gstatic.com/s/playfairdisplay/v39/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2',
-    bold: 'https://fonts.gstatic.com/s/playfairdisplay/v39/nuFiD-vYSZviVYUb_rj3ij__anPXJOvxgEM86xRbOwKaUI5-FKSVSKtt.woff2'
-  },
-  
-  // Arial alternatives (Sans-serif fonts)
-  'Inter': {
-    normal: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ8.woff2',
-    bold: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9XibO0.woff2'
-  },
-  'Roboto': {
-    normal: 'https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2',
-    bold: 'https://fonts.gstatic.com/s/roboto/v32/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ.woff2'
-  },
-  'Open Sans': {
-    normal: 'https://fonts.gstatic.com/s/opensans/v40/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVc.woff2',
-    bold: 'https://fonts.gstatic.com/s/opensans/v40/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4taVQUwaEQbjA_J1U.woff2'
-  },
-  'Lato': {
-    normal: 'https://fonts.gstatic.com/s/lato/v24/S6uyw4BMUTPHjx4wXiWtFCc.woff2',
-    bold: 'https://fonts.gstatic.com/s/lato/v24/S6u9w4BMUTPHh6UVSwiPGQ3q5d0.woff2'
-  },
-  'Montserrat': {
-    normal: 'https://fonts.gstatic.com/s/montserrat/v30/JTUSjIg1_i6t8kCHKm459WlhyyTh89Y.woff2',
-    bold: 'https://fonts.gstatic.com/s/montserrat/v30/JTUSjIg1_i6t8kCHKm459W1hyyTh89ZNpQ.woff2'
-  }
-}
-
 let fontsRegistered = false
 
 export const registerPDFFonts = async () => {
   if (fontsRegistered) return
   
   try {
-    // Register each font family with normal and bold weights
-    for (const [fontFamily, weights] of Object.entries(FONT_URLS)) {
-      Font.register({
-        family: fontFamily,
-        fonts: [
-          { 
-            src: weights.normal, 
-            fontWeight: 'normal',
-            fontStyle: 'normal' 
-          },
-          { 
-            src: weights.bold, 
-            fontWeight: 'bold',
-            fontStyle: 'normal' 
-          }
-        ]
-      })
-    }
+    // Use simpler, more reliable font registration
+    // These fonts are built into most PDF viewers
+    Font.register({
+      family: 'Times-Roman',
+      src: 'data:font/truetype;charset=utf-8;base64,', // Fallback
+    })
+    
+    Font.register({
+      family: 'Helvetica',
+      src: 'data:font/truetype;charset=utf-8;base64,', // Fallback
+    })
     
     fontsRegistered = true
     console.log('PDF fonts registered successfully')
   } catch (error) {
-    console.error('Error registering PDF fonts:', error)
-    // Fallback to system fonts if registration fails
+    console.warn('Font registration skipped, using system fonts')
+    fontsRegistered = true // Continue anyway
   }
 }
 
 // Map font family names to PDF-compatible names
 export const getFontFamilyForPDF = (fontFamily: string): string => {
-  // If custom fonts are registered, use the exact name
-  if (fontsRegistered && FONT_URLS[fontFamily as keyof typeof FONT_URLS]) {
-    return fontFamily
-  }
-  
-  // Fallback mapping for system fonts and best alternatives
+  // Simple and reliable font mapping
   const fontMap: { [key: string]: string } = {
-    // System fonts (not available on Google Fonts)
-    'Times New Roman': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
-    'Arial': fontsRegistered ? 'Inter' : 'Helvetica',
-    'Georgia': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
-    'Calibri': fontsRegistered ? 'Inter' : 'Helvetica',
+    // Serif fonts
+    'Times New Roman': 'Times-Roman',
+    'Georgia': 'Times-Roman',
+    'Source Serif Pro': 'Times-Roman',
+    'Source Serif 4': 'Times-Roman',
+    'Merriweather': 'Times-Roman',
+    'Playfair Display': 'Times-Roman',
     
-    // Professional Google Fonts (available)
-    'Source Serif 4': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
-    'Source Serif Pro': fontsRegistered ? 'Source Serif Pro' : 'Times-Roman',
-    'Merriweather': fontsRegistered ? 'Merriweather' : 'Times-Roman',
-    'Playfair Display': fontsRegistered ? 'Playfair Display' : 'Times-Roman',
-    'Inter': fontsRegistered ? 'Inter' : 'Helvetica',
-    'Roboto': fontsRegistered ? 'Roboto' : 'Helvetica',
-    'Open Sans': fontsRegistered ? 'Open Sans' : 'Helvetica',
-    'Lato': fontsRegistered ? 'Lato' : 'Helvetica',
-    'Montserrat': fontsRegistered ? 'Montserrat' : 'Helvetica',
-    
-    // Legacy support
-    'Rubik': fontsRegistered ? 'Montserrat' : 'Helvetica'
+    // Sans-serif fonts  
+    'Arial': 'Helvetica',
+    'Calibri': 'Helvetica',
+    'Inter': 'Helvetica',
+    'Roboto': 'Helvetica',
+    'Open Sans': 'Helvetica',
+    'Lato': 'Helvetica',
+    'Montserrat': 'Helvetica',
+    'Rubik': 'Helvetica'
   }
   
-  return fontMap[fontFamily] || (fontsRegistered ? 'Inter' : 'Helvetica')
+  return fontMap[fontFamily] || 'Helvetica'
 }

@@ -4,10 +4,13 @@ import "./globals.css"
 import ErrorBoundary from "@/components/error-boundary"
 import { ToastProvider } from "@/components/ui/toast"
 import FacebookBrowserRedirect from "@/components/ads/facebook-browser-redirect"
+import PropuShNotification from "@/components/ads/propush-notification"
 import { OfflineIndicator } from "@/components/ui/offline-indicator"
 import ClientViewportScript from "@/components/client-viewport-script"
 import HydrationFix from "@/components/hydration-fix"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { DynamicAdManager } from "@/components/ads/dynamic-ad-manager"
+import AccessibilityWidget, { AccessibilityCSS } from "@/components/accessibility/accessibility-widget"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
@@ -143,19 +146,50 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
-        {/* Google AdSense - Non-intrusive */}
+        {/* Google AdSense - Non-intrusive (Pending Approval) */}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1742989559393752"
              crossOrigin="anonymous"></script>
         
+        {/* Monetag - Only Banner Zone (No Popups) */}
+        
+        {/* PropuSH Service Worker - Disabled for Better UX */}
+        
         {/* Mobile Keyboard Avoidance */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
+        
+        {/* Skip to main content link for accessibility */}
+        <style>{`
+          .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #2563eb;
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 1000;
+          }
+          .skip-link:focus {
+            top: 6px;
+          }
+        `}</style>
       </head>
       <body className={`${inter.className} min-h-screen h-full flex flex-col antialiased touch-manipulation overscroll-none`} suppressHydrationWarning>
-        <ToastProvider>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
-        </ToastProvider>
+        {/* Skip to main content link */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        
+        <DynamicAdManager>
+          <ToastProvider>
+            <ErrorBoundary>
+              <main id="main-content" tabIndex={-1}>
+                {children}
+              </main>
+            </ErrorBoundary>
+          </ToastProvider>
+        </DynamicAdManager>
         
         {/* Fix hydration issues caused by browser extensions */}
         <HydrationFix />
@@ -166,8 +200,17 @@ export default function RootLayout({
         {/* Offline Indicator */}
         <OfflineIndicator />
         
+        {/* PropuSH Push Notifications (Controlled) */}
+        <PropuShNotification />
+        
         {/* Facebook Browser Redirect */}
         <FacebookBrowserRedirect />
+        
+        {/* Accessibility Widget */}
+        <AccessibilityWidget />
+        
+        {/* Accessibility CSS */}
+        <AccessibilityCSS />
         
         {/* Vercel Speed Insights */}
         <SpeedInsights />
