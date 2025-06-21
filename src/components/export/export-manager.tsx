@@ -24,6 +24,8 @@ import { useRouter } from 'next/navigation'
 import { AdController } from '@/components/ads/ad-controller'
 import { useDownloadWithRedirect } from '@/components/ads/download-redirect-handler'
 import { useToast, createToastUtils } from '@/components/ui/toast'
+import { DownloadInterstitial } from '@/components/ads/download-interstitial'
+import { getAdConfig } from '@/lib/ad-config'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -75,6 +77,8 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   const [showPreview, setShowPreview] = useState(false)
   const [downloadCount, setDownloadCount] = useState(0)
   const [showRedirectMessage, setShowRedirectMessage] = useState(false)
+  const [showInterstitial, setShowInterstitial] = useState(false)
+  const [pendingDownload, setPendingDownload] = useState<{ blob: Blob; filename: string; format: ExportFormat } | null>(null)
   const router = useRouter()
   const { handleDownload } = useDownloadWithRedirect()
 
@@ -176,60 +180,42 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     return new Blob([content], { type: 'text/plain' })
   }
 
-  const downloadFile = (blob: Blob, filename: string) => {
-    // Check if user has been redirected for ads
-    const hasVisitedAd = localStorage.getItem(`download_${filename}_visited`)
+  const downloadFile = (blob: Blob, filename: string, format: ExportFormat) => {
+    // Check if download interstitial is enabled
+    const downloadAdConfig = getAdConfig('download-interstitial')
     
-    if (!hasVisitedAd) {
-      // First time downloading - show redirect message and redirect to ad
-      setShowRedirectMessage(true)
-      localStorage.setItem(`download_${filename}_visited`, 'true')
-      
-      // Save the blob for later download
-      const url = URL.createObjectURL(blob)
-      localStorage.setItem(`pending_download_${filename}`, url)
-      
-      // Redirect to monetization page
-      setTimeout(() => {
-        window.open('https://n91hg.com/4/9465036', '_blank') // Replace with your ad URL
-        setShowRedirectMessage(false)
-        
-        // Show message to user
-        alert('Please visit our sponsor page. Click the download button again after returning to complete your download.')
-      }, 1000)
-      
-      return
-    }
-    
-    // Check if there's a pending download
-    const pendingUrl = localStorage.getItem(`pending_download_${filename}`)
-    if (pendingUrl) {
-      // Use the previously created blob URL
-      const a = document.createElement('a')
-      a.href = pendingUrl
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      
-      // Clean up
-      localStorage.removeItem(`pending_download_${filename}`)
-      localStorage.removeItem(`download_${filename}_visited`)
-      URL.revokeObjectURL(pendingUrl)
+    if (downloadAdConfig?.enabled) {
+      // Show interstitial before download
+      setPendingDownload({ blob, filename, format })
+      setShowInterstitial(true)
     } else {
-      // Normal download
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      // Direct download without interstitial
+      performDownload(blob, filename)
     }
+  }
+
+  const performDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
     
     // Download tamamlandı
     setDownloadCount(prev => prev + 1)
+    toast.success('CV downloaded successfully!')
+  }
+
+  const handleInterstitialComplete = () => {
+    setShowInterstitial(false)
+    
+    if (pendingDownload) {
+      performDownload(pendingDownload.blob, pendingDownload.filename)
+      setPendingDownload(null)
+    }
   }
 
   const updateProgress = (format: ExportFormat, progress: number) => {
@@ -274,15 +260,15 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     
     // Validate CV data before export
     if (!currentCV.personal.fullName || !currentCV.personal.email) {
-      toast.warning('Eksik Bilgiler', 'Export işlemi için en azından ad ve email bilgilerinizi doldurun.')
-      const shouldRedirect = confirm('CV Builder\'a giderek bilgilerinizi tamamlamak ister misiniz?')
+      toast.warning('Missing Information', 'Please fill in at least your name and email to export your CV.')
+      const shouldRedirect = confirm('Would you like to go to CV Builder to complete your information?')
       if (shouldRedirect) {
         router.push('/builder')
       }
       return
     }
     
-    toast.info('Export Başlatıldı', 'CV\'niz oluşturuluyor, lütfen bekleyin...')
+    toast.info('Export Started', 'Your CV is being generated, please wait...')
     
     // Initialize progress tracking
     setExportProgress(
@@ -330,7 +316,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
           default:
             throw new Error(`Unsupported format: ${format}`)
         }
-        downloadFile(blob, filename)
+        downloadFile(blob, filename, format)
         successCount++
         
         setExportProgress(prev => 
@@ -355,13 +341,13 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     setTimeout(() => {
       if (successCount > 0 && failureCount === 0) {
         // All successful
-        toast.success('Export Tamamlandı', `${successCount} dosya başarıyla indirildi.`)
+        toast.success('Export Completed', `${successCount} file(s) downloaded successfully.`)
       } else if (successCount > 0 && failureCount > 0) {
         // Partial success
-        toast.warning('Kısmi Başarı', `${successCount} dosya başarılı, ${failureCount} dosya başarısız oldu.`)
+        toast.warning('Partial Success', `${successCount} file(s) successful, ${failureCount} file(s) failed.`)
       } else {
         // All failed
-        toast.error('Export Başarısız', 'Tüm dosyalar başarısız oldu. İnternet bağlantınızı kontrol edin.')
+        toast.error('Export Failed', 'All files failed to download. Please check your internet connection.')
       }
     }, 1000)
   }
@@ -388,10 +374,10 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       }
       
       setTimeout(() => setShowPreview(false), 1000)
-      toast.success('Önizleme Açıldı', 'PDF önizleme yeni sekmede açıldı.')
+      toast.success('Preview Opened', 'PDF preview opened in new tab.')
     } catch (error) {
       console.error('Preview error:', error)
-      toast.error('Önizleme Hatası', 'PDF önizleme oluşturulamadı. Tekrar deneyin.')
+      toast.error('Preview Error', 'PDF preview could not be generated. Please try again.')
       setShowPreview(false)
     }
   }
@@ -601,6 +587,14 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         </CardContent>
       </Card>
 
+      {/* Download Interstitial Ad */}
+      {showInterstitial && pendingDownload && (
+        <DownloadInterstitial
+          onComplete={handleInterstitialComplete}
+          fileName={pendingDownload.filename}
+          fileType={pendingDownload.format}
+        />
+      )}
     </div>
   )
 }

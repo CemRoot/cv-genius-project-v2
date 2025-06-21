@@ -1698,19 +1698,48 @@ export function TemplateSelector({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
+      <style jsx>{`
+        .template-preview-content {
+          transform: scale(0.5);
+          transform-origin: center;
+        }
+        
+        @media (min-width: 640px) {
+          .template-preview-content {
+            transform: scale(0.65);
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .template-preview-content {
+            transform: scale(0.75);
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .template-preview-content {
+            transform: scale(0.8);
+          }
+        }
+        
+        .template-preview-content > div {
+          width: 600px !important;
+          height: 400px !important;
+        }
+      `}</style>
       {/* Search and Filters */}
       {(showSearch || showCategories) && (
         <div className="space-y-4">
           {showSearch && (
             <div>
-              <Label htmlFor="search">Search Templates</Label>
+              <Label htmlFor="search" className="block mb-2">Search Templates</Label>
               <Input
                 id="search"
-                placeholder="Search by name, category, or features..."
+                placeholder="Search templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="mt-1"
+                className="h-12 text-base"
               />
             </div>
           )}
@@ -1718,19 +1747,21 @@ export function TemplateSelector({
           {showCategories && (
             <div>
               <Label>Categories</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {categoryOptions.map((category) => (
-                  <Button
-                    key={category.value}
-                    variant={selectedCategory === category.value ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category.value)}
-                    className="text-xs"
-                  >
-                    <span className="mr-1">{category.icon}</span>
-                    {category.label}
-                  </Button>
-                ))}
+              <div className="overflow-x-auto">
+                <div className="flex gap-2 pb-2 min-w-max">
+                  {categoryOptions.map((category) => (
+                    <Button
+                      key={category.value}
+                      variant={selectedCategory === category.value ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSelectedCategory(category.value)}
+                      className="text-xs whitespace-nowrap flex-shrink-0"
+                    >
+                      <span className="mr-2">{category.icon}</span>
+                      {category.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1797,195 +1828,76 @@ export function TemplateSelector({
             </Button>
           </div>
         ) : (
-          <div 
-            className="template-grid-zety"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
-              gap: '30px',
-              maxWidth: '1400px',
-              margin: '0 auto',
-              padding: '0 20px'
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {templates.map((template) => (
               <div
                 key={template.id}
-                className="template-card-zety group"
-                style={{
-                  position: 'relative',
-                  backgroundColor: 'white',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  border: selectedTemplate === template.id ? '3px solid #3b82f6' : '1px solid #e5e7eb'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
-                  const overlay = e.currentTarget.querySelector('.template-hover-overlay');
-                  if (overlay) {
-                    overlay.style.opacity = '1';
-                    const button = overlay.querySelector('button');
-                    if (button) button.style.transform = 'translateY(0)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-                  const overlay = e.currentTarget.querySelector('.template-hover-overlay');
-                  if (overlay) {
-                    overlay.style.opacity = '0';
-                    const button = overlay.querySelector('button');
-                    if (button) button.style.transform = 'translateY(10px)';
-                  }
-                }}
+                className={`template-card bg-white rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer ${
+                  selectedTemplate === template.id 
+                    ? 'border-blue-500 shadow-lg transform scale-105' 
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                }`}
+                onClick={() => onTemplateSelect(template.id)}
               >
                 {/* Template Header */}
-                <div style={{ padding: '20px 20px 15px 20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <h4 style={{ 
-                      fontSize: '18px', 
-                      fontWeight: '600', 
-                      color: '#1f2937',
-                      margin: '0'
-                    }}>
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-semibold text-gray-900 truncate">
                       {template.name}
                     </h4>
                     {selectedTemplate === template.id && (
-                      <div style={{ color: '#3b82f6' }}>
-                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="text-blue-500 flex-shrink-0">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '4px 10px',
-                      backgroundColor: template.recommended ? '#3b82f6' : '#6b7280',
-                      color: 'white',
-                      borderRadius: '20px',
-                      fontSize: '11px',
-                      fontWeight: '500',
-                      textTransform: 'uppercase'
-                    }}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                      template.recommended ? 'bg-blue-500 text-white' : 'bg-gray-500 text-white'
+                    }`}>
                       {template.category}
                     </span>
                     {template.recommended && (
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 8px',
-                        backgroundColor: '#fbbf24',
-                        color: '#92400e',
-                        borderRadius: '15px',
-                        fontSize: '10px',
-                        fontWeight: '600'
-                      }}>
+                      <span className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
                         ⭐ Recommended
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Template Preview with Hover Overlay */}
-                <div style={{ 
-                  position: 'relative',
-                  height: '500px',
-                  backgroundColor: '#f8f9fa',
-                  overflow: 'hidden'
-                }}>
-                  {/* Template Preview */}
-                  <div style={{ height: '100%' }}>
-                    {generatePreview(template)}
+                {/* Template Preview */}
+                <div className="relative h-60 sm:h-80 bg-gray-50 overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center p-2">
+                    <div className="template-preview-content max-w-full max-h-full flex items-center justify-center">
+                      {generatePreview(template)}
+                    </div>
                   </div>
-                  
-                  {/* Hover Overlay */}
-                  <div 
-                    className="template-hover-overlay"
-                    style={{
-                      position: 'absolute',
-                      top: '0',
-                      left: '0',
-                      right: '0',
-                      bottom: '0',
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      opacity: '0',
-                      transition: 'opacity 0.3s ease',
-                      pointerEvents: 'none'
-                    }}
-                  >
-                    <button
-                      style={{
-                        backgroundColor: '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '12px 24px',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        transform: 'translateY(10px)',
-                        transition: 'all 0.3s ease',
-                        pointerEvents: 'auto'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTemplateSelect(template.id);
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#2563eb';
-                        e.target.style.transform = 'scale(1.05)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#3b82f6';
-                        e.target.style.transform = 'scale(1)';
-                      }}
-                    >
-                      Use This Template
-                    </button>
-                  </div>
+                  {selectedTemplate === template.id && (
+                    <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center z-10">
+                      <div className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium">
+                        Selected
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Template Features */}
                 {template.features && template.features.length > 0 && (
-                  <div style={{ padding: '15px 20px 20px 20px' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                      {template.features.slice(0, 3).map((feature, index) => (
+                  <div className="p-4 pt-0">
+                    <div className="flex flex-wrap gap-1">
+                      {template.features.slice(0, 2).map((feature, index) => (
                         <span
                           key={index}
-                          style={{
-                            display: 'inline-block',
-                            padding: '3px 8px',
-                            backgroundColor: '#f3f4f6',
-                            color: '#374151',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: '500'
-                          }}
+                          className="inline-block px-2 py-1 bg-gray-100 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium"
                         >
                           {feature}
                         </span>
                       ))}
-                      {template.features.length > 3 && (
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '3px 8px',
-                          backgroundColor: '#f3f4f6',
-                          color: '#6b7280',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          fontWeight: '500'
-                        }}>
-                          +{template.features.length - 3} more
+                      {template.features.length > 2 && (
+                        <span className="inline-block px-2 py-1 bg-gray-100 text-gray-500 border border-gray-200 rounded-lg text-xs font-medium">
+                          +{template.features.length - 2} more
                         </span>
                       )}
                     </div>
