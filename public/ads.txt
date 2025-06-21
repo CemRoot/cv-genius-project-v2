@@ -1,6 +1,6 @@
-# ads.txt file for cvgenius.ie
+# ads.txt file for cvgenius-one.vercel.app
 # This file specifies which ad networks are authorized to sell advertising on this site
-# Updated: 2024-06-21
+# Updated: 2025-01-16
 
 # Google AdSense - Primary ad network
 google.com, pub-1742989559393752, DIRECT, f08c47fec0942fa0
