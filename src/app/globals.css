@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Mobile Design Tokens */
+@import '../styles/design-tokens.css';
+
 /* Professional font class utilities for CV/Resume */
 .font-source-serif-pro { font-family: 'Source Serif Pro', serif; }
 .font-merriweather { font-family: 'Merriweather', serif; }
@@ -1301,5 +1304,158 @@
     /* Larger touch targets on touch devices */
     min-width: 44px;
     min-height: 44px;
+  }
+}
+
+/* ===== MOBILE KEYBOARD SUPPORT ===== */
+
+/* Keyboard visibility states */
+.keyboard-visible {
+  /* Prevent viewport bouncing on iOS */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Keyboard-aware container */
+.keyboard-aware-container {
+  height: var(--available-height, 100vh);
+  transition: height 0.3s ease-out;
+}
+
+/* Form field adjustments when keyboard is visible */
+.keyboard-visible input,
+.keyboard-visible textarea,
+.keyboard-visible select {
+  /* Prevent zoom on iOS */
+  font-size: 16px;
+  transform: translateZ(0);
+}
+
+/* Keyboard safe area for bottom navigation/buttons */
+.keyboard-safe-bottom {
+  padding-bottom: var(--keyboard-height, 0px);
+  transition: padding-bottom 0.3s ease-out;
+}
+
+/* Fixed elements adjustment */
+.keyboard-visible .fixed-bottom {
+  bottom: var(--keyboard-height, 0px);
+  transition: bottom 0.3s ease-out;
+}
+
+/* Content adjustment when keyboard is visible */
+.keyboard-content-adjustment {
+  margin-bottom: var(--keyboard-height, 0px);
+  transition: margin-bottom 0.3s ease-out;
+}
+
+/* ===== DEVICE ORIENTATION SUPPORT ===== */
+
+/* Portrait orientation styles */
+.orientation-portrait {
+  /* Portrait-specific adjustments */
+}
+
+.orientation-portrait .landscape-only {
+  display: none !important;
+}
+
+.orientation-portrait .portrait-only {
+  display: block !important;
+}
+
+/* Landscape orientation styles */
+.orientation-landscape {
+  /* Landscape-specific adjustments */
+}
+
+.orientation-landscape .portrait-only {
+  display: none !important;
+}
+
+.orientation-landscape .landscape-only {
+  display: block !important;
+}
+
+/* Orientation transition */
+.orientation-transition {
+  transition: all 0.3s ease-out;
+}
+
+/* Responsive orientation utilities */
+@media (orientation: portrait) {
+  .portrait-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .portrait-flex {
+    flex-direction: column;
+  }
+}
+
+@media (orientation: landscape) {
+  .landscape-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .landscape-flex {
+    flex-direction: row;
+  }
+}
+
+/* ===== CONTEXT-AWARE STYLES ===== */
+
+/* Low power mode */
+.low-power-mode {
+  /* Reduce animations and effects */
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.low-power-mode * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Slow network mode */
+.slow-network-mode {
+  /* Simplified interface for slow connections */
+}
+
+.slow-network-mode .heavy-animation {
+  display: none !important;
+}
+
+.slow-network-mode .complex-background {
+  background: none !important;
+}
+
+/* High contrast mode enhancement */
+@media (prefers-contrast: high) {
+  .keyboard-visible input:focus,
+  .keyboard-visible textarea:focus,
+  .keyboard-visible select:focus {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion for keyboard transitions */
+@media (prefers-reduced-motion: reduce) {
+  .keyboard-aware-container,
+  .keyboard-safe-bottom,
+  .fixed-bottom,
+  .keyboard-content-adjustment {
+    transition: none !important;
+  }
+  
+  .orientation-transition {
+    transition: none !important;
   }
 }
