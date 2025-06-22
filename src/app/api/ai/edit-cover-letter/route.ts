@@ -31,6 +31,19 @@ async function loadAdminPrompts() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'AI service not configured', 
+          message: 'Please set your GEMINI_API_KEY in .env.local file to use AI features.',
+          setup: 'Get your API key from https://makersuite.google.com/app/apikey'
+        },
+        { status: 503 }
+      )
+    }
+
     const { currentText, instructions, action } = await request.json()
 
     if (!currentText || !instructions) {

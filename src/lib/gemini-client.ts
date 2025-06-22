@@ -1,18 +1,35 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
 import { getContextConfig } from './ai/gemini-config'
+import { NextResponse } from 'next/server'
 
 // Server-side only Gemini client
 if (typeof window !== 'undefined') {
   throw new Error('Gemini client should only be used on the server side')
 }
 
-const API_KEY = process.env.GEMINI_API_KEY
+const API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
 
 if (!API_KEY && process.env.NODE_ENV !== 'development') {
   console.warn('GEMINI_API_KEY environment variable is not set')
 }
 
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null
+
+// Utility function to check API key configuration
+export function validateApiKey() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
+  if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+    return NextResponse.json(
+      { 
+        error: 'AI service not configured', 
+        message: 'Please set your GEMINI_API_KEY in .env.local file to use AI features.',
+        setup: 'Get your API key from https://makersuite.google.com/app/apikey'
+      },
+      { status: 503 }
+    )
+  }
+  return null // API key is valid
+}
 
 // Model configurations with context-aware settings
 export const models = {
