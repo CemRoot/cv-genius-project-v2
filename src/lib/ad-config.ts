@@ -51,8 +51,9 @@ export const defaultAdConfigs: AdConfig[] = [
     zone: 'ca-pub-1742989559393752',
     settings: {
       adSenseClient: 'ca-pub-1742989559393752',
-      adSenseSlot: 'SIDEBAR_AD_SLOT_ID', // AdSense'ten alacağınız gerçek slot ID
-      delay: 2000
+      adSenseSlot: process.env.NODE_ENV === 'production' ? 'SIDEBAR_AD_SLOT_ID' : 'dev-placeholder', // Development'ta placeholder kullan
+      delay: 2000,
+      platform: 'adsense'
     }
   },
   {
@@ -170,7 +171,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: true,
     settings: {
       adSenseClient: 'ca-pub-1742989559393752',
-      adSenseSlot: 'INLINE_AD_SLOT',
+      adSenseSlot: process.env.NODE_ENV === 'production' ? 'INLINE_AD_SLOT' : 'dev-placeholder',
       width: 728,
       height: 250,
       delay: 2000,
@@ -186,7 +187,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: true,
     settings: {
       adSenseClient: 'ca-pub-1742989559393752',
-      adSenseSlot: 'FOOTER_AD_SLOT',
+      adSenseSlot: process.env.NODE_ENV === 'production' ? 'FOOTER_AD_SLOT' : 'dev-placeholder',
       width: 728,
       height: 90,
       delay: 1500,
@@ -231,7 +232,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: false,
     settings: {
       adSenseClient: 'ca-pub-1742989559393752',
-      adSenseSlot: 'STICKY_AD_SLOT',
+      adSenseSlot: process.env.NODE_ENV === 'production' ? 'STICKY_AD_SLOT' : 'dev-placeholder',
       width: 160,
       height: 600,
       delay: 3000,
