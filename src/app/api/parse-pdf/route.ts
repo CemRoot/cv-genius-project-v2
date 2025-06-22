@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { cleanPDFText } from '@/lib/pdf-text-cleaner'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,14 +21,8 @@ export async function POST(request: NextRequest) {
     // Parse PDF
     const data = await pdfParse(Buffer.from(buffer))
     
-    // Extract and clean text
-    let cleanText = data.text || ''
-    
-    // Basic text cleaning
-    cleanText = cleanText
-      .replace(/\n{3,}/g, '\n\n') // Remove excessive line breaks
-      .replace(/\s{3,}/g, ' ')    // Remove excessive spaces
-      .trim()
+    // Extract and clean text using the utility function
+    const cleanText = cleanPDFText(data.text || '')
     
     if (!cleanText || cleanText.length < 50) {
       return NextResponse.json({

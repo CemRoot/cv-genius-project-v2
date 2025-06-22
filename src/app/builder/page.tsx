@@ -12,18 +12,36 @@ import { PanelLeftClose, PanelLeftOpen, Save, Download, Eye, EyeOff, ArrowLeft, 
 import { useCVStore } from "@/store/cv-store"
 import { motion, AnimatePresence } from "framer-motion"
 import { useToast, createToastUtils } from "@/components/ui/toast"
+import { MobileCVWizard } from "@/components/mobile-cv-wizard"
+import { useAutoSave } from "@/hooks/use-auto-save"
+import { AutoSaveIndicator } from "@/components/ui/auto-save-indicator"
 
 export default function CVBuilderPage() {
   const [showPreview, setShowPreview] = useState(true)
   const [isPreviewOnly, setIsPreviewOnly] = useState(false)
   const [mobileActiveTab, setMobileActiveTab] = useState('edit')
   const [isMobile, setIsMobile] = useState(false)
-  const { currentCV, saveCV } = useCVStore()
+  const [showWizard, setShowWizard] = useState(false)
+  const { currentCV, saveCV, autoSaveEnabled = true, autoSaveInterval = 30000 } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
   const { showOnboarding, completeOnboarding, closeOnboarding } = useMobileOnboarding()
   const router = useRouter()
+
+  // Auto-save functionality
+  const { isSaving, lastSaved, saveCount } = useAutoSave({
+    onSave: () => {
+      try {
+        saveCV()
+        console.log('CV auto-saved successfully')
+      } catch (error) {
+        console.error('Auto-save failed:', error)
+      }
+    },
+    delay: autoSaveInterval,
+    enabled: autoSaveEnabled
+  })
 
   // Swipe navigation for mobile tabs
   const { gestureHandlers } = useSwipeNavigation(
@@ -106,6 +124,21 @@ export default function CVBuilderPage() {
       setIsMobile(true)
     }
   }, [])
+
+  // Check if CV is empty and show wizard for mobile
+  useEffect(() => {
+    if (isMobile && currentCV) {
+      const isEmptyCV = !currentCV.personal.fullName && 
+                       !currentCV.personal.email && 
+                       !currentCV.personal.phone &&
+                       (!currentCV.experience || currentCV.experience.length === 0) &&
+                       (!currentCV.education || currentCV.education.length === 0)
+      
+      if (isEmptyCV) {
+        setShowWizard(true)
+      }
+    }
+  }, [isMobile, currentCV])
   
   if (!currentCV) {
     return (
@@ -184,6 +217,18 @@ export default function CVBuilderPage() {
     }
   }
 
+  // Show mobile wizard if CV is empty
+  if (isMobile && showWizard) {
+    return (
+      <MobileCVWizard 
+        onComplete={() => {
+          setShowWizard(false)
+          toast.success('CV Created', 'Your CV has been created successfully!')
+        }}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Layout */}
@@ -210,15 +255,23 @@ export default function CVBuilderPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSave}
-                    className="p-2 touch-manipulation"
-                    title="Save CV"
-                  >
-                    <Save className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSave}
+                      className="p-2 touch-manipulation"
+                      title="Save CV"
+                      disabled={isSaving}
+                    >
+                      <Save className={`h-4 w-4 ${isSaving ? 'animate-spin' : ''}`} />
+                    </Button>
+                    {lastSaved && (
+                      <span className="text-xs text-green-600 ml-1">
+                        ✓
+                      </span>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -388,10 +441,23 @@ export default function CVBuilderPage() {
 
                   <div className="w-px h-6 bg-border mx-2" />
                   
-                  <Button variant="outline" size="sm" onClick={handleSave}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </Button>
+                    
+                    <AutoSaveIndicator
+                      isSaving={isSaving}
+                      lastSaved={lastSaved}
+                      saveCount={saveCount}
+                    />
+                  </div>
                   
                   <Button variant="cvgenius" size="sm" onClick={handleExport}>
                     <Download className="h-4 w-4 mr-2" />

@@ -16,8 +16,8 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   try {
     ({ getAdsByType } = useAdConfig())
   } catch (error) {
-    // Context henüz yüklenmemişse default davranış
-    return null
+    // Context not ready yet, show placeholder
+    getAdsByType = () => []
   }
 
   useEffect(() => {
@@ -58,17 +58,22 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     }
   }, [size, position, getAdsByType])
 
+  // In development, always show placeholder
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
   // Admin ayarlarından reklam durumunu kontrol et
-  try {
-    const bannerAds = getAdsByType('banner').filter(ad => 
-      ad.position === position || !ad.position
-    )
-    
-    if (bannerAds.length === 0) {
-      return null // Reklam gösterme
+  if (!isDevelopment) {
+    try {
+      const bannerAds = getAdsByType('banner').filter(ad => 
+        ad.position === position || !ad.position
+      )
+      
+      if (bannerAds.length === 0) {
+        return null // Reklam gösterme
+      }
+    } catch (error) {
+      return null
     }
-  } catch (error) {
-    return null
   }
 
   const sizeConfig = {
@@ -88,7 +93,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
           style={{ height: config.height, maxWidth: '728px' }}
         >
           {/* Clean AdSense Ready Banner */}
-          {showCleanAd ? (
+          {(showCleanAd || isDevelopment) ? (
             <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-green-50 flex items-center justify-center">
               <div className="text-center">
                 <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full">

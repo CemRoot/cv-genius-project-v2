@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/gemini-client'
 import { getHuggingFaceClient } from '@/lib/integrations/huggingface-client'
+import { cleanPDFText } from '@/lib/pdf-text-cleaner'
 import { 
   generateATSReport, 
   calculateIrishMarketRelevance,
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean up PDF extraction artifacts before analysis
-    const cleanedCvText = cleanPDFExtractionArtifacts(cvText)
+    const cleanedCvText = cleanPDFText(cvText)
 
     // Try HuggingFace analysis first, fallback to traditional analysis
     let analysis

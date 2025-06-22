@@ -11,6 +11,7 @@ import HydrationFix from "@/components/hydration-fix"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { DynamicAdManager } from "@/components/ads/dynamic-ad-manager"
 import AccessibilityWidget, { AccessibilityCSS } from "@/components/accessibility/accessibility-widget"
+import "@/lib/console-error-filter"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
@@ -112,14 +113,11 @@ export default function RootLayout({
   return (
     <html lang="en-IE" className="scroll-smooth h-full" suppressHydrationWarning>
       <head>
-        {/* Enhanced Mobile Viewport */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+        {/* Mobile Web App Capabilities */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="CVGenius" />
-        
-        {/* Safe Area Support */}
         <meta name="viewport-fit" content="cover" />
         
         {/* Favicon and Icons */}
@@ -216,6 +214,58 @@ export default function RootLayout({
         
         {/* Vercel Speed Insights */}
         <SpeedInsights />
+        
+        {/* Console Error Suppression for Browser Extensions */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Suppress browser extension console errors
+            (function() {
+              const originalError = console.error;
+              console.error = function(...args) {
+                const message = args.join(' ');
+                
+                // Filter out browser extension related errors
+                if (message.includes('The message port closed before a response was received') ||
+                    message.includes('runtime.lastError') ||
+                    message.includes('Extension context invalidated') ||
+                    message.includes('Could not establish connection')) {
+                  return; // Suppress these errors
+                }
+                
+                // Log other errors normally
+                originalError.apply(console, args);
+              };
+              
+              // Handle unhandled promise rejections from extensions
+              window.addEventListener('unhandledrejection', function(event) {
+                const message = event.reason && event.reason.message;
+                if (message && (
+                  message.includes('The message port closed before a response was received') ||
+                  message.includes('runtime.lastError') ||
+                  message.includes('Extension context invalidated')
+                )) {
+                  event.preventDefault(); // Prevent the error from being logged
+                }
+              });
+            })();
+          `
+        }} />
+
+        {/* Duplicate Viewport Meta Tag Fix */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Remove duplicate viewport meta tags on page load
+            document.addEventListener('DOMContentLoaded', function() {
+              const viewportTags = document.querySelectorAll('meta[name="viewport"]');
+              if (viewportTags.length > 1) {
+                // Keep the first one, remove duplicates
+                for (let i = 1; i < viewportTags.length; i++) {
+                  viewportTags[i].remove();
+                }
+              }
+            });
+          `
+        }} />
       </body>
     </html>
   )

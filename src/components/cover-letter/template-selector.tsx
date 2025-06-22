@@ -1869,8 +1869,8 @@ export function TemplateSelector({
 
                 {/* Template Preview */}
                 <div className="relative h-60 sm:h-80 bg-gray-50 overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center p-2">
-                    <div className="template-preview-content max-w-full max-h-full flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center p-4">
+                    <div className="template-preview-content w-full h-full flex items-center justify-center" style={{ transform: 'scale(0.5)', transformOrigin: 'center' }}>
                       {generatePreview(template)}
                     </div>
                   </div>
