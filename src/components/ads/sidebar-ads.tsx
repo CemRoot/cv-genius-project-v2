@@ -9,6 +9,7 @@ interface SidebarAdsProps {
 
 export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const [adLoaded, setAdLoaded] = useState(false)
+  const [showPlaceholder, setShowPlaceholder] = useState(false)
   
   let getAdsByType
   try {
@@ -30,7 +31,15 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
       const adConfig = sidebarAds[0]
       const delay = adConfig.settings?.delay || 2000
 
-      // AdSense reklamını yükle
+      // Development modunda sadece placeholder göster
+      if (process.env.NODE_ENV === 'development') {
+        const timer = setTimeout(() => {
+          setShowPlaceholder(true)
+        }, delay)
+        return () => clearTimeout(timer)
+      }
+
+      // Production modunda gerçek AdSense reklamını yükle
       const timer = setTimeout(() => {
         try {
           if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
@@ -39,6 +48,8 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
           }
         } catch (error) {
           console.log('AdSense loading deferred');
+          // Hata durumunda placeholder göster
+          setShowPlaceholder(true)
         }
       }, delay)
 
@@ -64,6 +75,10 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
     return null
   }
 
+  // Development modunda veya hata durumunda sadece placeholder göster
+  const isProduction = process.env.NODE_ENV === 'production'
+  const hasValidSlot = adSlot && adSlot !== 'SIDEBAR_AD_SLOT_ID'
+
   return (
     <div className={`w-full max-w-xs mx-auto space-y-4 lg:space-y-6 ${className}`}>
       {/* Google AdSense - Admin Controlled */}
@@ -71,26 +86,33 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
         <div className="text-xs text-gray-500 mb-2 text-center font-medium">Advertisement</div>
         <div className="bg-white rounded border overflow-hidden w-[300px] h-[300px] mx-auto flex items-center justify-center relative">
           
-          {/* Gerçek AdSense Reklamı */}
-          <ins 
-            className="adsbygoogle"
-            style={{ display: 'block', width: '300px', height: '300px' }}
-            data-ad-client={adClient}
-            data-ad-slot={adSlot}
-            data-ad-format="auto"
-            data-full-width-responsive="false"
-          />
+          {/* Production ve geçerli slot ID'si varsa gerçek AdSense */}
+          {isProduction && hasValidSlot && !showPlaceholder && (
+            <ins 
+              className="adsbygoogle"
+              style={{ display: 'block', width: '300px', height: '300px' }}
+              data-ad-client={adClient}
+              data-ad-slot={adSlot}
+              data-ad-format="auto"
+              data-full-width-responsive="false"
+            />
+          )}
           
-          {/* Fallback - AdSense yüklenene kadar */}
-          {!adLoaded && (
+          {/* Development veya fallback placeholder */}
+          {(!isProduction || !hasValidSlot || showPlaceholder || !adLoaded) && (
             <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
               <div className="text-center p-4">
                 <div className="w-16 h-16 bg-green-200 rounded-full mx-auto mb-3 flex items-center justify-center">
                   <div className="text-green-600 font-bold text-lg">✅</div>
                 </div>
-                <div className="text-sm text-gray-600 font-medium">Admin Controlled</div>
+                <div className="text-sm text-gray-600 font-medium">
+                  {!isProduction ? 'Development Mode' : 
+                   !hasValidSlot ? 'Configure Ad Slot' : 'Admin Controlled'}
+                </div>
                 <div className="text-xs text-gray-500 mt-1">300 x 300</div>
-                <div className="text-xs text-green-600 mt-1 font-medium">AdSense Ready!</div>
+                <div className="text-xs text-green-600 mt-1 font-medium">
+                  {!hasValidSlot ? 'Set Valid Slot ID' : 'AdSense Ready!'}
+                </div>
               </div>
             </div>
           )}
