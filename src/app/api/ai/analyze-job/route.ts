@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateContent, checkRateLimit } from '@/lib/gemini-client'
+import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
 import { GLOBAL_PROMPTS, LANGUAGE_ADAPTATIONS } from '@/lib/ai/global-prompts'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Gemini API key is configured
+    const apiKeyError = validateApiKey()
+    if (apiKeyError) {
+      return apiKeyError
+    }
+
     // Get user ID for rate limiting
     const userId = request.headers.get('x-user-id') || 'anonymous'
     
