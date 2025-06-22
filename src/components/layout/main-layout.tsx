@@ -21,9 +21,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Ad */}
       <AdController type="mobile-bottom" />
       
-      {/* Mobile Floating Ad */}
-      <AdController type="mobile-floating" />
-      
       {/* Desktop Side Ads */}
       <AdController type="sticky-side" />
     </>

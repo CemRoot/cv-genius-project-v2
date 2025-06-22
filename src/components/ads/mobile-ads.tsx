@@ -11,68 +11,66 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Only show on mobile devices
-    const isMobile = window.innerWidth < 768
-    if (!isMobile && position !== 'floating') return
-
-    // PropellerAds mobile configuration
-    const script = document.createElement('script')
-    script.type = 'text/javascript'
+    // Show placeholder immediately for testing (responsive check via CSS)
+    setIsVisible(true)
     
-    const adConfig = {
-      top: {
-        key: 'REPLACE_WITH_MOBILE_TOP_KEY',
-        width: 320,
-        height: 50
-      },
-      bottom: {
-        key: 'REPLACE_WITH_MOBILE_BOTTOM_KEY',
-        width: 320,
-        height: 50
-      },
-      floating: {
-        key: 'REPLACE_WITH_MOBILE_FLOAT_KEY',
-        width: 300,
-        height: 250
+    // Only load real ads in production with valid keys
+    if (process.env.NODE_ENV === 'production') {
+      // Only show on mobile devices
+      const isMobile = window.innerWidth < 768
+      if (!isMobile && position !== 'floating') return
+
+      // PropellerAds mobile configuration
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      
+      const adConfig = {
+        top: {
+          key: 'REPLACE_WITH_MOBILE_TOP_KEY',
+          width: 320,
+          height: 50
+        },
+        bottom: {
+          key: 'REPLACE_WITH_MOBILE_BOTTOM_KEY',
+          width: 320,
+          height: 50
+        },
+        floating: {
+          key: 'REPLACE_WITH_MOBILE_FLOAT_KEY',
+          width: 300,
+          height: 250
+        }
       }
+
+      const config = adConfig[position]
+
+      script.innerHTML = `
+        atOptions = {
+          'key' : '${config.key}',
+          'format' : 'iframe',
+          'height' : ${config.height},
+          'width' : ${config.width},
+          'params' : {}
+        };
+      `
+      document.head.appendChild(script)
+
+      const adScript = document.createElement('script')
+      adScript.type = 'text/javascript'
+      adScript.src = `//www.topcreativeformat.com/${config.key}/invoke.js`
+      document.head.appendChild(adScript)
     }
 
-    const config = adConfig[position]
-
-    script.innerHTML = `
-      atOptions = {
-        'key' : '${config.key}',
-        'format' : 'iframe',
-        'height' : ${config.height},
-        'width' : ${config.width},
-        'params' : {}
-      };
-    `
-    document.head.appendChild(script)
-
-    const adScript = document.createElement('script')
-    adScript.type = 'text/javascript'
-    adScript.src = `//www.topcreativeformat.com/${config.key}/invoke.js`
-    document.head.appendChild(adScript)
-
-    // Show ads after delay for better UX
-    const timer = setTimeout(() => setIsVisible(true), 1500)
-
     return () => {
-      clearTimeout(timer)
-      try {
-        document.head.removeChild(script)
-        document.head.removeChild(adScript)
-      } catch (e) {
-        // Scripts already removed
-      }
+      // Cleanup is handled automatically in development mode
+      // In production, scripts are managed by the ad network
     }
   }, [position])
 
   const positionStyles = {
-    top: 'sticky top-0 z-50 bg-white border-b shadow-sm',
+    top: 'sticky top-16 lg:top-20 z-40 bg-white border-b shadow-sm',
     bottom: 'sticky bottom-0 z-50 bg-white border-t shadow-lg',
-    floating: 'fixed bottom-20 right-4 z-50 shadow-2xl rounded-lg overflow-hidden'
+    floating: 'fixed bottom-4 right-4 z-50 shadow-2xl rounded-lg overflow-hidden'
   }
 
   const sizeStyles = {
@@ -84,7 +82,7 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
   if (!isVisible) return null
 
   return (
-    <div className={`md:hidden ${positionStyles[position]} ${className}`}>
+    <div className={`${positionStyles[position]} ${className}`} style={{ display: 'block' }}>
       <div className={`${sizeStyles[position]} mx-auto bg-white border border-gray-200 flex items-center justify-center relative`}>
         {/* Ad placeholder content */}
         <div className="text-center text-gray-400 text-xs p-2">

@@ -38,10 +38,8 @@ interface AdControllerProps {
 export function AdController({ type, position, size, className }: AdControllerProps) {
   const pathname = usePathname()
 
-  // Disable ads in development to prevent console errors (temporarily comment out for testing)
-  // if (process.env.NODE_ENV === 'development') {
-  //   return null
-  // }
+  // Development mode allows placeholder ads for testing
+  // Ads will only load real content in production with valid keys
 
   // Check if ads should be completely disabled
   const isNoAdsPage = NO_ADS_PAGES.some(page => pathname.startsWith(page))
@@ -54,8 +52,8 @@ export function AdController({ type, position, size, className }: AdControllerPr
   
   // On minimal ads pages, only show non-intrusive ads
   if (isMinimalAdsPage) {
-    // Only allow sidebar and bottom mobile ads on minimal pages
-    if (!['sidebar', 'mobile-bottom'].includes(type)) {
+    // Only allow sidebar, mobile-top and mobile-bottom ads on minimal pages
+    if (!['sidebar', 'mobile-top', 'mobile-bottom'].includes(type)) {
       return null
     }
   }
