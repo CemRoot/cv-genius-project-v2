@@ -160,6 +160,18 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
       return
     }
 
+    // Require job description on mobile for better analysis
+    if (isMobile && !jobDescription.trim()) {
+      setError('Job description is required for accurate ATS analysis')
+      // Focus the job description field
+      const jobDescField = document.getElementById('job-description')
+      if (jobDescField) {
+        jobDescField.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        jobDescField.focus({ preventScroll: true })
+      }
+      return
+    }
+
     // Performance optimization: Warn for very large CVs on mobile
     if (isMobile && cvText.length > 8000) {
       const proceed = window.confirm(
@@ -404,16 +416,32 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
 
           {/* Job Description */}
           <div className="space-y-3">
-            <label htmlFor="job-description" className="text-base font-medium">Job Description (Recommended)</label>
+            <label htmlFor="job-description" className="text-base font-medium">
+              Job Description <span className="text-red-500">*</span>
+              <span className="text-sm font-normal text-gray-600 ml-2">(Required for accurate analysis)</span>
+            </label>
             <textarea
               id="job-description"
               placeholder="Paste job description to improve keyword matching..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
+              onFocus={(e) => {
+                // Prevent auto-scroll on mobile
+                if (isMobile) {
+                  e.preventDefault()
+                  const element = e.target
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    element.focus({ preventScroll: true })
+                  }, 100)
+                }
+              }}
+              required
               rows={4}
               className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
               style={{ minHeight: '120px' }}
               aria-describedby="job-description-help"
+              aria-required="true"
             />
             <p id="job-description-help" className="text-sm text-gray-600">
               Adding job description provides more detailed analysis and keyword suggestions

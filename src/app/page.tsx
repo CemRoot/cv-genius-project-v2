@@ -135,6 +135,13 @@ export default function HomePage() {
       </section>
 
 
+      {/* Header Banner Ad - Below Hero */}
+      <div className="py-4 bg-muted/20">
+        <div className="container mx-auto px-4">
+          <BannerAds position="content" size="large" />
+        </div>
+      </div>
+
       {/* Quick Tools Section - Mobile Optimized */}
       <section className="py-12 md:py-16 bg-muted/30">
         <div className="container mx-auto px-4">

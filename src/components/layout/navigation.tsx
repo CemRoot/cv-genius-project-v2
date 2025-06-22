@@ -11,10 +11,10 @@ import { motion, AnimatePresence } from "framer-motion"
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/builder", label: "CV Builder" },
+  { href: "/ats-check", label: "ATS Check" },
   { href: "/cover-letter", label: "Cover Letters" },
   { href: "/templates", label: "Templates" },
   { href: "/examples", label: "Examples" },
-  { href: "/ats-check", label: "ATS Check" },
   { href: "/guides", label: "Career Guide" },
 ]
 
@@ -216,36 +216,6 @@ export function Navigation() {
                         </Button>
                       </motion.div>
 
-                      {/* Mobile-specific quick actions */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.3 }}
-                        className="mt-6 px-6 pt-6 border-t border-border/50"
-                      >
-                        <div className="mobile-grid-2 gap-3">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mobile-button-secondary touch-feedback" 
-                            asChild
-                          >
-                            <Link href="/templates" scroll={false} onClick={() => handleNavigation('/templates')}>
-                              Browse Templates
-                            </Link>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mobile-button-secondary touch-feedback" 
-                            asChild
-                          >
-                            <Link href="/ats-check" scroll={false} onClick={() => handleNavigation('/ats-check')}>
-                              ATS Check
-                            </Link>
-                          </Button>
-                        </div>
-                      </motion.div>
                     </nav>
                   </div>
                 </motion.div>

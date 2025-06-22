@@ -82,7 +82,7 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
   if (!isVisible) return null
 
   return (
-    <div className={`${positionStyles[position]} ${className}`} style={{ display: 'block' }}>
+    <div className={`${positionStyles[position]} ${className} block lg:hidden`}>
       <div className={`${sizeStyles[position]} mx-auto bg-white border border-gray-200 flex items-center justify-center relative`}>
         {/* Ad placeholder content */}
         <div className="text-center text-gray-400 text-xs p-2">
@@ -96,7 +96,7 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
         {/* Ad script will inject content here */}
         <div 
           id={`mobile-ad-${position}`} 
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full lg:hidden"
         />
       </div>
       

@@ -16,8 +16,7 @@ export default function CreationModePage() {
     if (mode === 'create') {
       router.push('/cover-letter/customize')
     } else {
-      // For upload mode, we'll implement this later
-      alert('Upload from resume feature coming soon!')
+      router.push('/cover-letter/upload-resume')
     }
   }
 

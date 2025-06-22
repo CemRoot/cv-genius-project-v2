@@ -1,10 +1,12 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Star, Eye, Download, Sparkles, Briefcase, Palette, Crown, GraduationCap, RefreshCw, Users, CheckCircle } from "lucide-react"
+import { Star, Eye, Download, Sparkles, Briefcase, Palette, Crown, GraduationCap, RefreshCw, Users, CheckCircle, AlertTriangle, ExternalLink } from "lucide-react"
 import { motion } from "framer-motion"
 import { MainLayout } from "@/components/layout/main-layout"
+import { Card } from "@/components/ui/card"
 
 interface Template {
   id: string
@@ -97,10 +99,67 @@ const staggerChildren = {
 }
 
 export default function TemplatesPage() {
+  const [hasSeenAd, setHasSeenAd] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [showRedirectModal, setShowRedirectModal] = useState(false)
+
+  // Check if user has seen an ad in this session
+  useEffect(() => {
+    const adSeen = sessionStorage.getItem('template-ad-seen')
+    if (adSeen === 'true') {
+      setHasSeenAd(true)
+    }
+  }, [])
+
+  const handleTemplateClick = (templateId: string) => {
+    if (!hasSeenAd) {
+      // First template click - show ad redirect
+      setSelectedTemplate(templateId)
+      setShowRedirectModal(true)
+    } else {
+      // Already seen ad - go directly to builder
+      window.location.href = `/builder?template=${templateId}`
+    }
+  }
+
+  const handleAdRedirect = () => {
+    // Mark ad as seen
+    sessionStorage.setItem('template-ad-seen', 'true')
+    setHasSeenAd(true)
+    
+    // Open ad in new tab
+    window.open('https://www.highrevenuegate.com/zm5d6xat?key=8e9b6c4e8f6b4e3a9c5e8d7f6a5b4c3d', '_blank')
+    
+    // Close modal and redirect to builder after delay
+    setTimeout(() => {
+      setShowRedirectModal(false)
+      if (selectedTemplate) {
+        window.location.href = `/builder?template=${selectedTemplate}`
+      }
+    }, 1500)
+  }
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12">
       <div className="max-w-6xl mx-auto">
+        {/* Maintenance Notice */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-yellow-800 mb-1">Templates Section Under Maintenance</h3>
+              <p className="text-sm text-yellow-700">
+                We're currently updating our template collection to bring you even better designs. 
+                All templates are still functional and can be used to create your CV.
+              </p>
+            </div>
+          </div>
+        </motion.div>
         {/* Header */}
         <motion.div 
           {...fadeInUp}
@@ -191,7 +250,11 @@ export default function TemplatesPage() {
                       Preview
                     </Button>
                     {!template.comingSoon && (
-                      <Button size="sm" variant="cvgenius">
+                      <Button 
+                        size="sm" 
+                        variant="cvgenius"
+                        onClick={() => handleTemplateClick(template.id)}
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Use Template
                       </Button>
@@ -251,7 +314,7 @@ export default function TemplatesPage() {
                   size="sm" 
                   className="w-full"
                   disabled={template.comingSoon}
-                  asChild={!template.comingSoon}
+                  onClick={() => !template.comingSoon && handleTemplateClick(template.id)}
                 >
                   {template.comingSoon ? (
                     <>
@@ -259,10 +322,10 @@ export default function TemplatesPage() {
                       Coming Soon
                     </>
                   ) : (
-                    <Link href={`/builder?template=${template.id}`}>
+                    <>
                       <Download className="mr-2 h-4 w-4" />
                       Use This Template
-                    </Link>
+                    </>
                   )}
                 </Button>
               </div>
@@ -342,6 +405,47 @@ export default function TemplatesPage() {
         </div>
       </div>
     </div>
+
+    {/* Ad Redirect Modal */}
+    {showRedirectModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+        >
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+              <ExternalLink className="h-6 w-6 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Quick Sponsor Message</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Please support our free CV builder by viewing a quick message from our sponsor. 
+              You'll be redirected to your template in just a moment!
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowRedirectModal(false)
+                  setSelectedTemplate(null)
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="cvgenius"
+                onClick={handleAdRedirect}
+                className="flex-1"
+              >
+                Continue to Template
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    )}
     </MainLayout>
   )
 }

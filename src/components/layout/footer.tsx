@@ -5,8 +5,8 @@ import { MessageCircle, Users } from "lucide-react"
 const footerLinks = {
   product: [
     { label: "CV Builder", href: "/builder" },
-    { label: "Cover Letters", href: "/cover-letter" },
     { label: "ATS Checker", href: "/ats-check" },
+    { label: "Cover Letters", href: "/cover-letter" },
     { label: "Templates", href: "/templates" },
   ],
   resources: [

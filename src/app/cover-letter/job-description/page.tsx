@@ -8,9 +8,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Sparkles } from 'lucide-react'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 export default function JobDescriptionPage() {
   const router = useRouter()
+  const { setJobDescription: setContextJobDescription } = useCoverLetter()
   const [hasJobDescription, setHasJobDescription] = useState<boolean | null>(null)
   const [jobDescription, setJobDescription] = useState('')
   const [showDescriptionForm, setShowDescriptionForm] = useState(false)
@@ -27,8 +29,9 @@ export default function JobDescriptionPage() {
 
   const handleContinue = () => {
     if (hasJobDescription && jobDescription) {
-      // Save job description to localStorage
+      // Save job description to localStorage and context
       localStorage.setItem('cover-letter-job-description', jobDescription)
+      setContextJobDescription(jobDescription)
     }
     
     // Continue to strengths

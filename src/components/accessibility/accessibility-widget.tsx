@@ -73,11 +73,12 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
   if (!isOpen) {
     return (
       <div className={className}>
+        {/* Sadece mobil ve tablet cihazlarda göster */}
         <Button
           onClick={() => setIsOpen(true)}
           variant="outline"
           size="sm"
-          className="fixed bottom-4 right-4 z-50 rounded-full p-3 shadow-lg bg-white hover:bg-gray-50"
+          className="md:hidden fixed bottom-4 right-4 z-50 rounded-full p-3 shadow-lg bg-white hover:bg-gray-50"
           aria-label="Open accessibility settings"
         >
           <Settings className="h-5 w-5" />
@@ -88,7 +89,14 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
 
   return (
     <div className={className}>
-      <Card className="fixed bottom-4 right-4 z-50 w-80 shadow-xl">
+      {/* Backdrop - mobilde tam ekran kapla */}
+      <div 
+        className="md:hidden fixed inset-0 bg-black/20 z-40" 
+        onClick={() => setIsOpen(false)}
+      />
+      
+      {/* Panel - mobilde alt kısımdan çık, tablet+ da köşede göster */}
+      <Card className="fixed z-50 shadow-xl md:hidden bottom-0 left-0 right-0 rounded-t-lg rounded-b-none max-h-[70vh] overflow-y-auto">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -128,13 +136,13 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
               return (
                 <div
                   key={option.key}
-                  className="flex items-center justify-between p-2 border rounded hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <IconComponent className="h-4 w-4 text-gray-600 flex-shrink-0" />
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <IconComponent className="h-5 w-5 text-gray-600 flex-shrink-0" />
                     <div className="min-w-0">
                       <div className="text-sm font-medium">{option.label}</div>
-                      <div className="text-xs text-gray-600 truncate">
+                      <div className="text-xs text-gray-600 mt-1">
                         {option.description}
                       </div>
                     </div>
@@ -143,11 +151,11 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
                     variant={isEnabled ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToggle(option.key, option.label)}
-                    className="ml-2 flex-shrink-0"
+                    className="ml-3 flex-shrink-0 min-w-[60px]"
                     aria-label={`${isEnabled ? 'Disable' : 'Enable'} ${option.label}`}
                   >
                     {isEnabled ? (
-                      <Check className="h-3 w-3" />
+                      <Check className="h-4 w-4" />
                     ) : (
                       <span className="text-xs">Off</span>
                     )}
@@ -159,7 +167,7 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
 
           {/* Status Indicators */}
           <div className="mt-4 pt-3 border-t">
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-2">
               {shouldUseHighContrast && (
                 <Badge variant="secondary" size="sm">High Contrast</Badge>
               )}
@@ -176,14 +184,14 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
           </div>
 
           {/* Footer */}
-          <div className="mt-3 pt-3 border-t text-center">
+          <div className="mt-4 pt-3 border-t text-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => {
                 window.location.href = '/accessibility'
               }}
-              className="text-xs"
+              className="text-sm"
             >
               Full Accessibility Center
             </Button>
