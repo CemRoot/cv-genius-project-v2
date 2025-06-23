@@ -10,14 +10,16 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Top Ad */}
       <AdController type="mobile-top" />
       
-      {/* Header Banner Ad - Desktop */}
-      <div className="hidden md:block">
-        <AdController type="banner" size="large" className="pt-2 pb-1" />
-      </div>
-      
       <Navigation />
       
-      <main className="flex-1 pt-16 lg:pt-20">
+      {/* Header Banner Ad - Desktop (Below Navigation) */}
+      <div className="hidden md:block pt-16 lg:pt-20 bg-white border-b relative z-30">
+        <div className="container mx-auto px-4">
+          <AdController type="banner" size="large" className="py-3" />
+        </div>
+      </div>
+      
+      <main className="flex-1 pt-2 md:pt-0">
         {children}
       </main>
       
