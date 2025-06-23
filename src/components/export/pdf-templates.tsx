@@ -480,6 +480,7 @@ export function CreativeTemplate({ data }: { data: CVData }) {
 
 // Harvard Template - matching the main template exactly
 export function HarvardTemplate({ data }: { data: CVData }) {
+  // Force refresh - ultra-tight spacing v2
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
   try {
     registerPDFFonts()
@@ -517,18 +518,18 @@ export function HarvardTemplate({ data }: { data: CVData }) {
   
   const settings = designSettings || defaultSettings
   
-  // Convert spacing settings to points (PDF unit) - Reduced spacing
+  // Convert spacing settings to points (PDF unit) - Ultra-tight spacing
   const spacingMap = {
-    tight: 8,      // 12 -> 8
-    normal: 12,    // 20 -> 12
-    relaxed: 16,   // 28 -> 16
-    spacious: 20   // 36 -> 20
+    tight: 4,      // 8 -> 4 (half again)
+    normal: 6,     // 12 -> 6 (half again)
+    relaxed: 8,    // 16 -> 8 (half again)
+    spacious: 10   // 20 -> 10 (half again)
   }
   
   const headerSpacingMap = {
-    compact: 20,   // 30 -> 20
-    normal: 25,    // 40 -> 25
-    generous: 35   // 50 -> 35
+    compact: 10,   // 20 -> 10 (half again)
+    normal: 12,    // 25 -> 12 (much tighter)
+    generous: 16   // 35 -> 16 (much tighter)
   }
   
   const sectionSpacing = spacingMap[settings.sectionSpacing as keyof typeof spacingMap] || spacingMap.normal
@@ -539,7 +540,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
       <Page size="A4" style={{
         fontFamily: getFontFamilyForPDF(settings.fontFamily),
         fontSize: settings.fontSize,
-        lineHeight: 1.0, // Global lineHeight for PDF - tighter spacing
+        lineHeight: 1.0, // Global lineHeight for PDF - ultra-tight spacing
         padding: `${settings.margins * 72}pt`, // Convert inches to points
         backgroundColor: '#ffffff'
       }}>
@@ -549,31 +550,31 @@ export function HarvardTemplate({ data }: { data: CVData }) {
           marginBottom: headerSpacing
         }}>
           <Text style={{
-            fontSize: 22,    // 24 -> 22 (daha kompakt)
+            fontSize: 20,        // 22 -> 20 (even more compact)
             fontWeight: 'bold',
             textTransform: 'uppercase',
-            letterSpacing: 1.5,  // 2 -> 1.5 (daha sıkı)
-            marginBottom: 3,     // 6 -> 3 (daha az boşluk)
-            lineHeight: 1.1     // Satır yüksekliği kontrolü
+            letterSpacing: 1,    // 1.5 -> 1 (tighter)
+            marginBottom: 2,     // 3 -> 2 (less space)
+            lineHeight: 1.0      // Tighter line height
           }}>
             {personal.fullName || "Your Name"}
           </Text>
           
           <Text style={{
-            fontSize: 14,        // 16 -> 14 (daha küçük)
+            fontSize: 12,        // 14 -> 12 (smaller)
             fontWeight: 'normal',
             color: '#666666',
-            marginBottom: 4,     // 8 -> 4 (daha az boşluk)
-            lineHeight: 1.2     // Satır yüksekliği kontrolü
+            marginBottom: 2,     // 4 -> 2 (less space)
+            lineHeight: 1.0      // Tighter line height
           }}>
             {personal.title || "Python Developer"}
           </Text>
           
           <View style={{
-            fontSize: 8,         // 9 -> 8 (daha küçük)
+            fontSize: 8,         // Keep at 8
             textAlign: 'center',
-            marginBottom: 2,     // 4 -> 2 (daha az boşluk)
-            lineHeight: 1.1     // Satır yüksekliği kontrolü
+            marginBottom: 1,     // 2 -> 1 (less space)
+            lineHeight: 1.0      // Tighter line height
           }}>
             <Text>
               {personal.phone && formatIrishPhone(personal.phone)}
@@ -587,9 +588,9 @@ export function HarvardTemplate({ data }: { data: CVData }) {
           </View>
           
           <Text style={{
-            fontSize: 8,         // 9 -> 8 (daha küçük)
+            fontSize: 8,         // Keep at 8
             textAlign: 'center',
-            lineHeight: 1.1     // Satır yüksekliği kontrolü
+            lineHeight: 1.0      // Tighter line height
           }}>
             • {personal.address} • {personal.nationality || "STAMP2 | Master Student"}
           </Text>
@@ -599,17 +600,17 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {personal.summary && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 12,      // 14 -> 12 (daha küçük başlık)
+              fontSize: 11,      // 12 -> 11 (smaller title)
               fontWeight: 'bold',
               textAlign: 'center',
               borderBottom: '1pt solid #9ca3af',
-              paddingBottom: 2,  // 4 -> 2 (daha az padding)
-              marginBottom: 4    // 8 -> 4 (daha az margin)
+              paddingBottom: 1,  // 2 -> 1 (less padding)
+              marginBottom: 2    // 4 -> 2 (less margin)
             }}>Summary</Text>
             <Text style={{
               fontSize: settings.fontSize,
-              lineHeight: 1.1,  // 1.2 -> 1.1 (daha sıkı satır aralığı)
-              letterSpacing: 0  // Kelimeler arası boşluk normal
+              lineHeight: 1.0,  // 1.1 -> 1.0 (tighter line height)
+              letterSpacing: 0  // Normal word spacing
             }}>{personal.summary}</Text>
           </View>
         )}
@@ -618,42 +619,42 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {experience.length > 0 && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 12,
+              fontSize: 11,      // 12 -> 11 (smaller)
               fontWeight: 'bold',
               textAlign: 'center',
-              marginBottom: 6  // 12 -> 6
+              marginBottom: 3    // 6 -> 3 (much less)
             }}>PROFESSIONAL EXPERIENCE</Text>
             {experience.map((exp, index) => (
-              <View key={index} style={{ marginBottom: 24 }}>
+              <View key={index} style={{ marginBottom: 8 }}> {/* 24 -> 8 (huge reduction) */}
                 <View style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
-                  marginBottom: 4
+                  marginBottom: 2  // 4 -> 2 (less space)
                 }}>
                   <View>
-                    <Text style={{ fontWeight: 'bold', fontSize: 11 }}>{exp.position}</Text>
-                    <Text style={{ fontStyle: 'italic', fontSize: 10 }}>{exp.company}, {exp.location}</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{exp.position}</Text> {/* 11 -> 10 */}
+                    <Text style={{ fontStyle: 'italic', fontSize: 9 }}>{exp.company}, {exp.location}</Text> {/* 10 -> 9 */}
                   </View>
-                  <Text style={{ fontSize: 9, textAlign: 'right' }}>
+                  <Text style={{ fontSize: 8, textAlign: 'right' }}> {/* 9 -> 8 */}
                     {exp.startDate} - {exp.current ? "Present" : exp.endDate}
                   </Text>
                 </View>
                 
                 {exp.description && (
                   <Text style={{
-                    marginBottom: 8,
+                    marginBottom: 4,  // 8 -> 4 (less space)
                     fontSize: settings.fontSize,
-                    lineHeight: 1.2
+                    lineHeight: 1.0   // 1.2 -> 1.0 (tighter)
                   }}>{exp.description}</Text>
                 )}
                 
                 {(exp.achievements || []).length > 0 && (
-                  <View style={{ marginLeft: 16 }}>
+                  <View style={{ marginLeft: 12 }}> {/* 16 -> 12 (less indent) */}
                     {(exp.achievements || []).map((achievement, idx) => (
                       <Text key={idx} style={{
-                        marginBottom: 3,
+                        marginBottom: 1,  // 3 -> 1 (less space)
                         fontSize: settings.fontSize,
-                        lineHeight: 1.2
+                        lineHeight: 1.0   // 1.2 -> 1.0 (tighter)
                       }}>• {achievement}</Text>
                     ))}
                   </View>
@@ -667,31 +668,31 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {education.length > 0 && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 12,
+              fontSize: 11,      // 12 -> 11 (smaller)
               fontWeight: 'bold',
               textAlign: 'center',
-              marginBottom: 12
+              marginBottom: 3    // 12 -> 3 (much less)
             }}>EDUCATION</Text>
             {education.map((edu, index) => (
-              <View key={index} style={{ marginBottom: 20 }}>
+              <View key={index} style={{ marginBottom: 6 }}> {/* 20 -> 6 (much less) */}
                 <View style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between'
                 }}>
                   <View>
-                    <Text style={{ fontWeight: 'bold', fontSize: 11 }}>{edu.degree} in {edu.field}</Text>
-                    <Text style={{ fontStyle: 'italic', fontSize: 10 }}>{edu.institution}, {edu.location}</Text>
-                    {edu.grade && <Text style={{ fontSize: 10 }}>Grade: {edu.grade}</Text>}
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{edu.degree} in {edu.field}</Text> {/* 11 -> 10 */}
+                    <Text style={{ fontStyle: 'italic', fontSize: 9 }}>{edu.institution}, {edu.location}</Text> {/* 10 -> 9 */}
+                    {edu.grade && <Text style={{ fontSize: 9 }}>Grade: {edu.grade}</Text>} {/* 10 -> 9 */}
                   </View>
-                  <Text style={{ fontSize: 9, textAlign: 'right' }}>
+                  <Text style={{ fontSize: 8, textAlign: 'right' }}> {/* 9 -> 8 */}
                     {edu.startDate} - {edu.current ? "Present" : edu.endDate}
                   </Text>
                 </View>
                 {edu.description && (
                   <Text style={{
-                    marginTop: 4,
+                    marginTop: 2,        // 4 -> 2 (less space)
                     fontSize: settings.fontSize,
-                    lineHeight: 1.2
+                    lineHeight: 1.0      // 1.2 -> 1.0 (tighter)
                   }}>{edu.description}</Text>
                 )}
               </View>
@@ -699,41 +700,39 @@ export function HarvardTemplate({ data }: { data: CVData }) {
           </View>
         )}
 
-        {/* Skills */}
+        {/* Skills - Compact Irish CV Format */}
         {skills.length > 0 && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 12,
+              fontSize: 11,      
               fontWeight: 'bold',
               textAlign: 'center',
-              marginBottom: 12
+              marginBottom: 2    // Even less space
             }}>SKILLS</Text>
-            <View style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between'
-            }}>
+            <View style={{ lineHeight: 1.0 }}>
               {['Technical', 'Software', 'Soft', 'Other'].map((category) => {
                 const categorySkills = skills.filter(skill => skill.category === category)
                 if (categorySkills.length === 0) return null
                 
+                // Take only top 5-6 skills per category for compact display
+                const topSkills = categorySkills.slice(0, 6)
+                const skillNames = topSkills.map(skill => skill.name).join(' • ')
+                
                 return (
-                  <View key={category} style={{ width: '48%', marginBottom: 8 }}>
+                  <View key={category} style={{ 
+                    flexDirection: 'row',
+                    marginBottom: 1,    // Minimal spacing between lines
+                    flexWrap: 'wrap'
+                  }}>
                     <Text style={{
-                      fontWeight: 'bold',
-                      fontSize: 10,
-                      marginBottom: 4
-                    }}>{category} Skills:</Text>
-                    {categorySkills.map(skill => (
-                      <View key={skill.id} style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 2
-                      }}>
-                        <Text style={{ fontSize: 9 }}>{skill.name}</Text>
-                        <Text style={{ fontSize: 8, color: '#666666' }}>{skill.level}</Text>
-                      </View>
-                    ))}
+                      fontSize: 9,
+                      fontWeight: 'bold'
+                    }}>{category}: </Text>
+                    <Text style={{
+                      fontSize: 9,
+                      lineHeight: 1.0,
+                      flex: 1
+                    }}>{skillNames}</Text>
                   </View>
                 )
               })}

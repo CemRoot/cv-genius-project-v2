@@ -85,11 +85,11 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const config = sizeConfig[size]
 
   return (
-    <div className={`w-full mx-auto ${className}`}>
-      <div className="bg-gray-50 p-3 rounded-lg shadow-sm">
+    <div className={`w-full mx-auto relative z-20 ${className}`}>
+      <div className="bg-gray-50 p-3 rounded-lg shadow-sm border">
         <div className="text-xs text-gray-500 mb-2 text-center font-medium">Advertisement</div>
         <div 
-          className="bg-white rounded border overflow-hidden flex items-center justify-center relative mx-auto"
+          className="bg-white rounded border-2 overflow-hidden flex items-center justify-center relative mx-auto shadow-md"
           style={{ height: config.height, maxWidth: '728px' }}
         >
           {/* Clean AdSense Ready Banner */}

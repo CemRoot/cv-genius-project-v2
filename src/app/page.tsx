@@ -136,7 +136,7 @@ export default function HomePage() {
 
 
       {/* Header Banner Ad - Below Hero */}
-      <div className="py-4 bg-muted/20">
+      <div className="py-4 bg-muted/20 relative z-30">
         <div className="container mx-auto px-4">
           <BannerAds position="content" size="large" />
         </div>

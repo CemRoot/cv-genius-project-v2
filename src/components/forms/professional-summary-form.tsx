@@ -79,6 +79,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
 
   // Update store data with debouncing - memoized to prevent re-renders
   const updateStoreData = useCallback((data: ProfessionalSummaryFormData) => {
+    console.log('Professional Summary: Updating store with:', data.summary)
     updatePersonalInfo({
       summary: data.summary || ''
     })
@@ -186,12 +187,19 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
     }
   }, [setValue, currentCV?.personal?.summary]) // Include all dependencies
 
-  // Debounced auto-save effect
+  // Real-time auto-save effect (no debounce for better UX)
+  useEffect(() => {
+    if (!isInitialMount.current) {
+      updateStoreData(watchedFields)
+    }
+  }, [watchedFields, updateStoreData])
+  
+  // Debounced auto-save effect for backup
   useEffect(() => {
     if (isDirty && !isInitialMount.current) {
       const timeoutId = setTimeout(() => {
         updateStoreData(watchedFields)
-      }, 300) // Debounce updates
+      }, 100) // Faster debounce for better responsiveness
       
       return () => clearTimeout(timeoutId)
     }

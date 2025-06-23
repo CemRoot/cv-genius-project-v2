@@ -184,7 +184,17 @@ export default function RootLayout({
                          msgStr.includes('react devtools') ||
                          msgStr.includes('better development experience') ||
                          msgStr.includes('listener indicated an asynchronous response') ||
-                         msgStr.includes('message channel closed before a response');
+                         msgStr.includes('asynchronous response by returning true') ||
+                         msgStr.includes('message channel closed before a response') ||
+                         msgStr.includes('caught error handling') ||
+                         msgStr.includes('hide-notification') ||
+                         msgStr.includes('nmlockstate') ||
+                         msgStr.includes('nmofflinestatus') ||
+                         msgStr.includes('sending') && msgStr.includes('message to native core') ||
+                         msgStr.includes('received message') && msgStr.includes('from native core') ||
+                         msgStr.includes('background.js') ||
+                         msgStr.includes('pop.html') ||
+                         msgStr.includes('injected.js');
                 };
                 
                 console.error = function(...args) {
