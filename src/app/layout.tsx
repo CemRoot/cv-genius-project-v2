@@ -183,9 +183,11 @@ export default function RootLayout({
                          msgStr.includes('download the react devtools') ||
                          msgStr.includes('react devtools') ||
                          msgStr.includes('better development experience') ||
+                         msgStr.includes('https://react.dev/link/react-devtools') ||
                          msgStr.includes('listener indicated an asynchronous response') ||
                          msgStr.includes('asynchronous response by returning true') ||
                          msgStr.includes('message channel closed before a response') ||
+                         msgStr.includes('the message port closed before a response was received') ||
                          msgStr.includes('caught error handling') ||
                          msgStr.includes('hide-notification') ||
                          msgStr.includes('nmlockstate') ||
@@ -194,7 +196,18 @@ export default function RootLayout({
                          msgStr.includes('received message') && msgStr.includes('from native core') ||
                          msgStr.includes('background.js') ||
                          msgStr.includes('pop.html') ||
-                         msgStr.includes('injected.js');
+                         msgStr.includes('pop.chunk.css') ||
+                         msgStr.includes('injected.js') ||
+                         msgStr.includes('vercel speed insights') ||
+                         msgStr.includes('debug mode is enabled by default in development') ||
+                         msgStr.includes('no requests will be sent to the server') ||
+                         msgStr.includes('speed insights') && msgStr.includes('development') ||
+                         msgStr.includes('main-app.js') && msgStr.includes('react devtools') ||
+                         msgStr.includes('assets/css/') && msgStr.includes('net::err_file_not_found') ||
+                         msgStr.includes('understand this error') ||
+                         msgStr.startsWith('[vercel speed insights]') ||
+                         // Comprehensive browser extension file patterns
+                         /^[a-z-]+\.(html|js|css):\d+/.test(msgStr) && (msgStr.includes('extension') || msgStr.includes('chunk') || msgStr.includes('net::err'));
                 };
                 
                 console.error = function(...args) {

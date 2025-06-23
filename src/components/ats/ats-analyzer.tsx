@@ -75,10 +75,25 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
   const [showFileUpload, setShowFileUpload] = useState(false)
 
   const industryOptions = [
-    { value: 'technology', label: '💻 Technology', description: 'Software, IT, Engineering' },
-    { value: 'finance', label: '💰 Finance', description: 'Banking, Accounting, Insurance' },
-    { value: 'healthcare', label: '🏥 Healthcare', description: 'Medical, Nursing, Pharmacy' },
-    { value: 'general', label: '📋 General', description: 'All industries' }
+    { value: 'technology', label: '💻 Technology', description: 'Software, IT, Engineering, DevOps' },
+    { value: 'finance', label: '💰 Finance', description: 'Banking, Accounting, Insurance, FinTech' },
+    { value: 'healthcare', label: '🏥 Healthcare', description: 'Medical, Nursing, Pharmacy, MedTech' },
+    { value: 'marketing', label: '📢 Marketing', description: 'Digital Marketing, PR, Content, SEO' },
+    { value: 'sales', label: '🎯 Sales', description: 'Business Development, Account Management' },
+    { value: 'hr', label: '👥 Human Resources', description: 'Recruitment, Training, Talent Management' },
+    { value: 'legal', label: '⚖️ Legal', description: 'Law, Compliance, Legal Affairs' },
+    { value: 'consulting', label: '💼 Consulting', description: 'Management, Strategy, Business Analysis' },
+    { value: 'education', label: '🎓 Education', description: 'Teaching, Training, Academic Research' },
+    { value: 'engineering', label: '🔧 Engineering', description: 'Mechanical, Civil, Chemical, Industrial' },
+    { value: 'manufacturing', label: '🏭 Manufacturing', description: 'Production, Quality, Supply Chain' },
+    { value: 'retail', label: '🛍️ Retail', description: 'Store Management, Customer Service, E-commerce' },
+    { value: 'hospitality', label: '🏨 Hospitality', description: 'Hotels, Tourism, Food Service' },
+    { value: 'logistics', label: '🚚 Logistics', description: 'Supply Chain, Transportation, Warehousing' },
+    { value: 'media', label: '📺 Media', description: 'Journalism, Broadcasting, Content Creation' },
+    { value: 'research', label: '🔬 Research', description: 'R&D, Scientific Research, Data Analysis' },
+    { value: 'nonprofit', label: '🤝 Non-Profit', description: 'Charity, NGO, Social Services' },
+    { value: 'government', label: '🏛️ Government', description: 'Public Service, Administration, Policy' },
+    { value: 'general', label: '📋 General', description: 'All industries / Not specified' }
   ]
 
   const analyzeATS = useCallback(async () => {

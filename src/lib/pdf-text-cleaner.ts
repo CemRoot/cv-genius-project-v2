@@ -36,11 +36,37 @@ export function cleanPDFText(text: string): string {
     .replace(/\u200D/g, '') // Zero-width joiner
     .replace(/\uFEFF/g, '') // Zero-width no-break space
     
-    // Fix broken words from PDF extraction
+    // Fix specific broken words first (most important)
+    .replace(/\b(Arti)\s+(fi)\s+(cial)\b/gi, 'Artificial')
+    .replace(/\b(Intel)\s+(li)\s+(gence)\b/gi, 'Intelligence')
+    .replace(/\b(signifi)\s+(cant)\b/gi, 'significant')
+    .replace(/\b(proffi)\s+(cient)\b/gi, 'proficient')
+    .replace(/\b(profi)\s+(cient)\b/gi, 'proficient')
+    .replace(/\b(effi)\s+(cient)\b/gi, 'efficient')
+    .replace(/\b(speci)\s+(fi)\s+(c)\b/gi, 'specific')
+    .replace(/\b(scientifi)\s+(c)\b/gi, 'scientific')
+    
+    // Fix broken words from PDF extraction - ligature patterns
+    .replace(/(\w+)\s+(fi)\s+(\w+)/g, (match, p1, p2, p3) => {
+      // Common ligature breaks in technical terms
+      const combined = p1 + p2 + p3
+      const technicalWords = [
+        'artificial', 'scientific', 'specific', 'proficient', 
+        'efficient', 'certificate', 'classification', 'configuration',
+        'notification', 'verification', 'identification', 'qualification'
+      ]
+      
+      if (technicalWords.some(word => word.toLowerCase() === combined.toLowerCase())) {
+        return combined
+      }
+      return match
+    })
+    
+    // Generic broken word pattern
     .replace(/(\w+)\s+([a-z]{1,2})\s+(\w+)/g, (match, p1, p2, p3) => {
       // Common PDF extraction patterns where words are broken
       const patterns = [
-        'fi', 'fl', 'ff', 'ffi', 'ffl', 'st', 'th', 'ti', 'tt'
+        'fi', 'fl', 'ff', 'ffi', 'ffl', 'st', 'th', 'ti', 'tt', 'li', 'ct', 'nt'
       ]
       
       if (patterns.includes(p2.toLowerCase())) {

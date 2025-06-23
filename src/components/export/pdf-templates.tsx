@@ -480,7 +480,7 @@ export function CreativeTemplate({ data }: { data: CVData }) {
 
 // Harvard Template - matching the main template exactly
 export function HarvardTemplate({ data }: { data: CVData }) {
-  // Force refresh - ultra-tight spacing v2
+  // Force refresh - ultra-tight spacing v3 + ligature fix
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
   try {
     registerPDFFonts()
@@ -538,7 +538,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
   return (
     <Document>
       <Page size="A4" style={{
-        fontFamily: getFontFamilyForPDF(settings.fontFamily),
+        fontFamily: 'Helvetica', // Always use Helvetica for better text rendering
         fontSize: settings.fontSize,
         lineHeight: 1.0, // Global lineHeight for PDF - ultra-tight spacing
         padding: `${settings.margins * 72}pt`, // Convert inches to points
@@ -573,27 +573,32 @@ export function HarvardTemplate({ data }: { data: CVData }) {
           <View style={{
             fontSize: 8,         // Keep at 8
             textAlign: 'center',
-            marginBottom: 1,     // 2 -> 1 (less space)
-            lineHeight: 1.0      // Tighter line height
+            marginBottom: 2,     // A bit more space for better separation
+            lineHeight: 1.2      // Slightly more readable
           }}>
-            <Text>
+            {/* First line: Phone, Email */}
+            <Text style={{ marginBottom: 1 }}>
               {personal.phone && formatIrishPhone(personal.phone)}
               {personal.phone && personal.email && ' • '}
               {personal.email}
-              {personal.email && personal.linkedin && ' • '}
-              {personal.linkedin && personal.linkedin.replace('https://www.linkedin.com/in/', 'linkedin.com/in/')}
-              {personal.linkedin && personal.website && ' • '}
-              {personal.website && personal.website.replace('https://', '')}
+            </Text>
+            
+            {/* Second line: LinkedIn, Website */}
+            {(personal.linkedin || personal.website) && (
+              <Text style={{ marginBottom: 1 }}>
+                {personal.linkedin && personal.linkedin.replace('https://www.linkedin.com/in/', 'https://www.linkedin.com/in/')}
+                {personal.linkedin && personal.website && ' • '}
+                {personal.website && personal.website.replace('https://', '')}
+              </Text>
+            )}
+            
+            {/* Third line: Address, Status */}
+            <Text>
+              {personal.address}
+              {personal.address && (personal.nationality || "STAMP2 | Master Student") && ' • '}
+              {personal.nationality || "STAMP2 | Master Student"}
             </Text>
           </View>
-          
-          <Text style={{
-            fontSize: 8,         // Keep at 8
-            textAlign: 'center',
-            lineHeight: 1.0      // Tighter line height
-          }}>
-            • {personal.address} • {personal.nationality || "STAMP2 | Master Student"}
-          </Text>
         </View>
 
         {/* Professional Summary */}
@@ -609,8 +614,9 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             }}>Summary</Text>
             <Text style={{
               fontSize: settings.fontSize,
-              lineHeight: 1.0,  // 1.1 -> 1.0 (tighter line height)
-              letterSpacing: 0  // Normal word spacing
+              lineHeight: 1.2,  // 1.0 -> 1.2 (more readable)
+              textAlign: 'justify', // Better text flow
+              fontFamily: 'Helvetica'
             }}>{personal.summary}</Text>
           </View>
         )}
@@ -644,7 +650,9 @@ export function HarvardTemplate({ data }: { data: CVData }) {
                   <Text style={{
                     marginBottom: 4,  // 8 -> 4 (less space)
                     fontSize: settings.fontSize,
-                    lineHeight: 1.0   // 1.2 -> 1.0 (tighter)
+                    lineHeight: 1.2,   // 1.0 -> 1.2 (more readable)
+                    textAlign: 'justify',
+                    fontFamily: 'Helvetica'
                   }}>{exp.description}</Text>
                 )}
                 
@@ -654,7 +662,8 @@ export function HarvardTemplate({ data }: { data: CVData }) {
                       <Text key={idx} style={{
                         marginBottom: 1,  // 3 -> 1 (less space)
                         fontSize: settings.fontSize,
-                        lineHeight: 1.0   // 1.2 -> 1.0 (tighter)
+                        lineHeight: 1.2,   // 1.0 -> 1.2 (more readable)
+                        fontFamily: 'Helvetica'
                       }}>• {achievement}</Text>
                     ))}
                   </View>
@@ -692,7 +701,9 @@ export function HarvardTemplate({ data }: { data: CVData }) {
                   <Text style={{
                     marginTop: 2,        // 4 -> 2 (less space)
                     fontSize: settings.fontSize,
-                    lineHeight: 1.0      // 1.2 -> 1.0 (tighter)
+                    lineHeight: 1.2,      // 1.0 -> 1.2 (more readable)
+                    textAlign: 'justify',
+                    fontFamily: 'Helvetica'
                   }}>{edu.description}</Text>
                 )}
               </View>
@@ -710,11 +721,12 @@ export function HarvardTemplate({ data }: { data: CVData }) {
               marginBottom: 2    // Even less space
             }}>SKILLS</Text>
             <View style={{ lineHeight: 1.0 }}>
-              {['Technical', 'Software', 'Soft', 'Other'].map((category) => {
+              {/* Get unique categories from actual skills data */}
+              {Array.from(new Set(skills.map(skill => skill.category))).map((category) => {
                 const categorySkills = skills.filter(skill => skill.category === category)
                 if (categorySkills.length === 0) return null
                 
-                // Take only top 5-6 skills per category for compact display
+                // Take only top 6 skills per category for compact display
                 const topSkills = categorySkills.slice(0, 6)
                 const skillNames = topSkills.map(skill => skill.name).join(' • ')
                 

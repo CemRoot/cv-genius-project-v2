@@ -25,6 +25,34 @@ interface MobileCVUploadProps {
   className?: string
 }
 
+// Clean PDF extraction issues - specific ligature fixes for ATS compatibility
+function cleanPDFExtractionIssues(text: string): string {
+  if (!text) return ''
+  
+  return text
+    // Fix specific broken words first (most important)
+    .replace(/\b(Arti)\s+(fi)\s+(cial)\b/gi, 'Artificial')
+    .replace(/\b(Intel)\s+(li)\s+(gence)\b/gi, 'Intelligence')  
+    .replace(/\b(signifi)\s+(cant)\b/gi, 'significant')
+    .replace(/\b(proffi)\s+(cient)\b/gi, 'proficient')
+    .replace(/\b(profi)\s+(cient)\b/gi, 'proficient')
+    .replace(/\b(effi)\s+(cient)\b/gi, 'efficient')
+    .replace(/\b(speci)\s+(fi)\s+(c)\b/gi, 'specific')
+    .replace(/\b(scientifi)\s+(c)\b/gi, 'scientific')
+    .replace(/\b(techno)\s+(lo)\s+(gy)\b/gi, 'technology')
+    .replace(/\b(mana)\s+(ge)\s+(ment)\b/gi, 'management')
+    // Fix common word breaks
+    .replace(/(\w+)\s+(fi)\s+(\w+)/g, (match, p1, p2, p3) => {
+      const combined = p1 + p2 + p3
+      // Technical terms that commonly break
+      if (['artificial', 'scientific', 'specific', 'professional', 'qualification'].includes(combined.toLowerCase())) {
+        return combined
+      }
+      return match
+    })
+    .trim()
+}
+
 export function MobileCVUpload({ onTextExtracted, onError, className = '' }: MobileCVUploadProps) {
   const [extracting, setExtracting] = useState(false)
   const [previewText, setPreviewText] = useState<string | null>(null)
@@ -126,8 +154,10 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
       const extractedText = await pdfToText(file)
       
       if (extractedText && extractedText.trim().length > 50) {
-        const wordCount = extractedText.trim().split(/\s+/).length
-        return `✅ PDF "${file.name}" processed successfully!\n📊 ${wordCount} words extracted\n\n${extractedText}`
+        // Clean ligature and text extraction issues
+        const cleanedText = cleanPDFExtractionIssues(extractedText)
+        const wordCount = cleanedText.trim().split(/\s+/).length
+        return `✅ PDF "${file.name}" processed successfully!\n📊 ${wordCount} words extracted\n\n${cleanedText}`
       } else {
         throw new Error('Insufficient text extracted from PDF')
       }
@@ -154,10 +184,11 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
         }
         
         const extractedText = result.text || ''
-        const wordCount = result.wordCount || 0
+        const cleanedText = cleanPDFExtractionIssues(extractedText)
+        const wordCount = cleanedText.trim().split(/\s+/).length
         const pages = result.pages || 1
         
-        return `✅ PDF "${file.name}" processed successfully!\n📊 ${pages} pages, ${wordCount} words\n\n${extractedText}`
+        return `✅ PDF "${file.name}" processed successfully!\n📊 ${pages} pages, ${wordCount} words\n\n${cleanedText}`
         
       } catch (apiError) {
         console.error('API PDF extraction also failed:', apiError)

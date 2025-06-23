@@ -64,9 +64,13 @@ export function cleanPdfText(text: string): string {
     .replace(/\bparticipatein\b/gi, 'participate in')
     .replace(/\bprojectsthathavea\b/gi, 'projects that have a')
     .replace(/\bimpactonthefield\b/gi, 'impact on the field')
-    // Fix broken words with specific patterns
+    // Fix broken words with specific patterns - ligature issues
+    .replace(/\b(Arti)\s+(fi)\s+(cial)\b/gi, 'Artificial')
     .replace(/\b(Arti)\s+(fical)\b/gi, 'Artificial')
-    .replace(/\b(Intel)\s+(ligence)\b/gi, 'Intelligence') 
+    .replace(/\b(Artifi)\s+(cial)\b/gi, 'Artificial')
+    .replace(/\b(Intel)\s+(li)\s+(gence)\b/gi, 'Intelligence')
+    .replace(/\b(Intel)\s+(ligence)\b/gi, 'Intelligence')
+    .replace(/\b(Intelli)\s+(gence)\b/gi, 'Intelligence') 
     .replace(/\b(signifi)\s+(cant)\b/gi, 'significant')
     .replace(/\b(Mana)\s+(gement)\b/gi, 'Management')
     .replace(/\b(Deve)\s+(lopment)\b/gi, 'Development')

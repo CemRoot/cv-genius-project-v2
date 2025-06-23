@@ -1,4 +1,4 @@
-// Cover Letter Template Manager - CVGenius için geliştirilmiş template sistemi
+// Cover Letter Template Manager - Advanced template system for CVGenius
 
 export interface TemplateColors {
   primary: string;
