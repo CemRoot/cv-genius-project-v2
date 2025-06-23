@@ -40,47 +40,47 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
     headerSpacing: 'normal',
     fontFamily: 'Times New Roman',
     fontSize: 10,
-    lineHeight: 1.2
+    lineHeight: 1.0  // 1.2 -> 1.0 for tighter spacing
   }
 
   const settings = designSettings || defaultSettings
 
-  // Convert spacing to CSS classes
+  // Convert spacing to CSS classes - Reduced line spacing
   const spacingClasses = {
-    tight: 'space-y-2',
-    normal: 'space-y-4', 
-    relaxed: 'space-y-6',
-    spacious: 'space-y-8'
+    tight: 'space-y-1',      // 2 -> 1
+    normal: 'space-y-2',     // 4 -> 2  
+    relaxed: 'space-y-3',    // 6 -> 3
+    spacious: 'space-y-4'    // 8 -> 4
   }
 
   const itemSpacingClasses = {
-    tight: 'space-y-1',
-    normal: 'space-y-3',
-    relaxed: 'space-y-4',
-    spacious: 'space-y-6'
+    tight: 'space-y-0.5',    // 1 -> 0.5
+    normal: 'space-y-1.5',   // 3 -> 1.5
+    relaxed: 'space-y-2',    // 4 -> 2
+    spacious: 'space-y-3'    // 6 -> 3
   }
 
   const headerSpacingClasses = {
-    compact: 'mb-8', // Header ile content arası aynı kalır
-    normal: 'mb-8',
-    generous: 'mb-8'
+    compact: 'mb-4',  // 8 -> 4
+    normal: 'mb-6',   // 8 -> 6
+    generous: 'mb-8'  // 8 -> 8 (unchanged)
   }
 
   const headerInternalSpacingClasses = {
     compact: {
-      nameToTitle: 'mb-1',
-      titleToContact: 'mb-2',
-      contactInternal: 'space-y-1'
+      nameToTitle: 'mb-0.5',      // 1 -> 0.5
+      titleToContact: 'mb-1',     // 2 -> 1
+      contactInternal: 'space-y-0.5'  // 1 -> 0.5
     },
     normal: {
-      nameToTitle: 'mb-3',
-      titleToContact: 'mb-4',
-      contactInternal: 'space-y-2'
+      nameToTitle: 'mb-1.5',      // 3 -> 1.5
+      titleToContact: 'mb-2',     // 4 -> 2
+      contactInternal: 'space-y-1'  // 2 -> 1
     },
     generous: {
-      nameToTitle: 'mb-4',
-      titleToContact: 'mb-6', 
-      contactInternal: 'space-y-3'
+      nameToTitle: 'mb-2',        // 4 -> 2
+      titleToContact: 'mb-3',     // 6 -> 3
+      contactInternal: 'space-y-1.5'  // 3 -> 1.5
     }
   }
 
@@ -139,7 +139,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Professional Summary */}
         {personal.summary && isSectionVisible('summary') && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-xl'} font-bold mb-4 text-center border-b border-gray-400 pb-2`}>Summary</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-xl'} font-bold mb-2 text-center border-b border-gray-400 pb-1`}>Summary</h2>
             <p className="text-justify leading-relaxed">{personal.summary}</p>
           </div>
         )}
@@ -147,7 +147,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Experience */}
         {experience.length > 0 && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>PROFESSIONAL EXPERIENCE</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>PROFESSIONAL EXPERIENCE</h2>
             <div className={itemSpacing}>
             {experience.map((exp) => (
               <div key={exp.id}>
@@ -181,7 +181,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Education */}
         {education.length > 0 && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>EDUCATION</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>EDUCATION</h2>
             <div className={itemSpacing}>
               {education.map((edu) => (
                 <div key={edu.id}>
@@ -207,7 +207,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Skills */}
         {skills.length > 0 && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>SKILLS</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>SKILLS</h2>
             <div className="grid grid-cols-2 gap-4">
               {['Technical', 'Software', 'Soft', 'Other'].map((category) => {
                 const categorySkills = skills.filter(skill => skill.category === category)
@@ -234,7 +234,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Languages */}
         {languages && languages.length > 0 && isSectionVisible('languages') && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>LANGUAGES</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>LANGUAGES</h2>
             <div className="grid grid-cols-2 gap-4">
               {languages.map(language => (
                 <div key={language.id} className="flex justify-between items-center">
@@ -258,7 +258,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
           return hasProjects && isVisible
         })() && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>PROJECTS</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>PROJECTS</h2>
             <div className={itemSpacing}>
               {projects.map((project) => (
                 <div key={project.id}>
@@ -296,7 +296,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Certifications */}
         {certifications && certifications.length > 0 && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>CERTIFICATIONS</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>CERTIFICATIONS</h2>
             <div className={itemSpacing}>
               {certifications.map((cert) => (
                 <div key={cert.id}>
@@ -327,7 +327,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* Interests */}
         {interests && interests.length > 0 && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>INTERESTS</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>INTERESTS</h2>
             <div className="grid grid-cols-2 gap-2">
               {interests.map(interest => (
                 <div key={interest.id}>
@@ -348,7 +348,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
           return isReferencesVisible
         })() && (
           <div>
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-3 text-center`}>REFERENCES</h2>
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1.5 text-center`}>REFERENCES</h2>
             {references && references.length > 0 ? (
               <div className="space-y-2">
                 {references.map((reference) => (

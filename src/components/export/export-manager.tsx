@@ -93,9 +93,17 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   const generatePDF = async (): Promise<Blob> => {
     if (!currentCV) throw new Error('No CV data available')
     
-    const doc = <HarvardTemplate data={currentCV} />
-    const blob = await pdf(doc).toBlob()
-    return blob
+    try {
+      console.log('Starting PDF generation with CV data:', currentCV.id)
+      const doc = <HarvardTemplate data={currentCV} />
+      console.log('PDF document created, generating blob...')
+      const blob = await pdf(doc).toBlob()
+      console.log('PDF blob generated successfully, size:', blob.size)
+      return blob
+    } catch (error) {
+      console.error('PDF generation error:', error)
+      throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 
   const generateDOCX = async (): Promise<Blob> => {
@@ -256,7 +264,10 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   }
 
   const handleExport = async () => {
-    if (!currentCV) return
+    if (!currentCV) {
+      toast.error('No CV Data', 'Please create a CV first before exporting.')
+      return
+    }
     
     // Validate CV data before export
     if (!currentCV.personal.fullName || !currentCV.personal.email) {
@@ -267,6 +278,15 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       }
       return
     }
+
+    // Check if any format is selected
+    if (selectedFormats.length === 0) {
+      toast.warning('No Format Selected', 'Please select at least one export format.')
+      return
+    }
+    
+    console.log('Starting export with formats:', selectedFormats)
+    console.log('CV data:', { id: currentCV.id, name: currentCV.personal.fullName })
     
     toast.info('Export Started', 'Your CV is being generated, please wait...')
     
@@ -291,37 +311,49 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         switch (format) {
           case 'pdf':
             try {
+              console.log(`Starting ${format.toUpperCase()} generation...`)
               blob = await trackProgress(format, generatePDF)
               filename = `${name}.pdf`
+              console.log(`${format.toUpperCase()} generated successfully`)
             } catch (pdfError) {
+              console.error('PDF generation error:', pdfError)
               throw new Error(`PDF generation failed: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`)
             }
             break
           case 'docx':
             try {
+              console.log(`Starting ${format.toUpperCase()} generation...`)
               blob = await trackProgress(format, generateDOCX)
               filename = `${name}.docx`
+              console.log(`${format.toUpperCase()} generated successfully`)
             } catch (docxError) {
+              console.error('DOCX generation error:', docxError)
               throw new Error(`DOCX generation failed: ${docxError instanceof Error ? docxError.message : 'Network error'}`)
             }
             break
           case 'txt':
             try {
+              console.log(`Starting ${format.toUpperCase()} generation...`)
               blob = await trackProgress(format, generateTXT)
               filename = `${name}.txt`
+              console.log(`${format.toUpperCase()} generated successfully`)
             } catch (txtError) {
+              console.error('TXT generation error:', txtError)
               throw new Error(`TXT generation failed: ${txtError instanceof Error ? txtError.message : 'Unknown error'}`)
             }
             break
           default:
             throw new Error(`Unsupported format: ${format}`)
         }
+        console.log(`Downloading ${format} file:`, { filename, size: blob.size })
         downloadFile(blob, filename, format)
         successCount++
         
         setExportProgress(prev => 
           prev.map(p => p.format === format ? { ...p, status: 'complete' } : p)
         )
+        
+        console.log(`${format.toUpperCase()} export completed successfully`)
       } catch (error) {
         failureCount++
         const errorMessage = error instanceof Error ? error.message : 'Export failed'

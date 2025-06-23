@@ -24,7 +24,7 @@ const defaultSettings: DesignSettings = {
   headerSpacing: 'normal',
   fontFamily: 'Times New Roman',
   fontSize: 10,
-  lineHeight: 1.2
+  lineHeight: 1.0  // 1.2 -> 1.0 for tighter spacing
 }
 
 export function DesignControls() {
@@ -64,7 +64,7 @@ export function DesignControls() {
     'Times New Roman', 'Arial', 'Calibri'
   ]
   const fontSizeOptions = [10, 11, 12, 13]
-  const lineHeightOptions = [1, 1.15, 1.3, 1.5]
+  const lineHeightOptions = [0.9, 1, 1.15, 1.3]  // Reduced line height options
 
   return (
     <Card className="w-full">
