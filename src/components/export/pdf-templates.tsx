@@ -481,9 +481,29 @@ export function CreativeTemplate({ data }: { data: CVData }) {
 // Harvard Template - matching the main template exactly
 export function HarvardTemplate({ data }: { data: CVData }) {
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
-  registerPDFFonts()
+  try {
+    registerPDFFonts()
+  } catch (error) {
+    console.warn('Font registration failed, using system fonts:', error)
+  }
   
-  const { personal, experience, education, skills, languages, projects, certifications, interests, sections, designSettings } = data
+  if (!data) {
+    console.error('HarvardTemplate: No data provided')
+    throw new Error('CV data is required for PDF generation')
+  }
+  
+  const { 
+    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    experience = [], 
+    education = [], 
+    skills = [], 
+    languages = [], 
+    projects = [], 
+    certifications = [], 
+    interests = [], 
+    sections = [],
+    designSettings 
+  } = data
   
   // Default design settings matching Harvard template
   const defaultSettings = {
@@ -492,23 +512,23 @@ export function HarvardTemplate({ data }: { data: CVData }) {
     headerSpacing: 'normal',
     fontFamily: 'Times New Roman',
     fontSize: 10,
-    lineHeight: 1.2
+    lineHeight: 1.0  // 1.2 -> 1.0 for tighter spacing
   }
   
   const settings = designSettings || defaultSettings
   
-  // Convert spacing settings to points (PDF unit)
+  // Convert spacing settings to points (PDF unit) - Reduced spacing
   const spacingMap = {
-    tight: 12,
-    normal: 20,
-    relaxed: 28,
-    spacious: 36
+    tight: 8,      // 12 -> 8
+    normal: 12,    // 20 -> 12
+    relaxed: 16,   // 28 -> 16
+    spacious: 20   // 36 -> 20
   }
   
   const headerSpacingMap = {
-    compact: 30,
-    normal: 40,
-    generous: 50
+    compact: 20,   // 30 -> 20
+    normal: 25,    // 40 -> 25
+    generous: 35   // 50 -> 35
   }
   
   const sectionSpacing = spacingMap[settings.sectionSpacing as keyof typeof spacingMap] || spacingMap.normal
@@ -519,7 +539,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
       <Page size="A4" style={{
         fontFamily: getFontFamilyForPDF(settings.fontFamily),
         fontSize: settings.fontSize,
-        lineHeight: 1.1, // Global lineHeight for PDF - balanced spacing
+        lineHeight: 1.0, // Global lineHeight for PDF - tighter spacing
         padding: `${settings.margins * 72}pt`, // Convert inches to points
         backgroundColor: '#ffffff'
       }}>
@@ -529,28 +549,31 @@ export function HarvardTemplate({ data }: { data: CVData }) {
           marginBottom: headerSpacing
         }}>
           <Text style={{
-            fontSize: 24,
+            fontSize: 22,    // 24 -> 22 (daha kompakt)
             fontWeight: 'bold',
             textTransform: 'uppercase',
-            letterSpacing: 2,
-            marginBottom: 12
+            letterSpacing: 1.5,  // 2 -> 1.5 (daha sıkı)
+            marginBottom: 3,     // 6 -> 3 (daha az boşluk)
+            lineHeight: 1.1     // Satır yüksekliği kontrolü
           }}>
             {personal.fullName || "Your Name"}
           </Text>
           
           <Text style={{
-            fontSize: 16,
+            fontSize: 14,        // 16 -> 14 (daha küçük)
             fontWeight: 'normal',
             color: '#666666',
-            marginBottom: 16
+            marginBottom: 4,     // 8 -> 4 (daha az boşluk)
+            lineHeight: 1.2     // Satır yüksekliği kontrolü
           }}>
             {personal.title || "Python Developer"}
           </Text>
           
           <View style={{
-            fontSize: 9,
+            fontSize: 8,         // 9 -> 8 (daha küçük)
             textAlign: 'center',
-            marginBottom: 8
+            marginBottom: 2,     // 4 -> 2 (daha az boşluk)
+            lineHeight: 1.1     // Satır yüksekliği kontrolü
           }}>
             <Text>
               {personal.phone && formatIrishPhone(personal.phone)}
@@ -564,27 +587,28 @@ export function HarvardTemplate({ data }: { data: CVData }) {
           </View>
           
           <Text style={{
-            fontSize: 9,
-            textAlign: 'center'
+            fontSize: 8,         // 9 -> 8 (daha küçük)
+            textAlign: 'center',
+            lineHeight: 1.1     // Satır yüksekliği kontrolü
           }}>
             • {personal.address} • {personal.nationality || "STAMP2 | Master Student"}
           </Text>
         </View>
 
         {/* Professional Summary */}
-        {personal.summary && isSectionVisible(sections, 'summary') && (
+        {personal.summary && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 14,
+              fontSize: 12,      // 14 -> 12 (daha küçük başlık)
               fontWeight: 'bold',
               textAlign: 'center',
               borderBottom: '1pt solid #9ca3af',
-              paddingBottom: 8,
-              marginBottom: 16
+              paddingBottom: 2,  // 4 -> 2 (daha az padding)
+              marginBottom: 4    // 8 -> 4 (daha az margin)
             }}>Summary</Text>
             <Text style={{
               fontSize: settings.fontSize,
-              lineHeight: 1.2,  // Normal satır aralığı
+              lineHeight: 1.1,  // 1.2 -> 1.1 (daha sıkı satır aralığı)
               letterSpacing: 0  // Kelimeler arası boşluk normal
             }}>{personal.summary}</Text>
           </View>
@@ -597,7 +621,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
               fontSize: 12,
               fontWeight: 'bold',
               textAlign: 'center',
-              marginBottom: 12
+              marginBottom: 6  // 12 -> 6
             }}>PROFESSIONAL EXPERIENCE</Text>
             {experience.map((exp, index) => (
               <View key={index} style={{ marginBottom: 24 }}>

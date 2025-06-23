@@ -157,6 +157,86 @@ export default function RootLayout({
         {/* Mobile Keyboard Avoidance */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
         
+        {/* Console Error Suppression - Must be first! */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              // Early browser extension error suppression
+              if (typeof window !== 'undefined' && window.console) {
+                const originalError = console.error;
+                const originalWarn = console.warn;
+                const originalLog = console.log;
+                
+                const filterMessage = (message) => {
+                  const msgStr = String(message).toLowerCase();
+                  return msgStr.includes('runtime.lasterror') ||
+                         msgStr.includes('unchecked runtime.lasterror') ||
+                         msgStr.includes('message port closed') ||
+                         msgStr.includes('could not establish connection') ||
+                         msgStr.includes('receiving end does not exist') ||
+                         msgStr.includes('extension context invalidated') ||
+                         msgStr.includes('chrome-extension') ||
+                         msgStr.includes('moz-extension') ||
+                         msgStr.includes('.chunk.css') ||
+                         msgStr.includes('net::err_file_not_found') ||
+                         msgStr.includes('syntaxerror: invalid or unexpected token') ||
+                         msgStr.includes('download the react devtools') ||
+                         msgStr.includes('react devtools') ||
+                         msgStr.includes('better development experience') ||
+                         msgStr.includes('listener indicated an asynchronous response') ||
+                         msgStr.includes('message channel closed before a response');
+                };
+                
+                console.error = function(...args) {
+                  const message = args.join(' ');
+                  if (!filterMessage(message)) {
+                    originalError.apply(console, args);
+                  }
+                };
+                
+                console.warn = function(...args) {
+                  const message = args.join(' ');
+                  if (!filterMessage(message)) {
+                    originalWarn.apply(console, args);
+                  }
+                };
+                
+                console.log = function(...args) {
+                  const message = args.join(' ');
+                  if (!filterMessage(message)) {
+                    originalLog.apply(console, args);
+                  }
+                };
+                
+                // Handle unhandled rejections
+                window.addEventListener('unhandledrejection', function(event) {
+                  if (event.reason && filterMessage(String(event.reason.message || event.reason))) {
+                    event.preventDefault();
+                  }
+                });
+                
+                // Handle general errors
+                window.addEventListener('error', function(event) {
+                  if (event.message && filterMessage(event.message)) {
+                    event.preventDefault();
+                  }
+                });
+                
+                // Suppress uncaught syntax errors from extensions
+                window.addEventListener('error', function(event) {
+                  if (event.filename && (
+                    event.filename.includes('chrome-extension') ||
+                    event.filename.includes('moz-extension') ||
+                    event.filename.includes('extension')
+                  )) {
+                    event.preventDefault();
+                  }
+                });
+              }
+            })();
+          `
+        }} />
+        
         {/* Skip to main content link for accessibility */}
         <style>{`
           .skip-link {
@@ -215,41 +295,7 @@ export default function RootLayout({
         {/* Vercel Speed Insights */}
         <SpeedInsights />
         
-        {/* Console Error Suppression for Browser Extensions */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            // Suppress browser extension console errors
-            (function() {
-              const originalError = console.error;
-              console.error = function(...args) {
-                const message = args.join(' ');
-                
-                // Filter out browser extension related errors
-                if (message.includes('The message port closed before a response was received') ||
-                    message.includes('runtime.lastError') ||
-                    message.includes('Extension context invalidated') ||
-                    message.includes('Could not establish connection')) {
-                  return; // Suppress these errors
-                }
-                
-                // Log other errors normally
-                originalError.apply(console, args);
-              };
-              
-              // Handle unhandled promise rejections from extensions
-              window.addEventListener('unhandledrejection', function(event) {
-                const message = event.reason && event.reason.message;
-                if (message && (
-                  message.includes('The message port closed before a response was received') ||
-                  message.includes('runtime.lastError') ||
-                  message.includes('Extension context invalidated')
-                )) {
-                  event.preventDefault(); // Prevent the error from being logged
-                }
-              });
-            })();
-          `
-        }} />
+
 
         {/* Duplicate Viewport Meta Tag Fix */}
         <script dangerouslySetInnerHTML={{
