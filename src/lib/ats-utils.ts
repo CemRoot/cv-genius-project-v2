@@ -359,22 +359,112 @@ export const ENTERPRISE_ATS_STANDARDS = {
   // Industry-Specific Requirements
   industryRequirements: {
     technology: {
-      criticalKeywords: ['agile', 'scrum', 'git', 'api', 'cloud', 'devops'],
+      criticalKeywords: ['agile', 'scrum', 'git', 'api', 'cloud', 'devops', 'javascript', 'python', 'react', 'docker', 'kubernetes', 'ci/cd', 'microservices', 'testing', 'automation', 'frontend', 'backend', 'full-stack'],
       minExperience: 2,
       preferredFormats: ['pdf', 'docx'],
       scoringWeights: { technical: 0.4, experience: 0.3, education: 0.2, soft: 0.1 }
     },
     finance: {
-      criticalKeywords: ['regulatory', 'compliance', 'risk', 'audit', 'reporting'],
+      criticalKeywords: ['regulatory', 'compliance', 'risk', 'audit', 'reporting', 'financial analysis', 'accounting', 'banking', 'investment', 'portfolio', 'basel', 'ifrs', 'gaap', 'tax', 'budgeting', 'forecasting', 'excel', 'sql'],
       minExperience: 3,
       preferredFormats: ['pdf'],
       scoringWeights: { experience: 0.4, technical: 0.2, education: 0.3, soft: 0.1 }
     },
     healthcare: {
-      criticalKeywords: ['patient', 'clinical', 'healthcare', 'medical', 'safety'],
+      criticalKeywords: ['patient', 'clinical', 'healthcare', 'medical', 'safety', 'diagnosis', 'treatment', 'nursing', 'pharmaceutical', 'research', 'gdpr', 'hipaa', 'medical devices', 'quality assurance', 'regulatory affairs'],
       minExperience: 1,
       preferredFormats: ['pdf', 'docx'],
       scoringWeights: { education: 0.4, experience: 0.3, technical: 0.2, soft: 0.1 }
+    },
+    marketing: {
+      criticalKeywords: ['digital marketing', 'seo', 'sem', 'social media', 'content marketing', 'analytics', 'google ads', 'facebook ads', 'email marketing', 'brand management', 'campaign', 'roi', 'conversion', 'lead generation', 'marketing automation'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.35, technical: 0.25, education: 0.2, soft: 0.2 }
+    },
+    sales: {
+      criticalKeywords: ['sales', 'business development', 'account management', 'lead generation', 'crm', 'salesforce', 'pipeline', 'revenue', 'quota', 'negotiation', 'relationship building', 'client acquisition', 'territory management', 'b2b', 'b2c'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.45, soft: 0.25, technical: 0.15, education: 0.15 }
+    },
+    hr: {
+      criticalKeywords: ['recruitment', 'talent acquisition', 'hr management', 'performance management', 'employee relations', 'compensation', 'benefits', 'training', 'development', 'hris', 'payroll', 'compliance', 'diversity', 'inclusion', 'onboarding'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.35, soft: 0.3, education: 0.2, technical: 0.15 }
+    },
+    legal: {
+      criticalKeywords: ['legal', 'law', 'compliance', 'contracts', 'litigation', 'corporate law', 'commercial law', 'regulatory', 'due diligence', 'intellectual property', 'data protection', 'gdpr', 'legal research', 'case management', 'legal writing'],
+      minExperience: 3,
+      preferredFormats: ['pdf'],
+      scoringWeights: { education: 0.4, experience: 0.35, soft: 0.15, technical: 0.1 }
+    },
+    consulting: {
+      criticalKeywords: ['consulting', 'strategy', 'business analysis', 'project management', 'change management', 'process improvement', 'stakeholder management', 'business case', 'requirements gathering', 'solution design', 'implementation', 'client facing'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.4, soft: 0.25, education: 0.2, technical: 0.15 }
+    },
+    education: {
+      criticalKeywords: ['teaching', 'curriculum', 'educational technology', 'assessment', 'learning outcomes', 'pedagogy', 'research', 'academic', 'student engagement', 'classroom management', 'educational psychology', 'e-learning', 'training design'],
+      minExperience: 1,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { education: 0.45, experience: 0.3, soft: 0.2, technical: 0.05 }
+    },
+    engineering: {
+      criticalKeywords: ['engineering', 'design', 'cad', 'autocad', 'solidworks', 'project management', 'quality control', 'manufacturing', 'testing', 'specifications', 'technical documentation', 'problem solving', 'process optimization', 'safety standards'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { technical: 0.4, experience: 0.35, education: 0.2, soft: 0.05 }
+    },
+    manufacturing: {
+      criticalKeywords: ['manufacturing', 'production', 'quality control', 'lean manufacturing', 'six sigma', 'supply chain', 'inventory management', 'process improvement', 'safety', 'automation', 'operations', 'efficiency', 'cost reduction'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.4, technical: 0.3, education: 0.2, soft: 0.1 }
+    },
+    retail: {
+      criticalKeywords: ['retail', 'customer service', 'sales', 'inventory management', 'merchandising', 'store operations', 'pos systems', 'e-commerce', 'customer experience', 'visual merchandising', 'product knowledge', 'team leadership'],
+      minExperience: 1,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.4, soft: 0.3, technical: 0.15, education: 0.15 }
+    },
+    hospitality: {
+      criticalKeywords: ['hospitality', 'customer service', 'hotel management', 'food service', 'guest relations', 'event management', 'tourism', 'restaurant operations', 'reservation systems', 'quality service', 'team management', 'multitasking'],
+      minExperience: 1,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.4, soft: 0.35, technical: 0.1, education: 0.15 }
+    },
+    logistics: {
+      criticalKeywords: ['logistics', 'supply chain', 'transportation', 'warehousing', 'inventory management', 'distribution', 'shipping', 'procurement', 'vendor management', 'cost optimization', 'tracking systems', 'delivery', 'freight'],
+      minExperience: 2,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.4, technical: 0.25, education: 0.2, soft: 0.15 }
+    },
+    media: {
+      criticalKeywords: ['journalism', 'content creation', 'broadcasting', 'media production', 'editing', 'storytelling', 'digital media', 'social media', 'photography', 'video production', 'writing', 'communication', 'creative', 'multimedia'],
+      minExperience: 1,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.35, soft: 0.3, technical: 0.2, education: 0.15 }
+    },
+    research: {
+      criticalKeywords: ['research', 'data analysis', 'statistics', 'methodology', 'academic research', 'scientific research', 'publications', 'grant writing', 'data collection', 'analysis software', 'spss', 'r', 'python', 'peer review'],
+      minExperience: 1,
+      preferredFormats: ['pdf'],
+      scoringWeights: { education: 0.4, technical: 0.3, experience: 0.25, soft: 0.05 }
+    },
+    nonprofit: {
+      criticalKeywords: ['nonprofit', 'ngo', 'charity', 'fundraising', 'grant writing', 'volunteer management', 'community outreach', 'social services', 'program management', 'advocacy', 'social impact', 'stakeholder engagement'],
+      minExperience: 1,
+      preferredFormats: ['pdf', 'docx'],
+      scoringWeights: { experience: 0.35, soft: 0.3, education: 0.2, technical: 0.15 }
+    },
+    government: {
+      criticalKeywords: ['public service', 'government', 'policy', 'administration', 'public administration', 'regulatory', 'compliance', 'stakeholder management', 'project management', 'public sector', 'civil service', 'government relations'],
+      minExperience: 2,
+      preferredFormats: ['pdf'],
+      scoringWeights: { experience: 0.4, education: 0.3, soft: 0.2, technical: 0.1 }
     }
   }
 }

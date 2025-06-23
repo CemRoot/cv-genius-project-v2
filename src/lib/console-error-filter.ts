@@ -25,6 +25,7 @@ class ConsoleErrorFilterImpl implements ConsoleErrorFilter {
     this.filters = [
       /The message port closed before a response was received/,
       /runtime\.lastError/,
+      /Unchecked runtime\.lastError/,
       /Extension context invalidated/,
       /Could not establish connection/,
       /chrome-extension:\/\//,
@@ -39,12 +40,30 @@ class ConsoleErrorFilterImpl implements ConsoleErrorFilter {
       /\.chunk\.css.*net::ERR_FILE_NOT_FOUND/,
       /assets\/css\/.*\.css.*net::ERR_FILE_NOT_FOUND/,
       /pop\.chunk\.css.*net::ERR_FILE_NOT_FOUND/,
+      /pop\.html.*net::ERR_FILE_NOT_FOUND/,
       /Extension.*disconnected/,
       /Script.*extension.*failed/,
       /Cannot access contents of url "chrome-extension/,
       /Cannot access contents of url "moz-extension/,
       /Manifest version 2 is deprecated/,
       /Service worker registration failed/,
+      /Download the React DevTools/,
+      /react\.dev\/link\/react-devtools/,
+      /better development experience/,
+      /React DevTools/,
+      /Vercel Speed Insights.*Debug mode/,
+      /Debug mode is enabled by default in development/,
+      /No requests will be sent to the server/,
+      /\[Vercel Speed Insights\]/,
+      /main-app\.js.*React DevTools/,
+      /injected\.js.*hide-notification/,
+      /background\.js.*message/,
+      /Caught error handling.*hide-notification/,
+      /understand this error/i,
+      // Generic browser extension file patterns
+      /^[a-z-]+\.(html|js|css):\d+.*extension/i,
+      /^[a-z-]+\.(html|js|css):\d+.*chunk/i,
+      /^[a-z-]+\.(html|js|css):\d+.*net::err/i,
     ];
   }
 

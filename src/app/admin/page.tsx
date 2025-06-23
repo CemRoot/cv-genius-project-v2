@@ -32,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Eye, EyeOff, Save, TestTube, Settings, FileText, BarChart3, Lock, Shield, LogOut, Smartphone, QrCode } from 'lucide-react'
+import { Eye, EyeOff, Save, TestTube, Settings, FileText, BarChart3, Lock, Shield, LogOut, Smartphone, QrCode, Wand2 } from 'lucide-react'
 import { ClientAdminAuth } from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { Switch } from '@/components/ui/switch'
@@ -648,10 +648,14 @@ Focus on information relevant for Irish job applications.`,
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="w-4 h-4" />
               <span>AI Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="cv-builder" className="flex items-center space-x-2">
+              <Wand2 className="w-4 h-4" />
+              <span>CV Builder</span>
             </TabsTrigger>
             <TabsTrigger value="ads" className="flex items-center space-x-2">
               <span>💰</span>
@@ -831,6 +835,119 @@ Focus on information relevant for Irish job applications.`,
                   Save {activeAIContext} Settings
                 </Button>
               </div>
+            </Card>
+          </TabsContent>
+
+          {/* CV Builder Tab */}
+          <TabsContent value="cv-builder" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold flex items-center space-x-2">
+                    <Wand2 className="w-5 h-5" />
+                    <span>CV Builder AI Prompts</span>
+                  </h2>
+                  <p className="text-gray-600 mt-1">Manage text improvement and analysis prompts used in the CV builder</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open('/admin/cv-builder-prompts', '_blank')}
+                    className="flex items-center gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Manage Prompts</span>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Current Status Card */}
+                <Card className="p-4 border-blue-200 bg-blue-50">
+                  <h3 className="font-semibold text-blue-900 mb-2">Current Configuration</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Status:</span>
+                      <Badge className="bg-green-100 text-green-800">Active</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Prompt Types:</span>
+                      <span className="text-blue-900 font-medium">5 Categories</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Last Updated:</span>
+                      <span className="text-blue-900 font-medium">Admin Managed</span>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Features Card */}
+                <Card className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Available Features</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span>General text improvement</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span>Professional summary enhancement</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span>Work experience optimization</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span>Skills section formatting</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span>Education section polish</span>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Key Features */}
+              <Card className="p-4 mt-6">
+                <h3 className="font-semibold text-gray-900 mb-4">CV Builder AI Features</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-blue-600">Text Improvement</h4>
+                    <p className="text-sm text-gray-600">
+                      Advanced AI prompts for enhancing CV text while preserving original meaning and language. 
+                      Supports both Turkish and English content.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-green-600">Section-Specific</h4>
+                    <p className="text-sm text-gray-600">
+                      Specialized prompts for different CV sections: professional summary, experience, 
+                      skills, and education. Each optimized for its purpose.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-purple-600">ATS Compatible</h4>
+                    <p className="text-sm text-gray-600">
+                      Prompts designed to improve ATS (Applicant Tracking System) compatibility 
+                      while maintaining professional quality and readability.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Usage Tips */}
+              <Card className="p-4 bg-yellow-50 border-yellow-200">
+                <h3 className="font-medium text-yellow-800 mb-2">💡 Usage Tips</h3>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  <li>• Use lower temperature (0.1-0.3) for consistent text improvements</li>
+                  <li>• Each prompt type is optimized for specific CV sections</li>
+                  <li>• Language preservation ensures Turkish content stays Turkish</li>
+                  <li>• All prompts focus on grammar, clarity, and professionalism</li>
+                  <li>• Changes to prompts take effect immediately for new requests</li>
+                </ul>
+              </Card>
             </Card>
           </TabsContent>
 
@@ -1472,8 +1589,8 @@ function AdsManagementComponent() {
                       <div>
                         <h3 className="font-medium">{ad.name}</h3>
                         <p className="text-sm text-gray-500">
-                          Pozisyon: {ad.position || 'Genel'}
-                          {ad.settings?.size && ` • Boyut: ${ad.settings.size}`}
+                          Position: {ad.position || 'General'}
+                          {ad.settings?.size && ` • Size: ${ad.settings.size}`}
                         </p>
                       </div>
                       <Switch
@@ -1488,8 +1605,8 @@ function AdsManagementComponent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>📌 Sidebar Reklamları</CardTitle>
-                <CardDescription>Google AdSense yan panel reklamları</CardDescription>
+                <CardTitle>📌 Sidebar Ads</CardTitle>
+                <CardDescription>Google AdSense sidebar ads</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1517,8 +1634,8 @@ function AdsManagementComponent() {
         <TabsContent value="mobile" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>📱 Mobile Reklamları</CardTitle>
-              <CardDescription>Mobil cihazlara özel reklam yerleşimleri</CardDescription>
+              <CardTitle>📱 Mobile Ads</CardTitle>
+              <CardDescription>Mobile device specific ad placements</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -1527,11 +1644,11 @@ function AdsManagementComponent() {
                     <div>
                       <h3 className="font-medium">{ad.name}</h3>
                       <p className="text-sm text-gray-500">
-                        Pozisyon: {ad.settings?.mobilePosition} • 
-                        Boyut: {ad.settings?.width}x{ad.settings?.height}
+                        Position: {ad.settings?.mobilePosition} • 
+                        Size: {ad.settings?.width}x{ad.settings?.height}
                       </p>
                       <p className="text-xs text-cyan-600">
-                        PropellerAds - {ad.settings?.mobilePosition === 'floating' ? 'Kapanabilir' : 'Sticky'}
+                        PropellerAds - {ad.settings?.mobilePosition === 'floating' ? 'Dismissible' : 'Sticky'}
                       </p>
                     </div>
                     <Switch
@@ -1548,8 +1665,8 @@ function AdsManagementComponent() {
         <TabsContent value="popup" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>🚀 Popup & Push Reklamları</CardTitle>
-              <CardDescription>Monetag agresif reklamları - dikkatli kullanın!</CardDescription>
+              <CardTitle>🚀 Popup & Push Ads</CardTitle>
+              <CardDescription>Monetag aggressive ads - use with caution!</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -1559,13 +1676,13 @@ function AdsManagementComponent() {
                       <h3 className="font-medium">{ad.name}</h3>
                       <p className="text-sm text-gray-500">
                         Zone: {ad.zone} • 
-                        Cooldown: {ad.settings?.cooldown ? `${ad.settings.cooldown / 60000} dk` : 'Yok'}
+                        Cooldown: {ad.settings?.cooldown ? `${ad.settings.cooldown / 60000} min` : 'None'}
                       </p>
                       <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="destructive" className="text-xs">Agresif</Badge>
+                        <Badge variant="destructive" className="text-xs">Aggressive</Badge>
                         {ad.settings?.restrictedPages && (
                           <Badge variant="outline" className="text-xs">
-                            {ad.settings.restrictedPages.length} sayfa kısıtlı
+                            {ad.settings.restrictedPages.length} pages restricted
                           </Badge>
                         )}
                       </div>
@@ -1586,15 +1703,15 @@ function AdsManagementComponent() {
             <Card>
               <CardHeader>
                 <CardTitle>⚡ Download Monetization</CardTitle>
-                <CardDescription>PDF/DOCX indirme öncesi reklam yönlendirmesi</CardDescription>
+                <CardDescription>Ad redirect before PDF/DOCX download</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <h3 className="font-medium">İndirme Öncesi Reklam</h3>
+                      <h3 className="font-medium">Pre-Download Ad</h3>
                       <p className="text-sm text-gray-500">
-                        Export Manager entegrasyonu
+                        Export Manager integration
                       </p>
                       <p className="text-xs text-blue-600">First-time visitor tracking</p>
                     </div>
@@ -1607,7 +1724,7 @@ function AdsManagementComponent() {
             <Card>
               <CardHeader>
                 <CardTitle>🌐 Facebook Browser</CardTitle>
-                <CardDescription>In-app browser optimizasyonu</CardDescription>
+                <CardDescription>In-app browser optimization</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1615,7 +1732,7 @@ function AdsManagementComponent() {
                     <div>
                       <h3 className="font-medium">Facebook Browser Redirect</h3>
                       <p className="text-sm text-gray-500">
-                        External browser yönlendirmesi
+                        External browser redirect
                       </p>
                       <p className="text-xs text-green-600">Session-based dismiss</p>
                     </div>
@@ -1631,27 +1748,27 @@ function AdsManagementComponent() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>⚙️ Genel Ayarlar</CardTitle>
-                <CardDescription>Site geneli reklam ayarları</CardDescription>
+                <CardTitle>⚙️ General Settings</CardTitle>
+                <CardDescription>Site-wide ad settings</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 className="font-medium text-blue-900 mb-2">💡 Reklamsız Sayfalar</h3>
+                    <h3 className="font-medium text-blue-900 mb-2">💡 Ad-Free Pages</h3>
                     <div className="text-sm text-blue-700 space-y-1">
-                      <p>• /builder - CV oluşturma sayfası</p>
-                      <p>• /cover-letter/* - Tüm cover letter sayfaları</p>
-                      <p>• /ats-check - ATS analiz sayfası</p>
-                      <p>• /export - Export sayfası</p>
-                      <p>• /admin - Admin paneli</p>
+                      <p>• /builder - CV builder page</p>
+                      <p>• /cover-letter/* - All cover letter pages</p>
+                      <p>• /ats-check - ATS analysis page</p>
+                      <p>• /export - Export page</p>
+                      <p>• /admin - Admin panel</p>
                     </div>
                   </div>
                   
                   <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h3 className="font-medium text-yellow-800 mb-2">⚠️ Minimal Reklam Sayfaları</h3>
+                    <h3 className="font-medium text-yellow-800 mb-2">⚠️ Minimal Ad Pages</h3>
                     <div className="text-sm text-yellow-700 space-y-1">
-                      <p>• /templates - Sadece sidebar reklamları</p>
-                      <p>• /examples - Sadece sidebar reklamları</p>
+                      <p>• /templates - Sidebar ads only</p>
+                      <p>• /examples - Sidebar ads only</p>
                       <p>• /cover-letter/choose-template</p>
                       <p>• /cover-letter/creation-mode</p>
                     </div>
@@ -1662,8 +1779,8 @@ function AdsManagementComponent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>📊 Reklam İstatistikleri</CardTitle>
-                <CardDescription>Geçerli reklam durumu</CardDescription>
+                <CardTitle>📊 Ad Statistics</CardTitle>
+                <CardDescription>Current ad status</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

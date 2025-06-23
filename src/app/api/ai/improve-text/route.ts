@@ -1,5 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit } from '@/lib/gemini-client'
+import fs from 'fs/promises'
+import path from 'path'
+
+// Load CV Builder prompts from admin settings
+async function loadCVBuilderPrompts() {
+  try {
+    const promptsFile = path.join(process.cwd(), 'data', 'cv-builder-prompts.json')
+    const data = await fs.readFile(promptsFile, 'utf-8')
+    return JSON.parse(data)
+  } catch (error) {
+    // Return default prompts if file doesn't exist
+    return {
+      textImprovement: {
+        systemPrompt: 'You are a professional text improvement specialist.',
+        prompts: {
+          general: `Improve this CV text while preserving its original meaning and language.
+
+Original text: "{text}"
+Text type: {type}
+
+Instructions:
+- Fix grammar and spelling errors only
+- Improve sentence structure and flow
+- Make it more professional and clear
+- DO NOT change the language or add content
+- DO NOT merge words together
+- Preserve the original tone and meaning
+- Keep the same length approximately
+- If it's in Turkish, keep it in Turkish
+- If it's in English, keep it in English
+
+Return only the improved text, nothing else.`,
+          professionalSummary: 'Improve this professional summary text.',
+          experience: 'Improve this work experience text.',
+          skills: 'Improve this skills text.',
+          education: 'Improve this education text.'
+        }
+      },
+      settings: {
+        temperature: 0.3,
+        topK: 20,
+        topP: 0.8,
+        maxTokens: 1500
+      }
+    }
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,28 +90,43 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create improvement prompt
-    const prompt = `You are a professional text improvement specialist. Improve this ${type} text while preserving its original meaning and language.
+    // Load admin-configured prompts
+    const cvPrompts = await loadCVBuilderPrompts()
+    
+    // Select appropriate prompt based on type
+    let selectedPrompt = cvPrompts.textImprovement.prompts.general
+    
+    switch (type) {
+      case 'professionalSummary':
+      case 'summary':
+        selectedPrompt = cvPrompts.textImprovement.prompts.professionalSummary
+        break
+      case 'experience':
+      case 'workExperience':
+        selectedPrompt = cvPrompts.textImprovement.prompts.experience
+        break
+      case 'skills':
+      case 'technicalSkills':
+        selectedPrompt = cvPrompts.textImprovement.prompts.skills
+        break
+      case 'education':
+        selectedPrompt = cvPrompts.textImprovement.prompts.education
+        break
+      default:
+        selectedPrompt = cvPrompts.textImprovement.prompts.general
+    }
 
-Original text: "${text}"
+    // Build the complete prompt with system prompt and specific instructions
+    const systemPrompt = cvPrompts.textImprovement.systemPrompt
+    const prompt = `${systemPrompt}
 
-Instructions:
-- Fix grammar and spelling errors only
-- Improve sentence structure and flow
-- Make it more professional and clear
-- DO NOT change the language or add content
-- DO NOT merge words together
-- Preserve the original tone and meaning
-- Keep the same length approximately
-- If it's in Turkish, keep it in Turkish
-- If it's in English, keep it in English
+${selectedPrompt.replace('{text}', text).replace('{type}', type)}`
 
-Return only the improved text, nothing else.`
-
-    // Generate AI response
+    // Generate AI response using admin-configured settings
     const result = await generateContent(prompt, {
       context: 'cvOptimization',
-      maxTokens: 1000
+      maxTokens: cvPrompts.settings.maxTokens || 1500,
+      temperature: cvPrompts.settings.temperature || 0.3
     })
 
     if (!result.success) {
@@ -78,7 +140,9 @@ Return only the improved text, nothing else.`
     return NextResponse.json({
       success: true,
       improvedText: result.content?.trim() || text,
-      usage: result.usage
+      usage: result.usage,
+      promptUsed: type, // For debugging which prompt was used
+      adminConfigured: true // Indicates admin prompts were used
     }, {
       headers: {
         'X-RateLimit-Remaining': rateLimit.remaining.toString(),

@@ -8,6 +8,8 @@ import {
   validateATSFormat,
   analyzeEnterpriseATSCompatibility
 } from '@/lib/ats-utils'
+import { HuggingFaceATSClient } from '@/lib/integrations/huggingface-client'
+import { enhancedHuggingFaceService } from '@/lib/integrations/huggingface-enhanced'
 
 // ATS Keywords for Irish market
 const ATS_KEYWORDS = {
@@ -107,49 +109,86 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Clean up PDF extraction artifacts before analysis
-    const cleanedCvText = cleanPDFText(cvText)
+    // Standard analysis
+    const keywordAnalysis = await analyzeKeywords(cvText, jobDescription)
+    const structureAnalysis = analyzeSections(cvText)
+    const formatAnalysis = analyzeFormat(cvText)
+    const industryAlignment = calculateIndustryAlignment(cvText, industry)
 
-    // Try HuggingFace analysis first, fallback to traditional analysis
-    let analysis
+    // Try HuggingFace analysis (with fallback)
+    let aiAnalysis = null
     try {
-      analysis = await analyzeWithHuggingFace(
-        cleanedCvText, 
-        jobDescription, 
-        fileName, 
-        fileSize, 
-        analysisMode,
-        targetATS,
-        industry,
-        isMobileRequest
-      )
-    } catch (error) {
-      console.warn('HuggingFace analysis failed, using fallback:', error)
-      // Fallback to traditional analysis
-      analysis = await analyzeATSCompatibility(
-        cleanedCvText, 
-        jobDescription, 
-        fileName, 
-        fileSize, 
-        analysisMode,
-        targetATS,
-        industry,
-        isMobileRequest
+      const hfClient = new HuggingFaceATSClient()
+      aiAnalysis = await hfClient.analyzeCVForATS(cvText, jobDescription, industry)
+    } catch (hfError) {
+      console.warn('HuggingFace analysis failed:', hfError)
+    }
+
+    // Calculate scores
+    const keywordScore = Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100)
+    const formatScore = Math.round(formatAnalysis.score)
+    const structureScore = Math.round(structureAnalysis.score)
+
+    // Overall score calculation
+    const overallScore = Math.round((keywordScore + formatScore + structureScore + industryAlignment) / 4)
+
+    // Build response
+    const response = {
+      // Basic scores
+      overallScore,
+      keywordScore,
+      formatScore,
+      structureScore,
+      industryAlignment,
+
+      // Detailed analysis
+      keywords: {
+        found: Object.keys(keywordAnalysis.density).filter(k => keywordAnalysis.density[k] > 0),
+        missing: keywordAnalysis.missing,
+        total: keywordAnalysis.total,
+        matched: keywordAnalysis.matched,
+        density: Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100)
+      },
+
+      structure: {
+        score: structureScore,
+        issues: structureAnalysis.details?.issues || [],
+        suggestions: generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, calculateIrishMarketRelevance(cvText), validateATSFormat(cvText))
+      },
+
+      format: {
+        score: formatScore,
+        issues: formatAnalysis.details?.issues || [],
+        warnings: generateWarnings(keywordAnalysis, formatAnalysis, structureAnalysis, validateATSFormat(cvText))
+      },
+
+      // AI Analysis (if available)
+      aiAnalysis: aiAnalysis ? {
+        keywordAnalysis: aiAnalysis.keywordAnalysis,
+        contentAnalysis: aiAnalysis.contentAnalysis,
+        atsCompatibility: aiAnalysis.atsCompatibility
+      } : null,
+
+      // Recommendations
+      recommendations: [
+        ...generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, calculateIrishMarketRelevance(cvText), validateATSFormat(cvText)),
+        ...(aiAnalysis?.contentAnalysis?.suggestions || [])
+      ].slice(0, 8),
+
+      // Report
+      report: generateATSReport(
+        overallScore,
+        keywordAnalysis,
+        formatAnalysis,
+        structureAnalysis,
+        generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, calculateIrishMarketRelevance(cvText), validateATSFormat(cvText)),
+        generateWarnings(keywordAnalysis, formatAnalysis, structureAnalysis, validateATSFormat(cvText))
       )
     }
 
     const processingTime = Date.now() - startTime
 
-    return NextResponse.json({
-      success: true,
-      analysis,
-      meta: {
-        processingTime,
-        isMobile: isMobileRequest,
-        version: '2.0',
-        provider: 'hybrid' // HuggingFace + fallback
-      }
-    }, {
+    return NextResponse.json(response, {
       headers: {
         'X-RateLimit-Remaining': rateLimit.remaining.toString(),
         'X-RateLimit-Reset': rateLimit.resetTime.toString(),
@@ -160,262 +199,11 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('ATS Analysis API Error:', error)
+    console.error('ATS analysis failed:', error)
     return NextResponse.json(
-      { 
-        error: 'Internal server error. Please try again.',
-        details: process.env.NODE_ENV === 'development' ? (error as Error)?.message : undefined
-      },
+      { error: 'Failed to analyze CV' },
       { status: 500 }
     )
-  }
-}
-
-// Enhanced analysis using HuggingFace AI
-async function analyzeWithHuggingFace(
-  cvText: string, 
-  jobDescription?: string, 
-  fileName?: string, 
-  fileSize?: number,
-  analysisMode: 'basic' | 'enterprise' = 'basic',
-  targetATS: string = 'workday',
-  industry: string = 'technology',
-  isMobile: boolean = false
-) {
-  const hfClient = getHuggingFaceClient()
-  
-  // Health check first
-  const isHealthy = await hfClient.healthCheck()
-  if (!isHealthy) {
-    throw new Error('HuggingFace service unavailable')
-  }
-
-  // Get AI analysis
-  const aiAnalysis = await hfClient.analyzeCVForATS(cvText, jobDescription)
-  
-  // Traditional analysis for validation
-  const keywordAnalysis = analyzeKeywords(cvText, jobDescription || '')
-  const formatAnalysis = analyzeFormat(cvText)
-  const sectionAnalysis = analyzeSections(cvText)
-  
-  // Irish Market Relevance
-  const irishMarketAnalysis = calculateIrishMarketRelevance(cvText)
-  
-  // Format Validation
-  const formatValidation = validateATSFormat(cvText)
-  
-  // Combine AI and traditional analysis
-  const enhancedKeywordAnalysis = {
-    total: Math.max(keywordAnalysis.total, aiAnalysis.keywordAnalysis.extractedKeywords.length),
-    matched: Math.max(keywordAnalysis.matched, aiAnalysis.keywordAnalysis.extractedKeywords.length),
-    missing: [...new Set([...keywordAnalysis.missing, ...aiAnalysis.keywordAnalysis.missingKeywords])],
-    density: {
-      ...keywordAnalysis.density,
-      // Add AI-extracted keywords
-      ...aiAnalysis.keywordAnalysis.extractedKeywords.reduce((acc, keyword) => {
-        acc[keyword] = 2.5 // AI-weighted keywords
-        return acc
-      }, {} as Record<string, number>)
-    }
-  }
-
-  // Enhanced format analysis
-  const enhancedFormatAnalysis = {
-    score: Math.round((formatAnalysis.score + aiAnalysis.atsCompatibility.formatScore) / 2),
-    details: {
-      score: Math.round((formatAnalysis.score + aiAnalysis.atsCompatibility.formatScore) / 2),
-      issues: [...formatAnalysis.details.issues, ...aiAnalysis.atsCompatibility.warnings]
-    }
-  }
-
-  // Calculate overall score with AI weighting
-  const overallScore = Math.round(
-    (enhancedKeywordAnalysis.matched / enhancedKeywordAnalysis.total * 100 * 0.35) + 
-    (enhancedFormatAnalysis.score * 0.25) + 
-    (aiAnalysis.contentAnalysis.structureScore * 0.25) +
-    (irishMarketAnalysis.score * 0.15)
-  )
-
-  // Generate enhanced suggestions
-  const suggestions = [
-    ...generateSuggestions(enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, irishMarketAnalysis, formatValidation),
-    ...aiAnalysis.contentAnalysis.suggestions
-  ]
-
-  const warnings = generateWarnings(enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, formatValidation)
-  const strengths = generateStrengths(enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, irishMarketAnalysis)
-  
-  // Generate comprehensive report
-  const report = generateATSReport(overallScore, enhancedKeywordAnalysis, enhancedFormatAnalysis, sectionAnalysis, suggestions, warnings)
-
-  // Enterprise Analysis Features
-  let enterpriseFeatures = {}
-  if (analysisMode === 'enterprise') {
-    try {
-      if (isMobile && cvText.length > 5000) {
-        // Simplified enterprise analysis for mobile
-        enterpriseFeatures = {
-          atsSystemScores: {
-            workday: Math.round(overallScore * 0.95),
-            taleo: Math.round(overallScore * 0.90),
-            greenhouse: Math.round(overallScore),
-            bamboohr: Math.round(overallScore * 1.05)
-          },
-          rejectionRisk: overallScore >= 70 ? 'low' : overallScore >= 50 ? 'medium' : 'high' as const,
-          industryAlignment: calculateIndustryAlignment(cvText, industry),
-          simulation: null,
-          parsing: {
-            success: formatValidation.isValid,
-            extractedData: extractBasicData(cvText),
-            parsingErrors: formatValidation.issues
-          }
-        }
-      } else {
-        // Full enterprise analysis with AI
-        const enterpriseAnalysis = await analyzeEnterpriseATSCompatibility(cvText, {
-          targetATS: targetATS as any,
-          jobDescription,
-          industry: industry as any,
-          fileName,
-          fileSize
-        })
-        
-        // Enhanced job matching with AI
-        let jobMatch = null
-        if (jobDescription) {
-          jobMatch = await hfClient.checkJobMatch(cvText, jobDescription)
-        }
-        
-        enterpriseFeatures = {
-          atsSystemScores: enterpriseAnalysis.atsSystemScores,
-          rejectionRisk: enterpriseAnalysis.rejectionRisk,
-          industryAlignment: enterpriseAnalysis.industryAlignment,
-          simulation: jobMatch ? {
-            passed: jobMatch.matchScore > 70,
-            stage: jobMatch.matchScore > 70 ? 'human_review' : 'keyword_matching',
-            feedback: jobMatch.recommendations,
-            nextSteps: jobMatch.matchScore > 70 ? 
-              ['Prepare for interview', 'Research company culture'] :
-              ['Improve keyword matching', 'Add missing skills']
-          } : null,
-          parsing: enterpriseAnalysis.parsing,
-          jobMatch
-        }
-      }
-    } catch (error) {
-      console.error('Enterprise analysis error:', error)
-      // Fallback enterprise features
-      enterpriseFeatures = {
-        atsSystemScores: {
-          workday: Math.round(overallScore * 0.95),
-          taleo: Math.round(overallScore * 0.90),
-          greenhouse: Math.round(overallScore),
-          bamboohr: Math.round(overallScore * 1.05)
-        },
-        rejectionRisk: 'medium' as const,
-        industryAlignment: 50,
-        simulation: null,
-        parsing: {
-          success: formatValidation.isValid,
-          extractedData: extractBasicData(cvText),
-          parsingErrors: formatValidation.issues
-        }
-      }
-    }
-  }
-
-  return {
-    overallScore,
-    keywordDensity: enhancedKeywordAnalysis,
-    formatScore: enhancedFormatAnalysis.score,
-    sectionScore: aiAnalysis.contentAnalysis.structureScore,
-    irishMarketScore: irishMarketAnalysis.score,
-    suggestions: [...new Set(suggestions)], // Remove duplicates
-    strengths,
-    warnings,
-    report,
-    formatValidation,
-    aiInsights: {
-      professionalismScore: aiAnalysis.contentAnalysis.professionalismScore,
-      clarityScore: aiAnalysis.contentAnalysis.clarityScore,
-      parsingProbability: aiAnalysis.atsCompatibility.parsingProbability
-    },
-    ...enterpriseFeatures,
-    details: {
-      contactInfo: sectionAnalysis.details.contactInfo,
-      experience: sectionAnalysis.details.experience,
-      skills: sectionAnalysis.details.skills,
-      education: sectionAnalysis.details.education,
-      formatting: enhancedFormatAnalysis.details
-    }
-  }
-}
-
-// Fallback traditional analysis (moved from existing code)
-async function analyzeATSCompatibility(
-  cvText: string, 
-  jobDescription?: string, 
-  _fileName?: string, 
-  _fileSize?: number,
-  analysisMode: 'basic' | 'enterprise' = 'basic',
-  _targetATS: string = 'workday',
-  industry: string = 'technology',
-  _isMobile: boolean = false
-) {
-  const keywordAnalysis = analyzeKeywords(cvText, jobDescription || '')
-  const formatAnalysis = analyzeFormat(cvText)
-  const sectionAnalysis = analyzeSections(cvText)
-  const irishMarketAnalysis = calculateIrishMarketRelevance(cvText)
-  const formatValidation = validateATSFormat(cvText)
-  
-  const overallScore = calculateOverallScore(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis)
-  
-  const suggestions = generateSuggestions(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis, formatValidation)
-  const warnings = generateWarnings(keywordAnalysis, formatAnalysis, sectionAnalysis, formatValidation)
-  const strengths = generateStrengths(keywordAnalysis, formatAnalysis, sectionAnalysis, irishMarketAnalysis)
-  
-  const report = generateATSReport(overallScore, keywordAnalysis, formatAnalysis, sectionAnalysis, suggestions, warnings)
-
-  // Enterprise features for fallback
-  let enterpriseFeatures = {}
-  if (analysisMode === 'enterprise') {
-    enterpriseFeatures = {
-      atsSystemScores: {
-        workday: Math.round(overallScore * 0.95),
-        taleo: Math.round(overallScore * 0.90),
-        greenhouse: Math.round(overallScore),
-        bamboohr: Math.round(overallScore * 1.05)
-      },
-      rejectionRisk: overallScore >= 70 ? 'low' : overallScore >= 50 ? 'medium' : 'high' as const,
-      industryAlignment: calculateIndustryAlignment(cvText, industry),
-      simulation: null,
-      parsing: {
-        success: formatValidation.isValid,
-        extractedData: extractBasicData(cvText),
-        parsingErrors: formatValidation.issues
-      }
-    }
-  }
-
-  return {
-    overallScore,
-    keywordDensity: keywordAnalysis,
-    formatScore: formatAnalysis.score,
-    sectionScore: sectionAnalysis.score,
-    irishMarketScore: irishMarketAnalysis.score,
-    suggestions,
-    strengths,
-    warnings,
-    report,
-    formatValidation,
-    ...enterpriseFeatures,
-    details: {
-      contactInfo: sectionAnalysis.details.contactInfo,
-      experience: sectionAnalysis.details.experience,
-      skills: sectionAnalysis.details.skills,
-      education: sectionAnalysis.details.education,
-      formatting: formatAnalysis.details
-    }
   }
 }
 
@@ -719,15 +507,30 @@ function generateStrengths(keywordAnalysis: KeywordAnalysis, formatAnalysis: For
 
 function calculateIndustryAlignment(cvText: string, industry: string): number {
   const industryKeywords: Record<string, string[]> = {
-    technology: ['software', 'developer', 'programming', 'code', 'technical', 'agile', 'api', 'cloud'],
-    finance: ['financial', 'banking', 'investment', 'analysis', 'risk', 'compliance', 'audit'],
-    healthcare: ['medical', 'clinical', 'patient', 'healthcare', 'treatment', 'diagnosis', 'care']
+    technology: ['agile', 'scrum', 'git', 'api', 'cloud', 'devops', 'javascript', 'python', 'react', 'docker', 'kubernetes', 'ci/cd', 'microservices', 'testing', 'automation', 'frontend', 'backend', 'full-stack'],
+    finance: ['regulatory', 'compliance', 'risk', 'audit', 'reporting', 'financial analysis', 'accounting', 'banking', 'investment', 'portfolio', 'basel', 'ifrs', 'gaap', 'tax', 'budgeting', 'forecasting', 'excel', 'sql'],
+    healthcare: ['patient', 'clinical', 'healthcare', 'medical', 'safety', 'diagnosis', 'treatment', 'nursing', 'pharmaceutical', 'research', 'gdpr', 'hipaa', 'medical devices', 'quality assurance', 'regulatory affairs'],
+    marketing: ['digital marketing', 'seo', 'sem', 'social media', 'content marketing', 'analytics', 'google ads', 'facebook ads', 'email marketing', 'brand management', 'campaign', 'roi', 'conversion', 'lead generation', 'marketing automation'],
+    sales: ['sales', 'business development', 'account management', 'lead generation', 'crm', 'salesforce', 'pipeline', 'revenue', 'quota', 'negotiation', 'relationship building', 'client acquisition', 'territory management', 'b2b', 'b2c'],
+    hr: ['recruitment', 'talent acquisition', 'hr management', 'performance management', 'employee relations', 'compensation', 'benefits', 'training', 'development', 'hris', 'payroll', 'compliance', 'diversity', 'inclusion', 'onboarding'],
+    legal: ['legal', 'law', 'compliance', 'contracts', 'litigation', 'corporate law', 'commercial law', 'regulatory', 'due diligence', 'intellectual property', 'data protection', 'gdpr', 'legal research', 'case management', 'legal writing'],
+    consulting: ['consulting', 'strategy', 'business analysis', 'project management', 'change management', 'process improvement', 'stakeholder management', 'business case', 'requirements gathering', 'solution design', 'implementation', 'client facing'],
+    education: ['teaching', 'curriculum', 'educational technology', 'assessment', 'learning outcomes', 'pedagogy', 'research', 'academic', 'student engagement', 'classroom management', 'educational psychology', 'e-learning', 'training design'],
+    engineering: ['engineering', 'design', 'cad', 'autocad', 'solidworks', 'project management', 'quality control', 'manufacturing', 'testing', 'specifications', 'technical documentation', 'problem solving', 'process optimization', 'safety standards'],
+    manufacturing: ['manufacturing', 'production', 'quality control', 'lean manufacturing', 'six sigma', 'supply chain', 'inventory management', 'process improvement', 'safety', 'automation', 'operations', 'efficiency', 'cost reduction'],
+    retail: ['retail', 'customer service', 'sales', 'inventory management', 'merchandising', 'store operations', 'pos systems', 'e-commerce', 'customer experience', 'visual merchandising', 'product knowledge', 'team leadership'],
+    hospitality: ['hospitality', 'customer service', 'hotel management', 'food service', 'guest relations', 'event management', 'tourism', 'restaurant operations', 'reservation systems', 'quality service', 'team management', 'multitasking'],
+    logistics: ['logistics', 'supply chain', 'transportation', 'warehousing', 'inventory management', 'distribution', 'shipping', 'procurement', 'vendor management', 'cost optimization', 'tracking systems', 'delivery', 'freight'],
+    media: ['journalism', 'content creation', 'broadcasting', 'media production', 'editing', 'storytelling', 'digital media', 'social media', 'photography', 'video production', 'writing', 'communication', 'creative', 'multimedia'],
+    research: ['research', 'data analysis', 'statistics', 'methodology', 'academic research', 'scientific research', 'publications', 'grant writing', 'data collection', 'analysis software', 'spss', 'r', 'python', 'peer review'],
+    nonprofit: ['nonprofit', 'ngo', 'charity', 'fundraising', 'grant writing', 'volunteer management', 'community outreach', 'social services', 'program management', 'advocacy', 'social impact', 'stakeholder engagement'],
+    government: ['public service', 'government', 'policy', 'administration', 'public administration', 'regulatory', 'compliance', 'stakeholder management', 'project management', 'public sector', 'civil service', 'government relations']
   }
   
   const keywords = industryKeywords[industry] || []
   const cvLower = cvText.toLowerCase()
   
-  const foundKeywords = keywords.filter(keyword => cvLower.includes(keyword))
+  const foundKeywords = keywords.filter(keyword => cvLower.includes(keyword.toLowerCase()))
   return Math.round((foundKeywords.length / keywords.length) * 100)
 }
 
@@ -753,10 +556,14 @@ function cleanPDFExtractionArtifacts(text: string): string {
   
   // Step 2: Fix broken words - common patterns from PDF extraction
   const brokenWordPatterns: { [key: string]: string } = {
-    // Technology terms
+    // Technology terms - high priority ligature fixes
+    'arti fi cial': 'artificial',
     'artifi cial': 'artificial',
-    'artifi cal': 'artificial', 
+    'artifi cal': 'artificial',
+    'arti ficial': 'artificial',
+    'intel li gence': 'intelligence',
     'intel ligence': 'intelligence',
+    'intelli gence': 'intelligence',
     'mach ine': 'machine',
     'learn ing': 'learning',
     'develop ment': 'development',
