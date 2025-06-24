@@ -7,30 +7,49 @@ import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Loader2, Search, CheckCircle, AlertTriangle, XCircle, Target, FileText, TrendingUp, Upload } from 'lucide-react'
+import { Loader2, Search, CheckCircle, AlertTriangle, XCircle, Target, FileText, TrendingUp, Upload, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MobileCVUpload } from './mobile-cv-upload'
 
 interface ATSAnalysis {
   overallScore: number
-  keywordDensity: {
+  keywords: {
     total: number
     matched: number
+    found: string[]
     missing: string[]
-    density: { [key: string]: number }
+    density: number
   }
   formatScore: number
-  sectionScore: number
+  sectionScore?: number
+  keywordScore?: number
+  structureScore?: number
   irishMarketScore?: number
-  suggestions: string[]
-  strengths: string[]
-  warnings: string[]
-  details: {
+  suggestions?: string[]
+  strengths?: string[]
+  warnings?: string[]
+  recommendations?: string[]
+  details?: {
     contactInfo: { score: number; issues: string[] }
     experience: { score: number; issues: string[] }
     skills: { score: number; issues: string[] }
     education: { score: number; issues: string[] }
     formatting: { score: number; issues: string[] }
+  }
+  structure?: {
+    score: number
+    issues: string[]
+    suggestions: string[]
+  }
+  format?: {
+    score: number
+    issues: string[]
+    warnings: string[]
+  }
+  aiAnalysis?: {
+    keywordAnalysis: any
+    contentAnalysis: any
+    atsCompatibility: any
   }
   atsSystemScores?: Record<string, number>
   rejectionRisk?: 'low' | 'medium' | 'high' | 'critical'
@@ -45,6 +64,15 @@ interface ATSAnalysis {
     stage: string
     feedback: string[]
     nextSteps: string[]
+    systemResults?: {
+      workday: 'PASS' | 'REVIEW' | 'FAIL'
+      taleo: 'PASS' | 'REVIEW' | 'FAIL'
+      greenhouse: 'PASS' | 'REVIEW' | 'FAIL'
+      bamboohr: 'PASS' | 'REVIEW' | 'FAIL'
+    }
+    worstPerformer?: string
+    averageScore?: number
+    riskLevel?: 'low' | 'medium' | 'high' | 'critical'
   }
   report?: {
     summary: string
@@ -127,8 +155,9 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
         throw new Error(data.error || 'ATS analysis failed')
       }
 
-      if (data.success) {
-        setAnalysis(data.analysis)
+      // Check if the response has the expected analysis data structure
+      if (data.overallScore !== undefined && data.keywordScore !== undefined) {
+        setAnalysis(data)
       } else {
         throw new Error('ATS analysis failed')
       }
@@ -257,6 +286,8 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                   onError={(error) => {
                     setError(error)
                   }}
+                  selectedIndustry={selectedIndustry}
+                  autoImprove={true}
                 />
               </motion.div>
             )}
@@ -270,11 +301,14 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               className="resize-none touch-manipulation"
               style={{ minHeight: '200px' }}
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
               <span>Paste CV text or upload PDF file</span>
-              <span className={cvText.length < 100 ? 'text-red-500' : ''}>
-                {cvText.length} characters {cvText.length < 100 && '(minimum 100)'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-green-600">✅ Auto-AI optimization enabled</span>
+                <span className={cvText.length < 100 ? 'text-red-500' : ''}>
+                  {cvText.length} characters {cvText.length < 100 && '(minimum 100)'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -372,8 +406,8 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className={`text-2xl font-bold ${getScoreColor(analysis.keywordDensity.matched / analysis.keywordDensity.total * 100)}`}>
-                      {Math.round(analysis.keywordDensity.matched / analysis.keywordDensity.total * 100)}%
+                    <div className={`text-2xl font-bold ${getScoreColor(analysis.keywords.matched / analysis.keywords.total * 100)}`}>
+                      {Math.round(analysis.keywords.matched / analysis.keywords.total * 100)}%
                     </div>
                     <div className="text-sm text-muted-foreground">Keywords</div>
                   </div>
@@ -384,8 +418,8 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                     <div className="text-sm text-muted-foreground">Format</div>
                   </div>
                   <div className="text-center p-3 bg-purple-50 rounded-lg">
-                    <div className={`text-2xl font-bold ${getScoreColor(analysis.sectionScore)}`}>
-                      {analysis.sectionScore}
+                    <div className={`text-2xl font-bold ${getScoreColor(analysis.sectionScore || analysis.structureScore || 0)}`}>
+                      {analysis.sectionScore || analysis.structureScore || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Sections</div>
                   </div>
@@ -399,33 +433,184 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               </CardContent>
                           </Card>
 
-             {/* ATS System Scores */}
-             {analysis.atsSystemScores && Object.keys(analysis.atsSystemScores).length > 0 && (
+             {/* Enhanced Enterprise ATS Analysis */}
+             {analysis.atsSystemScores && (
                <Card>
                  <CardHeader>
                    <CardTitle className="flex items-center gap-2">
-                     <Target className="h-5 w-5 text-purple-600" />
-                     ATS System Compatibility Scores
+                     <Building className="h-5 w-5 text-purple-600" />
+                     Enterprise ATS Analysis
+                     <Badge variant="outline" className="ml-2">Research-Based</Badge>
                    </CardTitle>
+                   <p className="text-sm text-muted-foreground">
+                     Automatically tests your CV against major ATS systems used by Irish employers
+                   </p>
                  </CardHeader>
                  <CardContent>
                    <div className="space-y-4">
-                     {Object.entries(analysis.atsSystemScores).map(([system, score]) => (
-                       <div key={system} className="flex items-center justify-between p-3 border rounded-lg">
+                     {/* Workday */}
+                     <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-blue-50/30">
+                       <div className="flex items-center justify-between mb-2">
                          <div className="flex items-center gap-3">
-                           <div className={`w-3 h-3 rounded-full ${score >= 70 ? 'bg-green-500' : score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} />
-                           <span className="font-medium capitalize">{system}</span>
+                           <div className={`w-3 h-3 rounded-full ${analysis.atsSystemScores.workday >= 70 ? 'bg-green-500' : analysis.atsSystemScores.workday >= 45 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                           <div>
+                             <span className="font-medium">Workday</span>
+                             <p className="text-xs text-muted-foreground">Used by multinational corporations</p>
+                           </div>
                          </div>
-                         <div className="flex items-center gap-2">
-                           <span className={`text-lg font-bold ${getScoreColor(score)}`}>
-                             {score}%
+                         <div className="text-right">
+                           <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.workday)}`}>
+                             {analysis.atsSystemScores.workday}%
                            </span>
-                           <span className="text-sm text-muted-foreground">
-                             {score >= 70 ? 'Pass' : 'Needs Work'}
-                           </span>
+                           <p className="text-xs">
+                             {analysis.simulation?.systemResults?.workday ? (
+                               <Badge variant={analysis.simulation.systemResults.workday === 'PASS' ? 'default' : analysis.simulation.systemResults.workday === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                                 {analysis.simulation.systemResults.workday}
+                               </Badge>
+                             ) : (
+                               <span className={getScoreColor(analysis.atsSystemScores.workday)}>
+                                 {analysis.atsSystemScores.workday >= 70 ? 'PASS' : analysis.atsSystemScores.workday >= 45 ? 'REVIEW' : 'FAIL'}
+                               </span>
+                             )}
+                           </p>
                          </div>
                        </div>
-                     ))}
+                       <p className="text-xs text-muted-foreground">
+                         Advanced NLP & contextual keyword matching - focuses on professional context
+                       </p>
+                     </div>
+
+                     {/* Oracle Taleo */}
+                     <div className="p-4 border rounded-lg bg-gradient-to-r from-orange-50 to-orange-50/30">
+                       <div className="flex items-center justify-between mb-2">
+                         <div className="flex items-center gap-3">
+                           <div className={`w-3 h-3 rounded-full ${analysis.atsSystemScores.taleo >= 60 ? 'bg-green-500' : analysis.atsSystemScores.taleo >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                           <div>
+                             <span className="font-medium">Oracle Taleo</span>
+                             <p className="text-xs text-muted-foreground">Enterprise recruitment platform</p>
+                           </div>
+                         </div>
+                         <div className="text-right">
+                           <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.taleo)}`}>
+                             {analysis.atsSystemScores.taleo}%
+                           </span>
+                           <p className="text-xs">
+                             {analysis.simulation?.systemResults?.taleo ? (
+                               <Badge variant={analysis.simulation.systemResults.taleo === 'PASS' ? 'default' : analysis.simulation.systemResults.taleo === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                                 {analysis.simulation.systemResults.taleo}
+                               </Badge>
+                             ) : (
+                               <span className={getScoreColor(analysis.atsSystemScores.taleo)}>
+                                 {analysis.atsSystemScores.taleo >= 60 ? 'PASS' : analysis.atsSystemScores.taleo >= 40 ? 'REVIEW' : 'FAIL'}
+                               </span>
+                             )}
+                           </p>
+                         </div>
+                       </div>
+                       <p className="text-xs text-muted-foreground">
+                         4-criteria scoring (Profile/Education/Experience/Skills) + boolean logic
+                       </p>
+                     </div>
+
+                     {/* Greenhouse */}
+                     <div className="p-4 border rounded-lg bg-gradient-to-r from-green-50 to-green-50/30">
+                       <div className="flex items-center justify-between mb-2">
+                         <div className="flex items-center gap-3">
+                           <div className={`w-3 h-3 rounded-full ${analysis.atsSystemScores.greenhouse >= 70 ? 'bg-green-500' : analysis.atsSystemScores.greenhouse >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                           <div>
+                             <span className="font-medium">Greenhouse</span>
+                             <p className="text-xs text-muted-foreground">Tech company favorite</p>
+                           </div>
+                         </div>
+                         <div className="text-right">
+                           <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.greenhouse)}`}>
+                             {analysis.atsSystemScores.greenhouse}%
+                           </span>
+                           <p className="text-xs">
+                             {analysis.simulation?.systemResults?.greenhouse ? (
+                               <Badge variant={analysis.simulation.systemResults.greenhouse === 'PASS' ? 'default' : analysis.simulation.systemResults.greenhouse === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                                 {analysis.simulation.systemResults.greenhouse}
+                               </Badge>
+                             ) : (
+                               <span className={getScoreColor(analysis.atsSystemScores.greenhouse)}>
+                                 {analysis.atsSystemScores.greenhouse >= 70 ? 'PASS' : analysis.atsSystemScores.greenhouse >= 50 ? 'REVIEW' : 'FAIL'}
+                               </span>
+                             )}
+                           </p>
+                         </div>
+                       </div>
+                       <p className="text-xs text-muted-foreground">
+                         Tech-focused scoring with emphasis on projects, GitHub links & skills
+                       </p>
+                     </div>
+
+                     {/* BambooHR */}
+                     <div className="p-4 border rounded-lg bg-gradient-to-r from-purple-50 to-purple-50/30">
+                       <div className="flex items-center justify-between mb-2">
+                         <div className="flex items-center gap-3">
+                           <div className={`w-3 h-3 rounded-full ${analysis.atsSystemScores.bamboohr >= 65 ? 'bg-green-500' : analysis.atsSystemScores.bamboohr >= 45 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                           <div>
+                             <span className="font-medium">BambooHR</span>
+                             <p className="text-xs text-muted-foreground">SME and startup choice</p>
+                           </div>
+                         </div>
+                         <div className="text-right">
+                           <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.bamboohr)}`}>
+                             {analysis.atsSystemScores.bamboohr}%
+                           </span>
+                           <p className="text-xs">
+                             {analysis.simulation?.systemResults?.bamboohr ? (
+                               <Badge variant={analysis.simulation.systemResults.bamboohr === 'PASS' ? 'default' : analysis.simulation.systemResults.bamboohr === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                                 {analysis.simulation.systemResults.bamboohr}
+                               </Badge>
+                             ) : (
+                               <span className={getScoreColor(analysis.atsSystemScores.bamboohr)}>
+                                 {analysis.atsSystemScores.bamboohr >= 65 ? 'PASS' : analysis.atsSystemScores.bamboohr >= 45 ? 'REVIEW' : 'FAIL'}
+                               </span>
+                             )}
+                           </p>
+                         </div>
+                       </div>
+                       <p className="text-xs text-muted-foreground">
+                         Skills-heavy scoring with cultural fit & teamwork emphasis
+                       </p>
+                     </div>
+
+                     {/* Overall Summary */}
+                     {analysis.simulation?.averageScore && (
+                       <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border">
+                         <div className="flex items-center justify-between">
+                           <div>
+                             <h4 className="font-medium">Overall ATS Performance</h4>
+                             <p className="text-sm text-muted-foreground">
+                               Average across all major systems
+                             </p>
+                           </div>
+                           <div className="text-right">
+                             <span className={`text-2xl font-bold ${getScoreColor(analysis.simulation.averageScore)}`}>
+                               {analysis.simulation.averageScore}%
+                             </span>
+                             <p className="text-sm">
+                               <Badge variant={analysis.simulation.riskLevel === 'low' ? 'default' : analysis.simulation.riskLevel === 'medium' ? 'secondary' : 'destructive'}>
+                                 {analysis.simulation.riskLevel?.toUpperCase()} RISK
+                               </Badge>
+                             </p>
+                           </div>
+                         </div>
+                         
+                         {analysis.simulation.worstPerformer && (
+                           <div className="mt-3 pt-3 border-t">
+                             <p className="text-sm text-muted-foreground">
+                               <span className="font-medium">Weakest System:</span> {analysis.simulation.worstPerformer}
+                               {analysis.simulation.worstPerformer === 'workday' && ' (needs better contextual language)'}
+                               {analysis.simulation.worstPerformer === 'taleo' && ' (needs exact keyword matches)'}
+                               {analysis.simulation.worstPerformer === 'greenhouse' && ' (needs stronger tech content)'}
+                               {analysis.simulation.worstPerformer === 'bamboohr' && ' (needs better cultural fit indicators)'}
+                             </p>
+                           </div>
+                         )}
+                       </div>
+                     )}
                    </div>
                  </CardContent>
                </Card>
@@ -505,19 +690,19 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                     <div>
                       <h4 className="font-medium text-green-700 mb-2">Matched Keywords</h4>
                       <div className="flex flex-wrap gap-2">
-                        {Object.entries(analysis.keywordDensity.density).map(([keyword, density]) => (
-                          <Badge key={keyword} variant="secondary" className="text-xs">
-                            {keyword} ({density}%)
+                        {analysis.keywords.found.map((keyword: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {keyword}
                           </Badge>
                         ))}
                       </div>
                     </div>
                     
-                    {analysis.keywordDensity.missing.length > 0 && (
+                    {analysis.keywords.missing.length > 0 && (
                       <div>
                         <h4 className="font-medium text-red-700 mb-2">Missing Keywords</h4>
                         <div className="flex flex-wrap gap-2">
-                          {analysis.keywordDensity.missing.map((keyword, index) => (
+                          {analysis.keywords.missing.map((keyword: string, index: number) => (
                             <Badge key={index} variant="destructive" className="text-xs">
                               {keyword}
                             </Badge>
@@ -539,7 +724,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {Object.entries(analysis.details).map(([section, data]) => {
+                  {Object.entries(analysis.details || {}).map(([section, data]) => {
                     const Icon = getScoreIcon(data.score)
                     return (
                       <div key={section} className="flex items-start gap-3 p-3 border rounded-lg">
@@ -570,7 +755,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {analysis.strengths.length > 0 && (
+              {(analysis.strengths && analysis.strengths.length > 0) && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-green-700">
@@ -597,7 +782,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                 </Card>
               )}
 
-              {analysis.suggestions.length > 0 && (
+              {((analysis.suggestions && analysis.suggestions.length > 0) || (analysis.recommendations && analysis.recommendations.length > 0)) && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-700">
@@ -607,7 +792,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {analysis.suggestions.map((suggestion, index) => (
+                      {(analysis.suggestions || analysis.recommendations || []).map((suggestion, index) => (
                         <motion.li
                           key={index}
                           initial={{ opacity: 0, x: -10 }}
@@ -625,7 +810,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               )}
             </div>
 
-            {analysis.warnings.length > 0 && (
+            {((analysis.warnings && analysis.warnings.length > 0) || (analysis.format?.warnings && analysis.format.warnings.length > 0)) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-red-700">
@@ -635,7 +820,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {analysis.warnings.map((warning, index) => (
+                    {(analysis.warnings || analysis.format?.warnings || []).map((warning, index) => (
                       <motion.li
                         key={index}
                         initial={{ opacity: 0, x: -10 }}
