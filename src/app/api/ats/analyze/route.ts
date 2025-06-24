@@ -8,8 +8,6 @@ import {
   validateATSFormat,
   analyzeEnterpriseATSCompatibility
 } from '@/lib/ats-utils'
-import { HuggingFaceATSClient } from '@/lib/integrations/huggingface-client'
-import { enhancedHuggingFaceService } from '@/lib/integrations/huggingface-enhanced'
 
 // ATS Keywords for Irish market
 const ATS_KEYWORDS = {
@@ -65,14 +63,260 @@ interface IrishMarketAnalysis {
   suggestions: string[]
 }
 
+// Realistic ATS System Scoring based on research findings
+function calculateRealisticATSScores(
+  cvText: string, 
+  keywordAnalysis: KeywordAnalysis, 
+  formatAnalysis: FormatAnalysis, 
+  structureAnalysis: SectionAnalysis, 
+  industry: string,
+  baseScore: number
+) {
+  const textLower = cvText.toLowerCase()
+  
+  // WORKDAY ATS - Advanced NLP & Contextual Matching
+  const workdayScore = calculateWorkdayScore(cvText, keywordAnalysis, formatAnalysis, structureAnalysis, industry)
+  
+  // ORACLE TALEO - 4 Criteria + Boolean Logic
+  const taleoScore = calculateTaleoScore(cvText, keywordAnalysis, formatAnalysis, structureAnalysis, industry)
+  
+  // GREENHOUSE - Tech-friendly, Smart Parsing
+  const greenhouseScore = calculateGreenhouseScore(cvText, keywordAnalysis, formatAnalysis, structureAnalysis, industry)
+  
+  // BAMBOOHR - SME-focused, Skills-heavy
+  const bamboohrScore = calculateBambooHRScore(cvText, keywordAnalysis, formatAnalysis, structureAnalysis, industry)
+  
+  return {
+    workday: Math.round(Math.max(30, Math.min(95, workdayScore))),
+    taleo: Math.round(Math.max(25, Math.min(90, taleoScore))),
+    greenhouse: Math.round(Math.max(35, Math.min(98, greenhouseScore))),
+    bamboohr: Math.round(Math.max(40, Math.min(92, bamboohrScore)))
+  }
+}
+
+// WORKDAY ATS - Contextual NLP Analysis
+function calculateWorkdayScore(cvText: string, keywords: KeywordAnalysis, format: FormatAnalysis, structure: SectionAnalysis, industry: string): number {
+  let score = 0
+  
+  // Profile Score (0-3 stars -> 0-25 points)
+  const profileKeywords = ['professional', 'experience', 'senior', 'lead', 'manager', 'specialist']
+  const profileMatches = profileKeywords.filter(kw => cvText.toLowerCase().includes(kw)).length
+  const profileScore = Math.min(25, (profileMatches / profileKeywords.length) * 25)
+  
+  // Education Score (0-3 stars -> 0-20 points)  
+  const educationKeywords = ['degree', 'university', 'college', 'bachelor', 'master', 'phd', 'certification']
+  const educationMatches = educationKeywords.filter(kw => cvText.toLowerCase().includes(kw)).length
+  const educationScore = Math.min(20, (educationMatches / educationKeywords.length) * 20)
+  
+  // Experience Score (0-3 stars -> 0-30 points)
+  const experienceIndicators = cvText.match(/\d+[\s-]+(years?|yrs?)\s+(of\s+)?experience/gi) || []
+  const jobTitles = cvText.match(/(developer|engineer|analyst|manager|director|lead|senior)/gi) || []
+  const experienceScore = Math.min(30, experienceIndicators.length * 10 + jobTitles.length * 2)
+  
+  // Skills Score (0-3 stars -> 0-25 points)
+  const skillsScore = Math.min(25, (keywords.matched / Math.max(keywords.total, 1)) * 25)
+  
+  score = profileScore + educationScore + experienceScore + skillsScore
+  
+  // Workday bonus for clean format (they hate complex tables)
+  if (format.score > 80) score += 10
+  
+  // Industry bonus
+  if (industry === 'technology' && cvText.toLowerCase().includes('agile')) score += 5
+  
+  return score
+}
+
+// ORACLE TALEO - 4 Criteria System + Boolean Logic
+function calculateTaleoScore(cvText: string, keywords: KeywordAnalysis, format: FormatAnalysis, structure: SectionAnalysis, industry: string): number {
+  let score = 0
+  
+  // Taleo's 4 main criteria (Profile, Education, Experience, Skills)
+  const profileScore = Math.min(22, keywords.matched * 2) // Max 22
+  const educationScore = cvText.toLowerCase().includes('degree') ? 18 : 8 // Max 18
+  const experienceScore = Math.min(25, (cvText.match(/\d+[\s-]+years?/gi) || []).length * 8) // Max 25
+  const skillsScore = Math.min(25, (keywords.matched / Math.max(keywords.total, 1)) * 25) // Max 25
+  
+  score = profileScore + educationScore + experienceScore + skillsScore
+  
+  // Taleo penalizes complex formatting heavily
+  if (format.score < 60) score *= 0.7
+  
+  // Boolean logic bonus for exact matches
+  const exactMatches = keywords.density
+  const hasExactMatches = Object.values(exactMatches).some(density => density > 0.5)
+  if (hasExactMatches) score += 8
+  
+  return score
+}
+
+// GREENHOUSE - Tech Company Favorite
+function calculateGreenhouseScore(cvText: string, keywords: KeywordAnalysis, format: FormatAnalysis, structure: SectionAnalysis, industry: string): number {
+  let score = 0
+  
+  // Greenhouse loves tech keywords
+  const techKeywords = ['python', 'javascript', 'react', 'api', 'git', 'docker', 'kubernetes', 'aws', 'ci/cd']
+  const techMatches = techKeywords.filter(kw => cvText.toLowerCase().includes(kw)).length
+  const techScore = Math.min(35, techMatches * 4)
+  
+  // Communication skills are valued
+  const softSkills = ['communication', 'teamwork', 'leadership', 'agile', 'scrum', 'collaboration']
+  const softMatches = softSkills.filter(kw => cvText.toLowerCase().includes(kw)).length
+  const softScore = Math.min(20, softMatches * 3)
+  
+  // Project experience
+  const projectIndicators = cvText.match(/(project|developed|built|created|implemented)/gi) || []
+  const projectScore = Math.min(25, projectIndicators.length * 2)
+  
+  // Keyword density
+  const keywordScore = Math.min(20, (keywords.matched / Math.max(keywords.total, 1)) * 20)
+  
+  score = techScore + softScore + projectScore + keywordScore
+  
+  // Greenhouse bonus for GitHub/portfolio links
+  if (cvText.toLowerCase().includes('github') || cvText.toLowerCase().includes('portfolio')) score += 8
+  
+  // Industry-specific bonuses
+  if (industry === 'technology') score += 10
+  
+  return score
+}
+
+// BAMBOOHR - SME & Startup Focused
+function calculateBambooHRScore(cvText: string, keywords: KeywordAnalysis, format: FormatAnalysis, structure: SectionAnalysis, industry: string): number {
+  let score = 0
+  
+  // BambooHR focuses heavily on skills and cultural fit
+  const skillsScore = Math.min(40, (keywords.matched / Math.max(keywords.total, 1)) * 40)
+  
+  // Cultural fit indicators
+  const cultureKeywords = ['team', 'collaboration', 'adaptable', 'flexible', 'startup', 'fast-paced', 'growth']
+  const cultureMatches = cultureKeywords.filter(kw => cvText.toLowerCase().includes(kw)).length
+  const cultureScore = Math.min(25, cultureMatches * 4)
+  
+  // Experience relevance
+  const experienceScore = Math.min(20, keywords.matched * 1.5)
+  
+  // Communication & interpersonal
+  const communicationWords = ['communication', 'presentation', 'client', 'customer', 'stakeholder']
+  const commMatches = communicationWords.filter(kw => cvText.toLowerCase().includes(kw)).length
+  const commScore = Math.min(15, commMatches * 3)
+  
+  score = skillsScore + cultureScore + experienceScore + commScore
+  
+  // BambooHR likes clean, readable formats
+  if (format.score > 75) score += 5
+  
+  // SME bonus for Dublin location
+  if (cvText.toLowerCase().includes('dublin')) score += 7
+  
+  return score
+}
+
+// Generate realistic ATS-specific simulation results
+function generateRealisticATSSimulation(
+  atsScores: { workday: number, taleo: number, greenhouse: number, bamboohr: number },
+  cvText: string,
+  keywords: KeywordAnalysis,
+  overallScore: number
+) {
+  const avgScore = (atsScores.workday + atsScores.taleo + atsScores.greenhouse + atsScores.bamboohr) / 4
+  const passed = avgScore >= 60
+  
+  // Determine which systems would likely pass/fail
+  const systemResults = {
+    workday: atsScores.workday >= 65 ? 'PASS' : atsScores.workday >= 45 ? 'REVIEW' : 'FAIL',
+    taleo: atsScores.taleo >= 60 ? 'PASS' : atsScores.taleo >= 40 ? 'REVIEW' : 'FAIL',
+    greenhouse: atsScores.greenhouse >= 70 ? 'PASS' : atsScores.greenhouse >= 50 ? 'REVIEW' : 'FAIL',
+    bamboohr: atsScores.bamboohr >= 65 ? 'PASS' : atsScores.bamboohr >= 45 ? 'REVIEW' : 'FAIL'
+  }
+  
+  // Determine processing stage based on scores
+  let stage = 'initial_scan'
+  if (avgScore >= 80) stage = 'final_review'
+  else if (avgScore >= 65) stage = 'hiring_manager_review'  
+  else if (avgScore >= 50) stage = 'keyword_screening'
+  else if (avgScore >= 35) stage = 'format_parsing'
+  
+  // Generate ATS-specific feedback
+  const feedback: string[] = []
+  const nextSteps: string[] = []
+  
+  // Workday feedback
+  if (atsScores.workday >= 70) {
+    feedback.push('✅ Workday: Strong contextual keyword matching detected')
+  } else if (atsScores.workday >= 45) {
+    feedback.push('⚠️ Workday: Needs better contextual keyword usage')
+    nextSteps.push('Add more professional context around technical keywords')
+  } else {
+    feedback.push('❌ Workday: Poor NLP analysis score - risk of auto-rejection')
+    nextSteps.push('Critical: Rewrite with stronger contextual language')
+  }
+  
+  // Taleo feedback  
+  if (atsScores.taleo >= 60) {
+    feedback.push('✅ Taleo: Meets 4-criteria scoring system requirements')
+  } else {
+    feedback.push('⚠️ Taleo: Failing boolean logic screening')
+    nextSteps.push('Add exact keyword matches from job description')
+  }
+  
+  // Greenhouse feedback
+  if (atsScores.greenhouse >= 70) {
+    feedback.push('✅ Greenhouse: Excellent tech keyword coverage')
+  } else if (atsScores.greenhouse >= 50) {
+    feedback.push('⚠️ Greenhouse: Tech skills visible but need strengthening')  
+    nextSteps.push('Add more project details and technical achievements')
+  } else {
+    feedback.push('❌ Greenhouse: Insufficient tech keyword density')
+    nextSteps.push('Critical: Add GitHub/portfolio links and tech projects')
+  }
+  
+  // BambooHR feedback
+  if (atsScores.bamboohr >= 65) {
+    feedback.push('✅ BambooHR: Good cultural fit indicators')
+  } else {
+    feedback.push('⚠️ BambooHR: Needs more teamwork/collaboration emphasis')
+    nextSteps.push('Highlight team projects and soft skills')
+  }
+  
+  // Overall recommendations based on worst performer
+  const worstSystem = Object.keys(atsScores).reduce((a, b) => 
+    atsScores[a as keyof typeof atsScores] < atsScores[b as keyof typeof atsScores] ? a : b
+  )
+  
+  if (worstSystem === 'workday') {
+    nextSteps.push('🎯 Priority: Improve contextual language for Workday systems')
+  } else if (worstSystem === 'taleo') {
+    nextSteps.push('🎯 Priority: Add exact keyword matches for Taleo systems')
+  } else if (worstSystem === 'greenhouse') {
+    nextSteps.push('🎯 Priority: Strengthen technical content for Greenhouse')
+  } else if (worstSystem === 'bamboohr') {
+    nextSteps.push('🎯 Priority: Emphasize team/culture fit for BambooHR')
+  }
+  
+  return {
+    passed,
+    stage,
+    systemResults,
+    feedback,
+    nextSteps,
+    worstPerformer: worstSystem,
+    averageScore: Math.round(avgScore),
+    riskLevel: avgScore >= 70 ? 'low' : avgScore >= 50 ? 'medium' : avgScore >= 35 ? 'high' : 'critical'
+  }
+}
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
+  console.log('🔍 ATS Analysis started at:', new Date().toISOString())
   
   try {
     // Get user ID for rate limiting
     const userId = request.headers.get('x-user-id') || 'anonymous'
     const userAgent = request.headers.get('user-agent') || ''
     const isMobileRequest = /Mobile|Android|iPhone|iPad/.test(userAgent)
+    console.log('📱 Request info:', { userId, isMobileRequest, userAgent: userAgent.substring(0, 50) })
     
     // Check rate limit (more lenient for mobile)
     const rateLimit = checkRateLimit(userId)
@@ -91,6 +335,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    console.log('📝 Request body received, parsing...')
+    
     const { 
       cvText, 
       jobDescription, 
@@ -101,45 +347,104 @@ export async function POST(request: NextRequest) {
       industry = 'technology'
     }: ATSAnalysisRequest = body
 
+    console.log('📊 Analysis parameters:', { 
+      cvTextLength: cvText?.length || 0, 
+      hasJobDescription: !!jobDescription,
+      fileName, 
+      fileSize, 
+      analysisMode, 
+      targetATS, 
+      industry 
+    })
+
     // Validation
     if (!cvText || cvText.trim().length < 100) {
+      console.log('❌ Validation failed: CV text too short')
       return NextResponse.json(
         { error: 'CV text must be at least 100 characters long' },
         { status: 400 }
       )
     }
+    console.log('✅ Validation passed')
 
     // Standard analysis
+    console.log('🔍 Starting standard analysis...')
     const keywordAnalysis = await analyzeKeywords(cvText, jobDescription)
+    console.log('🔑 Keyword analysis completed:', { matched: keywordAnalysis.matched, total: keywordAnalysis.total })
+    
     const structureAnalysis = analyzeSections(cvText)
+    console.log('🏗️ Structure analysis completed:', { score: structureAnalysis.score })
+    
     const formatAnalysis = analyzeFormat(cvText)
+    console.log('📄 Format analysis completed:', { score: formatAnalysis.score })
+    
     const industryAlignment = calculateIndustryAlignment(cvText, industry)
+    console.log('🏢 Industry alignment calculated:', industryAlignment)
 
     // Try HuggingFace analysis (with fallback)
+    console.log('🤖 Starting HuggingFace AI analysis...')
     let aiAnalysis = null
     try {
-      const hfClient = new HuggingFaceATSClient()
+      const hfClient = getHuggingFaceClient()
+      console.log('🔗 HuggingFace client obtained')
       aiAnalysis = await hfClient.analyzeCVForATS(cvText, jobDescription, industry)
-    } catch (hfError) {
-      console.warn('HuggingFace analysis failed:', hfError)
+      console.log('✅ HuggingFace analysis completed successfully')
+    } catch (hfError: unknown) {
+      console.error('❌ HuggingFace analysis failed:', hfError)
+      if (hfError instanceof Error) {
+        console.error('📋 Error details:', {
+          name: hfError.name,
+          message: hfError.message,
+          stack: hfError.stack?.substring(0, 200)
+        })
+      } else {
+        console.error('📋 Unknown error type:', typeof hfError)
+      }
     }
 
     // Calculate scores
-    const keywordScore = Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100)
-    const formatScore = Math.round(formatAnalysis.score)
-    const structureScore = Math.round(structureAnalysis.score)
+    console.log('🧮 Calculating final scores...')
+    const keywordScore = Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100) || 0
+    const formatScore = Math.round(formatAnalysis.score) || 0
+    const structureScore = Math.round(structureAnalysis.score) || 0
+    const safeIndustryAlignment = isNaN(industryAlignment) ? 50 : industryAlignment
+    console.log('📊 Individual scores:', { keywordScore, formatScore, structureScore, industryAlignment: safeIndustryAlignment })
 
     // Overall score calculation
-    const overallScore = Math.round((keywordScore + formatScore + structureScore + industryAlignment) / 4)
+    const rawOverallScore = (keywordScore + formatScore + structureScore + safeIndustryAlignment) / 4
+    const overallScore = Math.max(0, Math.min(100, Math.round(rawOverallScore)))
+    console.log('🎯 Overall score calculated:', { 
+      raw: rawOverallScore, 
+      final: overallScore, 
+      components: { keywordScore, formatScore, structureScore, industryAlignment: safeIndustryAlignment }
+    })
 
     // Build response
+    const irishMarketAnalysis = calculateLocalIrishMarketRelevance(cvText)
+    const suggestions = generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, irishMarketAnalysis, validateATSFormat(cvText))
+    const warnings = generateWarnings(keywordAnalysis, formatAnalysis, structureAnalysis, validateATSFormat(cvText))
+    const strengths = generateStrengths(keywordAnalysis, formatAnalysis, structureAnalysis, irishMarketAnalysis)
+    
+    // Calculate rejection risk
+    const rejectionRisk = overallScore >= 80 ? 'low' : 
+                         overallScore >= 60 ? 'medium' : 
+                         overallScore >= 40 ? 'high' : 'critical'
+
+    // Generate ATS system scores with realistic algorithms based on research
+    const atsSystemScores = calculateRealisticATSScores(cvText, keywordAnalysis, formatAnalysis, structureAnalysis, industry, overallScore)
+
+    // Generate simulation results with ATS-specific behaviors
+    const simulation = generateRealisticATSSimulation(atsSystemScores, cvText, keywordAnalysis, overallScore)
+
     const response = {
       // Basic scores
       overallScore,
       keywordScore,
       formatScore,
       structureScore,
-      industryAlignment,
+      sectionScore: structureScore, // For compatibility
+      industryAlignment: safeIndustryAlignment,
+      rejectionRisk,
 
       // Detailed analysis
       keywords: {
@@ -150,17 +455,32 @@ export async function POST(request: NextRequest) {
         density: Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100)
       },
 
+      // Section details (for UI display)
+      details: structureAnalysis.details,
+
       structure: {
         score: structureScore,
         issues: structureAnalysis.details?.issues || [],
-        suggestions: generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, calculateIrishMarketRelevance(cvText), validateATSFormat(cvText))
+        suggestions: suggestions
       },
 
       format: {
         score: formatScore,
         issues: formatAnalysis.details?.issues || [],
-        warnings: generateWarnings(keywordAnalysis, formatAnalysis, structureAnalysis, validateATSFormat(cvText))
+        warnings: warnings
       },
+
+      // ATS System Compatibility
+      atsSystemScores,
+
+      // Simulation results
+      simulation,
+
+      // Recommendations and feedback
+      suggestions,
+      recommendations: suggestions,
+      strengths,
+      warnings,
 
       // AI Analysis (if available)
       aiAnalysis: aiAnalysis ? {
@@ -169,24 +489,20 @@ export async function POST(request: NextRequest) {
         atsCompatibility: aiAnalysis.atsCompatibility
       } : null,
 
-      // Recommendations
-      recommendations: [
-        ...generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, calculateIrishMarketRelevance(cvText), validateATSFormat(cvText)),
-        ...(aiAnalysis?.contentAnalysis?.suggestions || [])
-      ].slice(0, 8),
-
       // Report
       report: generateATSReport(
         overallScore,
         keywordAnalysis,
         formatAnalysis,
         structureAnalysis,
-        generateSuggestions(keywordAnalysis, formatAnalysis, structureAnalysis, calculateIrishMarketRelevance(cvText), validateATSFormat(cvText)),
-        generateWarnings(keywordAnalysis, formatAnalysis, structureAnalysis, validateATSFormat(cvText))
+        suggestions,
+        warnings
       )
     }
 
     const processingTime = Date.now() - startTime
+    console.log('⏱️ Processing completed in:', processingTime + 'ms')
+    console.log('✅ ATS Analysis completed successfully')
 
     return NextResponse.json(response, {
       headers: {
@@ -198,8 +514,17 @@ export async function POST(request: NextRequest) {
       }
     })
 
-  } catch (error) {
-    console.error('ATS analysis failed:', error)
+  } catch (error: unknown) {
+    console.error('💥 CRITICAL: ATS analysis failed completely:', error)
+    if (error instanceof Error) {
+      console.error('💥 Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+    } else {
+      console.error('💥 Unknown error type:', typeof error, error)
+    }
     return NextResponse.json(
       { error: 'Failed to analyze CV' },
       { status: 500 }
@@ -505,6 +830,128 @@ function generateStrengths(keywordAnalysis: KeywordAnalysis, formatAnalysis: For
   return strengths
 }
 
+function calculateLocalIrishMarketRelevance(cvText: string): IrishMarketAnalysis {
+  const foundKeywords: string[] = []
+  let score = 0
+  const cvLower = cvText.toLowerCase()
+  
+  // 🇮🇪 IRISH WORK AUTHORIZATION PATTERNS (Critical for ATS)
+  const workAuthPatterns = [
+    // STAMP Types
+    { pattern: /stamp\s*1[\s|]*/, points: 25, label: 'STAMP1 (Employment permit)' },
+    { pattern: /stamp\s*2[\s|]*/, points: 25, label: 'STAMP2 (Student with work rights)' },
+    { pattern: /stamp\s*3[\s|]*/, points: 25, label: 'STAMP3 (Non-EEA family member)' },
+    { pattern: /stamp\s*4[\s|]*/, points: 25, label: 'STAMP4 (Long-term resident)' },
+    { pattern: /stamp\s*5[\s|]*/, points: 25, label: 'STAMP5 (EU Treaty Rights)' },
+    { pattern: /stamp\s*6[\s|]*/, points: 25, label: 'STAMP6 (Retired/Independent)' },
+    
+    // EU Status
+    { pattern: /eu\s+citizen/i, points: 30, label: 'EU Citizen' },
+    { pattern: /eu\s+national/i, points: 30, label: 'EU National' },
+    { pattern: /european\s+union/i, points: 25, label: 'European Union status' },
+    { pattern: /eea\s+national/i, points: 25, label: 'EEA National' },
+    { pattern: /non[\-\s]*eu/i, points: 20, label: 'Non-EU (disclosed)' },
+    { pattern: /non[\-\s]*eea/i, points: 20, label: 'Non-EEA (disclosed)' },
+    
+    // Work Permits & Rights
+    { pattern: /work\s+permit/i, points: 25, label: 'Work Permit' },
+    { pattern: /employment\s+permit/i, points: 25, label: 'Employment Permit' },
+    { pattern: /critical\s+skills\s+permit/i, points: 30, label: 'Critical Skills Permit' },
+    { pattern: /general\s+employment\s+permit/i, points: 25, label: 'General Employment Permit' },
+    { pattern: /right\s+to\s+work/i, points: 25, label: 'Right to Work' },
+    { pattern: /visa\s+required/i, points: 15, label: 'Visa Required (disclosed)' },
+    { pattern: /no\s+visa\s+required/i, points: 25, label: 'No Visa Required' },
+    { pattern: /work\s+authorization/i, points: 20, label: 'Work Authorization' },
+    { pattern: /eligible\s+to\s+work/i, points: 25, label: 'Eligible to Work' },
+    
+    // Irish/UK Specific
+    { pattern: /irish\s+citizen/i, points: 30, label: 'Irish Citizen' },
+    { pattern: /uk\s+citizen/i, points: 25, label: 'UK Citizen' },
+    { pattern: /british\s+citizen/i, points: 25, label: 'British Citizen' },
+    { pattern: /cta\s+rights/i, points: 25, label: 'CTA Rights' },
+    { pattern: /common\s+travel\s+area/i, points: 25, label: 'Common Travel Area' }
+  ]
+  
+  // Check work authorization patterns
+  let highestAuthScore = 0
+  workAuthPatterns.forEach(auth => {
+    if (auth.pattern.test(cvText)) {
+      foundKeywords.push(auth.label)
+      highestAuthScore = Math.max(highestAuthScore, auth.points)
+    }
+  })
+  score += highestAuthScore
+  
+  // 📍 IRISH LOCATION KEYWORDS
+  const locationKeywords = [
+    { keyword: 'dublin', points: 20, label: 'Dublin' },
+    { keyword: 'cork', points: 15, label: 'Cork' },
+    { keyword: 'galway', points: 15, label: 'Galway' },
+    { keyword: 'limerick', points: 12, label: 'Limerick' },
+    { keyword: 'waterford', points: 12, label: 'Waterford' },
+    { keyword: 'ireland', points: 15, label: 'Ireland' },
+    { keyword: 'irish', points: 10, label: 'Irish' },
+    { keyword: 'eircode', points: 10, label: 'Eircode' }
+  ]
+  
+  locationKeywords.forEach(loc => {
+    if (cvLower.includes(loc.keyword)) {
+      foundKeywords.push(loc.label)
+      score += loc.points
+    }
+  })
+  
+  // 📞 IRISH CONTACT FORMATS
+  // Irish phone numbers: +353 or 0, followed by area code
+  if (/(\+353|0)[1-9][0-9]{7,9}/.test(cvText)) {
+    score += 15
+    foundKeywords.push('Irish phone format')
+  }
+  
+  // Irish domain (.ie)
+  if (/.ie\b/i.test(cvText)) {
+    score += 10
+    foundKeywords.push('Irish domain (.ie)')
+  }
+  
+  // 🏢 IRISH MARKET CONTEXT
+  const irishMarketTerms = [
+    'revenue commissioners', 'hse', 'ida ireland', 'enterprise ireland', 
+    'dáil', 'oireachtas', 'rte', 'eircom', 'aib', 'bank of ireland',
+    'trinity college', 'ucd', 'dcu', 'dit', 'nuig', 'ucc'
+  ]
+  
+  irishMarketTerms.forEach(term => {
+    if (cvLower.includes(term)) {
+      score += 8
+      foundKeywords.push(`Irish institution: ${term}`)
+    }
+  })
+  
+  // 💡 GENERATE TARGETED SUGGESTIONS
+  const suggestions = []
+  
+  if (highestAuthScore === 0) {
+    suggestions.push('🚨 CRITICAL: Include your work authorization status (EU/Non-EU, STAMP type, or work permit)')
+    suggestions.push('Irish employers MUST verify work authorization - be explicit about your status')
+  }
+  
+  if (score < 30) {
+    suggestions.push('Add Dublin location if you\'re based there (major hiring advantage)')
+    suggestions.push('Include Irish contact details (phone number with +353 format)')
+  }
+  
+  if (!cvLower.includes('dublin') && !cvLower.includes('ireland')) {
+    suggestions.push('Consider adding Ireland/Dublin to location section for local relevance')
+  }
+  
+  return {
+    score: Math.min(100, score),
+    foundKeywords,
+    suggestions
+  }
+}
+
 function calculateIndustryAlignment(cvText: string, industry: string): number {
   const industryKeywords: Record<string, string[]> = {
     technology: ['agile', 'scrum', 'git', 'api', 'cloud', 'devops', 'javascript', 'python', 'react', 'docker', 'kubernetes', 'ci/cd', 'microservices', 'testing', 'automation', 'frontend', 'backend', 'full-stack'],
@@ -524,14 +971,27 @@ function calculateIndustryAlignment(cvText: string, industry: string): number {
     media: ['journalism', 'content creation', 'broadcasting', 'media production', 'editing', 'storytelling', 'digital media', 'social media', 'photography', 'video production', 'writing', 'communication', 'creative', 'multimedia'],
     research: ['research', 'data analysis', 'statistics', 'methodology', 'academic research', 'scientific research', 'publications', 'grant writing', 'data collection', 'analysis software', 'spss', 'r', 'python', 'peer review'],
     nonprofit: ['nonprofit', 'ngo', 'charity', 'fundraising', 'grant writing', 'volunteer management', 'community outreach', 'social services', 'program management', 'advocacy', 'social impact', 'stakeholder engagement'],
-    government: ['public service', 'government', 'policy', 'administration', 'public administration', 'regulatory', 'compliance', 'stakeholder management', 'project management', 'public sector', 'civil service', 'government relations']
+    government: ['public service', 'government', 'policy', 'administration', 'public administration', 'regulatory', 'compliance', 'stakeholder management', 'project management', 'public sector', 'civil service', 'government relations'],
+    general: ['leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative', 'project management', 'time management', 'organization', 'detail oriented', 'customer service', 'sales', 'microsoft office', 'excel', 'collaboration', 'adaptability', 'initiative', 'results driven']
   }
   
-  const keywords = industryKeywords[industry] || []
+  const keywords = industryKeywords[industry] || industryKeywords.general || []
   const cvLower = cvText.toLowerCase()
   
+  if (keywords.length === 0) {
+    console.log('⚠️ No keywords found for industry:', industry, 'defaulting to 50')
+    return 50 // Default score when no industry keywords are available
+  }
+  
   const foundKeywords = keywords.filter(keyword => cvLower.includes(keyword.toLowerCase()))
-  return Math.round((foundKeywords.length / keywords.length) * 100)
+  const alignmentScore = Math.round((foundKeywords.length / keywords.length) * 100)
+  console.log('🎯 Industry alignment details:', { 
+    industry, 
+    totalKeywords: keywords.length, 
+    foundKeywords: foundKeywords.length, 
+    score: alignmentScore 
+  })
+  return alignmentScore
 }
 
 function extractBasicData(cvText: string): Record<string, any> {

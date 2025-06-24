@@ -14,6 +14,8 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  // Disable source map generation in development to reduce 404 warnings
+  productionBrowserSourceMaps: false,
   images: {
     remotePatterns: [
       {

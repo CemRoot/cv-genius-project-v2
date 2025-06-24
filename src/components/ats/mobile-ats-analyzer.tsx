@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Loader2, Search, CheckCircle, AlertTriangle, XCircle, Target, FileText, TrendingUp, Upload, Camera } from 'lucide-react'
+import { Loader2, Search, CheckCircle, AlertTriangle, XCircle, Target, FileText, TrendingUp, Upload, Camera, Building } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMobileFileUpload } from '@/hooks/use-mobile-file-upload'
 import { useMobileKeyboard } from '@/hooks/mobile-hooks'
@@ -14,11 +14,12 @@ import { MobileCVUpload } from './mobile-cv-upload'
 
 interface ATSAnalysis {
   overallScore: number
-  keywordDensity: {
+  keywords: {
     total: number
     matched: number
+    found: string[]
     missing: string[]
-    density: { [key: string]: number }
+    density: number
   }
   formatScore: number
   sectionScore: number
@@ -46,6 +47,15 @@ interface ATSAnalysis {
     stage: string
     feedback: string[]
     nextSteps: string[]
+    systemResults?: {
+      workday: 'PASS' | 'REVIEW' | 'FAIL'
+      taleo: 'PASS' | 'REVIEW' | 'FAIL'
+      greenhouse: 'PASS' | 'REVIEW' | 'FAIL'
+      bamboohr: 'PASS' | 'REVIEW' | 'FAIL'
+    }
+    worstPerformer?: string
+    averageScore?: number
+    riskLevel?: 'low' | 'medium' | 'high' | 'critical'
   }
   report?: {
     summary: string
@@ -77,7 +87,7 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [isOnline, setIsOnline] = useState(true)
 
-  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+  const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
 
   // Monitor online status
   useEffect(() => {
@@ -226,8 +236,9 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
         throw new Error(data.error || 'ATS analysis failed')
       }
 
-      if (data.success) {
-        setAnalysis(data.analysis)
+      // Check if the response has the expected analysis data structure
+      if (data.overallScore !== undefined && data.keywordScore !== undefined) {
+        setAnalysis(data)
       } else {
         throw new Error('ATS analysis failed')
       }
@@ -393,6 +404,8 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                     setError(error)
                     setShowFileUpload(false) // Close upload on error
                   }}
+                  selectedIndustry={selectedIndustry}
+                  autoImprove={true}
                   className="p-4 border-2 border-dashed border-gray-300 rounded-lg"
                 />
                 <div className="flex justify-between mt-2">
@@ -421,11 +434,14 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
               style={{ minHeight: '140px' }}
               aria-describedby="cv-content-help"
             />
-            <div id="cv-content-help" className="flex justify-between text-sm text-muted-foreground">
+            <div id="cv-content-help" className="flex justify-between items-center text-sm text-muted-foreground">
               <span>Paste CV text or upload PDF file</span>
-              <span className={cvText.length < 100 ? 'text-red-500' : ''}>
-                {cvText.length} characters {cvText.length < 100 && '(minimum 100)'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-green-600">✅ Auto-AI optimization enabled</span>
+                <span className={cvText.length < 100 ? 'text-red-500' : ''}>
+                  {cvText.length} characters {cvText.length < 100 && '(minimum 100)'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -542,8 +558,8 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4 mt-6">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className={`text-xl font-bold ${getScoreColor(analysis.keywordDensity.matched / analysis.keywordDensity.total * 100)}`}>
-                      {Math.round(analysis.keywordDensity.matched / analysis.keywordDensity.total * 100)}%
+                    <div className={`text-xl font-bold ${getScoreColor(analysis.keywords.matched / analysis.keywords.total * 100)}`}>
+                      {Math.round(analysis.keywords.matched / analysis.keywords.total * 100)}%
                     </div>
                     <div className="text-sm text-muted-foreground">Keywords</div>
                   </div>
@@ -556,6 +572,141 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Enterprise ATS Analysis - Mobile Optimized */}
+            {analysis.atsSystemScores && (
+              <Card>
+                <CardHeader 
+                  className="cursor-pointer"
+                  onClick={() => toggleSection('enterprise')}
+                >
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Building className="h-5 w-5 text-purple-600" />
+                      Enterprise ATS Analysis
+                      <Badge variant="outline" className="ml-2 text-xs">Research-Based</Badge>
+                    </div>
+                    <span className="text-sm">
+                      {expandedSection === 'enterprise' ? '−' : '+'}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                {expandedSection === 'enterprise' && (
+                  <CardContent>
+                    <div className="space-y-3">
+                      {/* Workday - Mobile Compact */}
+                      <div className="p-3 border rounded-lg bg-gradient-to-r from-blue-50 to-blue-50/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${analysis.atsSystemScores.workday >= 70 ? 'bg-green-500' : analysis.atsSystemScores.workday >= 45 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                            <span className="font-medium text-sm">Workday</span>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.workday)}`}>
+                              {analysis.atsSystemScores.workday}%
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">Multinational corporations</p>
+                        {analysis.simulation?.systemResults?.workday && (
+                          <Badge variant={analysis.simulation.systemResults.workday === 'PASS' ? 'default' : analysis.simulation.systemResults.workday === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                            {analysis.simulation.systemResults.workday}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Oracle Taleo - Mobile Compact */}
+                      <div className="p-3 border rounded-lg bg-gradient-to-r from-orange-50 to-orange-50/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${analysis.atsSystemScores.taleo >= 60 ? 'bg-green-500' : analysis.atsSystemScores.taleo >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                            <span className="font-medium text-sm">Oracle Taleo</span>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.taleo)}`}>
+                              {analysis.atsSystemScores.taleo}%
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">Enterprise platform</p>
+                        {analysis.simulation?.systemResults?.taleo && (
+                          <Badge variant={analysis.simulation.systemResults.taleo === 'PASS' ? 'default' : analysis.simulation.systemResults.taleo === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                            {analysis.simulation.systemResults.taleo}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Greenhouse - Mobile Compact */}
+                      <div className="p-3 border rounded-lg bg-gradient-to-r from-green-50 to-green-50/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${analysis.atsSystemScores.greenhouse >= 70 ? 'bg-green-500' : analysis.atsSystemScores.greenhouse >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                            <span className="font-medium text-sm">Greenhouse</span>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.greenhouse)}`}>
+                              {analysis.atsSystemScores.greenhouse}%
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">Tech companies</p>
+                        {analysis.simulation?.systemResults?.greenhouse && (
+                          <Badge variant={analysis.simulation.systemResults.greenhouse === 'PASS' ? 'default' : analysis.simulation.systemResults.greenhouse === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                            {analysis.simulation.systemResults.greenhouse}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* BambooHR - Mobile Compact */}
+                      <div className="p-3 border rounded-lg bg-gradient-to-r from-purple-50 to-purple-50/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${analysis.atsSystemScores.bamboohr >= 65 ? 'bg-green-500' : analysis.atsSystemScores.bamboohr >= 45 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                            <span className="font-medium text-sm">BambooHR</span>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${getScoreColor(analysis.atsSystemScores.bamboohr)}`}>
+                              {analysis.atsSystemScores.bamboohr}%
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">SME & startups</p>
+                        {analysis.simulation?.systemResults?.bamboohr && (
+                          <Badge variant={analysis.simulation.systemResults.bamboohr === 'PASS' ? 'default' : analysis.simulation.systemResults.bamboohr === 'REVIEW' ? 'secondary' : 'destructive'} className="text-xs">
+                            {analysis.simulation.systemResults.bamboohr}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Mobile Summary */}
+                      {analysis.simulation?.averageScore && (
+                        <div className="mt-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-medium text-sm">Overall Performance</h4>
+                              <p className="text-xs text-muted-foreground">
+                                Average: {analysis.simulation.averageScore}%
+                              </p>
+                            </div>
+                            <Badge variant={analysis.simulation.riskLevel === 'low' ? 'default' : analysis.simulation.riskLevel === 'medium' ? 'secondary' : 'destructive'} className="text-xs">
+                              {analysis.simulation.riskLevel?.toUpperCase()} RISK
+                            </Badge>
+                          </div>
+                          
+                          {analysis.simulation.worstPerformer && (
+                            <div className="mt-2 pt-2 border-t">
+                              <p className="text-xs text-muted-foreground">
+                                <span className="font-medium">Focus on:</span> {analysis.simulation.worstPerformer}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )}
 
             {/* Expandable Sections */}
             {analysis.strengths.length > 0 && (

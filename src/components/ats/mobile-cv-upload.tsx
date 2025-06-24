@@ -23,6 +23,8 @@ interface MobileCVUploadProps {
   onTextExtracted: (text: string, fileName?: string) => void
   onError?: (error: string) => void
   className?: string
+  selectedIndustry?: string
+  autoImprove?: boolean
 }
 
 // Clean PDF extraction issues - specific ligature fixes for ATS compatibility
@@ -53,8 +55,9 @@ function cleanPDFExtractionIssues(text: string): string {
     .trim()
 }
 
-export function MobileCVUpload({ onTextExtracted, onError, className = '' }: MobileCVUploadProps) {
+export function MobileCVUpload({ onTextExtracted, onError, className = '', selectedIndustry = 'general', autoImprove = true }: MobileCVUploadProps) {
   const [extracting, setExtracting] = useState(false)
+  const [improving, setImproving] = useState(false)
   const [previewText, setPreviewText] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
 
@@ -187,8 +190,10 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
         const cleanedText = cleanPDFExtractionIssues(extractedText)
         const wordCount = cleanedText.trim().split(/\s+/).length
         const pages = result.pages || 1
+        const enhanced = result.enhanced || false
         
-        return `✅ PDF "${file.name}" processed successfully!\n📊 ${pages} pages, ${wordCount} words\n\n${cleanedText}`
+        const enhancementNote = enhanced ? ' 🤖 AI-Enhanced' : ''
+        return `✅ PDF "${file.name}" processed successfully!${enhancementNote}\n📊 ${pages} pages, ${wordCount} words\n\n${cleanedText}`
         
       } catch (apiError) {
         console.error('API PDF extraction also failed:', apiError)
@@ -210,6 +215,37 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
     )
   }
 
+  // Auto-improve CV text with AI
+  async function improveCVText(text: string): Promise<string> {
+    if (!autoImprove || text.length < 100) return text
+    
+    try {
+      setImproving(true)
+      const response = await fetch('/api/ai/improve-cv-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          cvText: text, 
+          targetIndustry: selectedIndustry 
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (result.success && result.enhancedText) {
+        return result.enhancedText
+      } else {
+        console.warn('AI improvement failed:', result.error)
+        return text // Return original text if improvement fails
+      }
+    } catch (error) {
+      console.warn('AI improvement error:', error)
+      return text // Return original text if improvement fails
+    } finally {
+      setImproving(false)
+    }
+  }
+
   async function handleFileSelect(selectedFiles: File[]) {
     if (selectedFiles.length === 0) return
     
@@ -226,7 +262,11 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
     try {
       const extractedText = await extractTextFromFile(file)
       setPreviewText(extractedText)
-      onTextExtracted(extractedText, file.name)
+      
+      // Auto-improve the text if enabled
+      const finalText = await improveCVText(extractedText)
+      
+      onTextExtracted(finalText, file.name)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to extract text from file'
       onError?.(errorMessage)
@@ -315,10 +355,10 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    {extracting && (
+                    {(extracting || improving) && (
                       <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                     )}
-                    {previewText && (
+                    {previewText && !extracting && !improving && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -333,17 +373,20 @@ export function MobileCVUpload({ onTextExtracted, onError, className = '' }: Mob
                       size="sm"
                       onClick={handleRemoveFile}
                       className="text-red-600 hover:text-red-700"
+                      disabled={extracting || improving}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
 
-                {/* Extraction Status */}
-                {extracting && (
+                {/* Extraction/Improvement Status */}
+                {(extracting || improving) && (
                   <div className="mt-3 flex items-center space-x-2">
                     <Progress value={undefined} className="flex-1 h-2" />
-                    <span className="text-xs text-gray-500">Extracting text...</span>
+                    <span className="text-xs text-gray-500">
+                      {extracting ? 'Extracting text...' : improving ? '🤖 AI Improving...' : ''}
+                    </span>
                   </div>
                 )}
 
