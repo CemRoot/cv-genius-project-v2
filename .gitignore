@@ -62,3 +62,17 @@ logs
 
 # IP whitelist file (contains security data)
 .ip-whitelist.json
+
+# SECURITY: Admin scripts and access generators (CRITICAL - DO NOT SHARE)
+scripts/admin/
+/scripts/admin/
+scripts/admin/**
+**/admin-access-generator.js
+**/admin-*.js
+
+# Security keys and secrets
+*.key
+*.secret
+admin-keys/
+security/
+auth-keys/
