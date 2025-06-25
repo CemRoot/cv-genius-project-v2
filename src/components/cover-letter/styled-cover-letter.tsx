@@ -19,6 +19,17 @@ export function StyledCoverLetter({
   signature,
   isPdfExport = false 
 }: StyledCoverLetterProps & { isPdfExport?: boolean }) {
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   // Debug log
   console.log('🎨 StyledCoverLetter props:', { templateId, colorOption, isPdfExport })
   
@@ -156,9 +167,10 @@ export function StyledCoverLetter({
             maxWidth: isPdfExport ? '100%' : '800px',
             margin: '0 auto',
             background: 'white',
-            padding: isPdfExport ? '60px 50px' : '40px',
+            padding: isPdfExport ? '60px 50px' : (isMobile ? '20px' : '40px'),
             fontFamily: '"Arial", sans-serif',
-            boxSizing: 'border-box' as const
+            boxSizing: 'border-box' as const,
+            fontSize: '14px'
           },
           header: {
             textAlign: 'center' as const,
@@ -167,10 +179,10 @@ export function StyledCoverLetter({
             paddingBottom: '20px'
           },
           nameStyle: {
-            fontSize: '32px',
+            fontSize: isMobile && !isPdfExport ? '22px' : '32px',
             fontWeight: 'bold',
             color: primaryColor,
-            marginBottom: '10px'
+            marginBottom: isMobile && !isPdfExport ? '5px' : '10px'
           },
           contentStyle: {
             lineHeight: '1.6',
@@ -187,24 +199,24 @@ export function StyledCoverLetter({
             margin: '0 auto',
             background: 'white',
             display: 'grid',
-            gridTemplateColumns: '250px 1fr',
+            gridTemplateColumns: isMobile && !isPdfExport ? '90px 1fr' : '250px 1fr',
             boxSizing: 'border-box' as const
           },
           sidebar: {
             background: primaryColor,
             color: 'white',
-            padding: '35px 25px'
+            padding: isMobile && !isPdfExport ? '20px 15px' : '35px 25px'
           },
           mainContent: {
-            padding: '35px',
+            padding: isMobile && !isPdfExport ? '0' : '35px',
             background: 'white',
             fontFamily: '"Calibri", sans-serif',
             fontSize: '14px'
           },
           nameStyle: {
-            fontSize: '26px',
+            fontSize: isMobile && !isPdfExport ? '18px' : '26px',
             fontWeight: 'bold',
-            marginBottom: '8px'
+            marginBottom: isMobile && !isPdfExport ? '4px' : '8px'
           }
         }
       case 'tech-dublin':
@@ -226,16 +238,16 @@ export function StyledCoverLetter({
           },
           content: {
             background: 'white',
-            padding: '30px',
-            margin: '15px',
+            padding: isMobile && !isPdfExport ? '0' : '30px',
+            margin: isMobile && !isPdfExport ? '10px' : '15px',
             borderRadius: '6px',
             lineHeight: '1.5',
             fontSize: '14px'
           },
           nameStyle: {
-            fontSize: '28px',
+            fontSize: isMobile && !isPdfExport ? '20px' : '28px',
             fontWeight: 'bold',
-            marginBottom: '8px'
+            marginBottom: isMobile && !isPdfExport ? '4px' : '8px'
           }
         }
       case 'dublin-professional':
@@ -254,21 +266,21 @@ export function StyledCoverLetter({
           },
           sidebar: {
             display: 'table-cell',
-            width: '180px',
+            width: isMobile && !isPdfExport ? '90px' : '180px',
             background: primaryColor,
             color: 'white',
-            padding: '25px',
+            padding: isMobile && !isPdfExport ? '8px' : '25px',
             verticalAlign: 'top'
           },
           mainContent: {
             display: 'table-cell',
-            padding: '25px',
+            padding: isMobile && !isPdfExport ? '10px' : '25px',
             verticalAlign: 'top'
           },
           nameStyle: {
-            fontSize: '24px',
+            fontSize: isMobile && !isPdfExport ? '16px' : '24px',
             fontWeight: 'bold',
-            marginBottom: '8px'
+            marginBottom: isMobile && !isPdfExport ? '4px' : '8px'
           }
         }
     }
@@ -332,18 +344,18 @@ export function StyledCoverLetter({
         </div>
         
         <div style={styles.mainContent}>
-          {sections.date && <p style={{ textAlign: 'right', marginBottom: '30px', color: '#6b7280' }}>{sections.date}</p>}
+          {sections.date && <p style={{ textAlign: 'right', marginBottom: isMobile && !isPdfExport ? '15px' : '30px', color: '#6b7280', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>{sections.date}</p>}
           
-          <div style={{ marginBottom: '30px' }}>
-            <p style={{ marginBottom: '5px', fontWeight: 'bold', textAlign: 'left' }}>{sections.recipientName}</p>
-            <p style={{ marginBottom: '5px', textAlign: 'left' }}>{highlightPlaceholders(sections.company)}</p>
-            <p style={{ textAlign: 'left' }}>{sections.companyAddress}</p>
+          <div style={{ marginBottom: isMobile && !isPdfExport ? '15px' : '30px' }}>
+            <p style={{ marginBottom: '5px', fontWeight: 'bold', textAlign: 'left', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>{sections.recipientName}</p>
+            <p style={{ marginBottom: '5px', textAlign: 'left', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>{highlightPlaceholders(sections.company)}</p>
+            <p style={{ textAlign: 'left', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>{sections.companyAddress}</p>
           </div>
           
-          <p style={{ marginBottom: '25px', fontWeight: '600', fontSize: '16px' }}>{sections.salutation}</p>
+          <p style={{ marginBottom: isMobile && !isPdfExport ? '15px' : '25px', fontWeight: '600', fontSize: isMobile && !isPdfExport ? '12px' : '16px' }}>{sections.salutation}</p>
           
           {sections.paragraphs.map((para, index) => (
-            <p key={index} style={{ marginBottom: '20px', lineHeight: '1.7', textAlign: 'justify' }}>
+            <p key={index} style={{ marginBottom: isMobile && !isPdfExport ? '12px' : '20px', lineHeight: isMobile && !isPdfExport ? '1.4' : '1.7', textAlign: 'justify', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>
               {highlightPlaceholders(para)}
             </p>
           ))}
@@ -409,10 +421,10 @@ export function StyledCoverLetter({
     <div style={styles.container}>
       <div style={styles.sidebar}>
         <h2 style={styles.nameStyle}>{sections.senderName}</h2>
-        <div style={{ marginTop: '30px' }}>
-          {sections.email && <p style={{ marginBottom: '10px' }}>{sections.email}</p>}
-          {sections.phone && <p style={{ marginBottom: '10px' }}>{sections.phone}</p>}
-          {sections.address && <p style={{ marginBottom: '10px' }}>{sections.address}</p>}
+        <div style={{ marginTop: isMobile && !isPdfExport ? '15px' : '30px' }}>
+          {sections.email && <p style={{ marginBottom: '10px', fontSize: isMobile && !isPdfExport ? '10px' : '14px', wordBreak: 'break-all' }}>{sections.email}</p>}
+          {sections.phone && <p style={{ marginBottom: '10px', fontSize: isMobile && !isPdfExport ? '10px' : '14px' }}>{sections.phone}</p>}
+          {sections.address && <p style={{ marginBottom: '10px', fontSize: isMobile && !isPdfExport ? '10px' : '14px' }}>{sections.address}</p>}
         </div>
       </div>
       
