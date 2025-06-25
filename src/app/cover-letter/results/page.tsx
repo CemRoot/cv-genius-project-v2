@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -401,229 +401,64 @@ ${name}`
   const exportToPDF = async () => {
     setIsExporting(true)
     try {
-      // Create a completely fresh PDF container without using existing DOM
+      // Create a container for the StyledCoverLetter component
       const pdfContainer = document.createElement('div')
       pdfContainer.style.position = 'fixed'
       pdfContainer.style.top = '-10000px'
       pdfContainer.style.left = '0'
-      pdfContainer.style.width = '794px'  // A4 width in pixels
-      pdfContainer.style.height = '1123px' // A4 height in pixels
+      pdfContainer.style.width = '210mm'  // A4 width
+      pdfContainer.style.minHeight = '297mm' // A4 height
       pdfContainer.style.backgroundColor = '#ffffff'
-      pdfContainer.style.padding = '60px 45px'
-      pdfContainer.style.boxSizing = 'border-box'
-      pdfContainer.style.fontFamily = 'Arial, sans-serif'
-      pdfContainer.style.fontSize = '14px'
-      pdfContainer.style.lineHeight = '1.6'
-      pdfContainer.style.color = '#000000'
+      pdfContainer.style.overflow = 'visible'
       
-      // Get template and color info
-      const templateId = collectedData?.templateData.selectedTemplate || 'dublin-professional'
-      const colorOption = collectedData?.templateData.selectedColor || 'color1'
+      // Create a wrapper div with proper dimensions
+      const wrapper = document.createElement('div')
+      wrapper.style.width = '100%'
+      wrapper.style.padding = '25mm 20mm' // Standard margins for A4
+      wrapper.style.backgroundColor = '#ffffff'
+      wrapper.style.boxSizing = 'border-box'
+      wrapper.style.fontSize = '11pt'
+      wrapper.style.lineHeight = '1.5'
       
-      // Color mapping for PDF
-      const getColorValue = (color: string) => {
-        const colorMap: Record<string, string> = {
-          'color1': '#2563eb',
-          'color2': '#475569', 
-          'color3': '#b45309',
-          'color4': '#9333ea',
-          'color5': '#0d9488',
-          'color6': '#dc2626',
-          'color7': '#db2777',
-          'color8': '#16a34a'
-        }
-        return colorMap[color] || '#2563eb'
-      }
+      // Create React root and render StyledCoverLetter
+      const ReactDOM = (await import('react-dom/client')).default
+      const root = ReactDOM.createRoot(wrapper)
       
-      const accentColor = getColorValue(colorOption)
+      // Wait for React to render
+      await new Promise<void>((resolve) => {
+        root.render(
+          React.createElement(StyledCoverLetter, {
+            content: generatedLetter,
+            templateId: collectedData?.templateData.selectedTemplate || 'dublin-professional',
+            colorOption: collectedData?.templateData.selectedColor || 'color1',
+            signature: collectedData?.signature
+          })
+        )
+        setTimeout(resolve, 1500) // Give more time for complete render
+      })
       
-      // Create the letter HTML directly for clean PDF output
-      const letterHTML = `
-        <div style="
-          width: 100%; 
-          height: 100%; 
-          background: #ffffff; 
-          font-family: Arial, sans-serif;
-          color: #000000;
-          padding: 0;
-          margin: 0;
-        ">
-          <!-- Header Section -->
-          <div style="
-            text-align: center; 
-            border-bottom: 3px solid ${accentColor}; 
-            padding-bottom: 20px; 
-            margin-bottom: 25px;
-            background: #ffffff;
-          ">
-            <h1 style="
-              font-size: 28px; 
-              font-weight: bold; 
-              margin: 0 0 8px 0; 
-              color: ${accentColor};
-              background: transparent;
-            ">${contextState.personalInfo?.firstName || collectedData?.templateData.personalInfo?.firstName || 'CEM'} ${contextState.personalInfo?.lastName || collectedData?.templateData.personalInfo?.lastName || 'KOYLUOGLU'}</h1>
-            <p style="
-              font-size: 14px; 
-              color: #666666; 
-              margin: 0 0 10px 0;
-              background: transparent;
-            ">Dublin, Ireland</p>
-            <p style="
-              font-size: 14px; 
-              color: #666666; 
-              margin: 0;
-              background: transparent;
-            ">${contextState.resumeData?.personalInfo?.email || 'samlorem@icloud.com'} | ${contextState.resumeData?.personalInfo?.phone || '+353 873445918'}</p>
-          </div>
-          
-          <!-- Date -->
-          <div style="
-            text-align: right; 
-            margin-bottom: 25px;
-            background: transparent;
-          ">
-            <p style="
-              font-size: 14px; 
-              color: #666666; 
-              margin: 0;
-              background: transparent;
-            ">${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-          </div>
-          
-          <!-- Recipient -->
-          <div style="margin-bottom: 20px; background: transparent;">
-            <p style="
-              font-size: 14px; 
-              margin: 0 0 5px 0; 
-              color: #000000;
-              background: transparent;
-            ">Hiring Manager</p>
-            <p style="
-              font-size: 14px; 
-              margin: 0 0 5px 0; 
-              color: #000000;
-              background: transparent;
-            ">${collectedData?.jobInfo?.targetCompany || 'your organisation'}</p>
-            <p style="
-              font-size: 14px; 
-              margin: 0; 
-              color: #000000;
-              background: transparent;
-            ">Dublin, Ireland</p>
-          </div>
-          
-          <!-- Letter Body -->
-          <div style="
-            text-align: left; 
-            font-size: 14px; 
-            line-height: 1.6;
-            background: transparent;
-          ">
-            ${(() => {
-              // Extract just the letter body content (everything after header and before signature)
-              const lines = generatedLetter.split('\n').filter(line => line.trim());
-              
-              // Find the start of the actual letter content (after "Dear...")
-              let startIndex = lines.findIndex(line => 
-                line.toLowerCase().includes('dear')
-              );
-              
-              // If we found "Dear", include it, otherwise start from beginning
-              if (startIndex === -1) {
-                startIndex = 0;
-              }
-              
-              // Find the end (before "Yours sincerely" or signature)
-              let endIndex = lines.findIndex((line, index) => 
-                index > startIndex && (
-                  line.toLowerCase().includes('yours sincerely') ||
-                  line.toLowerCase().includes('sincerely') ||
-                  line.toLowerCase().includes('best regards') ||
-                  line.toLowerCase().includes('kind regards')
-                )
-              );
-              
-              // If no end found, use all remaining lines
-              if (endIndex === -1) {
-                endIndex = lines.length;
-              }
-              
-              // Extract the body content
-              const bodyLines = lines.slice(startIndex, endIndex);
-              
-              // Filter out any remaining header-like content
-              const cleanedBodyLines = bodyLines.filter(line => {
-                const lowerLine = line.toLowerCase();
-                return !lowerLine.includes('dublin, ireland') &&
-                       !lowerLine.includes('+353') &&
-                       !lowerLine.includes('@') &&
-                       !lowerLine.includes('hiring manager') &&
-                       !line.match(/^\d{1,2}.*\d{4}$/) &&
-                       !lowerLine.includes('cem koyluoglu') &&
-                       !lowerLine.includes('emin cem koyluoglu') &&
-                       line.trim().length > 0;
-              });
-              
-              return cleanedBodyLines.map(line => `
-                <p style="
-                  margin: 0 0 15px 0; 
-                  color: #000000; 
-                  line-height: 1.6;
-                  background: transparent;
-                ">${line}</p>
-              `).join('');
-            })()}
-          </div>
-          
-          <!-- Signature -->
-          <div style="
-            margin-top: 30px; 
-            text-align: left;
-            background: transparent;
-          ">
-            <p style="
-              font-size: 14px; 
-              margin: 0; 
-              color: #000000;
-              background: transparent;
-            ">Yours sincerely,</p>
-            <div style="
-              margin-top: 20px; 
-              margin-bottom: 10px;
-              background: transparent;
-            ">
-              ${collectedData?.signature?.value ? 
-                `<img src="${collectedData.signature.value}" alt="Signature" style="max-height: 60px;">` : 
-                ''
-              }
-            </div>
-            <p style="
-              font-size: 14px; 
-              margin: 0; 
-              color: #000000;
-              background: transparent;
-            ">${contextState.personalInfo?.firstName || collectedData?.templateData.personalInfo?.firstName || 'CEM'} ${contextState.personalInfo?.lastName || collectedData?.templateData.personalInfo?.lastName || 'KOYLUOGLU'}</p>
-          </div>
-        </div>
-      `
-      
-      pdfContainer.innerHTML = letterHTML
+      pdfContainer.appendChild(wrapper)
       document.body.appendChild(pdfContainer)
-      
-      // Wait for content to render
-      await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Capture with html2canvas
-      const canvas = await html2canvas(pdfContainer, {
+      // Get actual rendered dimensions
+      const actualContentHeight = wrapper.scrollHeight
+      const pageHeight = 1123 // A4 height in pixels at 96 DPI
+      const pageWidth = 794 // A4 width in pixels at 96 DPI
+
+      // Capture with html2canvas with proper dimensions
+      const canvas = await html2canvas(wrapper, {
         useCORS: true,
         background: '#ffffff',
         logging: false,
-        width: 794,
-        height: 1123
+        scale: 3, // Higher quality for better text rendering
+        width: pageWidth,
+        height: Math.max(actualContentHeight, pageHeight),
+        windowWidth: pageWidth,
+        windowHeight: Math.max(actualContentHeight, pageHeight)
       })
       
-      // Clean up
+      // Clean up React and DOM
+      root.unmount()
       document.body.removeChild(pdfContainer)
       
       // Create PDF
@@ -633,9 +468,42 @@ ${name}`
         format: 'a4'
       })
       
-      // Add image to PDF
-      const imgData = canvas.toDataURL('image/PNG', 1.0)
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297)
+      // Calculate dimensions with proper margins
+      const pdfWidth = 210 // A4 width in mm
+      const pdfHeight = 297 // A4 height in mm
+      const margin = 10 // 10mm margins on all sides
+      const contentWidth = pdfWidth - (2 * margin)
+      
+      // Calculate the aspect ratio
+      const canvasAspectRatio = canvas.height / canvas.width
+      const scaledContentHeight = contentWidth * canvasAspectRatio
+      
+      // Check if content fits on one page
+      if (scaledContentHeight <= (pdfHeight - (2 * margin))) {
+        // Content fits on one page
+        pdf.addImage(
+          canvas.toDataURL('image/PNG', 1.0),
+          'PNG',
+          margin,
+          margin,
+          contentWidth,
+          scaledContentHeight
+        )
+      } else {
+        // Content needs multiple pages (scale down to fit)
+        const scaledHeight = pdfHeight - (2 * margin)
+        const scaledWidth = scaledHeight / canvasAspectRatio
+        const xOffset = (pdfWidth - scaledWidth) / 2
+        
+        pdf.addImage(
+          canvas.toDataURL('image/PNG', 1.0),
+          'PNG',
+          xOffset,
+          margin,
+          scaledWidth,
+          scaledHeight
+        )
+      }
       
       // Save the PDF
       pdf.save(`Cover_Letter_${collectedData?.jobInfo.targetCompany || 'Document'}.pdf`)

@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     // Check if Gemini API key is configured
     const apiKeyError = validateApiKey()
     if (apiKeyError) {
+      console.error('API Key validation failed')
       return apiKeyError
     }
 
