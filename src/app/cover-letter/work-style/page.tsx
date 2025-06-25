@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 const workStyles = [
   {
@@ -35,6 +36,7 @@ const workStyles = [
 
 export default function WorkStylePage() {
   const router = useRouter()
+  const { setWorkStyle: setContextWorkStyle } = useCoverLetter()
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null)
 
   const handleStyleSelect = (styleName: string) => {
@@ -43,6 +45,9 @@ export default function WorkStylePage() {
 
   const handleContinue = () => {
     if (selectedStyle) {
+      // Save work style to context
+      setContextWorkStyle(selectedStyle)
+      
       // Save work style to localStorage
       localStorage.setItem('cover-letter-work-style', selectedStyle)
       

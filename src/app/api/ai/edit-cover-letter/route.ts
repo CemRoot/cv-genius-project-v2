@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
 import fs from 'fs/promises'
 import path from 'path'
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 // Load admin prompts
 async function loadAdminPrompts() {
@@ -32,15 +29,26 @@ async function loadAdminPrompts() {
 export async function POST(request: NextRequest) {
   try {
     // Check if Gemini API key is configured
-    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+    const apiKeyError = validateApiKey()
+    if (apiKeyError) {
+      return apiKeyError
+    }
+
+    // Get user ID for rate limiting
+    const userId = request.headers.get('x-user-id') || 'anonymous'
+    
+    // Check rate limit
+    const rateLimit = checkRateLimit(userId)
+    if (!rateLimit.allowed) {
       return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
         { 
-          success: false,
-          error: 'AI service not configured', 
-          message: 'Please set your GEMINI_API_KEY in .env.local file to use AI features.',
-          setup: 'Get your API key from https://makersuite.google.com/app/apikey'
-        },
-        { status: 503 }
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.resetTime.toString()
+          }
+        }
       )
     }
 
@@ -52,9 +60,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Get Gemini model
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
 
     // Load admin prompts
     const adminPrompts = await loadAdminPrompts()
@@ -88,19 +93,39 @@ Return only the improved cover letter text, no additional commentary or formatti
       )
     }
 
-    // Generate improved text using admin settings
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: adminPrompts.settings.temperature || 0.7,
-        topK: adminPrompts.settings.topK || 40,
-        topP: adminPrompts.settings.topP || 0.95,
-        maxOutputTokens: adminPrompts.settings.maxTokens || 2048,
-      },
+    // Generate improved text using centralized client with retry
+    const result = await generateContent(prompt, {
+      context: 'coverLetter',
+      temperature: adminPrompts.settings.temperature || 0.7,
+      maxTokens: adminPrompts.settings.maxTokens || 2048,
+      retryAttempts: 3 // Enable retry for 503 errors
     })
 
-    const response = await result.response
-    const improvedText = response.text()
+    if (!result.success) {
+      console.error('AI generation failed:', result.error)
+      
+      // Return appropriate error based on the failure type
+      if (result.isOverloaded) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'AI service is temporarily overloaded. Please try again in a few moments.',
+            isOverloaded: true
+          },
+          { status: 503 }
+        )
+      }
+      
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: result.error || 'Failed to improve cover letter. Please try again.'
+        },
+        { status: 500 }
+      )
+    }
+
+    const improvedText = result.content
 
     if (!improvedText) {
       throw new Error('No response from AI')
@@ -111,6 +136,11 @@ Return only the improved cover letter text, no additional commentary or formatti
       improvedText: improvedText.trim(),
       originalLength: currentText.length,
       improvedLength: improvedText.length
+    }, {
+      headers: {
+        'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+        'X-RateLimit-Reset': rateLimit.resetTime.toString()
+      }
     })
 
   } catch (error) {

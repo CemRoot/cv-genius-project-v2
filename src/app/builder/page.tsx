@@ -25,7 +25,7 @@ export default function CVBuilderPage() {
   const { currentCV, saveCV, autoSaveEnabled = true, autoSaveInterval = 30000 } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
-  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+  const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
   const { showOnboarding, completeOnboarding, closeOnboarding } = useMobileOnboarding()
   const router = useRouter()
 
@@ -44,43 +44,22 @@ export default function CVBuilderPage() {
   })
 
   // Swipe navigation for mobile tabs
-  const { gestureHandlers } = useSwipeNavigation(
-    {
-      onTabChange: (direction) => {
-        if (!isMobile) return
-        const tabIds = ['edit', 'preview', 'design']
-        const currentIndex = tabIds.indexOf(mobileActiveTab)
-        
-        if (direction === 'left' && currentIndex < tabIds.length - 1) {
-          handleMobileTabChange(tabIds[currentIndex + 1])
-        } else if (direction === 'right' && currentIndex > 0) {
-          handleMobileTabChange(tabIds[currentIndex - 1])
-        }
-      },
-      onSwipeLeft: () => {
-        // Next tab
-        const tabIds = ['edit', 'preview', 'design']
-        const currentIndex = tabIds.indexOf(mobileActiveTab)
-        if (currentIndex < tabIds.length - 1) {
-          handleMobileTabChange(tabIds[currentIndex + 1])
-        }
-      },
-      onSwipeRight: () => {
-        // Previous tab
-        const tabIds = ['edit', 'preview', 'design']
-        const currentIndex = tabIds.indexOf(mobileActiveTab)
-        if (currentIndex > 0) {
-          handleMobileTabChange(tabIds[currentIndex - 1])
-        }
+  const swipeNavigation = useSwipeNavigation({
+    enabledDirections: { left: true, right: true, up: false, down: false },
+    onSwipeComplete: (direction) => {
+      if (!isMobile) return
+      const tabIds = ['edit', 'preview', 'design']
+      const currentIndex = tabIds.indexOf(mobileActiveTab)
+      
+      if (direction === 'left' && currentIndex < tabIds.length - 1) {
+        handleMobileTabChange(tabIds[currentIndex + 1])
+      } else if (direction === 'right' && currentIndex > 0) {
+        handleMobileTabChange(tabIds[currentIndex - 1])
       }
     },
-    {
-      enabled: isMobile,
-      enableTabSwipe: true,
-      horizontalThreshold: 100,
-      velocityThreshold: 0.5
-    }
-  )
+    threshold: 100,
+    velocity: 0.5
+  })
 
   // Enhanced mobile detection
   useEffect(() => {
@@ -304,7 +283,7 @@ export default function CVBuilderPage() {
               height: isKeyboardOpen ? adjustedViewHeight : 'calc(100vh - 160px)',
               minHeight: isKeyboardOpen ? 'auto' : '500px'
             }}
-            {...gestureHandlers}
+            ref={swipeNavigation.setSwipeElement}
           >
             {/* Swipe Indicator - Outside AnimatePresence */}
             {isMobile && (

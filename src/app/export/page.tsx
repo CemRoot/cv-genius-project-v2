@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 
 export default function ExportPage() {
   const [isMobile, setIsMobile] = useState(false)
-  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+  const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
 
   // Detect mobile device
   useEffect(() => {

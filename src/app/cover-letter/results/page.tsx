@@ -4,14 +4,16 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Loader2, Download, FileText, Edit, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Download, FileText, Edit, RefreshCw } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx'
 import { saveAs } from 'file-saver'
-import { AdController } from '@/components/ads/ad-controller'
+// import { AdController } from '@/components/ads/ad-controller'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
+import { StyledCoverLetter } from '@/components/cover-letter/styled-cover-letter'
 
 interface CollectedData {
   templateData: {
@@ -33,17 +35,27 @@ interface CollectedData {
     type: 'drawn' | 'uploaded' | null
     value: string
   }
+  // Experience and education data
+  experienceLevel?: string
+  studentStatus?: string
+  schoolType?: string
+  educationDetails?: {
+    degreeType: string
+    fieldOfStudy: string
+  }
+  collegeGrad?: boolean
 }
 
 export default function ResultsPage() {
   const router = useRouter()
   const { addToast } = useToast()
+  const { state: contextState } = useCoverLetter()
   const [isGenerating, setIsGenerating] = useState(true)
   const [generatedLetter, setGeneratedLetter] = useState<string>('')
   const [collectedData, setCollectedData] = useState<CollectedData | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [currentDate, setCurrentDate] = useState('')
-  const [propPushTrigger, setPropPushTrigger] = useState(false)
+  // const [propPushTrigger, setPropPushTrigger] = useState(false)
   const [exportCount, setExportCount] = useState(0)
 
   // Initialize date on client side to avoid hydration mismatch
@@ -56,40 +68,122 @@ export default function ResultsPage() {
     setCurrentDate(`${day}/${month}/${year}`)
   }, [])
 
+  // Separate effect for initial load to avoid dependency issues
   useEffect(() => {
-    // Collect all data from localStorage
-    const templateData = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
-    const jobInfo = JSON.parse(localStorage.getItem('cover-letter-job-info') || '{}')
-    const jobDescription = localStorage.getItem('cover-letter-job-description') || ''
-    const strengths = JSON.parse(localStorage.getItem('cover-letter-strengths') || '[]')
-    const workStyle = localStorage.getItem('cover-letter-work-style') || ''
-    const signature = JSON.parse(localStorage.getItem('cover-letter-signature') || '{}')
-
-    const data = {
-      templateData,
-      jobInfo,
-      jobDescription,
-      strengths,
-      workStyle,
-      signature
-    }
-
-    setCollectedData(data)
-    
-    const performGeneration = async () => {
-      await generateCoverLetter(data)
-    }
-    
-    performGeneration()
-  }, []) // generateCoverLetter is stable as it doesn't depend on any state
-
-  // Check for edited cover letter text on mount only
-  useEffect(() => {
+    // Check if we have an edited cover letter
     const editedText = localStorage.getItem('generated-cover-letter')
-    if (editedText) {
+    const isFromEdit = localStorage.getItem('cover-letter-edited') === 'true'
+    
+    console.log('🔍 Edit Detection Debug:')
+    console.log('- editedText exists:', !!editedText)
+    console.log('- isFromEdit flag:', isFromEdit)
+    console.log('- editedText length:', editedText?.length || 0)
+    console.log('- localStorage keys:', Object.keys(localStorage))
+    
+    if (editedText && isFromEdit) {
+      // Don't clear the edit flag immediately - keep it until user navigates away or generates new letter
       setGeneratedLetter(editedText)
+      setIsGenerating(false)
+      
+      // Load collected data with better template/color handling
+      const templateDataFromStorage = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
+      console.log('📦 Template data from storage:', templateDataFromStorage)
+      console.log('🎨 Context state:', { selectedTemplate: contextState.selectedTemplate, selectedColor: contextState.selectedColor })
+      
+      // Prioritize context state over localStorage, with fallbacks
+      const templateData = {
+        selectedTemplate: contextState.selectedTemplate || templateDataFromStorage.selectedTemplate || 'dublin-professional',
+        selectedColor: contextState.selectedColor || templateDataFromStorage.selectedColor || 'color1',
+        personalInfo: contextState.personalInfo?.firstName ? contextState.personalInfo : templateDataFromStorage.personalInfo
+      }
+      
+      console.log('🎯 Final template data (edited):', templateData)
+      
+      const jobInfo = contextState.jobInfo?.targetCompany ? contextState.jobInfo : JSON.parse(localStorage.getItem('cover-letter-job-info') || '{}')
+      const jobDescription = localStorage.getItem('cover-letter-job-description') || ''
+      const strengths = contextState.strengths?.length > 0 ? contextState.strengths : JSON.parse(localStorage.getItem('cover-letter-strengths') || '[]')
+      const workStyle = contextState.workStyle || localStorage.getItem('cover-letter-work-style') || ''
+      const signature = JSON.parse(localStorage.getItem('cover-letter-signature') || '{}')
+
+      const data: CollectedData = {
+        templateData,
+        jobInfo,
+        jobDescription,
+        strengths,
+        workStyle,
+        signature,
+        experienceLevel: contextState.experienceLevel || undefined,
+        studentStatus: contextState.studentStatus || undefined,
+        schoolType: contextState.schoolType || undefined,
+        educationDetails: contextState.educationDetails || undefined,
+        collegeGrad: contextState.collegeGrad || undefined
+      }
+      
+      // Debug log
+      console.log('Loaded data from localStorage (edited):', {
+        templateData,
+        strengths,
+        workStyle,
+        contextState
+      })
+      
+      setCollectedData(data)
+      console.log('✅ Edit mode: Using saved edited text, not regenerating')
+    } else {
+      // No edited text, generate new with improved data handling
+      const templateDataFromStorage = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
+      console.log('📦 Template data from storage (new generation):', templateDataFromStorage)
+      console.log('🎨 Context state (new generation):', { selectedTemplate: contextState.selectedTemplate, selectedColor: contextState.selectedColor })
+      
+      // Prioritize context state over localStorage, with fallbacks
+      const templateData = {
+        selectedTemplate: contextState.selectedTemplate || templateDataFromStorage.selectedTemplate || 'dublin-professional',
+        selectedColor: contextState.selectedColor || templateDataFromStorage.selectedColor || 'color1',
+        personalInfo: contextState.personalInfo?.firstName ? contextState.personalInfo : templateDataFromStorage.personalInfo
+      }
+      
+      console.log('🎯 Final template data (new generation):', templateData)
+      
+      const jobInfo = contextState.jobInfo?.targetCompany ? contextState.jobInfo : JSON.parse(localStorage.getItem('cover-letter-job-info') || '{}')
+      const jobDescription = localStorage.getItem('cover-letter-job-description') || ''
+      const strengths = contextState.strengths?.length > 0 ? contextState.strengths : JSON.parse(localStorage.getItem('cover-letter-strengths') || '[]')
+      const workStyle = contextState.workStyle || localStorage.getItem('cover-letter-work-style') || ''
+      const signature = JSON.parse(localStorage.getItem('cover-letter-signature') || '{}')
+
+      const data: CollectedData = {
+        templateData,
+        jobInfo,
+        jobDescription,
+        strengths,
+        workStyle,
+        signature,
+        experienceLevel: contextState.experienceLevel || undefined,
+        studentStatus: contextState.studentStatus || undefined,
+        schoolType: contextState.schoolType || undefined,
+        educationDetails: contextState.educationDetails || undefined,
+        collegeGrad: contextState.collegeGrad || undefined
+      }
+      
+      // Debug log
+      console.log('Loaded data for new generation:', {
+        templateData,
+        strengths,
+        workStyle,
+        contextState
+      })
+
+      setCollectedData(data)
+      
+      const performGeneration = async () => {
+        // Clear the edit flag when generating new letter
+        localStorage.removeItem('cover-letter-edited')
+        await generateCoverLetter(data)
+      }
+      
+      performGeneration()
+      console.log('🔄 Generation mode: Creating new cover letter')
     }
-  }, []) // Only run on mount
+  }, []) // Remove contextState dependency to prevent regeneration when context changes
 
   // Update localStorage when letter is generated (but not from localStorage)
   const updateLocalStorage = (letter: string) => {
@@ -98,47 +192,114 @@ export default function ResultsPage() {
 
   const generateCoverLetter = async (data: CollectedData) => {
     try {
+      // Debug log
+      console.log('Cover letter data:', data)
+      console.log('Context state:', contextState)
+      console.log('Template data personal info:', data.templateData?.personalInfo)
+      console.log('Context personal info:', contextState.personalInfo)
+      console.log('Context resume data:', contextState.resumeData)
+      console.log('Context resume personalInfo:', contextState.resumeData?.personalInfo)
+      
+      // Ensure we have valid personal info - prioritize context over localStorage
+      const firstName = contextState.personalInfo?.firstName || data.templateData?.personalInfo?.firstName || 'John'
+      const lastName = contextState.personalInfo?.lastName || data.templateData?.personalInfo?.lastName || 'Doe'
+      const strengths = Array.isArray(data.strengths) ? data.strengths : []
+      const workStyle = data.workStyle || 'professional'
+      
+      // Debug log
+      console.log('Personal info:', { firstName, lastName })
+      console.log('Strengths:', strengths)
+      console.log('Work style:', workStyle)
+      
+      const requestBody = {
+        template: getValidTemplate(data.templateData?.selectedTemplate),
+        tone: getValidTone(workStyle),
+        company: data.jobInfo?.targetCompany || 'Your Target Company',
+        position: data.jobInfo?.jobTitle || 'Desired Position',
+        jobSource: (data.jobInfo as any)?.jobSource || '',
+        applicantName: `${firstName} ${lastName}`,
+        background: strengths.length > 0 
+          ? `A dedicated professional with ${strengths.length === 1 ? `strength in ${strengths[0]}` : `strengths in ${strengths.slice(0, -1).join(', ')} and ${strengths[strengths.length - 1]}`}`
+          : 'A dedicated professional',
+        achievements: strengths,
+        jobDescription: data.jobDescription || '',
+        customInstructions: `Working style: ${workStyle}`,
+        includeAddress: true,
+        userAddress: contextState.resumeData?.personalInfo?.location || 'Dublin, Ireland',
+        userPhone: contextState.resumeData?.personalInfo?.phone || '+353 (0) 1 234 5678',
+        userEmail: contextState.resumeData?.personalInfo?.email || '',
+        currentDate: currentDate,
+        // Include experience and education data
+        experienceLevel: data.experienceLevel,
+        studentStatus: data.studentStatus,
+        schoolType: data.schoolType,
+        educationDetails: data.educationDetails,
+        collegeGrad: data.collegeGrad,
+        // Include resume data if available
+        resumeData: contextState.resumeData
+      }
+      
+      // Debug API request
+      console.log('API Request Body:', requestBody)
+      console.log('Resume data email:', contextState.resumeData?.personalInfo?.email)
+      console.log('Resume data phone:', contextState.resumeData?.personalInfo?.phone)
+      console.log('Resume data location:', contextState.resumeData?.personalInfo?.location)
+      
+      // Additional validation
+      if (contextState.resumeData?.personalInfo) {
+        console.log('📋 Full resume personalInfo object:', contextState.resumeData.personalInfo)
+      } else {
+        console.warn('⚠️ No resume data found in context')
+      }
+      
+      // Check if resume data has been extracted
+      if (contextState.extractedFromResume) {
+        console.log('✅ Cover letter generated from extracted resume data')
+      } else {
+        console.log('ℹ️ Cover letter generated from manual input')
+      }
+      
       const response = await fetch('/api/ai/generate-cover-letter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          template: getValidTemplate(data.templateData.selectedTemplate),
-          tone: getValidTone(data.workStyle),
-          company: data.jobInfo.targetCompany || 'Your Target Company',
-          position: data.jobInfo.jobTitle || 'Desired Position',
-          applicantName: `${data.templateData.personalInfo?.firstName} ${data.templateData.personalInfo?.lastName}`,
-          background: `A dedicated professional with strength in ${data.strengths.length > 1 ? data.strengths.slice(0, -1).join(', ') + ', and ' + data.strengths.slice(-1) : data.strengths.join('')}`,
-          achievements: data.strengths,
-          jobDescription: data.jobDescription,
-          customInstructions: `Working style: ${data.workStyle}`,
-          includeAddress: true,
-          userAddress: 'Dublin, Ireland',
-          userPhone: '+353 (0) 1 234 5678',
-          currentDate: currentDate
-        })
+        body: JSON.stringify(requestBody)
       })
 
       const result = await response.json()
+      
+      // Debug API response
+      console.log('API Response:', result)
 
       if (result.success) {
         const newLetter = result.coverLetter.content
         setGeneratedLetter(newLetter)
         updateLocalStorage(newLetter)
       } else {
+        console.error('API Error:', result.error)
         throw new Error(result.error || 'Failed to generate cover letter')
       }
     } catch (error) {
-      // Silently handle generation errors in production
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Generation error:', error)
+      // Always log errors for debugging
+      console.error('Generation error:', error)
+      console.error('Data that caused error:', data)
+      
+      // Check if it's a rate limit error
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('Rate limit exceeded')) {
+        addToast({
+          type: 'warning',
+          title: 'AI Service Busy',
+          description: 'Using high-quality backup template due to high demand'
+        })
+      } else {
+        addToast({
+          type: 'error',
+          title: 'Generation Failed',
+          description: 'Failed to generate cover letter. Please try again.'
+        })
       }
-      addToast({
-        type: 'error',
-        title: 'Generation Failed',
-        description: 'Failed to generate cover letter. Please try again.'
-      })
       
       // Use fallback template
       const fallbackLetter = generateFallbackLetter(data)
@@ -171,153 +332,325 @@ export default function ResultsPage() {
   }
 
   const generateFallbackLetter = (data: CollectedData) => {
-    const name = `${data.templateData.personalInfo?.firstName} ${data.templateData.personalInfo?.lastName}`
+    // Prioritize context over localStorage for personal info
+    const firstName = contextState.personalInfo?.firstName || data.templateData?.personalInfo?.firstName || 'John'
+    const lastName = contextState.personalInfo?.lastName || data.templateData?.personalInfo?.lastName || 'Doe'
+    const name = `${firstName} ${lastName}`
     
-    return `Dublin, Ireland
-+353 (0) 1 234 5678
+    // Ensure strengths is an array
+    const strengths = Array.isArray(data.strengths) ? data.strengths : []
+    const workStyle = data.workStyle || 'professional'
+    
+    console.log('Fallback letter data:', { firstName, lastName, strengths, workStyle })
+    
+    let openingParagraph = ''
+    let secondParagraph = ''
+    
+    if (data.experienceLevel === 'no') {
+      openingParagraph = `I am writing to express my strong interest in the ${data.jobInfo.jobTitle || 'position'} at ${data.jobInfo.targetCompany || 'your company'}. As an enthusiastic ${data.studentStatus === 'yes' ? (data.schoolType === 'college' && data.educationDetails ? `${data.educationDetails.degreeType} student in ${data.educationDetails.fieldOfStudy}` : 'student') : (data.collegeGrad && data.educationDetails ? `recent graduate with a ${data.educationDetails.degreeType} in ${data.educationDetails.fieldOfStudy}` : 'candidate')}, I am eager to begin my professional journey with your organization.`
+      
+      const strengthsText = strengths.length > 0
+        ? (strengths.length === 1 
+          ? `My strength in ${strengths[0]}` 
+          : `My strengths in ${strengths.slice(0, -1).join(', ')} and ${strengths[strengths.length - 1]}`)
+        : 'My academic foundations and enthusiasm'
+      
+      secondParagraph = `While I may not have formal work experience, I bring fresh perspectives, strong academic foundations, and genuine enthusiasm for this field. ${strengthsText} ${strengths.length > 0 ? 'has' : 'have'} been developed through coursework, projects, and extracurricular activities. I am highly motivated to learn and grow within your organization.`
+    } else {
+      const strengthsText = strengths.length > 0
+        ? (strengths.length === 1 
+          ? ` with strength in ${strengths[0]}` 
+          : ` with strengths in ${strengths.slice(0, -1).join(', ')} and ${strengths[strengths.length - 1]}`)
+        : ''
+      
+      openingParagraph = `I am writing to express my interest in the ${data.jobInfo?.jobTitle || 'position'} at ${data.jobInfo?.targetCompany || 'your company'}. As a dedicated professional${strengthsText}, I believe I can contribute positively to your team.`
+      
+      const workStyleText = workStyle ? `${workStyle.toLowerCase()} ` : ''
+      secondParagraph = `My working style reflects my ${workStyleText}approach. Throughout my career, I have consistently demonstrated these qualities through various projects and responsibilities.`
+    }
+    
+    const userAddress = contextState.resumeData?.personalInfo?.location || 'Dublin, Ireland'
+    const userPhone = contextState.resumeData?.personalInfo?.phone || '+353 (0) 1 234 5678'
+    const userEmail = contextState.resumeData?.personalInfo?.email || ''
+
+    return `${userAddress}
+${userPhone}${userEmail ? `\n${userEmail}` : ''}
 ${currentDate}
 
 Hiring Manager
-${data.jobInfo.targetCompany || 'Company Name'}
+${data.jobInfo?.targetCompany || 'Company Name'}
 Dublin, Ireland
 
 Dear Hiring Manager,
 
-I am writing to express my interest in the ${data.jobInfo.jobTitle || 'position'} at ${data.jobInfo.targetCompany || 'your company'}. As a dedicated professional with strength in ${data.strengths.length > 1 ? data.strengths.slice(0, -1).join(', ') + ', and ' + data.strengths.slice(-1) : data.strengths.join('')}, I believe I can contribute positively to your team.
+${openingParagraph}
 
-My working style reflects my ${data.workStyle.toLowerCase()} approach. Throughout my career, I have consistently demonstrated these qualities through various projects and responsibilities.
+${secondParagraph}
 
-${data.jobDescription ? `Based on the job description provided, I am particularly excited about the opportunity to apply my skills in a role that aligns so well with my experience and interests.` : 'I have enclosed my CV, which provides additional details about my qualifications and experience.'}
+${data.jobDescription ? `Based on the job description provided, I am particularly excited about the opportunity to apply my skills in a role that aligns so well with my ${data.experienceLevel === 'no' ? 'interests and academic background' : 'experience and interests'}.` : 'I have enclosed my CV, which provides additional details about my qualifications and experience.'}
 
-I would welcome the opportunity to discuss how my background and skills can contribute to ${data.jobInfo.targetCompany || 'your organization'}'s continued success. I am available for interview at your convenience.
+I would welcome the opportunity to discuss how my background and skills can contribute to ${data.jobInfo?.targetCompany || 'your organization'}'s continued success. I am available for interview at your convenience.
 
 Thank you for considering my application. I look forward to hearing from you.
 
 Yours sincerely,
-
 ${name}`
   }
 
-  const renderSignature = () => {
-    if (!collectedData?.signature) {
-      // Default signature if none provided
-      return (
-        <div style={{ color: 'black', fontFamily: 'serif', fontSize: '16px' }}>
-          {`${collectedData?.templateData.personalInfo?.firstName} ${collectedData?.templateData.personalInfo?.lastName}`}
-        </div>
-      )
-    }
-
-    if (collectedData.signature.type === 'drawn' || collectedData.signature.type === 'uploaded') {
-      return (
-        <img 
-          src={collectedData.signature.value} 
-          alt="Signature" 
-          style={{ 
-            maxHeight: '50px', 
-            marginTop: '5px',
-            filter: 'contrast(1.2)' // Improve contrast
-          }}
-        />
-      )
-    }
-    return null
-  }
 
   const exportToPDF = async () => {
     setIsExporting(true)
     try {
-      const letterElement = document.getElementById('cover-letter-preview')
-      if (letterElement) {
-        // Store original styles
-        const originalStyles = {
-          width: letterElement.style.width,
-          maxWidth: letterElement.style.maxWidth,
-          minWidth: letterElement.style.minWidth,
-          transform: letterElement.style.transform,
-          padding: letterElement.style.padding
+      // Create a completely fresh PDF container without using existing DOM
+      const pdfContainer = document.createElement('div')
+      pdfContainer.style.position = 'fixed'
+      pdfContainer.style.top = '-10000px'
+      pdfContainer.style.left = '0'
+      pdfContainer.style.width = '794px'  // A4 width in pixels
+      pdfContainer.style.height = '1123px' // A4 height in pixels
+      pdfContainer.style.backgroundColor = '#ffffff'
+      pdfContainer.style.padding = '60px 45px'
+      pdfContainer.style.boxSizing = 'border-box'
+      pdfContainer.style.fontFamily = 'Arial, sans-serif'
+      pdfContainer.style.fontSize = '14px'
+      pdfContainer.style.lineHeight = '1.6'
+      pdfContainer.style.color = '#000000'
+      
+      // Get template and color info
+      const templateId = collectedData?.templateData.selectedTemplate || 'dublin-professional'
+      const colorOption = collectedData?.templateData.selectedColor || 'color1'
+      
+      // Color mapping for PDF
+      const getColorValue = (color: string) => {
+        const colorMap: Record<string, string> = {
+          'color1': '#2563eb',
+          'color2': '#475569', 
+          'color3': '#b45309',
+          'color4': '#9333ea',
+          'color5': '#0d9488',
+          'color6': '#dc2626',
+          'color7': '#db2777',
+          'color8': '#16a34a'
         }
+        return colorMap[color] || '#2563eb'
+      }
+      
+      const accentColor = getColorValue(colorOption)
+      
+      // Create the letter HTML directly for clean PDF output
+      const letterHTML = `
+        <div style="
+          width: 100%; 
+          height: 100%; 
+          background: #ffffff; 
+          font-family: Arial, sans-serif;
+          color: #000000;
+          padding: 0;
+          margin: 0;
+        ">
+          <!-- Header Section -->
+          <div style="
+            text-align: center; 
+            border-bottom: 3px solid ${accentColor}; 
+            padding-bottom: 20px; 
+            margin-bottom: 25px;
+            background: #ffffff;
+          ">
+            <h1 style="
+              font-size: 28px; 
+              font-weight: bold; 
+              margin: 0 0 8px 0; 
+              color: ${accentColor};
+              background: transparent;
+            ">${contextState.personalInfo?.firstName || collectedData?.templateData.personalInfo?.firstName || 'CEM'} ${contextState.personalInfo?.lastName || collectedData?.templateData.personalInfo?.lastName || 'KOYLUOGLU'}</h1>
+            <p style="
+              font-size: 14px; 
+              color: #666666; 
+              margin: 0 0 10px 0;
+              background: transparent;
+            ">Dublin, Ireland</p>
+            <p style="
+              font-size: 14px; 
+              color: #666666; 
+              margin: 0;
+              background: transparent;
+            ">${contextState.resumeData?.personalInfo?.email || 'samlorem@icloud.com'} | ${contextState.resumeData?.personalInfo?.phone || '+353 873445918'}</p>
+          </div>
+          
+          <!-- Date -->
+          <div style="
+            text-align: right; 
+            margin-bottom: 25px;
+            background: transparent;
+          ">
+            <p style="
+              font-size: 14px; 
+              color: #666666; 
+              margin: 0;
+              background: transparent;
+            ">${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          </div>
+          
+          <!-- Recipient -->
+          <div style="margin-bottom: 20px; background: transparent;">
+            <p style="
+              font-size: 14px; 
+              margin: 0 0 5px 0; 
+              color: #000000;
+              background: transparent;
+            ">Hiring Manager</p>
+            <p style="
+              font-size: 14px; 
+              margin: 0 0 5px 0; 
+              color: #000000;
+              background: transparent;
+            ">${collectedData?.jobInfo?.targetCompany || 'your organisation'}</p>
+            <p style="
+              font-size: 14px; 
+              margin: 0; 
+              color: #000000;
+              background: transparent;
+            ">Dublin, Ireland</p>
+          </div>
+          
+          <!-- Letter Body -->
+          <div style="
+            text-align: left; 
+            font-size: 14px; 
+            line-height: 1.6;
+            background: transparent;
+          ">
+            ${(() => {
+              // Extract just the letter body content (everything after header and before signature)
+              const lines = generatedLetter.split('\n').filter(line => line.trim());
+              
+              // Find the start of the actual letter content (after "Dear...")
+              let startIndex = lines.findIndex(line => 
+                line.toLowerCase().includes('dear')
+              );
+              
+              // If we found "Dear", include it, otherwise start from beginning
+              if (startIndex === -1) {
+                startIndex = 0;
+              }
+              
+              // Find the end (before "Yours sincerely" or signature)
+              let endIndex = lines.findIndex((line, index) => 
+                index > startIndex && (
+                  line.toLowerCase().includes('yours sincerely') ||
+                  line.toLowerCase().includes('sincerely') ||
+                  line.toLowerCase().includes('best regards') ||
+                  line.toLowerCase().includes('kind regards')
+                )
+              );
+              
+              // If no end found, use all remaining lines
+              if (endIndex === -1) {
+                endIndex = lines.length;
+              }
+              
+              // Extract the body content
+              const bodyLines = lines.slice(startIndex, endIndex);
+              
+              // Filter out any remaining header-like content
+              const cleanedBodyLines = bodyLines.filter(line => {
+                const lowerLine = line.toLowerCase();
+                return !lowerLine.includes('dublin, ireland') &&
+                       !lowerLine.includes('+353') &&
+                       !lowerLine.includes('@') &&
+                       !lowerLine.includes('hiring manager') &&
+                       !line.match(/^\d{1,2}.*\d{4}$/) &&
+                       !lowerLine.includes('cem koyluoglu') &&
+                       !lowerLine.includes('emin cem koyluoglu') &&
+                       line.trim().length > 0;
+              });
+              
+              return cleanedBodyLines.map(line => `
+                <p style="
+                  margin: 0 0 15px 0; 
+                  color: #000000; 
+                  line-height: 1.6;
+                  background: transparent;
+                ">${line}</p>
+              `).join('');
+            })()}
+          </div>
+          
+          <!-- Signature -->
+          <div style="
+            margin-top: 30px; 
+            text-align: left;
+            background: transparent;
+          ">
+            <p style="
+              font-size: 14px; 
+              margin: 0; 
+              color: #000000;
+              background: transparent;
+            ">Yours sincerely,</p>
+            <div style="
+              margin-top: 20px; 
+              margin-bottom: 10px;
+              background: transparent;
+            ">
+              ${collectedData?.signature?.value ? 
+                `<img src="${collectedData.signature.value}" alt="Signature" style="max-height: 60px;">` : 
+                ''
+              }
+            </div>
+            <p style="
+              font-size: 14px; 
+              margin: 0; 
+              color: #000000;
+              background: transparent;
+            ">${contextState.personalInfo?.firstName || collectedData?.templateData.personalInfo?.firstName || 'CEM'} ${contextState.personalInfo?.lastName || collectedData?.templateData.personalInfo?.lastName || 'KOYLUOGLU'}</p>
+          </div>
+        </div>
+      `
+      
+      pdfContainer.innerHTML = letterHTML
+      document.body.appendChild(pdfContainer)
+      
+      // Wait for content to render
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-        // Apply fixed dimensions for consistent PDF export
-        letterElement.style.width = '794px' // A4 width in pixels
-        letterElement.style.maxWidth = '794px'
-        letterElement.style.minWidth = '794px'
-        letterElement.style.transform = 'none'
-        letterElement.style.padding = '40px'
-        
-        // Hide edit buttons during export
-        const editButtons = letterElement.querySelectorAll('.no-export')
-        editButtons.forEach(btn => (btn as HTMLElement).style.display = 'none')
-        
-        // Wait for layout to settle
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // Mobile-optimized canvas options
-        const dpr = window.devicePixelRatio || 1
-        const isMobile = window.innerWidth < 768
-        
-        const canvas = await html2canvas(letterElement, {
-          scale: isMobile ? Math.max(dpr * 1.5, 2) : 2,
-          width: 794, // Fixed A4 width
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          removeContainer: true,
-          logging: false,
-          letterRendering: true,
-          foreignObjectRendering: false, // Better mobile compatibility
-          ignoreElements: (element) => {
-            return element.classList.contains('no-export') || element.classList.contains('print:hidden')
-          }
-        })
-        
-        // Restore original styles
-        Object.assign(letterElement.style, originalStyles)
-        
-        // Restore edit buttons after export
-        editButtons.forEach(btn => (btn as HTMLElement).style.display = '')
-        
-        const imgData = canvas.toDataURL('image/jpeg', 0.95)
-        
-        const pdf = new jsPDF('p', 'mm', 'a4')
-        const pdfWidth = pdf.internal.pageSize.getWidth()
-        const pdfHeight = pdf.internal.pageSize.getHeight()
-        
-        // Calculate proper scaling to maintain aspect ratio
-        const canvasAspectRatio = canvas.height / canvas.width
-        let finalWidth = pdfWidth
-        let finalHeight = pdfWidth * canvasAspectRatio
-        let xOffset = 0
-        let yOffset = 0
-        
-        // If height exceeds page, scale down proportionally
-        if (finalHeight > pdfHeight) {
-          finalHeight = pdfHeight
-          finalWidth = pdfHeight / canvasAspectRatio
-          xOffset = (pdfWidth - finalWidth) / 2 // Center horizontally
-        } else {
-          // Center vertically if content doesn't fill the page
-          yOffset = (pdfHeight - finalHeight) / 2
-        }
-        
-        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight)
-        pdf.save(`Cover_Letter_${collectedData?.jobInfo.targetCompany || 'Document'}.pdf`)
+      // Capture with html2canvas
+      const canvas = await html2canvas(pdfContainer, {
+        useCORS: true,
+        background: '#ffffff',
+        logging: false,
+        width: 794,
+        height: 1123
+      })
+      
+      // Clean up
+      document.body.removeChild(pdfContainer)
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      })
+      
+      // Add image to PDF
+      const imgData = canvas.toDataURL('image/PNG', 1.0)
+      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297)
+      
+      // Save the PDF
+      pdf.save(`Cover_Letter_${collectedData?.jobInfo.targetCompany || 'Document'}.pdf`)
         
         addToast({
           type: 'success',
           title: 'PDF Downloaded',
-          description: 'Your cover letter has been downloaded as PDF.'
+        description: 'Your cover letter has been downloaded as PDF with high quality.'
         })
 
         // Trigger monetization after first download
         setExportCount(prev => prev + 1)
-        if (exportCount === 0) {
-          setTimeout(() => {
-            setPropPushTrigger(true)
-          }, 1500)
-        }
-      }
+      
     } catch (error) {
+      console.error('PDF export error:', error)
       addToast({
         type: 'error',
         title: 'Export Failed',
@@ -376,11 +709,6 @@ ${name}`
 
       // Trigger monetization after first download
       setExportCount(prev => prev + 1)
-      if (exportCount === 0) {
-        setTimeout(() => {
-          setPropPushTrigger(true)
-        }, 1500)
-      }
     } catch (error) {
       // Silently handle export errors in production
       if (process.env.NODE_ENV === 'development') {
@@ -427,7 +755,25 @@ ${name}`
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Warning if generic company name is detected */}
+        {generatedLetter && (generatedLetter.includes('Your Target Company') || 
+          generatedLetter.includes('your organisation') || 
+          generatedLetter.includes('your organization')) && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-300 rounded-lg">
+            <p className="text-red-800 font-semibold flex items-center gap-2">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              Important: Generic company references detected!
+            </p>
+            <p className="text-red-700 text-sm mt-1">
+              Please click "Edit Cover Letter" to replace highlighted placeholders with actual company names before sending.
+            </p>
+          </div>
+        )}
+        
         <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-2">
           <Button
             variant="outline"
             onClick={() => router.push('/cover-letter/edit')}
@@ -436,6 +782,20 @@ ${name}`
             <Edit className="w-4 h-4" />
             Edit Cover Letter
           </Button>
+            {localStorage.getItem('cover-letter-edited') === 'true' && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  localStorage.removeItem('cover-letter-edited')
+                  window.location.reload()
+                }}
+                className="flex items-center gap-2 w-full sm:w-auto text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Generate New Letter
+              </Button>
+            )}
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
@@ -461,19 +821,23 @@ ${name}`
           </div>
         </div>
 
-        <Card className="p-4 sm:p-8" id="cover-letter-preview">
-          <div className="space-y-6 font-serif">
-            {/* Letter content - this contains the header already */}
-            <div className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
-              {generatedLetter}
-            </div>
-
-            {/* Signature */}
-            <div className="mt-8">
-              <div style={{ color: 'black', fontFamily: 'serif' }}>
-                {renderSignature()}
+        <Card className="p-0 overflow-hidden" id="cover-letter-preview">
+          <div className="p-4 sm:p-8">
+            {/* Debug template data - hidden during export */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="no-export" style={{ background: '#f0f0f0', padding: '10px', marginBottom: '20px', fontSize: '12px' }}>
+                <strong>Debug Template Info:</strong><br />
+                Template: {collectedData?.templateData.selectedTemplate || 'dublin-professional'}<br />
+                Color: {collectedData?.templateData.selectedColor || 'none'}<br />
+                Letter Length: {generatedLetter?.length || 0} chars
               </div>
-            </div>
+            )}
+            <StyledCoverLetter
+              content={generatedLetter}
+              templateId={collectedData?.templateData.selectedTemplate || 'dublin-professional'}
+              colorOption={collectedData?.templateData.selectedColor}
+              signature={collectedData?.signature}
+            />
           </div>
         </Card>
 
@@ -495,15 +859,7 @@ ${name}`
           </Button>
         </div>
 
-        {/* PropPush - Cover Letter Download Triggered Notification */}
-        <AdController 
-          type="propush" 
-          trigger={propPushTrigger}
-          onTrigger={() => {
-            setTimeout(() => setPropPushTrigger(false), 5000)
-          }}
-          delay={2000}
-        />
+        {/* Ad component temporarily disabled due to prop mismatch */}
       </div>
       </div>
     </MainLayout>

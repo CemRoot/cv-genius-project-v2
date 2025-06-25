@@ -1,122 +1,164 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cleanPDFText } from '@/lib/pdf-text-cleaner'
-import { generateContent, validateApiKey } from '@/lib/gemini-client'
+
+// Force Node.js runtime for PDF parsing
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+// Direct PDF parsing function using pdf-parse-debugging-disabled
+async function extractPDFText(buffer: ArrayBuffer): Promise<string> {
+  try {
+    console.log('🔧 Starting PDF parsing...')
+    
+    // Import the debugging-disabled version to avoid test file errors
+    const pdfParse = (await import('pdf-parse-debugging-disabled')).default
+    
+    // Convert ArrayBuffer to Buffer
+    const nodeBuffer = Buffer.from(buffer)
+    
+    console.log('📄 Buffer size:', nodeBuffer.length)
+    
+    // Parse the PDF with options to avoid test file access
+    const data = await pdfParse(nodeBuffer, {
+      // Ensure we're not in debug mode
+      max: 0
+    })
+    
+    console.log('✅ PDF parsed successfully')
+    console.log('📄 Pages:', data.numpages)
+    console.log('📄 Text length:', data.text?.length || 0)
+    console.log('📄 First 500 chars:', data.text?.substring(0, 500))
+    
+    // Debug: Check for concatenated contact info patterns
+    const concatenatedPatterns = data.text?.match(/\d{7,}[a-zA-Z]+@|@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[a-zA-Z]|[a-zA-Z0-9]https?:\/\//g)
+    if (concatenatedPatterns) {
+      console.log('⚠️ Found concatenated patterns that need fixing:', concatenatedPatterns)
+    }
+    
+    if (!data.text || data.text.trim().length < 50) {
+      throw new Error('PDF contains insufficient readable text')
+    }
+    
+    // Clean and return the text with improved spacing
+    let cleanedText = data.text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n[ \t]+/g, '\n')
+      .trim()
+    
+    // Fix common concatenation issues with contact information
+    // Add space before email addresses if they're concatenated with numbers
+    cleanedText = cleanedText.replace(/(\d)([a-zA-Z]+@)/g, '$1 $2')
+    
+    // Add space after email addresses if they're concatenated with other text
+    cleanedText = cleanedText.replace(/(@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})([a-zA-Z])/g, '$1 $2')
+    
+    // Fix phone numbers concatenated with other text
+    // Add space after phone-like patterns (7+ digits)
+    cleanedText = cleanedText.replace(/(\d{7,})([a-zA-Z])/g, '$1 $2')
+    
+    // Fix URLs concatenated with other text
+    cleanedText = cleanedText.replace(/(https?:\/\/[^\s]+)([a-zA-Z0-9])/g, '$1 $2')
+    cleanedText = cleanedText.replace(/([a-zA-Z0-9])(https?:\/\/)/g, '$1 $2')
+    
+    // Fix common patterns where contact info elements are concatenated
+    // Phone + Email pattern
+    cleanedText = cleanedText.replace(/(\+?\d{7,15})([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '$1 $2')
+    
+    // Email + URL pattern
+    cleanedText = cleanedText.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(https?:\/\/)/g, '$1 $2')
+    
+    // Fix specific pattern: email.comhttp
+    cleanedText = cleanedText.replace(/(@[a-zA-Z0-9.-]+\.com)http/g, '$1 http')
+    cleanedText = cleanedText.replace(/(@[a-zA-Z0-9.-]+\.ie)http/g, '$1 http')
+    cleanedText = cleanedText.replace(/(@[a-zA-Z0-9.-]+\.co\.uk)http/g, '$1 http')
+    
+    // Debug: Log if we fixed any concatenation issues
+    if (cleanedText !== data.text) {
+      console.log('✅ Applied text cleaning fixes')
+      // Check if contact info is now properly spaced
+      const emailCheck = cleanedText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g)
+      if (emailCheck) {
+        console.log('📧 Emails after cleaning:', emailCheck)
+      }
+    }
+    
+    return cleanedText
+      
+  } catch (error) {
+    console.error('❌ PDF parsing error:', error)
+    throw new Error(`PDF parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const buffer = await request.arrayBuffer()
+    const formData = await request.formData()
+    const file = formData.get('file') as File
     
-    // Check if pdf-parse is available
-    let pdfParse: any
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      pdfParse = (await import('pdf-parse')).default
-    } catch (importError) {
-      console.log('pdf-parse not available, using fallback')
-      return NextResponse.json({
-        success: false,
-        error: 'PDF reading feature is currently unavailable. Please copy-paste your CV text.',
-        fallback: true
-      }, { status: 503 })
-    }
-    
-    // Parse PDF
-    const data = await pdfParse(Buffer.from(buffer))
-    
-    // Extract and clean text using the utility function
-    let cleanText = cleanPDFText(data.text || '')
-    
-    if (!cleanText || cleanText.length < 50) {
-      return NextResponse.json({
-        success: false,
-        error: 'Could not extract sufficient text from PDF. Please copy-paste your CV text.',
-        extractedLength: cleanText.length
-      }, { status: 400 })
+    if (!file) {
+      return NextResponse.json(
+        { success: false, error: 'No file provided' },
+        { status: 400 }
+      )
     }
 
-    // Use Gemini to improve and structure the CV text if available
+    if (file.type !== 'application/pdf') {
+      return NextResponse.json(
+        { success: false, error: 'Only PDF files are supported' },
+        { status: 400 }
+      )
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      return NextResponse.json(
+        { success: false, error: 'File size too large. Maximum 10MB allowed.' },
+        { status: 400 }
+      )
+    }
+
     try {
-      // Check if Gemini is available
-      const apiKeyCheck = validateApiKey()
-      if (!apiKeyCheck) {
-        const improvePrompt = `
-You are a professional CV text processor. The following text was extracted from a PDF but has formatting issues and broken words. Please:
+      // Get file buffer and extract text
+      const buffer = await file.arrayBuffer()
+      const extractedText = await extractPDFText(buffer)
 
-1. Fix all broken words and ligature issues
-2. Properly format the CV with clear sections
-3. Ensure all contact information is preserved
-4. Fix any OCR/extraction errors
-5. Maintain all original content - don't add or remove information
-6. Structure the text in a professional, ATS-friendly format
-7. Preserve all dates, numbers, and technical terms exactly
-8. Fix spacing and line breaks for readability
-
-Original extracted text:
-${cleanText}
-
-Please return the cleaned and properly formatted CV text:
-`
-
-        const geminiResult = await generateContent(improvePrompt, {
-          context: 'cvOptimization',
-          temperature: 0.1, // Low temperature for precise text cleaning
-          maxTokens: 4000
-        })
-
-        if (geminiResult.success && geminiResult.content) {
-          // Use Gemini-improved text if successful
-          cleanText = geminiResult.content.trim()
-          
-          return NextResponse.json({
-            success: true,
-            text: cleanText,
-            pages: data.numpages || 1,
-            wordCount: cleanText.split(/\s+/).length,
-            enhanced: true, // Flag to indicate Gemini enhancement was used
-            info: {
-              ...data.info,
-              extractedAt: new Date().toISOString(),
-              enhancedWithAI: true
-            }
-          })
+      console.log('PDF text extraction successful, length:', extractedText.length)
+      
+      return NextResponse.json({
+        success: true,
+        text: extractedText,
+        fileInfo: {
+          name: file.name,
+          size: file.size,
+          type: file.type
         }
-      }
-    } catch (geminiError) {
-      console.log('Gemini enhancement failed, using basic cleaning:', geminiError)
-      // Continue with basic cleaning if Gemini fails
+      })
+      
+    } catch (pdfError) {
+      console.error('PDF processing error:', pdfError)
+      
+      // Return fallback for PDF parsing issues
+      return NextResponse.json({
+        success: false,
+        error: 'Could not extract text from this PDF. Please copy and paste your CV text for the best results.',
+        fallback: true,
+        suggestion: 'Copy your entire CV text and paste it in the text area that will appear.',
+        fileInfo: {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }
+      }, { status: 200 })
     }
     
-    return NextResponse.json({
-      success: true,
-      text: cleanText,
-      pages: data.numpages || 1,
-      wordCount: cleanText.split(/\s+/).length,
-      enhanced: false, // Basic cleaning only
-      info: {
-        ...data.info,
-        extractedAt: new Date().toISOString()
-      }
-    })
   } catch (error: unknown) {
-    console.error('PDF parsing error:', error)
-    
-    // More specific error messages
-    let errorMessage = 'Could not read PDF file.'
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Invalid PDF')) {
-        errorMessage = 'Invalid PDF file. Please try a different PDF.'
-      } else if (error.message.includes('Password')) {
-        errorMessage = 'Password-protected PDF files are not supported.'
-      } else if (error.message.includes('Corrupt')) {
-        errorMessage = 'PDF file appears to be corrupted.'
-      }
-    }
+    console.error('General PDF processing error:', error)
     
     return NextResponse.json(
       { 
         success: false, 
-        error: errorMessage + ' You can continue by copy-pasting your CV text.',
+        error: 'Could not process file. Please try again or use the text input option.',
         details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
       },
       { status: 500 }

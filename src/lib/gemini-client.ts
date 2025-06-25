@@ -100,56 +100,94 @@ export function checkRateLimit(userId: string): { allowed: boolean; remaining: n
   return { allowed: true, remaining: maxRequests - userLimits.count, resetTime: userLimits.resetTime }
 }
 
-// Generate content with context-aware configuration
+// Helper function to wait
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+// Generate content with context-aware configuration and retry logic
 export async function generateContent(prompt: string, options?: {
   model?: 'gemini-2.0-flash'
   context?: 'coverLetter' | 'cvOptimization' | 'keywordExtraction' | 'jobAnalysis' | 'cvAnalysis'
   temperature?: number
   maxTokens?: number
+  retryAttempts?: number
 }) {
-  try {
-    if (!genAI) {
-      throw new Error('Gemini client not initialized - GEMINI_API_KEY missing')
-    }
-    
-    const model = models.geminiPro
-    
-    if (!model) {
-      throw new Error('Gemini model not available')
-    }
-
-    // Get context-specific configuration
-    const contextConfig = options?.context ? getContextConfig(options.context) : generationConfig
-    
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: options?.temperature ?? contextConfig.temperature,
-        maxOutputTokens: options?.maxTokens ?? contextConfig.maxOutputTokens,
-        topK: contextConfig.topK,
-        topP: contextConfig.topP,
-      },
-      safetySettings,
-    })
-
-    const response = await result.response
-    return {
-      success: true,
-      content: response.text(),
-      usage: {
-        promptTokens: result.response.usageMetadata?.promptTokenCount || 0,
-        completionTokens: result.response.usageMetadata?.candidatesTokenCount || 0,
-        totalTokens: result.response.usageMetadata?.totalTokenCount || 0,
+  const maxRetries = options?.retryAttempts ?? 3
+  let lastError: Error | null = null
+  
+  // Retry with exponential backoff
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      if (!genAI) {
+        throw new Error('Gemini client not initialized - GEMINI_API_KEY missing')
       }
+      
+      const model = models.geminiPro
+      
+      if (!model) {
+        throw new Error('Gemini model not available')
+      }
+
+      // Get context-specific configuration
+      const contextConfig = options?.context ? getContextConfig(options.context) : generationConfig
+      
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: options?.temperature ?? contextConfig.temperature,
+          maxOutputTokens: options?.maxTokens ?? contextConfig.maxOutputTokens,
+          topK: contextConfig.topK,
+          topP: contextConfig.topP,
+        },
+        safetySettings,
+      })
+
+      const response = await result.response
+      return {
+        success: true,
+        content: response.text(),
+        usage: {
+          promptTokens: result.response.usageMetadata?.promptTokenCount || 0,
+          completionTokens: result.response.usageMetadata?.candidatesTokenCount || 0,
+          totalTokens: result.response.usageMetadata?.totalTokenCount || 0,
+        }
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      console.error(`Gemini API Error (attempt ${attempt + 1}/${maxRetries}):`, error)
+      
+      // Check if it's a 503 overload error
+      const errorMessage = lastError.message
+      const isOverloaded = errorMessage.includes('503') || 
+                          errorMessage.includes('overloaded') || 
+                          errorMessage.includes('Service Unavailable')
+      
+      // If it's the last attempt or not a retryable error, return error
+      if (attempt === maxRetries - 1 || !isOverloaded) {
+        return {
+          success: false,
+          error: isOverloaded 
+            ? 'AI service is temporarily overloaded. Please try again in a few moments.'
+            : errorMessage,
+          isOverloaded,
+          content: null,
+          usage: null
+        }
+      }
+      
+      // Calculate exponential backoff: 1s, 2s, 4s
+      const backoffMs = Math.pow(2, attempt) * 1000
+      console.log(`Retrying in ${backoffMs}ms due to overload...`)
+      await wait(backoffMs)
     }
-  } catch (error) {
-    console.error('Gemini API Error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      content: null,
-      usage: null
-    }
+  }
+  
+  // This should never be reached, but just in case
+  return {
+    success: false,
+    error: lastError?.message || 'Unknown error occurred',
+    isOverloaded: false,
+    content: null,
+    usage: null
   }
 }
 

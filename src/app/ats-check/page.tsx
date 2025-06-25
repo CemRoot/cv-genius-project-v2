@@ -18,7 +18,7 @@ const MobileATSAnalyzer = dynamic(() => import('@/components/ats/mobile-ats-anal
 
 export default function ATSCheckPage() {
   const [isMobile, setIsMobile] = useState(false)
-  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+  const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
 
   // Detect mobile device
   useEffect(() => {

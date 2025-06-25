@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Check } from 'lucide-react'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 const strengthOptions = [
   'Collaboration',
@@ -30,6 +31,7 @@ const strengthOptions = [
 
 export default function StrengthsPage() {
   const router = useRouter()
+  const { setStrengths: setContextStrengths } = useCoverLetter()
   const [selectedStrengths, setSelectedStrengths] = useState<string[]>([])
 
   const handleStrengthToggle = (strength: string) => {
@@ -42,6 +44,9 @@ export default function StrengthsPage() {
 
   const handleContinue = () => {
     if (selectedStrengths.length === 3) {
+      // Save strengths to context
+      setContextStrengths(selectedStrengths)
+      
       // Save strengths to localStorage
       localStorage.setItem('cover-letter-strengths', JSON.stringify(selectedStrengths))
       

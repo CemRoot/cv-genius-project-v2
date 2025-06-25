@@ -7,13 +7,15 @@ import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Loader2, Save, Wand2, RefreshCw, ArrowLeft } from 'lucide-react'
+import { Loader2, Save, Wand2, RefreshCw, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 export default function EditCoverLetterPage() {
   const router = useRouter()
   const { addToast } = useToast()
+  const { state: contextState } = useCoverLetter()
   
   // States
   const [coverLetterText, setCoverLetterText] = useState('')
@@ -22,6 +24,7 @@ export default function EditCoverLetterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [loadingType, setLoadingType] = useState<'edit' | 'regenerate' | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   // Load cover letter from localStorage on mount
   useEffect(() => {
@@ -41,6 +44,13 @@ export default function EditCoverLetterPage() {
     try {
       // Save to localStorage
       localStorage.setItem('generated-cover-letter', coverLetterText)
+      // Set a flag to indicate we're coming from edit
+      localStorage.setItem('cover-letter-edited', 'true')
+      
+      console.log('💾 Save Debug:')
+      console.log('- Saved text length:', coverLetterText.length)
+      console.log('- Flag set to:', localStorage.getItem('cover-letter-edited'))
+      console.log('- Saved text preview:', coverLetterText.substring(0, 100) + '...')
       
       addToast({
         type: 'success',
@@ -126,6 +136,18 @@ export default function EditCoverLetterPage() {
       const jobDescription = localStorage.getItem('cover-letter-job-description') || ''
       const strengths = JSON.parse(localStorage.getItem('cover-letter-strengths') || '[]')
       const workStyle = localStorage.getItem('cover-letter-work-style') || ''
+      
+      // Get user's actual contact info from context (same as results page)
+      const resumeData = JSON.parse(localStorage.getItem('cover-letter-resume-data') || '{}')
+      const userEmail = contextState.resumeData?.personalInfo?.email || resumeData.personalInfo?.email || templateData.personalInfo?.email || ''
+      const userPhone = contextState.resumeData?.personalInfo?.phone || resumeData.personalInfo?.phone || templateData.personalInfo?.phone || ''
+      const userAddress = contextState.resumeData?.personalInfo?.location || resumeData.personalInfo?.location || templateData.personalInfo?.location || 'Dublin, Ireland'
+      
+      console.log('🔄 Regenerate Debug:')
+      console.log('- Context resume data:', contextState.resumeData?.personalInfo)
+      console.log('- userEmail:', userEmail)
+      console.log('- userPhone:', userPhone)
+      console.log('- userAddress:', userAddress)
 
       const response = await fetch('/api/ai/generate-cover-letter', {
         method: 'POST',
@@ -137,15 +159,22 @@ export default function EditCoverLetterPage() {
           tone: 'formal',
           company: jobInfo.targetCompany || 'Company',
           position: jobInfo.jobTitle || 'Position',
-          applicantName: `${templateData.personalInfo?.firstName} ${templateData.personalInfo?.lastName}`,
+          applicantName: `${contextState.personalInfo?.firstName || templateData.personalInfo?.firstName || 'CEM'} ${contextState.personalInfo?.lastName || templateData.personalInfo?.lastName || 'KOYLUOGLU'}`,
           background: `A dedicated professional with strength in ${strengths.join(', ')}`,
           achievements: strengths,
           jobDescription: jobDescription,
           customInstructions: `Working style: ${workStyle}`,
           includeAddress: true,
-          userAddress: 'Dublin, Ireland',
-          userPhone: '+353 (0) 1 234 5678',
-          currentDate: new Date().toLocaleDateString('en-IE')
+          userAddress: userAddress,
+          userPhone: userPhone,
+          userEmail: userEmail,
+          currentDate: new Date().toLocaleDateString('en-IE', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }),
+          // Include resume data if available (same as results page)
+          resumeData: contextState.resumeData
         })
       })
 
@@ -163,10 +192,18 @@ export default function EditCoverLetterPage() {
         throw new Error(result.error || 'Failed to regenerate')
       }
     } catch (error) {
+      console.error('Regeneration error:', error)
+      let errorMessage = 'Failed to generate new cover letter. Please try again.'
+      
+      // Check if it's a 503 error
+      if (error instanceof Error && (error.message.includes('503') || error.message.includes('overloaded'))) {
+        errorMessage = 'AI service is temporarily overloaded. Please try again in a few moments.'
+      }
+      
       addToast({
         type: 'error',
         title: 'Regeneration Failed',
-        description: 'Failed to generate new cover letter. Please try again.'
+        description: errorMessage
       })
     } finally {
       setIsLoading(false)
@@ -181,6 +218,65 @@ export default function EditCoverLetterPage() {
       type: 'info',
       title: 'Reset Complete',
       description: 'Cover letter has been reset to original version.'
+    })
+  }
+
+  // Check for placeholder text
+  const hasPlaceholders = () => {
+    const placeholders = [
+      'Your Target Company',
+      'Company Name',
+      'Desired Position',
+      'your organisation',
+      'your organization',
+      'the company',
+      'your company',
+      'your firm',
+      'the bank',
+      'the organisation',
+      'the organization'
+    ]
+    
+    return placeholders.some(placeholder => 
+      coverLetterText.toLowerCase().includes(placeholder.toLowerCase())
+    )
+  }
+
+  // Highlight placeholders in text
+  const highlightPlaceholders = (text: string) => {
+    const placeholderPatterns = [
+      'Your Target Company',
+      'Company Name',
+      'Desired Position',
+      'your organisation',
+      'your organization',
+      'the company',
+      'your company',
+      'your firm',
+      'the bank',
+      'the organisation',
+      'the organization'
+    ]
+    
+    const pattern = new RegExp(`(${placeholderPatterns.join('|')})`, 'gi')
+    const parts = text.split(pattern)
+    
+    return parts.map((part, index) => {
+      if (placeholderPatterns.some(placeholder => 
+        part.toLowerCase() === placeholder.toLowerCase()
+      )) {
+        return (
+          <mark key={index} style={{ 
+            backgroundColor: '#ffeb3b',
+            fontWeight: 'bold',
+            padding: '2px 4px',
+            borderRadius: '2px'
+          }}>
+            {part}
+          </mark>
+        )
+      }
+      return part
     })
   }
 
@@ -227,6 +323,15 @@ export default function EditCoverLetterPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="text-xs sm:text-sm"
+                      >
+                        {showPreview ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        <span className="ml-1">{showPreview ? 'Edit' : 'Preview'}</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={handleReset}
                         className="text-xs sm:text-sm"
                       >
@@ -235,14 +340,42 @@ export default function EditCoverLetterPage() {
                     </div>
                   </div>
                   
-                  <Textarea
-                    id="cover-letter-text"
-                    value={coverLetterText}
-                    onChange={(e) => setCoverLetterText(e.target.value)}
-                    placeholder="Your cover letter content will appear here..."
-                    className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] text-sm sm:text-base leading-relaxed resize-none"
-                    style={{ fontFamily: 'serif' }}
-                  />
+                  {/* Warning if placeholders detected */}
+                  {hasPlaceholders() && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-md">
+                      <p className="text-yellow-800 text-sm font-semibold flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        Generic placeholders detected!
+                      </p>
+                      <p className="text-yellow-700 text-xs mt-1">
+                        Replace highlighted text like "Your Target Company" with actual company names. Toggle Preview to see highlighted placeholders.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {showPreview ? (
+                    <div 
+                      className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] p-4 border rounded-md bg-gray-50 overflow-auto"
+                      style={{ fontFamily: 'serif', whiteSpace: 'pre-wrap' }}
+                    >
+                      {coverLetterText.split('\n').map((line, index) => (
+                        <div key={index} className="text-sm sm:text-base leading-relaxed">
+                          {line ? highlightPlaceholders(line) : <br />}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <Textarea
+                      id="cover-letter-text"
+                      value={coverLetterText}
+                      onChange={(e) => setCoverLetterText(e.target.value)}
+                      placeholder="Your cover letter content will appear here..."
+                      className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] text-sm sm:text-base leading-relaxed resize-none"
+                      style={{ fontFamily: 'serif' }}
+                    />
+                  )}
                   
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <Button

@@ -24,6 +24,21 @@ const nextConfig = {
       },
     ],
   },
+  // Webpack configuration to handle Node.js modules
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Don't resolve 'fs' and 'zlib' modules on the client side
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        zlib: false,
+        path: false,
+        stream: false,
+        crypto: false,
+      };
+    }
+    return config;
+  },
   // Headers for service worker and PropuSH
   async headers() {
     return [
