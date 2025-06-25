@@ -68,7 +68,7 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
   }, [position])
 
   const positionStyles = {
-    top: 'sticky top-16 lg:top-20 z-40 bg-white border-b shadow-sm',
+    top: 'relative z-40 bg-white border-b shadow-sm',
     bottom: 'sticky bottom-0 z-50 bg-white border-t shadow-lg',
     floating: 'fixed bottom-4 right-4 z-50 shadow-2xl rounded-lg overflow-hidden'
   }
@@ -96,7 +96,7 @@ export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProp
         {/* Ad script will inject content here */}
         <div 
           id={`mobile-ad-${position}`} 
-          className="absolute inset-0 w-full h-full lg:hidden"
+          className="relative w-full h-full lg:hidden"
         />
       </div>
       

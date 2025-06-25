@@ -175,7 +175,7 @@ export function StyledCoverLetter({
           contentStyle: {
             lineHeight: '1.6',
             color: '#333',
-            textAlign: 'left' as const,
+            textAlign: 'justify' as const,
             fontSize: '14px'
           }
         }
@@ -291,15 +291,15 @@ export function StyledCoverLetter({
           {sections.date && <p style={{ textAlign: 'right', marginBottom: '30px' }}>{sections.date}</p>}
           
           <div style={{ marginBottom: '30px' }}>
-            <p style={{ marginBottom: '5px' }}>{sections.recipientName}</p>
-            <p style={{ marginBottom: '5px' }}>{highlightPlaceholders(sections.company)}</p>
-            <p>{sections.companyAddress}</p>
+            <p style={{ marginBottom: '5px', textAlign: 'left' }}>{sections.recipientName}</p>
+            <p style={{ marginBottom: '5px', textAlign: 'left' }}>{highlightPlaceholders(sections.company)}</p>
+            <p style={{ textAlign: 'left' }}>{sections.companyAddress}</p>
           </div>
           
           <p style={{ marginBottom: '20px', fontWeight: 'bold' }}>{sections.salutation}</p>
           
           {sections.paragraphs.map((para, index) => (
-            <p key={index} style={{ marginBottom: '15px' }}>
+            <p key={index} style={{ marginBottom: '15px', textAlign: 'justify' }}>
               {highlightPlaceholders(para)}
             </p>
           ))}
@@ -335,15 +335,15 @@ export function StyledCoverLetter({
           {sections.date && <p style={{ textAlign: 'right', marginBottom: '30px', color: '#6b7280' }}>{sections.date}</p>}
           
           <div style={{ marginBottom: '30px' }}>
-            <p style={{ marginBottom: '5px', fontWeight: 'bold' }}>{sections.recipientName}</p>
-            <p style={{ marginBottom: '5px' }}>{highlightPlaceholders(sections.company)}</p>
-            <p>{sections.companyAddress}</p>
+            <p style={{ marginBottom: '5px', fontWeight: 'bold', textAlign: 'left' }}>{sections.recipientName}</p>
+            <p style={{ marginBottom: '5px', textAlign: 'left' }}>{highlightPlaceholders(sections.company)}</p>
+            <p style={{ textAlign: 'left' }}>{sections.companyAddress}</p>
           </div>
           
           <p style={{ marginBottom: '25px', fontWeight: '600', fontSize: '16px' }}>{sections.salutation}</p>
           
           {sections.paragraphs.map((para, index) => (
-            <p key={index} style={{ marginBottom: '20px', lineHeight: '1.7' }}>
+            <p key={index} style={{ marginBottom: '20px', lineHeight: '1.7', textAlign: 'justify' }}>
               {highlightPlaceholders(para)}
             </p>
           ))}
@@ -377,15 +377,15 @@ export function StyledCoverLetter({
           {sections.date && <p style={{ textAlign: 'right', marginBottom: '25px', color: '#64748b' }}>{sections.date}</p>}
           
           <div style={{ marginBottom: '25px' }}>
-            <p style={{ marginBottom: '5px', fontWeight: 'bold' }}>{sections.recipientName}</p>
-            <p style={{ marginBottom: '5px' }}>{highlightPlaceholders(sections.company)}</p>
-            <p>{sections.companyAddress}</p>
+            <p style={{ marginBottom: '5px', fontWeight: 'bold', textAlign: 'left' }}>{sections.recipientName}</p>
+            <p style={{ marginBottom: '5px', textAlign: 'left' }}>{highlightPlaceholders(sections.company)}</p>
+            <p style={{ textAlign: 'left' }}>{sections.companyAddress}</p>
           </div>
           
           <p style={{ marginBottom: '20px', fontWeight: '500' }}>{sections.salutation}</p>
           
           {sections.paragraphs.map((para, index) => (
-            <p key={index} style={{ marginBottom: '18px' }}>
+            <p key={index} style={{ marginBottom: '18px', textAlign: 'justify' }}>
               {highlightPlaceholders(para)}
             </p>
           ))}
@@ -420,15 +420,15 @@ export function StyledCoverLetter({
         {sections.date && <p style={{ textAlign: 'right', marginBottom: '30px' }}>{sections.date}</p>}
         
         <div style={{ marginBottom: '30px' }}>
-          <p style={{ marginBottom: '5px' }}>{sections.recipientName}</p>
-          <p style={{ marginBottom: '5px' }}>{highlightPlaceholders(sections.company)}</p>
-          <p>{sections.companyAddress}</p>
+          <p style={{ marginBottom: '5px', textAlign: 'left' }}>{sections.recipientName}</p>
+          <p style={{ marginBottom: '5px', textAlign: 'left' }}>{highlightPlaceholders(sections.company)}</p>
+          <p style={{ textAlign: 'left' }}>{sections.companyAddress}</p>
         </div>
         
         <p style={{ marginBottom: '20px' }}>{sections.salutation}</p>
         
         {sections.paragraphs.map((para, index) => (
-          <p key={index} style={{ marginBottom: '15px' }}>
+          <p key={index} style={{ marginBottom: '15px', textAlign: 'justify' }}>
             {highlightPlaceholders(para)}
           </p>
         ))}

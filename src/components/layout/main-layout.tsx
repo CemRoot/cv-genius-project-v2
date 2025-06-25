@@ -6,9 +6,11 @@ import { AdController } from "@/components/ads/ad-controller"
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {/* Mobile Top Ad */}
-      <AdController type="mobile-top" />
+    <div className="min-h-screen flex flex-col">
+      {/* Mobile Top Ad - Outside of fixed navigation flow */}
+      <div className="lg:hidden">
+        <AdController type="mobile-top" />
+      </div>
       
       <Navigation />
       
@@ -19,7 +21,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       
-      <main className="flex-1 pt-2 md:pt-0">
+      {/* Main content with proper padding to account for fixed navigation and mobile ad */}
+      <main className="flex-1 pt-16 lg:pt-20 md:pt-0">
         {children}
       </main>
       
@@ -30,6 +33,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       
       {/* Desktop Side Ads */}
       <AdController type="sticky-side" />
-    </>
+    </div>
   )
 }
