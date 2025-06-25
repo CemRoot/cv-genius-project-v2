@@ -84,88 +84,90 @@ export function StyledCoverLetter({
       case 'trinity-modern':
         return {
           container: {
-            maxWidth: '900px',
+            width: '100%',
+            maxWidth: '800px',
             margin: '0 auto',
             background: 'white',
-            padding: '60px',
+            padding: '40px',
             fontFamily: '"Arial", sans-serif',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            minHeight: '950px'
+            boxSizing: 'border-box' as const
           },
           header: {
             textAlign: 'center' as const,
-            marginBottom: '50px',
-            borderBottom: `4px solid ${primaryColor}`,
-            paddingBottom: '30px'
+            marginBottom: '35px',
+            borderBottom: `3px solid ${primaryColor}`,
+            paddingBottom: '20px'
           },
           nameStyle: {
-            fontSize: '40px',
+            fontSize: '32px',
             fontWeight: 'bold',
             color: primaryColor,
-            marginBottom: '15px'
+            marginBottom: '10px'
           },
           contentStyle: {
-            lineHeight: '1.7',
+            lineHeight: '1.6',
             color: '#333',
-            textAlign: 'justify' as const,
-            fontSize: '16px'
+            textAlign: 'left' as const,
+            fontSize: '14px'
           }
         }
       case 'corporate-dublin':
         return {
           container: {
-            maxWidth: '1000px',
+            width: '100%',
+            maxWidth: '800px',
             margin: '0 auto',
             background: 'white',
             display: 'grid',
-            gridTemplateColumns: '320px 1fr',
-            minHeight: '1100px',
-            boxShadow: '0 0 20px rgba(0,0,0,0.1)'
+            gridTemplateColumns: '250px 1fr',
+            boxSizing: 'border-box' as const
           },
           sidebar: {
             background: primaryColor,
             color: 'white',
-            padding: '50px 40px'
+            padding: '35px 25px'
           },
           mainContent: {
-            padding: '50px',
+            padding: '35px',
             background: 'white',
             fontFamily: '"Calibri", sans-serif',
-            fontSize: '16px'
+            fontSize: '14px'
           },
           nameStyle: {
-            fontSize: '32px',
+            fontSize: '26px',
             fontWeight: 'bold',
-            marginBottom: '10px'
+            marginBottom: '8px'
           }
         }
       case 'tech-dublin':
         return {
           container: {
-            maxWidth: '800px',
+            width: '100%',
+            maxWidth: '750px',
             margin: '0 auto',
             background: '#f8fafc',
             border: '1px solid #e2e8f0',
             fontFamily: '"Inter", sans-serif',
-            minHeight: '1000px'
+            boxSizing: 'border-box' as const
           },
           header: {
             background: primaryColor,
             color: 'white',
-            padding: '40px',
+            padding: '30px',
             textAlign: 'center' as const
           },
           content: {
             background: 'white',
-            padding: '40px',
-            margin: '20px',
-            borderRadius: '8px',
-            lineHeight: '1.6'
+            padding: '30px',
+            margin: '15px',
+            borderRadius: '6px',
+            lineHeight: '1.5',
+            fontSize: '14px'
           },
           nameStyle: {
-            fontSize: '36px',
+            fontSize: '28px',
             fontWeight: 'bold',
-            marginBottom: '10px'
+            marginBottom: '8px'
           }
         }
       case 'dublin-professional':
@@ -174,29 +176,31 @@ export function StyledCoverLetter({
           container: {
             display: 'table',
             width: '100%',
+            maxWidth: '800px',
+            margin: '0 auto',
             tableLayout: 'fixed' as const,
-            minHeight: '950px',
             fontFamily: '"Arial", sans-serif',
-            fontSize: '16px',
-            lineHeight: '1.6'
+            fontSize: '14px',
+            lineHeight: '1.5',
+            boxSizing: 'border-box' as const
           },
           sidebar: {
             display: 'table-cell',
-            width: '200px',
+            width: '180px',
             background: primaryColor,
             color: 'white',
-            padding: '30px',
+            padding: '25px',
             verticalAlign: 'top'
           },
           mainContent: {
             display: 'table-cell',
-            padding: '30px',
+            padding: '25px',
             verticalAlign: 'top'
           },
           nameStyle: {
-            fontSize: '28px',
+            fontSize: '24px',
             fontWeight: 'bold',
-            marginBottom: '10px'
+            marginBottom: '8px'
           }
         }
     }
@@ -209,7 +213,7 @@ export function StyledCoverLetter({
     return (
       <div style={styles.container}>
         <div style={styles.header}>
-          <div style={styles.nameStyle}>{sections.senderName}</div>
+          <div style={styles.nameStyle}>{sections.senderName || 'Your Name'}</div>
           {sections.address && <p style={{ marginBottom: '5px' }}>{sections.address}</p>}
           {sections.phone && <p style={{ marginBottom: '5px' }}>{sections.phone}</p>}
           {sections.email && <p style={{ marginBottom: '5px' }}>{sections.email}</p>}
@@ -376,9 +380,13 @@ export function StyledCoverLetter({
 }
 
 function parseCoverLetter(content: string) {
-  const lines = content.split('\n').filter(line => line.trim())
+  const lines = content.split('\n')
   
-  // Extract components
+  // Debug logging
+  console.log('📄 Parsing cover letter, total lines:', lines.length)
+  console.log('📄 First 5 lines:', lines.slice(0, 5))
+  
+  // Extract components with more flexible parsing
   let senderName = ''
   let address = ''
   let phone = ''
@@ -394,83 +402,146 @@ function parseCoverLetter(content: string) {
   
   let currentIndex = 0
   
-  // Parse sender info - NEW FORMAT: Name first, then address, phone, email
-  // First line should be the sender's name
-  if (lines[0] && !lines[0].includes('Hiring Manager') && !lines[0].includes('Dear')) {
-    senderName = lines[0]
+  // Skip empty lines at the beginning
+  while (currentIndex < lines.length && !lines[currentIndex].trim()) {
     currentIndex++
   }
   
-  // Next line might be address (contains Dublin, Ireland, or similar)
-  if (lines[currentIndex] && (lines[currentIndex].includes('Dublin') || lines[currentIndex].includes('Ireland') || lines[currentIndex].includes(','))) {
-    address = lines[currentIndex]
-    currentIndex++
+  // Parse sender info - More flexible parsing
+  // Look for patterns in the first few non-empty lines
+  const firstNonEmptyLines: string[] = []
+  for (let i = currentIndex; i < Math.min(currentIndex + 10, lines.length); i++) {
+    if (lines[i].trim()) {
+      firstNonEmptyLines.push(lines[i])
+    }
   }
   
-  // Phone number
-  if (lines[currentIndex] && lines[currentIndex].includes('+353')) {
-    phone = lines[currentIndex]
-    currentIndex++
+  console.log('📄 First non-empty lines:', firstNonEmptyLines)
+  
+  // Process lines in order to correctly identify each component
+  let lineIndex = 0
+  
+  // First line is usually the sender name
+  if (lineIndex < firstNonEmptyLines.length && 
+      !firstNonEmptyLines[lineIndex].includes('@') && 
+      !firstNonEmptyLines[lineIndex].includes('+353')) {
+    senderName = firstNonEmptyLines[lineIndex]
+    console.log('📄 Found sender name at index', lineIndex, ':', senderName)
+    lineIndex++
   }
   
-  // Email
-  if (lines[currentIndex] && lines[currentIndex].includes('@')) {
-    email = lines[currentIndex]
-    currentIndex++
+  // Next lines could be address (before phone/email)
+  while (lineIndex < firstNonEmptyLines.length) {
+    const line = firstNonEmptyLines[lineIndex]
+    
+    // If we hit phone or email, stop looking for address
+    if (line.includes('@') || line.includes('+353')) {
+      break
+    }
+    
+    // If we hit a date, stop
+    if (line.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/) || 
+        line.match(/\d{1,2}\s+\w+\s+\d{4}/)) {
+      break
+    }
+    
+    // This line is likely part of the address
+    if (!address && line.trim()) {
+      address = line
+      console.log('📄 Found address at index', lineIndex, ':', address)
+    }
+    lineIndex++
   }
   
-  // Date - various formats
-  if (lines[currentIndex] && (lines[currentIndex].match(/\d{1,2}\/\d{1,2}\/\d{4}/) || 
-      lines[currentIndex].match(/\d{1,2}\s+\w+\s+\d{4}/) || 
-      lines[currentIndex].match(/\w+\s+\d{1,2},?\s+\d{4}/))) {
-    date = lines[currentIndex]
-    currentIndex++
+  // Now continue with finding phone, email, and date
+  
+  // Find phone
+  for (const line of firstNonEmptyLines) {
+    if (line.includes('+353') && !phone) {
+      phone = line
+      console.log('📄 Found phone:', phone)
+    }
   }
   
-  // Skip any empty lines
-  while (currentIndex < lines.length && !lines[currentIndex]) {
-    currentIndex++
+  // Find email
+  for (const line of firstNonEmptyLines) {
+    if (line.includes('@') && !email) {
+      email = line
+      console.log('📄 Found email:', email)
+    }
   }
   
-  // Parse recipient info
-  if (lines[currentIndex] && lines[currentIndex].includes('Hiring Manager')) {
-    recipientName = lines[currentIndex]
-    currentIndex++
+  // Find date
+  for (const line of firstNonEmptyLines) {
+    if ((line.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/) || 
+        line.match(/\d{1,2}\s+\w+\s+\d{4}/) || 
+        line.match(/\w+\s+\d{1,2},?\s+\d{4}/)) && !date) {
+      date = line
+      console.log('📄 Found date:', date)
+    }
   }
   
-  if (lines[currentIndex] && !lines[currentIndex].includes('Dear')) {
-    company = lines[currentIndex]
-    currentIndex++
-  }
-  
-  if (lines[currentIndex] && lines[currentIndex].includes('Dublin')) {
-    companyAddress = lines[currentIndex]
-    currentIndex++
+  // Find recipient info starting from where we found the date or after header info
+  let searchStartIndex = 0
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('Hiring Manager')) {
+      recipientName = lines[i]
+      searchStartIndex = i
+      console.log('📄 Found recipient at index:', i, recipientName)
+      
+      // Company is usually the next line
+      if (i + 1 < lines.length && lines[i + 1].trim() && !lines[i + 1].startsWith('Dear')) {
+        company = lines[i + 1]
+        console.log('📄 Found company:', company)
+      }
+      
+      // Company address is usually after company
+      if (i + 2 < lines.length && lines[i + 2].trim() && (lines[i + 2].includes('Dublin') || lines[i + 2].includes('Ireland'))) {
+        companyAddress = lines[i + 2]
+        console.log('📄 Found company address:', companyAddress)
+      }
+      break
+    }
   }
   
   // Find salutation
-  const salutationIndex = lines.findIndex(line => line.startsWith('Dear'))
+  const salutationIndex = lines.findIndex(line => line.trim().startsWith('Dear'))
   if (salutationIndex !== -1) {
     salutation = lines[salutationIndex]
-    currentIndex = salutationIndex + 1
+    console.log('📄 Found salutation at index:', salutationIndex, salutation)
   }
   
-  // Find closing
-  const closingIndex = lines.findIndex(line => line.startsWith('Yours sincerely'))
-  if (closingIndex !== -1) {
-    closing = lines[closingIndex]
-    
-    // Extract paragraphs between salutation and closing
-    for (let i = currentIndex; i < closingIndex; i++) {
+  // Find closing - be more flexible with variations
+  const closingPatterns = ['yours sincerely', 'sincerely', 'best regards', 'kind regards', 'regards']
+  let closingIndex = -1
+  
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const lineLower = lines[i].toLowerCase().trim()
+    if (closingPatterns.some(pattern => lineLower.includes(pattern))) {
+      closing = lines[i]
+      closingIndex = i
+      console.log('📄 Found closing at index:', closingIndex, closing)
+      break
+    }
+  }
+  
+  // Extract paragraphs between salutation and closing
+  if (salutationIndex !== -1 && closingIndex !== -1) {
+    for (let i = salutationIndex + 1; i < closingIndex; i++) {
       if (lines[i] && lines[i].trim()) {
         paragraphs.push(lines[i])
       }
     }
-    
-    // Get applicant name (last non-empty line)
-    for (let i = lines.length - 1; i > closingIndex; i--) {
-      if (lines[i] && lines[i].trim()) {
+  }
+  
+  console.log('📄 Found paragraphs:', paragraphs.length)
+  
+  // Get applicant name (should be after closing)
+  if (closingIndex !== -1) {
+    for (let i = closingIndex + 1; i < lines.length; i++) {
+      if (lines[i] && lines[i].trim() && lines[i].match(/^[A-Za-z\s]+$/)) {
         applicantName = lines[i]
+        console.log('📄 Found applicant name:', applicantName)
         break
       }
     }

@@ -113,10 +113,21 @@ export default function EditCoverLetterPage() {
         throw new Error(result.error || 'Failed to improve text')
       }
     } catch (error) {
+      console.error('AI Edit Error:', error)
+      let errorMessage = 'Failed to improve the text. Please try again.'
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Rate limit')) {
+          errorMessage = 'Too many requests. Please wait a moment and try again.'
+        } else if (error.message.includes('API key')) {
+          errorMessage = 'AI service is not configured. Please contact support.'
+        }
+      }
+      
       addToast({
         type: 'error',
         title: 'AI Edit Failed',
-        description: 'Failed to improve the text. Please try again.'
+        description: errorMessage
       })
     } finally {
       setIsLoading(false)
