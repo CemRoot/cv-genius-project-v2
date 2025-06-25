@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Loader2, Download, FileText, Edit, RefreshCw } from 'lucide-react'
+import { Loader2, Download, FileText, Edit, RefreshCw, Maximize2, Minimize2 } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -57,6 +57,8 @@ export default function ResultsPage() {
   const [currentDate, setCurrentDate] = useState('')
   // const [propPushTrigger, setPropPushTrigger] = useState(false)
   const [exportCount, setExportCount] = useState(0)
+  const [mobileScale, setMobileScale] = useState(1)
+  const [isFullView, setIsFullView] = useState(false)
 
   // Initialize date on client side to avoid hydration mismatch
   useEffect(() => {
@@ -68,17 +70,37 @@ export default function ResultsPage() {
     setCurrentDate(`${day}/${month}/${year}`)
   }, [])
 
+  // Calculate scale for mobile view
+  useEffect(() => {
+    const calculateScale = () => {
+      if (typeof window !== 'undefined') {
+        const width = window.innerWidth
+        if (width < 640) {
+          // For mobile, calculate exact scale for 430px width
+          const targetWidth = 430
+          const documentWidth = 800 // A4 width in pixels
+          const scale = targetWidth / documentWidth
+          setMobileScale(isFullView ? 1 : scale * 0.95) // Slightly smaller to ensure full visibility
+        } else if (width < 768) {
+          setMobileScale(isFullView ? 1 : 0.7)
+        } else {
+          setMobileScale(1)
+        }
+      }
+    }
+
+    calculateScale()
+    window.addEventListener('resize', calculateScale)
+    return () => window.removeEventListener('resize', calculateScale)
+  }, [isFullView])
+
+
   // Separate effect for initial load to avoid dependency issues
   useEffect(() => {
     // Check if we have an edited cover letter
     const editedText = localStorage.getItem('generated-cover-letter')
     const isFromEdit = localStorage.getItem('cover-letter-edited') === 'true'
     
-    console.log('🔍 Edit Detection Debug:')
-    console.log('- editedText exists:', !!editedText)
-    console.log('- isFromEdit flag:', isFromEdit)
-    console.log('- editedText length:', editedText?.length || 0)
-    console.log('- localStorage keys:', Object.keys(localStorage))
     
     if (editedText && isFromEdit) {
       // Don't clear the edit flag immediately - keep it until user navigates away or generates new letter
@@ -87,8 +109,6 @@ export default function ResultsPage() {
       
       // Load collected data with better template/color handling
       const templateDataFromStorage = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
-      console.log('📦 Template data from storage:', templateDataFromStorage)
-      console.log('🎨 Context state:', { selectedTemplate: contextState.selectedTemplate, selectedColor: contextState.selectedColor })
       
       // Prioritize context state over localStorage, with fallbacks
       const templateData = {
@@ -97,7 +117,6 @@ export default function ResultsPage() {
         personalInfo: contextState.personalInfo?.firstName ? contextState.personalInfo : templateDataFromStorage.personalInfo
       }
       
-      console.log('🎯 Final template data (edited):', templateData)
       
       const jobInfo = contextState.jobInfo?.targetCompany ? contextState.jobInfo : JSON.parse(localStorage.getItem('cover-letter-job-info') || '{}')
       const jobDescription = localStorage.getItem('cover-letter-job-description') || ''
@@ -119,21 +138,11 @@ export default function ResultsPage() {
         collegeGrad: contextState.collegeGrad || undefined
       }
       
-      // Debug log
-      console.log('Loaded data from localStorage (edited):', {
-        templateData,
-        strengths,
-        workStyle,
-        contextState
-      })
       
       setCollectedData(data)
-      console.log('✅ Edit mode: Using saved edited text, not regenerating')
     } else {
       // No edited text, generate new with improved data handling
       const templateDataFromStorage = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
-      console.log('📦 Template data from storage (new generation):', templateDataFromStorage)
-      console.log('🎨 Context state (new generation):', { selectedTemplate: contextState.selectedTemplate, selectedColor: contextState.selectedColor })
       
       // Prioritize context state over localStorage, with fallbacks
       const templateData = {
@@ -142,7 +151,6 @@ export default function ResultsPage() {
         personalInfo: contextState.personalInfo?.firstName ? contextState.personalInfo : templateDataFromStorage.personalInfo
       }
       
-      console.log('🎯 Final template data (new generation):', templateData)
       
       const jobInfo = contextState.jobInfo?.targetCompany ? contextState.jobInfo : JSON.parse(localStorage.getItem('cover-letter-job-info') || '{}')
       const jobDescription = localStorage.getItem('cover-letter-job-description') || ''
@@ -164,13 +172,6 @@ export default function ResultsPage() {
         collegeGrad: contextState.collegeGrad || undefined
       }
       
-      // Debug log
-      console.log('Loaded data for new generation:', {
-        templateData,
-        strengths,
-        workStyle,
-        contextState
-      })
 
       setCollectedData(data)
       
@@ -181,7 +182,6 @@ export default function ResultsPage() {
       }
       
       performGeneration()
-      console.log('🔄 Generation mode: Creating new cover letter')
     }
   }, []) // Remove contextState dependency to prevent regeneration when context changes
 
@@ -192,13 +192,6 @@ export default function ResultsPage() {
 
   const generateCoverLetter = async (data: CollectedData) => {
     try {
-      // Debug log
-      console.log('Cover letter data:', data)
-      console.log('Context state:', contextState)
-      console.log('Template data personal info:', data.templateData?.personalInfo)
-      console.log('Context personal info:', contextState.personalInfo)
-      console.log('Context resume data:', contextState.resumeData)
-      console.log('Context resume personalInfo:', contextState.resumeData?.personalInfo)
       
       // Ensure we have valid personal info - prioritize context over localStorage
       const firstName = contextState.personalInfo?.firstName || data.templateData?.personalInfo?.firstName || 'John'
@@ -206,10 +199,6 @@ export default function ResultsPage() {
       const strengths = Array.isArray(data.strengths) ? data.strengths : []
       const workStyle = data.workStyle || 'professional'
       
-      // Debug log
-      console.log('Personal info:', { firstName, lastName })
-      console.log('Strengths:', strengths)
-      console.log('Work style:', workStyle)
       
       const requestBody = {
         template: getValidTemplate(data.templateData?.selectedTemplate),
@@ -239,25 +228,8 @@ export default function ResultsPage() {
         resumeData: contextState.resumeData
       }
       
-      // Debug API request
-      console.log('API Request Body:', requestBody)
-      console.log('Resume data email:', contextState.resumeData?.personalInfo?.email)
-      console.log('Resume data phone:', contextState.resumeData?.personalInfo?.phone)
-      console.log('Resume data location:', contextState.resumeData?.personalInfo?.location)
       
-      // Additional validation
-      if (contextState.resumeData?.personalInfo) {
-        console.log('📋 Full resume personalInfo object:', contextState.resumeData.personalInfo)
-      } else {
-        console.warn('⚠️ No resume data found in context')
-      }
       
-      // Check if resume data has been extracted
-      if (contextState.extractedFromResume) {
-        console.log('✅ Cover letter generated from extracted resume data')
-      } else {
-        console.log('ℹ️ Cover letter generated from manual input')
-      }
       
       const response = await fetch('/api/ai/generate-cover-letter', {
         method: 'POST',
@@ -269,21 +241,15 @@ export default function ResultsPage() {
 
       const result = await response.json()
       
-      // Debug API response
-      console.log('API Response:', result)
 
       if (result.success) {
         const newLetter = result.coverLetter.content
         setGeneratedLetter(newLetter)
         updateLocalStorage(newLetter)
       } else {
-        console.error('API Error:', result.error)
         throw new Error(result.error || 'Failed to generate cover letter')
       }
     } catch (error) {
-      // Always log errors for debugging
-      console.error('Generation error:', error)
-      console.error('Data that caused error:', data)
       
       // Check if it's a rate limit error
       const errorMessage = error instanceof Error ? error.message : String(error)
@@ -340,8 +306,6 @@ export default function ResultsPage() {
     // Ensure strengths is an array
     const strengths = Array.isArray(data.strengths) ? data.strengths : []
     const workStyle = data.workStyle || 'professional'
-    
-    console.log('Fallback letter data:', { firstName, lastName, strengths, workStyle })
     
     let openingParagraph = ''
     let secondParagraph = ''
@@ -499,7 +463,6 @@ ${name}`
         setExportCount(prev => prev + 1)
       
     } catch (error) {
-      console.error('PDF export error:', error)
       addToast({
         type: 'error',
         title: 'Export Failed',
@@ -561,7 +524,7 @@ ${name}`
     } catch (error) {
       // Silently handle export errors in production
       if (process.env.NODE_ENV === 'development') {
-        console.error('DOCX export error:', error)
+        // Error logging disabled in production
       }
       addToast({
         type: 'error',
@@ -603,7 +566,7 @@ ${name}`
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="w-full sm:max-w-5xl mx-auto sm:px-6 lg:px-8 py-4 sm:py-12">
         {/* Warning if generic company name is detected */}
         {generatedLetter && (generatedLetter.includes('Your Target Company') || 
           generatedLetter.includes('your organisation') || 
@@ -621,6 +584,19 @@ ${name}`
           </div>
         )}
         
+        {/* Mobile view toggle */}
+        <div className="mb-4 flex justify-end sm:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsFullView(!isFullView)}
+            className="flex items-center gap-2"
+          >
+            {isFullView ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isFullView ? 'Fit to Screen' : 'Full Size'}
+          </Button>
+        </div>
+
         <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
           <div className="flex flex-col sm:flex-row gap-2">
           <Button
@@ -670,25 +646,40 @@ ${name}`
           </div>
         </div>
 
-        <Card className="p-0 overflow-hidden" id="cover-letter-preview">
-          <div className="p-4 sm:p-8">
-            {/* Debug template data - hidden during export */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="no-export" style={{ background: '#f0f0f0', padding: '10px', marginBottom: '20px', fontSize: '12px' }}>
-                <strong>Debug Template Info:</strong><br />
-                Template: {collectedData?.templateData.selectedTemplate || 'dublin-professional'}<br />
-                Color: {collectedData?.templateData.selectedColor || 'none'}<br />
-                Letter Length: {generatedLetter?.length || 0} chars
-              </div>
-            )}
+        {/* Mobile responsive wrapper for cover letter preview */}
+        <div className="w-full flex justify-center sm:block">
+          <div 
+            className="overflow-hidden"
+            style={{
+              height: typeof window !== 'undefined' && window.innerWidth < 768 ? '506px' : 'auto',
+              width: typeof window !== 'undefined' && window.innerWidth < 768 ? '430px' : 'auto',
+              position: 'relative'
+            }}
+          >
+            <div 
+              className="transition-transform duration-300"
+              style={{
+                transform: `scale(${mobileScale})`,
+                transformOrigin: 'top left',
+                width: mobileScale < 1 ? `${100 / mobileScale}%` : '100%',
+                maxWidth: '800px'
+              }}
+            >
+              <Card className="p-0 overflow-hidden" id="cover-letter-preview">
+                <div className="bg-white" style={{
+                  padding: typeof window !== 'undefined' && window.innerWidth < 768 ? '0' : '32px'
+                }}>
             <StyledCoverLetter
               content={generatedLetter}
               templateId={collectedData?.templateData.selectedTemplate || 'dublin-professional'}
               colorOption={collectedData?.templateData.selectedColor}
               signature={collectedData?.signature}
             />
+                </div>
+              </Card>
+            </div>
           </div>
-        </Card>
+        </div>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
           <Button
