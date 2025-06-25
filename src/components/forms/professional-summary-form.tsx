@@ -75,13 +75,14 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
   })
   
 
-  const watchedFields = watch()
+  // Watch only the summary field to prevent unnecessary re-renders
+  const watchedSummary = watch('summary')
 
   // Update store data with debouncing - memoized to prevent re-renders
-  const updateStoreData = useCallback((data: ProfessionalSummaryFormData) => {
-    console.log('Professional Summary: Updating store with:', data.summary)
+  const updateStoreData = useCallback((summary: string | undefined) => {
+    console.log('Professional Summary: Updating store with:', summary)
     updatePersonalInfo({
-      summary: data.summary || ''
+      summary: summary || ''
     })
   }, [updatePersonalInfo])
 
@@ -109,13 +110,13 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
         if (result.summary) {
           // Use AI-generated summary
           setValue('summary', result.summary, { shouldTouch: true, shouldDirty: true })
-          updateStoreData({ summary: result.summary })
+          updateStoreData(result.summary)
         } else {
           // Smart fallback based on CV data
           const name = currentCV?.personal?.fullName || 'professional'
           const aiSummary = `I am a dedicated ${name.split(' ')[0] || 'professional'} with a strong background in my field. My experience combines technical expertise with excellent problem-solving abilities, enabling me to deliver high-quality results in challenging environments. I am passionate about continuous learning and contributing to team success through effective collaboration and innovative thinking.`
           setValue('summary', aiSummary)
-          updateStoreData({ summary: aiSummary })
+          updateStoreData(aiSummary)
         }
       } else {
         // Log the error for debugging
@@ -125,14 +126,14 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
         // Fallback if API fails
         const fallbackSummary = "I am a dedicated professional with proven expertise in my field. My background combines strong technical skills with excellent communication abilities, making me well-suited for challenging roles that require both analytical thinking and collaborative teamwork."
         setValue('summary', fallbackSummary)
-        updateStoreData({ summary: fallbackSummary })
+        updateStoreData(fallbackSummary)
       }
     } catch (error) {
       console.error('AI generation failed:', error)
       // Provide fallback summary even if API fails
       const fallbackSummary = "I am a results-driven professional with a passion for excellence and innovation. My diverse skill set and commitment to continuous improvement enable me to contribute effectively to any team or project."
       setValue('summary', fallbackSummary)
-      updateStoreData({ summary: fallbackSummary })
+      updateStoreData(fallbackSummary)
     } finally {
       setIsGenerating(false)
     }
@@ -140,7 +141,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
 
   // AI Improve function
   const improveWithAI = async () => {
-    if (!watchedFields.summary) return
+    if (!watchedSummary) return
     
     setIsGenerating(true)
     try {
@@ -149,7 +150,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          text: watchedFields.summary,
+          text: watchedSummary,
           type: 'professional_summary'
         })
       })
@@ -158,11 +159,11 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
         const result = await response.json()
         if (result.improvedText) {
           setValue('summary', result.improvedText, { shouldTouch: true, shouldDirty: true })
-          updateStoreData({ summary: result.improvedText })
+          updateStoreData(result.improvedText)
         }
       } else {
         // Simple grammar improvements only - no aggressive cleaning
-        const improved = watchedFields.summary
+        const improved = watchedSummary
           .replace(/\bi\b/g, 'I')
           .replace(/\bim\b/g, "I'm")
           .replace(/\bcant\b/g, "can't")
@@ -171,7 +172,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
           .trim()
         
         setValue('summary', improved)
-        updateStoreData({ summary: improved })
+        updateStoreData(improved)
       }
     } catch (error) {
       console.error('AI improvement failed:', error)
@@ -189,21 +190,21 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
 
   // Real-time auto-save effect (no debounce for better UX)
   useEffect(() => {
-    if (!isInitialMount.current) {
-      updateStoreData(watchedFields)
+    if (!isInitialMount.current && watchedSummary !== undefined) {
+      updateStoreData(watchedSummary)
     }
-  }, [watchedFields, updateStoreData])
+  }, [watchedSummary, updateStoreData])
   
   // Debounced auto-save effect for backup
   useEffect(() => {
-    if (isDirty && !isInitialMount.current) {
+    if (isDirty && !isInitialMount.current && watchedSummary !== undefined) {
       const timeoutId = setTimeout(() => {
-        updateStoreData(watchedFields)
+        updateStoreData(watchedSummary)
       }, 100) // Faster debounce for better responsiveness
       
       return () => clearTimeout(timeoutId)
     }
-  }, [watchedFields, isDirty, updateStoreData])
+  }, [watchedSummary, isDirty, updateStoreData])
 
   // Track initial mount
   useEffect(() => {
@@ -250,7 +251,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
               <MessageSquare className={`${isMobileView ? 'h-4 w-4 mr-2' : 'h-3 w-3 mr-1'}`} />
               {isGenerating ? 'Generating...' : 'AI Generate'}
             </Button>
-            {watchedFields.summary && (
+            {watchedSummary && (
               <Button
                 type="button"
                 variant="outline"
@@ -294,7 +295,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
             
             // Update form and store
             setValue('summary', newValue)
-            updateStoreData({ summary: newValue })
+            updateStoreData(newValue)
             
             // Set cursor position after pasted text
             setTimeout(() => {
@@ -303,7 +304,7 @@ export function ProfessionalSummaryForm({ isMobile = false }: ProfessionalSummar
           }}
         />
         <div className="text-xs text-muted-foreground text-right">
-          {watchedFields.summary?.length || 0}/500 characters
+          {watchedSummary?.length || 0}/500 characters
         </div>
       </div>
 

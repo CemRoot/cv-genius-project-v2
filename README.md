@@ -1,29 +1,219 @@
-# CVGenius - AI-Powered CV Builder for Irish Market
+# CVGenius - AI-Powered CV Builder for Global Market
 
-CVGenius is a privacy-first, AI-powered CV builder platform specifically designed for the Irish/Dublin job market. Create professional, ATS-friendly CVs with no signup required.
+CVGenius is a privacy-first, AI-powered CV builder platform designed for international job seekers. Create professional, ATS-friendly CVs with no signup required, optimized for global markets including Ireland/Dublin.
 
-## 🌟 Features
+## 🌟 Key Features
 
-- **AI-Powered Optimization** - Smart suggestions using Google Gemini API
-- **Privacy-First** - No user accounts, no tracking, data stays local
-- **ATS-Friendly** - Optimized for Applicant Tracking Systems
-- **Irish Market Focus** - Tailored for Dublin and Irish job market
-- **Multiple Templates** - Professional templates for different industries
+- **AI-Powered Optimization** - Smart suggestions using Google Gemini 2.0 Flash
+- **Privacy-First Architecture** - No user accounts, no tracking, data stays local
+- **ATS-Friendly Templates** - Optimized for Applicant Tracking Systems
+- **Global Market Focus** - Tailored for international candidates
+- **Multiple Professional Templates** - 6+ templates for different industries
 - **Real-time Preview** - See your CV as you build it
 - **Export Options** - PDF, DOCX, and plain text formats
-- **Cover Letter Generator** - AI-powered cover letters in 6 templates
-- **Mobile Responsive** - Works perfectly on all devices
-- **PWA Support** - Install as a mobile app
+- **AI Cover Letter Generator** - 6 professional templates with AI assistance
+- **Mobile-First Design** - PWA support with offline capabilities
+- **Admin Panel** - Content management and analytics dashboard
 
-## 🚀 Quick Start
+## 🚀 Quick Start for Developers
+
+### Prerequisites
+
+- **Node.js** 18.x or higher (recommended: 20.x)
+- **npm** 9.x or higher (or yarn/pnpm equivalent)
+- **Google Gemini API Key** (free tier available)
+
+### 1. Clone and Install
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/cv-genius-project-v2.git
+cd cv-genius-project-v2
+
 # Install dependencies
 npm install
+```
 
+### 2. Environment Configuration
+
+```bash
+# Copy environment template
+cp .env.example .env.local
+```
+
+**Edit `.env.local` with your configuration:**
+
+```env
+# Required: Google Gemini AI API Key
+NEXT_PUBLIC_GEMINI_API_KEY=your_actual_gemini_api_key_here
+
+# Optional: Application Settings
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_NAME=CV Genius
+
+# Optional: Analytics (leave empty for development)
+NEXT_PUBLIC_ADSENSE_CLIENT=
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=
+
+# Development Settings
+NEXT_TELEMETRY_DISABLED=1
+NODE_ENV=development
+```
+
+### 3. Get Google Gemini API Key
+
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the key and paste it in your `.env.local` file
+5. **Free tier includes**: 1,500 requests per day (sufficient for development)
+
+### 4. Start Development Server
+
+```bash
 # Start development server
 npm run dev
 
+# Alternative: Start with Turbopack (faster)
+npm run dev:turbo
+
+# Alternative: Start on different port
+npm run dev:port
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🛠 Available Scripts
+
+```bash
+npm run dev           # Start development server
+npm run dev:turbo     # Start with Turbopack (faster builds)
+npm run dev:port      # Start on port 3001
+npm run build         # Build for production
+npm run start         # Start production server
+npm run lint          # Run ESLint
+npm run type-check    # TypeScript type checking
+npm run clean         # Clean build cache
+```
+
+## 🏗 Tech Stack
+
+- **Framework**: Next.js 15.3.3 (App Router)
+- **Language**: TypeScript 5.x
+- **Styling**: Tailwind CSS 3.4 + shadcn/ui components
+- **AI Integration**: Google Gemini 2.0 Flash API
+- **State Management**: Zustand 5.x
+- **Form Handling**: React Hook Form + Zod validation
+- **PDF Generation**: @react-pdf/renderer 4.x
+- **DOCX Export**: docx 9.x
+- **Animations**: Framer Motion 12.x
+- **Icons**: Lucide React
+- **Performance**: Vercel Speed Insights
+
+## 📂 Project Structure
+
+```
+src/
+├── app/                     # Next.js App Router pages
+│   ├── admin/              # Admin panel routes
+│   ├── api/                # API routes
+│   │   ├── ai/            # AI-powered endpoints
+│   │   ├── admin/         # Admin authentication & management
+│   │   └── ats/           # ATS analysis endpoints
+│   ├── builder/           # CV builder application
+│   ├── cover-letter/      # Cover letter generator
+│   └── globals.css        # Global styles
+├── components/
+│   ├── ui/                # Reusable UI components (shadcn/ui)
+│   ├── layout/            # Navigation, footer, layout
+│   ├── cv/                # CV builder components
+│   ├── forms/             # Form components
+│   ├── ads/               # Monetization components
+│   ├── mobile/            # Mobile-optimized components
+│   └── export/            # PDF/DOCX export components
+├── lib/
+│   ├── ai/                # AI prompt management
+│   ├── integrations/      # Third-party integrations
+│   └── utils.ts           # Utility functions
+├── store/                 # Zustand stores
+├── types/                 # TypeScript definitions
+└── hooks/                 # Custom React hooks
+```
+
+## 🔧 Development Workflow
+
+### Local Development Setup
+
+1. **Hot Reload**: Changes auto-refresh in development
+2. **Type Checking**: Run `npm run type-check` for TypeScript validation
+3. **Linting**: Run `npm run lint` for code quality checks
+4. **Clean Build**: Use `npm run clean` if you encounter cache issues
+
+### Common Development Issues & Solutions
+
+#### 1. Webpack Module Not Found Errors
+```bash
+# Full cache clearing solution
+pkill -f "next dev"
+rm -rf .next
+rm -rf node_modules/.cache
+npm run dev
+```
+
+#### 2. Build Errors
+```bash
+# Clean and rebuild
+npm run clean
+npm install
+npm run build
+```
+
+#### 3. TypeScript Errors
+```bash
+# Check types without building
+npm run type-check
+```
+
+#### 4. API Key Issues
+- Verify `.env.local` exists with correct variable names
+- Check API key is active in Google AI Studio
+- Ensure no extra spaces or quotes around the key
+
+### Testing AI Features
+
+1. **CV Analysis**: Upload a sample PDF in `/builder`
+2. **Cover Letter**: Complete the flow in `/cover-letter`
+3. **ATS Check**: Test ATS analysis in `/ats-check`
+
+## 🌐 Deployment
+
+### Deploy to Vercel (Recommended)
+
+1. **Push to GitHub**:
+```bash
+git add .
+git commit -m "Initial deployment"
+git push origin main
+```
+
+2. **Connect to Vercel**:
+- Go to [vercel.com](https://vercel.com)
+- Import your GitHub repository
+- Auto-detects Next.js configuration
+
+3. **Set Environment Variables** in Vercel Dashboard:
+```env
+NEXT_PUBLIC_GEMINI_API_KEY=your_production_api_key
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
+```
+
+4. **Deploy**: Click "Deploy" - your app will be live!
+
+### Manual Deployment
+
+```bash
 # Build for production
 npm run build
 
@@ -31,302 +221,128 @@ npm run build
 npm start
 ```
 
-## 🛠 Tech Stack
+## 🔐 Admin Panel Access
 
-- **Frontend**: Next.js 15, TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui, Lucide React
-- **State Management**: Zustand
-- **Forms**: React Hook Form + Zod
-- **PDF Export**: @react-pdf/renderer
-- **AI Integration**: Google Gemini API
-- **Storage**: localStorage (no database)
+The application includes an admin panel for content management:
 
-## 📂 Project Structure
+- **URL**: `/admin`
+- **Features**: Prompt management, analytics, user activity
+- **Authentication**: JWT-based with 2FA support
+- **Security**: Rate limiting, IP whitelist, CSRF protection
 
-```
-src/
-├── app/                  # Next.js app router pages
-├── components/
-│   ├── ui/              # Reusable UI components
-│   ├── layout/          # Navigation, footer, etc.
-│   ├── cv/              # CV builder components
-│   └── forms/           # Form components
-├── lib/                 # Utility functions
-├── store/               # Zustand stores
-├── types/               # TypeScript type definitions
-└── utils/               # Helper functions
-```
-
-## 🔧 Configuration
-
-1. Copy `.env.example` to `.env.local`
-2. Add your Google Gemini API key:
-   ```
-   GOOGLE_API_KEY=your_gemini_api_key_here
-   ```
-3. Configure other optional environment variables as needed
-
-## 🚦 Available Scripts
-
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript type checking
-
-## 🌍 Irish Market Features
-
-- Phone number formatting (+353)
-- Dublin address defaults
-- GDPR-compliant (no photos)
-- EU work authorization keywords
-- Irish date format (DD/MM/YYYY)
-- 2-page CV limit standard
-
-## 🤝 Contributing
-
-This is a community project for the Dublin tech scene. Contributions welcome!
-
-## 📄 License
-
-Open source - Made with ❤️ for [Cem Koyluoglu](https://www.linkedin.com/in/cem-koyluoglu/)
-
-## 🔒 Privacy
-
-- No user accounts or authentication
-- No data collection or tracking
-- All data stored locally in browser
-- No server-side data storage
-- Privacy-first analytics with Plausible
-
-## 📞 Community
-
-- Join our WhatsApp group for Dublin job seekers
-- Connect on Slack for tech community support
-- Share feedback and suggestions
-
----
-
-**CVGenius** - Helping Dublin's tech talent land their dream jobs! 🍀
-
-## 🚀 Features
-
-- **AI-Powered Assistance**: Get intelligent suggestions for your CV content
-- **Multiple Templates**: Professional CV templates to choose from
-- **Real-time Preview**: See your CV as you build it
-- **Export Options**: Download as PDF or Word document
-- **Responsive Design**: Works perfectly on all devices
-- **ATS-Friendly**: Optimized for Applicant Tracking Systems
-
-## 🛠️ Tech Stack
-
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **AI Integration**: Google Gemini API
-- **State Management**: Zustand
-- **Form Handling**: React Hook Form + Zod
-- **PDF Generation**: @react-pdf/renderer
-- **Animations**: Framer Motion
-
-## 📦 Installation
-
-1. **Clone the repository**:
-```bash
-git clone https://github.com/your-username/cv-genius.git
-cd cv-genius
-```
-
-2. **Install dependencies**:
-```bash
-npm install
-```
-
-3. **Set up environment variables**:
-```bash
-cp .env.example .env.local
-```
-
-4. **Add your API keys** to `.env.local`:
-```env
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-5. **Run the development server**:
-```bash
-npm run dev
-```
-
-6. **Open** [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🌐 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. **Push your code to GitHub**:
-```bash
-git add .
-git commit -m "Initial commit"
-git push origin main
-```
-
-2. **Connect to Vercel**:
-   - Go to [vercel.com](https://vercel.com)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Vercel will auto-detect Next.js configuration
-
-3. **Set Environment Variables** in Vercel Dashboard:
-   - `NEXT_PUBLIC_GEMINI_API_KEY`: Your Google Gemini API key
-   - `NEXT_TELEMETRY_DISABLED`: 1
-   - `NODE_ENV`: production
-
-4. **Deploy**: Click "Deploy" and your app will be live!
-
-### Manual Deployment
-
-```bash
-# Build the project
-npm run build
-
-# Start production server
-npm start
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_GEMINI_API_KEY` | Google Gemini API key for AI features | Yes |
-| `NEXT_PUBLIC_APP_URL` | Your app's URL | No |
-| `NEXT_TELEMETRY_DISABLED` | Disable Next.js telemetry | No |
-
-### Vercel Configuration
-
-The project includes a `vercel.json` file with optimized settings:
-
-- **Regions**: Frankfurt (fra1) and Dublin (dub1) for EU users
-- **Security Headers**: XSS protection, content-type options
-- **API Configuration**: Optimized for serverless functions
-- **Build Settings**: Node.js 18.x runtime
-
-## 📝 Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm start           # Start production server
-npm run lint        # Run ESLint
-npm run type-check  # Type checking with TypeScript
-```
-
-## 🔐 Security
-
-- Content Security Policy headers
-- XSS protection
-- CORS configured for API routes
-- Input validation with Zod schemas
+*Note: Admin setup requires additional configuration in production.*
 
 ## 🎨 Customization
 
-### Adding New Templates
+### Adding New CV Templates
 
-1. Create a new template component in `src/components/cv/templates/`
+1. Create template component in `src/components/cv/templates/`
 2. Export from the templates index file
 3. Add template metadata to the templates list
 
 ### Modifying AI Prompts
 
-Update prompts in `src/lib/ai/global-prompts.ts` to customize AI behavior.
+Update prompts in `src/lib/ai/global-prompts.ts` to customize AI behavior:
 
-## 📊 Analytics & Monetization
+```typescript
+export const GLOBAL_PROMPTS = {
+  analyzeCv: "Your custom prompt here...",
+  generateCoverLetter: "Your custom prompt here..."
+}
+```
 
-The project is prepared for:
-- Google AdSense integration
-- PropellerAds monetization
-- Vercel Analytics
-- Custom analytics tracking
+### Styling Customization
 
-## 🛡️ License
+- **Colors**: Edit `tailwind.config.ts` for brand colors
+- **Components**: Modify components in `src/components/ui/`
+- **Global Styles**: Update `src/app/globals.css`
 
-This project is licensed under the MIT License.
+## 📊 Monitoring & Analytics
+
+- **Performance**: Vercel Speed Insights integrated
+- **Privacy**: No user tracking, GDPR compliant
+- **Monetization**: Google AdSense ready (optional)
+- **Error Tracking**: Console error filtering implemented
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+1. **Port Already in Use**:
+```bash
+npm run dev:port  # Uses port 3001
+```
+
+2. **Build Failures**:
+```bash
+npm run clean
+npm install
+```
+
+3. **API Not Working**:
+- Check `.env.local` file exists
+- Verify Gemini API key is valid
+- Check network connectivity
+
+4. **Mobile Issues**:
+- Test on mobile devices or browser dev tools
+- Check PWA manifest in `/public/manifest.json`
+
+### Performance Optimization
+
+- Uses Turbopack for faster development builds
+- Optimized package imports for Lucide React
+- Browser source maps disabled to reduce 404 warnings
+- Font preloading for better performance
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes following the existing code style
+4. Test your changes locally
+5. Submit a pull request
 
-## 📞 Support
+### Development Guidelines
 
-For support or questions:
-- Create an issue on GitHub
-- Email: support@cvgenius.com
+- Use TypeScript for all new code
+- Follow existing component patterns
+- Add proper error handling
+- Test on mobile devices
+- Update documentation as needed
 
----
+## 📄 License
 
-Built with ❤️ using Next.js and deployed on Vercel
+MIT License - Open source project made with ❤️ for the global developer community.
 
-## Cover Letter Bug Fixes - 2025 (LATEST UPDATE)
+## 🔗 Useful Links
 
-### Issues Fixed ✅
+- **Google Gemini API**: [Get API Key](https://makersuite.google.com/app/apikey)
+- **Next.js Documentation**: [nextjs.org/docs](https://nextjs.org/docs)
+- **Vercel Deployment**: [vercel.com](https://vercel.com)
+- **Tailwind CSS**: [tailwindcss.com](https://tailwindcss.com)
+- **shadcn/ui Components**: [ui.shadcn.com](https://ui.shadcn.com)
 
-#### 1. PDF Export Issues - COMPLETE SOLUTION 🔥
-- **Problem**: PDF exports had blue highlighted text, bold font rendering issues, poor color visibility
-- **Solution**: 
-  - **Placeholder Highlighting REMOVED**: No more blue highlighting on company names in PDF
-  - **Font Rendering Optimized**:
-    - Added `fontWeight: 'normal'` to prevent bold text issues
-    - Implemented font smoothing: `antialiased`, `webkitFontSmoothing`, `mozOsxFontSmoothing`
-    - Added `textRendering: 'optimizeLegibility'` for cleaner text
-    - Reduced font size from 16px to 14px for better PDF fitting
-  - **Color System Perfected**:
-    - color3: #b45309 (Warm brown) - **MUCH more visible in PDF**
-    - color7: #db2777 (Pink) - **Perfect visibility**
-    - All colors now PDF-optimized with better contrast
-  - **A4 Perfect Sizing**: 794x1123px with 40px margins (10mm professional standard)
-  - **Single Page Guarantee**: Content automatically scaled to fit
+## 🆘 Support
 
-#### 2. Blue Highlighting Issue - COMPLETELY FIXED ✅
-- **Before**: Company names showed with distracting blue background/highlighting
-- **After**: Clean, professional text with no highlighting whatsoever
-- **Method**: Disabled `highlightPlaceholders()` function entirely for PDF export
-
-#### 3. Font Rendering Issues - RESOLVED ✅
-- **Before**: Text appeared bold/thick and hard to read
-- **After**: Normal font weight with optimized rendering
-- **Improvements**:
-  - Force normal font weight throughout document
-  - Anti-aliased text rendering for smoother appearance
-  - Optimized legibility settings for PDF export
-
-#### 4. Template & Color Selection - WORKING PERFECTLY ✅
-- Fixed context state synchronization
-- Color selections properly transfer to PDF export
-- Template styling maintained in export
-
-### 📊 Test Results (Latest):
-- ✅ **Build Status**: Compiles successfully 
-- ✅ **PDF Export**: No blue highlighting, clean text
-- ✅ **Color Visibility**: All colors clearly visible in PDF
-- ✅ **Font Quality**: Normal weight, smooth rendering
-- ✅ **Page Layout**: Perfect A4 single-page format
-- ✅ **Template Selection**: All working correctly
-
-### 🎯 Current Status:
-**ALL MAJOR PDF ISSUES RESOLVED** - The cover letter PDF export now produces clean, professional documents without blue highlighting or font rendering problems.
+- **GitHub Issues**: For bugs and feature requests
+- **Documentation**: Check `/docs` folder for detailed guides
+- **Community**: Join our developer community for support
 
 ---
 
-### Previous Fixes ✅
-- Fixed "John Doe" name replacement with actual user data
-- Integrated CV contact info (phone/address) into letters
-- Fixed localStorage vs context data prioritization
-- All interface text converted to English
-- Webpack cache clearing solutions implemented
+**CVGenius** - Empowering global talent with AI-powered career tools! 🌍✨
 
-### 🚀 Next Steps:
-The cover letter system is now production-ready with high-quality PDF export capabilities.
+## Recent Updates (2025)
+
+### ✅ Major Fixes Completed
+
+- **Cover Letter PDF Export**: Fixed blue highlighting and font rendering issues
+- **Name Display Bug**: Fixed "John Doe" placeholder appearing instead of user names
+- **Cache Management**: Implemented webpack cache clearing solutions
+- **Mobile Optimization**: Enhanced mobile PDF export capabilities
+- **Admin Security**: JWT authentication with 2FA support implemented
+
+### 🔄 Current Status
+
+All core features are production-ready with comprehensive error handling and user experience optimization.
