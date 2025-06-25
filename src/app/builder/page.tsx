@@ -98,10 +98,14 @@ export default function CVBuilderPage() {
   
   // Force mobile mode in development for testing
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      // Force mobile mode for testing - TEMPORARILY ENABLED
-      setIsMobile(true)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
     }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Check if CV is empty and show wizard for mobile
