@@ -406,19 +406,15 @@ ${name}`
       pdfContainer.style.position = 'fixed'
       pdfContainer.style.top = '-10000px'
       pdfContainer.style.left = '0'
-      pdfContainer.style.width = '210mm'  // A4 width
-      pdfContainer.style.minHeight = '297mm' // A4 height
+      pdfContainer.style.width = '794px'  // A4 width in pixels at 96 DPI
       pdfContainer.style.backgroundColor = '#ffffff'
       pdfContainer.style.overflow = 'visible'
       
-      // Create a wrapper div with proper dimensions
+      // Create a wrapper div with proper dimensions - no extra padding
       const wrapper = document.createElement('div')
       wrapper.style.width = '100%'
-      wrapper.style.padding = '25mm 20mm' // Standard margins for A4
       wrapper.style.backgroundColor = '#ffffff'
       wrapper.style.boxSizing = 'border-box'
-      wrapper.style.fontSize = '11pt'
-      wrapper.style.lineHeight = '1.5'
       
       // Create React root and render StyledCoverLetter
       const ReactDOM = (await import('react-dom/client')).default
@@ -431,7 +427,8 @@ ${name}`
             content: generatedLetter,
             templateId: collectedData?.templateData.selectedTemplate || 'dublin-professional',
             colorOption: collectedData?.templateData.selectedColor || 'color1',
-            signature: collectedData?.signature
+            signature: collectedData?.signature,
+            isPdfExport: true
           })
         )
         setTimeout(resolve, 1500) // Give more time for complete render
@@ -478,32 +475,16 @@ ${name}`
       const canvasAspectRatio = canvas.height / canvas.width
       const scaledContentHeight = contentWidth * canvasAspectRatio
       
-      // Check if content fits on one page
-      if (scaledContentHeight <= (pdfHeight - (2 * margin))) {
-        // Content fits on one page
-        pdf.addImage(
-          canvas.toDataURL('image/PNG', 1.0),
-          'PNG',
-          margin,
-          margin,
-          contentWidth,
-          scaledContentHeight
-        )
-      } else {
-        // Content needs multiple pages (scale down to fit)
-        const scaledHeight = pdfHeight - (2 * margin)
-        const scaledWidth = scaledHeight / canvasAspectRatio
-        const xOffset = (pdfWidth - scaledWidth) / 2
-        
-        pdf.addImage(
-          canvas.toDataURL('image/PNG', 1.0),
-          'PNG',
-          xOffset,
-          margin,
-          scaledWidth,
-          scaledHeight
-        )
-      }
+      // Add the image to PDF without scaling or centering
+      // Use full page dimensions
+      pdf.addImage(
+        canvas.toDataURL('image/PNG', 1.0),
+        'PNG',
+        0, // No left margin
+        0, // No top margin
+        pdfWidth, // Full width
+        pdfHeight // Full height
+      )
       
       // Save the PDF
       pdf.save(`Cover_Letter_${collectedData?.jobInfo.targetCompany || 'Document'}.pdf`)

@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { dublinTemplateManager } from '@/lib/cover-letter-templates-new'
+import { processSignature } from '@/lib/signature-utils'
 
 interface StyledCoverLetterProps {
   content: string
@@ -15,10 +16,37 @@ export function StyledCoverLetter({
   content, 
   templateId, 
   colorOption = 'color1',
-  signature 
-}: StyledCoverLetterProps) {
+  signature,
+  isPdfExport = false 
+}: StyledCoverLetterProps & { isPdfExport?: boolean }) {
   // Debug log
-  console.log('🎨 StyledCoverLetter props:', { templateId, colorOption })
+  console.log('🎨 StyledCoverLetter props:', { templateId, colorOption, isPdfExport })
+  
+  // State for processed signature
+  const [processedSignature, setProcessedSignature] = useState<{
+    url: string
+    width: number
+    height: number
+  } | null>(null)
+  
+  // Process signature to remove white background
+  useEffect(() => {
+    if (signature?.value && (signature.type === 'drawn' || signature.type === 'uploaded')) {
+      processSignature(signature.value)
+        .then(result => {
+          setProcessedSignature(result)
+        })
+        .catch(err => {
+          console.error('Signature processing failed:', err)
+          // Fallback to original
+          setProcessedSignature({
+            url: signature.value,
+            width: 200,
+            height: 80
+          })
+        })
+    }
+  }, [signature])
   
   // Get the template configuration
   const template = dublinTemplateManager.getTemplate(templateId)
@@ -37,6 +65,46 @@ export function StyledCoverLetter({
     )
   }
 
+  // Define renderSignature function inside component to access processedSignature state
+  const renderSignature = (signature: { type: string | null; value: string }) => {
+    if (!signature || !signature.type) {
+      return null
+    }
+
+    if (signature.type === 'drawn' || signature.type === 'uploaded') {
+      // Use processed signature if available
+      const signatureUrl = processedSignature?.url || signature.value
+      const maxHeight = processedSignature ? Math.min(processedSignature.height, 50) : 50
+      
+      return (
+        <img 
+          src={signatureUrl} 
+          alt="Signature" 
+          style={{ 
+            maxHeight: `${maxHeight}px`,
+            height: 'auto',
+            width: 'auto',
+            display: 'block'
+          }}
+        />
+      )
+    }
+    
+    if (signature.type === 'typed') {
+      return (
+        <div style={{ 
+          fontFamily: 'cursive', 
+          fontSize: '24px',
+          color: '#000000'
+        }}>
+          {signature.value}
+        </div>
+      )
+    }
+    
+    return null
+  }
+  
   // Parse the cover letter content into sections
   const sections = parseCoverLetter(content)
   
@@ -85,10 +153,10 @@ export function StyledCoverLetter({
         return {
           container: {
             width: '100%',
-            maxWidth: '800px',
+            maxWidth: isPdfExport ? '100%' : '800px',
             margin: '0 auto',
             background: 'white',
-            padding: '40px',
+            padding: isPdfExport ? '60px 50px' : '40px',
             fontFamily: '"Arial", sans-serif',
             boxSizing: 'border-box' as const
           },
@@ -238,13 +306,13 @@ export function StyledCoverLetter({
           
           <p style={{ marginBottom: '15px' }}>{sections.closing}</p>
           
-          <p style={{ marginBottom: '10px' }}>{sections.applicantName}</p>
-          
           {signature && (
-            <div style={{ marginTop: '5px' }}>
+            <div style={{ marginTop: '5px', marginBottom: '10px' }}>
               {renderSignature(signature)}
             </div>
           )}
+          
+          <p style={{ marginBottom: '10px' }}>{sections.applicantName}</p>
         </div>
       </div>
     )
@@ -282,13 +350,13 @@ export function StyledCoverLetter({
           
           <p style={{ marginBottom: '35px', lineHeight: '1.7' }}>{sections.closing}</p>
           
-          <p style={{ fontWeight: '600', fontSize: '16px' }}>{sections.applicantName}</p>
-          
           {signature && (
-            <div style={{ marginTop: '20px' }}>
+            <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               {renderSignature(signature)}
             </div>
           )}
+          
+          <p style={{ fontWeight: '600', fontSize: '16px' }}>{sections.applicantName}</p>
         </div>
       </div>
     )
@@ -324,13 +392,13 @@ export function StyledCoverLetter({
           
           <p style={{ marginBottom: '30px' }}>{sections.closing}</p>
           
-          <p style={{ fontWeight: '500' }}>{sections.applicantName}</p>
-          
           {signature && (
-            <div style={{ marginTop: '20px' }}>
+            <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               {renderSignature(signature)}
             </div>
           )}
+          
+          <p style={{ fontWeight: '500' }}>{sections.applicantName}</p>
         </div>
       </div>
     )
@@ -367,13 +435,13 @@ export function StyledCoverLetter({
         
         <p style={{ marginBottom: '15px' }}>{sections.closing}</p>
         
-        <p style={{ marginBottom: '10px' }}>{sections.applicantName}</p>
-        
         {signature && (
-          <div style={{ marginTop: '5px' }}>
+          <div style={{ marginTop: '20px', marginBottom: '10px' }}>
             {renderSignature(signature)}
           </div>
         )}
+        
+        <p style={{ marginTop: signature ? '10px' : '40px' }}>{sections.applicantName}</p>
       </div>
     </div>
   )
@@ -563,38 +631,6 @@ function parseCoverLetter(content: string) {
   }
 }
 
-function renderSignature(signature: { type: string | null; value: string }) {
-  if (!signature || !signature.type) {
-    return null
-  }
-
-  if (signature.type === 'drawn' || signature.type === 'uploaded') {
-    return (
-      <img 
-        src={signature.value} 
-        alt="Signature" 
-        style={{ 
-          maxHeight: '60px',
-          filter: 'contrast(1.2)'
-        }}
-      />
-    )
-  }
-  
-  if (signature.type === 'typed') {
-    return (
-      <div style={{ 
-        fontFamily: 'cursive', 
-        fontSize: '24px',
-        color: '#000000'
-      }}>
-        {signature.value}
-      </div>
-    )
-  }
-  
-  return null
-}
 
 function highlightPlaceholders(text: string): React.ReactNode {
   // For PDF export and professional appearance, disable highlighting completely
