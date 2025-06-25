@@ -16,6 +16,7 @@ const NO_ADS_PAGES = [
   '/cover-letter/customize',
   '/cover-letter/results',
   '/cover-letter/signature',
+  '/cover-letter/upload-resume',
   '/ats-check',
   '/export'
 ]

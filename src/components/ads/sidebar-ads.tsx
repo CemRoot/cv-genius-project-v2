@@ -77,7 +77,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
 
   // Development modunda veya hata durumunda sadece placeholder göster
   const isProduction = process.env.NODE_ENV === 'production'
-  const hasValidSlot = adSlot && adSlot !== 'SIDEBAR_AD_SLOT_ID'
+  const hasValidSlot = adSlot && adSlot !== 'dev-placeholder' && !adSlot.includes('your_')
 
   return (
     <div className={`w-full max-w-xs mx-auto space-y-4 lg:space-y-6 ${className}`}>
