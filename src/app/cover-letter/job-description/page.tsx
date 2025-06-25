@@ -6,16 +6,35 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Sparkles } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Sparkles, Loader2, Building2, Briefcase, MapPin, AlertCircle } from 'lucide-react'
 import { MainLayout } from '@/components/layout/main-layout'
 import { useCoverLetter } from '@/contexts/cover-letter-context'
+import { useToast } from '@/components/ui/toast'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 export default function JobDescriptionPage() {
   const router = useRouter()
-  const { setJobDescription: setContextJobDescription } = useCoverLetter()
+  const { setJobDescription: setContextJobDescription, setJobInfo } = useCoverLetter()
+  const { addToast } = useToast()
   const [hasJobDescription, setHasJobDescription] = useState<boolean | null>(null)
   const [jobDescription, setJobDescription] = useState('')
   const [showDescriptionForm, setShowDescriptionForm] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showManualInputDialog, setShowManualInputDialog] = useState(false)
+  const [manualCompany, setManualCompany] = useState('')
+  const [manualRole, setManualRole] = useState('')
+  const [detectedInfo, setDetectedInfo] = useState<{
+    company: string | null
+    role: string | null
+    location: string | null
+  } | null>(null)
 
   const handleChoice = (hasDescription: boolean) => {
     setHasJobDescription(hasDescription)
@@ -27,15 +46,106 @@ export default function JobDescriptionPage() {
     }
   }
 
-  const handleContinue = () => {
-    if (hasJobDescription && jobDescription) {
-      // Save job description to localStorage and context
+  const analyzeJobDescription = async () => {
+    setIsAnalyzing(true)
+    try {
+      const response = await fetch('/api/ai/analyze-job-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jobDescription })
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.data) {
+        const { company, role, location, confidence } = result.data
+        
+        // Check if we need manual input
+        const needsManualInput = !company || !role || 
+          confidence.company < 50 || confidence.role < 50
+
+        if (needsManualInput) {
+          setDetectedInfo({ company, role, location })
+          setManualCompany(company || '')
+          setManualRole(role || '')
+          setShowManualInputDialog(true)
+        } else {
+          // Auto-fill detected information
+          const jobInfo = {
+            targetCompany: company || 'your organisation',
+            jobTitle: role || 'Desired Position',
+            location: location || 'Dublin, Ireland'
+          }
+          
+          localStorage.setItem('cover-letter-job-info', JSON.stringify(jobInfo))
+          setJobInfo(jobInfo)
+          
+          addToast({
+            type: 'success',
+            title: 'Job Details Detected',
+            description: `Company: ${company}, Role: ${role}`
+          })
+          
+          proceedToNextStep()
+        }
+      } else {
+        // AI couldn't analyze, show manual input
+        setShowManualInputDialog(true)
+      }
+    } catch (error) {
+      console.error('Analysis error:', error)
+      addToast({
+        type: 'error',
+        title: 'Analysis Failed',
+        description: 'Unable to analyze job description. Please enter details manually.'
+      })
+      setShowManualInputDialog(true)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
+  const handleManualInputConfirm = () => {
+    if (!manualCompany || !manualRole) {
+      addToast({
+        type: 'error',
+        title: 'Missing Information',
+        description: 'Please enter both company name and job role.'
+      })
+      return
+    }
+
+    const jobInfo = {
+      targetCompany: manualCompany,
+      jobTitle: manualRole,
+      location: detectedInfo?.location || 'Dublin, Ireland'
+    }
+    
+    localStorage.setItem('cover-letter-job-info', JSON.stringify(jobInfo))
+    setJobInfo(jobInfo)
+    
+    setShowManualInputDialog(false)
+    proceedToNextStep()
+  }
+
+  const proceedToNextStep = () => {
+    if (jobDescription) {
       localStorage.setItem('cover-letter-job-description', jobDescription)
       setContextJobDescription(jobDescription)
     }
-    
-    // Continue to strengths
     router.push('/cover-letter/strengths')
+  }
+
+  const handleContinue = () => {
+    if (hasJobDescription && jobDescription) {
+      // Analyze job description with AI
+      analyzeJobDescription()
+    } else {
+      // No job description, proceed normally
+      router.push('/cover-letter/strengths')
+    }
   }
 
   return (
@@ -137,9 +247,17 @@ export default function JobDescriptionPage() {
                 </Button>
                 <Button
                   onClick={handleContinue}
+                  disabled={isAnalyzing || (hasJobDescription && !jobDescription)}
                   className="flex-1"
                 >
-                  Continue
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    'Continue'
+                  )}
                 </Button>
               </div>
             </div>
@@ -159,6 +277,111 @@ export default function JobDescriptionPage() {
           </Button>
         </div>
       </div>
+
+      {/* Manual Input Dialog - Professional Design */}
+      <Dialog open={showManualInputDialog} onOpenChange={setShowManualInputDialog}>
+        <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-semibold text-white mb-1">
+                  Complete Job Details
+                </DialogTitle>
+                <DialogDescription className="text-blue-100">
+                  {detectedInfo?.company || detectedInfo?.role ? 
+                    "We found some information but need your help to complete it." :
+                    "Help us personalize your cover letter by providing the company and role details."
+                  }
+                </DialogDescription>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6 space-y-6">
+            {/* Company Input */}
+            <div className="space-y-2">
+              <Label htmlFor="company" className="text-sm font-medium flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-blue-600" />
+                Company Name
+                <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="company"
+                value={manualCompany}
+                onChange={(e) => setManualCompany(e.target.value)}
+                placeholder="e.g., Google, Microsoft, Apple"
+                className="h-12 text-base px-4"
+                autoFocus
+              />
+              {detectedInfo?.company && (
+                <p className="text-xs text-gray-500 italic">
+                  Detected: "{detectedInfo.company}" - Please verify or update
+                </p>
+              )}
+            </div>
+
+            {/* Role Input */}
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-medium flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-blue-600" />
+                Job Position
+                <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="role"
+                value={manualRole}
+                onChange={(e) => setManualRole(e.target.value)}
+                placeholder="e.g., Senior Python Developer, Software Engineer"
+                className="h-12 text-base px-4"
+              />
+              {detectedInfo?.role && (
+                <p className="text-xs text-gray-500 italic">
+                  Detected: "{detectedInfo.role}" - Please verify or update
+                </p>
+              )}
+            </div>
+
+            {/* Location Info */}
+            {detectedInfo?.location && (
+              <div className="bg-gray-50 rounded-lg p-4 flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-gray-600" />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Location Detected</p>
+                  <p className="text-sm text-gray-600">{detectedInfo.location}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Info Box */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Tip:</strong> Providing accurate company and role information helps our AI create a more targeted and effective cover letter.
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="bg-gray-50 px-6 py-4 flex gap-3 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowManualInputDialog(false)}
+              className="flex-1 h-11"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleManualInputConfirm}
+              disabled={!manualCompany.trim() || !manualRole.trim()}
+              className="flex-1 h-11 bg-blue-600 hover:bg-blue-700"
+            >
+              Continue
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
     </MainLayout>
   )
