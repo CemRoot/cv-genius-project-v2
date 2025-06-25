@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev --turbo",
+    "dev:port": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next node_modules/.cache"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -46,7 +49,11 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.460.0",
     "next": "^15.3.3",
-    "pdf-parse": "^1.1.1",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse-debugging-disabled": "^1.1.1",
+    "pdf-poppler": "^0.2.1",
+    "pdf2pic": "^3.2.0",
+    "pdfjs-dist": "^5.3.31",
     "postcss": "^8.4.47",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",

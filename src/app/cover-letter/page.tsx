@@ -12,7 +12,7 @@ import { FileText, Heart, Zap, Clock, CheckCircle, ArrowRight, Star } from 'luci
 export default function CoverLetterPage() {
   const router = useRouter()
   const [isMobile, setIsMobile] = useState(false)
-  const { isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
+  const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
 
   // Detect mobile device
   useEffect(() => {

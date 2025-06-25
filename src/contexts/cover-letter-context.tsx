@@ -33,6 +33,7 @@ export interface CoverLetterState {
     hasSpecificJob: boolean | null
     jobTitle: string
     targetCompany: string
+    jobSource?: string
   }
   jobDescription: string
   strengths: string[]
@@ -66,7 +67,7 @@ type CoverLetterAction =
   | { type: 'SET_SELECTED_COLOR'; payload: ColorOption }
   | { type: 'SET_CURRENT_STEP'; payload: string }
   | { type: 'SET_CREATION_MODE'; payload: 'create' | 'upload' }
-  | { type: 'SET_JOB_INFO'; payload: { hasSpecificJob?: boolean; jobTitle?: string; targetCompany?: string } }
+  | { type: 'SET_JOB_INFO'; payload: { hasSpecificJob?: boolean; jobTitle?: string; targetCompany?: string; jobSource?: string } }
   | { type: 'SET_JOB_DESCRIPTION'; payload: string }
   | { type: 'SET_STRENGTHS'; payload: string[] }
   | { type: 'SET_WORK_STYLE'; payload: string }
@@ -238,6 +239,21 @@ export function CoverLetterProvider({ children }: { children: ReactNode }) {
       if (storedState.selectedTemplate) dispatch({ type: 'SET_SELECTED_TEMPLATE', payload: storedState.selectedTemplate })
       if (storedState.selectedColor) dispatch({ type: 'SET_SELECTED_COLOR', payload: storedState.selectedColor })
       if (storedState.currentStep) dispatch({ type: 'SET_CURRENT_STEP', payload: storedState.currentStep })
+      // Restore resume data if available
+      if (storedState.resumeData) dispatch({ type: 'SET_RESUME_DATA', payload: storedState.resumeData })
+      // Restore other fields
+      if (storedState.jobInfo && (storedState.jobInfo.jobTitle || storedState.jobInfo.targetCompany)) {
+        const jobInfoPayload = {
+          hasSpecificJob: storedState.jobInfo.hasSpecificJob || undefined,
+          jobTitle: storedState.jobInfo.jobTitle,
+          targetCompany: storedState.jobInfo.targetCompany,
+          jobSource: storedState.jobInfo.jobSource
+        }
+        dispatch({ type: 'SET_JOB_INFO', payload: jobInfoPayload })
+      }
+      if (storedState.jobDescription) dispatch({ type: 'SET_JOB_DESCRIPTION', payload: storedState.jobDescription })
+      if (storedState.strengths && storedState.strengths.length > 0) dispatch({ type: 'SET_STRENGTHS', payload: storedState.strengths })
+      if (storedState.workStyle) dispatch({ type: 'SET_WORK_STYLE', payload: storedState.workStyle })
     }
   }, [])
 

@@ -10,6 +10,7 @@ import { TemplateSelector } from '@/components/cover-letter/template-selector'
 import { MainLayout } from '@/components/layout/main-layout'
 import { MobileBottomSheet } from '@/components/mobile/mobile-bottom-sheet'
 import { ChevronRight, ChevronLeft, Palette, User, FileText, Check } from 'lucide-react'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 interface NameForm {
   firstName: string
@@ -31,6 +32,7 @@ const colors = {
 
 export default function ChooseTemplatePage() {
   const router = useRouter()
+  const { setPersonalInfo, setSelectedTemplate: setSelectedTemplateContext, setSelectedColor: setSelectedColorContext, setCurrentStep: setContextStep } = useCoverLetter()
   const [nameForm, setNameForm] = useState<NameForm>({ firstName: '', lastName: '' })
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState<ColorOption>('color1')
@@ -48,11 +50,36 @@ export default function ChooseTemplatePage() {
   }, [])
 
   const handleColorSelect = useCallback((color: string) => {
+    console.log('🎨 Color selected:', color)
     setSelectedColor(color as ColorOption)
-  }, [])
+    setSelectedColorContext(color as ColorOption)
+    
+    // Update localStorage immediately with more robust data handling
+    const existingData = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
+    const updatedData = {
+      ...existingData,
+      selectedColor: color,
+      fromNewFlow: true,
+      timestamp: new Date().toISOString() // Add timestamp for debugging
+    }
+    localStorage.setItem('cover-letter-template-data', JSON.stringify(updatedData))
+    console.log('💾 Color saved to localStorage:', updatedData)
+  }, [setSelectedColorContext])
 
   const handleContinue = useCallback(() => {
     if (nameForm.firstName && nameForm.lastName && selectedTemplate) {
+      console.log('🎯 Template selection continuing with:', {
+        nameForm,
+        selectedTemplate,
+        selectedColor
+      })
+      
+      // Save to context
+      setPersonalInfo(nameForm)
+      setSelectedTemplateContext(selectedTemplate)
+      setSelectedColorContext(selectedColor)
+      
+      // Also save to localStorage for backward compatibility
       const coverLetterData = {
         selectedTemplate,
         selectedColor,
@@ -60,10 +87,22 @@ export default function ChooseTemplatePage() {
         fromNewFlow: true
       }
       
+      console.log('💾 Saving template data to localStorage:', coverLetterData)
       localStorage.setItem('cover-letter-template-data', JSON.stringify(coverLetterData))
+      
+      // Force context sync by setting current step
+      setContextStep('creation-mode')
+      
+      console.log('🔄 Navigating to creation-mode')
       router.push('/cover-letter/creation-mode')
+    } else {
+      console.warn('⚠️ Cannot continue - missing required data:', {
+        firstName: nameForm.firstName,
+        lastName: nameForm.lastName, 
+        selectedTemplate
+      })
     }
-  }, [nameForm, selectedTemplate, selectedColor, router])
+  }, [nameForm, selectedTemplate, selectedColor, router, setPersonalInfo, setSelectedTemplateContext, setSelectedColorContext, setContextStep])
 
   const steps = [
     { id: 'info', title: 'Your Info', icon: User, completed: nameForm.firstName && nameForm.lastName },

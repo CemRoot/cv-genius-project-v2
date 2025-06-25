@@ -335,8 +335,11 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
                     id="target-industry"
                     value={selectedIndustry}
                     onChange={(e) => setSelectedIndustry(e.target.value)}
-                    className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
-                    style={{ minHeight: '48px' }}
+                    className="w-full p-4 text-base border-2 rounded-lg bg-white appearance-none cursor-pointer focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation mobile-select-fix"
+                    style={{ 
+                      minHeight: '48px',
+                      fontSize: '16px' // Prevents iOS zoom
+                    }}
                     aria-describedby="industry-description"
                   >
                     {industryOptions.map(option => (

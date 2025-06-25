@@ -1459,3 +1459,27 @@
     transition: none !important;
   }
 }
+
+/* Mobile Select Fix for Industry Dropdown */
+@media (max-width: 768px) {
+  .mobile-select-fix option {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    padding: 10px 16px !important;
+    min-height: 48px !important;
+    color: #333 !important;
+    background-color: #fff !important;
+  }
+  
+  /* Additional mobile optimizations for select */
+  .mobile-select-fix {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px 12px !important;
+    padding-right: 40px !important;
+  }
+}

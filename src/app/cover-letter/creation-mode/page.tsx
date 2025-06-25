@@ -5,17 +5,22 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { FileText, Upload } from 'lucide-react'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 export default function CreationModePage() {
   const router = useRouter()
+  const { setCreationMode, setCurrentStep } = useCoverLetter()
   const [selectedMode, setSelectedMode] = useState<'create' | 'upload' | null>(null)
 
   const handleModeSelect = (mode: 'create' | 'upload') => {
     setSelectedMode(mode)
+    setCreationMode(mode) // Save to context
     
     if (mode === 'create') {
+      setCurrentStep('customize')
       router.push('/cover-letter/customize')
     } else {
+      setCurrentStep('upload-resume')
       router.push('/cover-letter/upload-resume')
     }
   }

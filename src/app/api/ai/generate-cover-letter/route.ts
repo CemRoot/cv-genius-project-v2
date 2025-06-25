@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
       tone,
       company,
       position,
+      jobSource,
       applicantName,
       background,
       achievements,
@@ -63,12 +64,20 @@ export async function POST(request: NextRequest) {
       includeAddress,
       userAddress,
       userPhone,
-      currentDate
+      userEmail,
+      currentDate,
+      // Experience and education data
+      experienceLevel,
+      studentStatus,
+      schoolType,
+      educationDetails,
+      collegeGrad
     }: {
       template: CoverLetterTemplate
       tone: CoverLetterTone
       company: string
       position: string
+      jobSource?: string
       applicantName: string
       background: string
       achievements?: string[]
@@ -78,7 +87,14 @@ export async function POST(request: NextRequest) {
       includeAddress?: boolean
       userAddress?: string
       userPhone?: string
+      userEmail?: string
       currentDate?: string
+      // Experience and education data
+      experienceLevel?: string
+      studentStatus?: string
+      schoolType?: string
+      educationDetails?: { degreeType: string; fieldOfStudy: string }
+      collegeGrad?: boolean
     } = body
 
     // Validation
@@ -102,6 +118,15 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+    
+    // Additional validation to prevent "undefined undefined"
+    if (applicantName.includes('undefined')) {
+      console.error('Invalid applicant name:', applicantName)
+      return NextResponse.json(
+        { error: 'Invalid applicant name provided' },
+        { status: 400 }
+      )
+    }
 
     // Create a simplified CV-like structure from form data
     const simplifiedCVData = {
@@ -122,16 +147,96 @@ export async function POST(request: NextRequest) {
       })) : []
     }
 
-    // Generate Irish format cover letter prompt
-    const headerInfo = includeAddress && userAddress ? `
-Your Address:
-${userAddress}${userPhone ? '\n' + userPhone : ''}
+    // Debug contact info
+    console.log('🔍 API Contact Info Debug:')
+    console.log('userEmail:', userEmail)
+    console.log('userPhone:', userPhone)
+    console.log('userAddress:', userAddress)
+    
+    // Generate Irish format cover letter prompt with contact info
+    const contactLines = []
+    if (userEmail) contactLines.push(userEmail)
+    if (userPhone && userPhone !== '+353 (0) 1 234 5678') contactLines.push(userPhone)
+    if (userAddress && userAddress !== 'Dublin, Ireland') contactLines.push(userAddress)
+    
+    console.log('contactLines:', contactLines)
+    
+    // Format date properly for Irish format
+    const formattedDate = currentDate || new Date().toLocaleDateString('en-IE', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    })
 
-Date: ${currentDate || new Date().toLocaleDateString('en-IE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-
-` : `Date: ${currentDate || new Date().toLocaleDateString('en-IE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-
+    // Build experience context for AI
+    let experienceContext = ''
+    if (experienceLevel === 'no') {
+      experienceContext = `
+APPLICANT PROFILE: Entry-level candidate with no prior work experience.
 `
+      if (studentStatus === 'yes') {
+        if (schoolType === 'high-school') {
+          experienceContext += `Currently a high school student seeking first opportunity.
+`
+        } else if (schoolType === 'college' && educationDetails) {
+          experienceContext += `Currently pursuing ${educationDetails.degreeType} in ${educationDetails.fieldOfStudy}.
+`
+        }
+      } else if (collegeGrad && educationDetails) {
+        experienceContext += `Recent graduate with ${educationDetails.degreeType} in ${educationDetails.fieldOfStudy}.
+`
+      }
+      experienceContext += `TONE GUIDANCE: Focus on enthusiasm, willingness to learn, academic achievements, relevant coursework, internships, volunteer work, or transferable skills from school projects.\n`
+    } else if (experienceLevel === 'entry') {
+      experienceContext = `
+APPLICANT PROFILE: Entry-level professional with 1-2 years of experience.
+TONE GUIDANCE: Balance enthusiasm with emerging professionalism. Highlight early career achievements and growth potential.
+`
+    } else if (experienceLevel === 'mid') {
+      experienceContext = `
+APPLICANT PROFILE: Mid-level professional with 3-7 years of experience.
+TONE GUIDANCE: Professional and confident tone. Focus on proven track record and specific achievements.
+`
+    } else if (experienceLevel === 'senior') {
+      experienceContext = `
+APPLICANT PROFILE: Senior professional with 8+ years of experience.
+TONE GUIDANCE: Executive and authoritative tone. Emphasize leadership, strategic thinking, and impact on business outcomes.
+`
+    } else if (experienceLevel === 'executive') {
+      experienceContext = `
+APPLICANT PROFILE: Executive-level leader with extensive experience.
+TONE GUIDANCE: Strategic and visionary tone. Focus on organizational transformation, leadership philosophy, and business growth.
+`
+    }
+
+    // Try to extract company info from job description if company name is generic
+    let actualCompany = company
+    let extractedFromDescription = false
+    
+    if (jobDescription && (company === 'Your Target Company' || !company || company.toLowerCase().includes('target'))) {
+      // Look for patterns like "My client is [company description]" which indicates recruitment agency
+      const clientMatch = jobDescription.match(/(?:my client|our client|the client|this client)\s+(?:is|are)\s+(?:a|an|one of)?\s*([^.]+?)(?:\.|,)/i)
+      if (clientMatch) {
+        actualCompany = 'your organisation' // Generic reference when posted by recruiter
+        extractedFromDescription = true
+      } else {
+        // Try to extract company name from job description
+        const companyPatterns = [
+          /(?:join|at|with)\s+([A-Z][a-zA-Z\s&.-]+?)(?:\s+(?:is|as|in|for|to)|[,.]|$)/i,
+          /([A-Z][a-zA-Z\s&.-]+?)\s+(?:is looking|seeks|requires|needs)/i,
+          /(?:company|organization|firm|business):\s*([A-Z][a-zA-Z\s&.-]+?)(?:[,.]|$)/i
+        ]
+        
+        for (const pattern of companyPatterns) {
+          const match = jobDescription.match(pattern)
+          if (match && match[1] && match[1].length > 2 && match[1].length < 50) {
+            actualCompany = match[1].trim()
+            extractedFromDescription = true
+            break
+          }
+        }
+      }
+    }
 
     // Enhanced prompt with job description analysis
     const jobAnalysisSection = jobDescription ? `
@@ -148,34 +253,46 @@ ANALYSIS REQUIREMENTS:
 7. Extract company location if mentioned (otherwise default to Dublin, Ireland)
 8. Look for specific contact person name if mentioned
 9. Identify where the job was advertised (website, LinkedIn, etc.)
+${extractedFromDescription ? '10. Note: This appears to be posted by a recruitment agency, so refer to the company generically (e.g., "your organisation", "the bank", "your firm")' : ''}
 ` : ''
 
     const prompt = `You are a professional cover letter writer specializing in Irish business correspondence format. Create a cover letter following the exact Irish/UK business letter structure.
 
 INFORMATION PROVIDED:
 Position: ${position}
-Company: ${company}
+Company: ${actualCompany}
 Applicant Name: ${applicantName}
 Background: ${background}
 Key Achievements: ${achievements?.join(', ') || 'None provided'}
 Job Requirements: ${jobRequirements || 'Not specified'}
-${jobAnalysisSection}Template Style: ${template}
+${experienceContext}${jobAnalysisSection}Template Style: ${template}
 Tone: ${tone}
 Custom Instructions: ${customInstructions || 'None'}
 
-MANDATORY IRISH FORMAT STRUCTURE:
-${headerInfo}
+MANDATORY IRISH FORMAT - YOU MUST GENERATE THE LETTER IN THIS EXACT FORMAT:
+
+STEP 1: Start with sender's details (applicant info) at the top:
+${applicantName}
+${userAddress || 'Dublin, Ireland'}
+${userPhone || ''}
+${userEmail || ''}
+
+STEP 2: Add blank line, then date:
+${formattedDate}
+
+STEP 3: Add blank line, then recipient's details:
 Hiring Manager
-${company}
+${actualCompany}
 Dublin, Ireland
 
+STEP 4: Add blank line, then salutation:
 Dear Hiring Manager,
 
-OPENING PARAGRAPH: Identify yourself as an applicant, state the exact position applying for, and mention where you learned about the vacancy.
+OPENING PARAGRAPH: Identify yourself as an applicant, state the exact position applying for. ${jobSource ? `Mention that you learned about the vacancy through ${jobSource}.` : (jobDescription ? 'If the job source is not clear from the job description, write "as advertised" instead of using brackets or placeholders.' : 'Mention that you learned about the position through their careers page.')}
 
-SECOND PARAGRAPH: Explain why you are interested in this work and this organisation. Briefly mention your academic background, relevant qualifications, and related work experience that qualify you for the position. Summarise your talents and how they might benefit the employer. Use proper grammar - if mentioning multiple strengths, use "strengths in [area1], [area2], and [area3]" or if a single area "strength in [area]".
+SECOND PARAGRAPH: Explain why you are interested in this work and this organisation. ${experienceLevel === 'no' ? 'Focus on your academic background, coursework, projects, and enthusiasm for the field. Emphasize your eagerness to learn and contribute.' : 'Briefly mention your academic background, relevant qualifications, and related work experience that qualify you for the position.'} Summarise your talents and how they might benefit the employer. Use proper grammar - if mentioning multiple strengths, use "strengths in [area1], [area2], and [area3]" or if a single area "strength in [area]".
 
-THIRD PARAGRAPH: Refer to the fact that you have enclosed your CV, and draw attention to any further points of relevance to your application.
+THIRD PARAGRAPH: Refer to the fact that you have enclosed your CV, and draw attention to any further points of relevance to your application. ${experienceLevel === 'no' ? 'Highlight relevant coursework, academic projects, volunteer work, or extracurricular activities that demonstrate your potential.' : ''}
 
 FINAL PARAGRAPH: Reiterate your interest and indicate your availability for interview. Close with a confident statement that encourages a positive response.
 
@@ -183,20 +300,43 @@ Yours sincerely,
 
 ${applicantName}
 
-CRITICAL FORMATTING RULES:
-- DO NOT include placeholder text like "[Company Address if available]" or "[Name]" or "[Signature space]"
-- Use "Hiring Manager" if contact name is unknown  
-- Use "${company}" as the company name
-- Use "Dublin, Ireland" as the default company address
-- The header format is EXACTLY as shown above - no brackets, no placeholders
-- Start the letter with the formatted header, then Dear Hiring Manager
-- Do NOT include "[Signature space]" text - leave blank space for signature
-- Use consistent name formatting throughout
+CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
+1. SENDER FIRST: Start with ${applicantName} and their contact info at the TOP
+2. DATE SECOND: Then the date after a blank line
+3. RECIPIENT THIRD: Then "Hiring Manager" and company details after another blank line
+4. SALUTATION FOURTH: Then "Dear Hiring Manager," after another blank line
+5. NO PLACEHOLDERS: Never use brackets [] or placeholder text
+6. NO SIGNATURES IN HEADER: The applicant name appears ONLY at the top and after "Yours sincerely" at the end
+7. EXACT ORDER: You MUST follow the order shown above - sender info FIRST, not after "Hiring Manager"
+
+WRONG FORMAT (DO NOT DO THIS):
+Hiring Manager
+[Applicant Name]
+[Address]
+
+CORRECT FORMAT (DO THIS):
+${applicantName}
+${userAddress || 'Dublin, Ireland'}
+${userPhone || ''}
+${userEmail || ''}
+
+${formattedDate}
+
+Hiring Manager
+${actualCompany}
+Dublin, Ireland
+
+Dear Hiring Manager,
 
 REQUIREMENTS:
 - Follow the exact 4-paragraph structure above
 - Use ${tone} tone throughout
 - Adapt content to ${template} style
+- CRITICAL: Adjust language and examples based on experience level:
+  * No experience: Focus on potential, learning ability, academic achievements
+  * Entry level: Highlight early wins and growth trajectory
+  * Mid level: Emphasize proven results and leadership potential
+  * Senior/Executive: Focus on strategic impact and organizational value
 - Use British English spelling (organisation, colour, realise, etc.)
 - Keep to 250-400 words
 - Be specific about the position and company
@@ -206,6 +346,8 @@ REQUIREMENTS:
 ${jobDescription ? `
 JOB DESCRIPTION TARGETING INSTRUCTIONS:
 - Analyze the job description thoroughly before writing
+- Extract the actual company name if mentioned (e.g., "My client is one of the largest banks" suggests a recruitment agency posting)
+- If company name is not mentioned, refer to them by their industry (e.g., "your prestigious banking institution" instead of generic company name)
 - Match the candidate's background to specific requirements mentioned
 - Use keywords and phrases from the job description naturally
 - Address the core responsibilities mentioned in the job posting
@@ -214,11 +356,16 @@ JOB DESCRIPTION TARGETING INSTRUCTIONS:
 - Reference specific qualifications or skills mentioned in the posting
 - Demonstrate how the candidate solves the company's specific challenges
 - Use industry terminology and language style matching the job description
+- IMPORTANT: Never use placeholders or brackets in the final output
 ` : ''}
 
 EXAMPLE OF CORRECT FORMAT (DO NOT COPY CONTENT, ONLY FORMAT):
-Dublin, Ireland
-17/06/2025
+John Smith
+123 Main Street, Dublin 2
++353 87 123 4567
+john.smith@email.com
+
+17 June 2025
 
 Hiring Manager
 Tech Company Ltd
@@ -236,9 +383,16 @@ Dear Hiring Manager,
 
 Yours sincerely,
 
-JOHN SMITH
+John Smith
 
-Write the complete cover letter following this exact Irish business format. Do not add explanations or comments. NO BRACKETS, PLACEHOLDER TEXT, or development notations like '[Signature space]'. Use consistent name formatting - do not use all capitals for the name at the end.`
+FINAL INSTRUCTIONS:
+- Generate the letter starting with ${applicantName} at the very top
+- The FIRST line of your output must be: ${applicantName}
+- Follow the exact format structure shown above
+- Do not add any explanations before or after the letter
+- The letter must start with sender details, NOT with "Hiring Manager"
+
+Write the complete cover letter now, starting with the applicant's name and contact details at the top.`
 
     // Generate AI response with context-aware configuration
     const result = await generateContent(prompt, {
@@ -253,13 +407,54 @@ Write the complete cover letter following this exact Irish business format. Do n
       )
     }
 
-    // Get the generated cover letter (already in proper Irish format)
+    // Get the generated cover letter
     let coverLetter = result.content || ''
     
-    // Apply minimal post-processing for British English (backup)
+    // Apply British English conversion
     coverLetter = LANGUAGE_ADAPTATIONS.toBritishEnglish(coverLetter)
     
-    // The proper closing should already be included from the prompt
+    // Clean up any potential "undefined" text
+    coverLetter = coverLetter.replace(/undefined\s*undefined\s*$/gi, '').trim()
+    
+    // Debug: Log the start of the letter
+    console.log('📝 Letter starts with:', coverLetter.substring(0, 100))
+    console.log('📝 Checking for applicant name at start:', coverLetter.startsWith(applicantName))
+    
+    // CRITICAL: Fix format if AI ignored our instructions
+    // Check if the letter doesn't start with applicant name (meaning it's in wrong format)
+    const formatFixNeeded = !coverLetter.startsWith(applicantName) || 
+                           coverLetter.startsWith('Hiring Manager') || 
+                           coverLetter.includes('Hiring Manager\n\n' + applicantName) ||
+                           coverLetter.includes('Hiring Manager\n' + applicantName)
+    
+    if (formatFixNeeded) {
+      console.log('⚠️ Format fix needed - AI placed content in wrong order')
+      
+      // Extract the letter body (everything after "Dear Hiring Manager,")
+      const letterBodyMatch = coverLetter.match(/Dear Hiring Manager,[\s\S]*/)
+      const letterBody = letterBodyMatch ? letterBodyMatch[0] : coverLetter
+      
+      // Rebuild the letter in correct format
+      coverLetter = `${applicantName}
+${userAddress || 'Dublin, Ireland'}
+${userPhone || ''}
+${userEmail || ''}
+
+${formattedDate}
+
+Hiring Manager
+${actualCompany}
+Dublin, Ireland
+
+${letterBody}`
+      
+      console.log('✅ Format fixed - sender details moved to top')
+    }
+    
+    // Ensure no duplicate information
+    coverLetter = coverLetter
+      .replace(/\n{3,}/g, '\n\n') // Remove excessive line breaks
+      .trim()
 
     return NextResponse.json({
       success: true,

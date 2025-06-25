@@ -7,31 +7,46 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MainLayout } from '@/components/layout/main-layout'
+import { useCoverLetter } from '@/contexts/cover-letter-context'
 
 export default function CustomizePage() {
   const router = useRouter()
-  const [hasSpecificJob, setHasSpecificJob] = useState<boolean | null>(null)
-  const [jobTitle, setJobTitle] = useState('')
-  const [targetCompany, setTargetCompany] = useState('')
+  const { setJobInfo, setCurrentStep, state } = useCoverLetter()
+  const [hasSpecificJob, setHasSpecificJob] = useState<boolean | null>(state.jobInfo?.hasSpecificJob || null)
+  const [jobTitle, setJobTitle] = useState(state.jobInfo?.jobTitle || '')
+  const [targetCompany, setTargetCompany] = useState(state.jobInfo?.targetCompany || '')
+  const [jobSource, setJobSource] = useState(state.jobInfo?.jobSource || '')
   const [showJobForm, setShowJobForm] = useState(false)
 
   const handleJobChoice = (hasJob: boolean) => {
     setHasSpecificJob(hasJob)
+    setJobInfo({ hasSpecificJob: hasJob })
+    
     if (hasJob) {
       setShowJobForm(true)
     } else {
       // If no specific job, go to strengths
+      setCurrentStep('strengths')
       router.push('/cover-letter/strengths')
     }
   }
 
   const handleContinue = () => {
-    if (hasSpecificJob && jobTitle && targetCompany) {
-      // Save job info to localStorage
-      const jobInfo = { jobTitle, targetCompany }
+    if (hasSpecificJob && jobTitle && targetCompany && jobSource) {
+      // Save job info to context
+      setJobInfo({
+        hasSpecificJob: true,
+        jobTitle,
+        targetCompany,
+        jobSource
+      })
+      
+      // Also save to localStorage for backward compatibility
+      const jobInfo = { jobTitle, targetCompany, jobSource }
       localStorage.setItem('cover-letter-job-info', JSON.stringify(jobInfo))
       
       // Ask about job description
+      setCurrentStep('job-description')
       router.push('/cover-letter/job-description')
     }
   }
@@ -114,6 +129,17 @@ export default function CustomizePage() {
                     className="mt-1"
                   />
                 </div>
+
+                <div>
+                  <Label htmlFor="jobSource">Where did you find this job?</Label>
+                  <Input
+                    id="jobSource"
+                    value={jobSource}
+                    onChange={(e) => setJobSource(e.target.value)}
+                    placeholder="e.g., LinkedIn, Company website, Indeed"
+                    className="mt-1"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-4">
@@ -129,7 +155,7 @@ export default function CustomizePage() {
                 </Button>
                 <Button
                   onClick={handleContinue}
-                  disabled={!jobTitle || !targetCompany}
+                  disabled={!jobTitle || !targetCompany || !jobSource}
                   className="flex-1"
                 >
                   Continue
