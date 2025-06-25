@@ -9,8 +9,13 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
     const accessKey = request.nextUrl.searchParams.get('k')
     if (!accessKey) return false
 
-    // Time-based validation
-    const validationKeys = [0x1A2B, 0x3C4D, 0x5E6F, 0x7890]
+    // Time-based validation using environment variables
+    const validationKeys = [
+      parseInt(process.env.ADMIN_KEY_1 ?? '0x1A2B', 16),
+      parseInt(process.env.ADMIN_KEY_2 ?? '0x3C4D', 16),
+      parseInt(process.env.ADMIN_KEY_3 ?? '0x5E6F', 16),
+      parseInt(process.env.ADMIN_KEY_4 ?? '0x7890', 16)
+    ]
     const timeWindow = Date.now() % 86400000
     const expectedHash = validationKeys.reduce((acc, key) => acc ^ key, timeWindow)
     
