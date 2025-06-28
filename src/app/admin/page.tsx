@@ -587,6 +587,60 @@ Focus on information relevant for Irish job applications.`,
     }
   }
 
+  // Update Vercel Production Environment
+  const updateVercelEnvironment = async () => {
+    if (!confirm('Update Vercel production environment with current IP whitelist?')) {
+      return
+    }
+
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/vercel/update-environment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'update_ip_whitelist',
+          environment: 'production'
+        })
+      })
+      
+      const result = await response.json()
+      if (response.ok && result.success) {
+        toast.success(`✅ Vercel environment updated successfully!\\n${result.message}`)
+      } else {
+        toast.error(result.error || 'Failed to update Vercel environment')
+      }
+    } catch (error) {
+      toast.error('Failed to update Vercel environment: Network error')
+    }
+  }
+
+  // Sync IP Whitelist with Vercel
+  const syncWithVercel = async () => {
+    if (!confirm('Sync current IP whitelist with Vercel production environment?')) {
+      return
+    }
+
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/vercel/sync-whitelist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'sync_whitelist'
+        })
+      })
+      
+      const result = await response.json()
+      if (response.ok && result.success) {
+        toast.success(`🔄 IP whitelist synced with Vercel!\\n${result.message}`)
+        loadIPWhitelist() // Reload to show updated status
+      } else {
+        toast.error(result.error || 'Failed to sync with Vercel')
+      }
+    } catch (error) {
+      toast.error('Failed to sync with Vercel: Network error')
+    }
+  }
+
   // Save context-specific settings with authentication
   const saveContextSettings = async () => {
     try {
@@ -753,6 +807,9 @@ Focus on information relevant for Irish job applications.`,
           addCurrentIP={addCurrentIP}
           addCustomIP={addCustomIP}
           removeIP={removeIP}
+          // Vercel integration props
+          updateVercelEnvironment={updateVercelEnvironment}
+          syncWithVercel={syncWithVercel}
           // Password change props
           showPasswordChange={showPasswordChange}
           setShowPasswordChange={setShowPasswordChange}
@@ -1232,6 +1289,48 @@ Focus on information relevant for Irish job applications.`,
                   ) : (
                     <p className="text-gray-500 text-center py-4">No IP addresses in whitelist</p>
                   )}
+                </Card>
+
+                {/* Vercel Integration */}
+                <Card className="p-4 bg-blue-50 border-blue-200">
+                  <h3 className="font-medium text-blue-800 mb-3 flex items-center gap-2">
+                    <Wand2 className="w-5 h-5" />
+                    Vercel Production Sync
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <p className="text-sm text-blue-700">
+                      Automatically sync IP whitelist and settings with your Vercel production environment.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Button 
+                        onClick={updateVercelEnvironment}
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Update Production
+                      </Button>
+                      
+                      <Button 
+                        onClick={syncWithVercel}
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+                      >
+                        <Wand2 className="w-4 h-4" />
+                        Sync with Vercel
+                      </Button>
+                    </div>
+                    
+                    <div className="text-xs text-blue-600 space-y-1">
+                      <p>• <strong>Update Production:</strong> Push current IP whitelist to Vercel</p>
+                      <p>• <strong>Sync with Vercel:</strong> Compare and sync local/production settings</p>
+                      <p>• Requires VERCEL_TOKEN and VERCEL_PROJECT_ID in .env.local</p>
+                    </div>
+                  </div>
                 </Card>
 
                 {/* Quick Actions */}
