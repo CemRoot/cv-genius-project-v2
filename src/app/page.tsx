@@ -37,21 +37,6 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 md:-mb-40 md:-ml-40 w-40 h-40 md:w-80 md:h-80 bg-blue-500/20 rounded-full blur-2xl md:blur-3xl opacity-20" />
         
         <div className="container mx-auto px-4 text-center relative">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-center mb-4 md:mb-6"
-          >
-            <div className="relative">
-              <Star className="h-12 w-12 md:h-16 md:w-16 text-cvgenius-purple fill-cvgenius-purple animate-pulse" />
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 border-2 border-cvgenius-purple/20 rounded-full"
-              />
-            </div>
-          </motion.div>
           
           <motion.h1 
             {...fadeInUp}
