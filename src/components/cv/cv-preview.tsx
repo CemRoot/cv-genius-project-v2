@@ -2,6 +2,10 @@
 
 import { useCVStore } from "@/store/cv-store"
 import { HarvardTemplate } from "@/components/cv/templates/harvard-template"
+import { DublinTechTemplate } from "@/components/cv/templates/dublin-tech-template"
+import { IrishFinanceTemplate } from "@/components/cv/templates/irish-finance-template"
+import { DublinPharmaTemplate } from "@/components/cv/templates/dublin-pharma-template"
+import { IrishGraduateTemplate } from "@/components/cv/templates/irish-graduate-template"
 import { usePageDetection } from "@/hooks/use-page-detection"
 import { useState, useRef, useCallback } from "react"
 import { TouchGestureWrapper } from "@/components/mobile"
@@ -128,6 +132,15 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
     switch (currentCV.template) {
       case 'harvard':
         return <HarvardTemplate cv={currentCV} isMobile={isMobile} />
+      case 'dublin':
+      case 'dublin-tech':
+        return <DublinTechTemplate cv={currentCV} isMobile={isMobile} />
+      case 'irish-finance':
+        return <IrishFinanceTemplate cv={currentCV} isMobile={isMobile} />
+      case 'dublin-pharma':
+        return <DublinPharmaTemplate cv={currentCV} isMobile={isMobile} />
+      case 'irish-graduate':
+        return <IrishGraduateTemplate cv={currentCV} isMobile={isMobile} />
       case 'modern':
         return (
           <div className="p-8 text-center">
@@ -142,6 +155,20 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
             <p className="text-gray-600">Coming Soon</p>
           </div>
         )
+      case 'dublin-creative':
+      case 'irish-healthcare':
+      case 'dublin-hospitality':
+      case 'irish-construction':
+      case 'dublin-startup':
+      case 'irish-executive':
+      case 'dublin-retail':
+      case 'irish-education':
+        return (
+          <div className="p-8 text-center">
+            <h3 className="text-lg font-bold mb-4">Template Coming Soon</h3>
+            <p className="text-gray-600">This template is under development</p>
+          </div>
+        )
       default:
         return <HarvardTemplate cv={currentCV} isMobile={isMobile} />
     }
@@ -151,6 +178,19 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
   const getTemplateName = () => {
     switch (currentCV.template) {
       case 'harvard': return 'Harvard Classic'
+      case 'dublin':
+      case 'dublin-tech': return 'Dublin Tech Professional'
+      case 'irish-finance': return 'Irish Finance Expert'
+      case 'dublin-pharma': return 'Dublin Pharma Professional'
+      case 'irish-graduate': return 'Irish Graduate CV'
+      case 'dublin-creative': return 'Dublin Creative Industries'
+      case 'irish-healthcare': return 'HSE Healthcare Professional'
+      case 'dublin-hospitality': return 'Dublin Hospitality Pro'
+      case 'irish-construction': return 'Irish Construction & Engineering'
+      case 'dublin-startup': return 'Dublin Startup Specialist'
+      case 'irish-executive': return 'Irish Executive Leader'
+      case 'dublin-retail': return 'Dublin Retail Professional'
+      case 'irish-education': return 'Irish Education Professional'
       case 'modern': return 'Modern (Coming Soon)'
       case 'creative': return 'Creative (Coming Soon)'
       default: return 'Harvard Classic'

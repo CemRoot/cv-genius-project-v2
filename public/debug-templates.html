@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Template Debug</title>
+</head>
+<body>
+    <h1>Template Image Debug</h1>
+    <h2>Testing Template Image Paths:</h2>
+    <div id="results"></div>
+    
+    <script>
+        const templates = [
+            'classic',
+            'dublin-tech',
+            'irish-finance',
+            'dublin-pharma',
+            'irish-graduate',
+            'dublin-creative',
+            'irish-healthcare',
+            'dublin-hospitality',
+            'irish-construction',
+            'dublin-startup',
+            'irish-executive',
+            'dublin-retail',
+            'irish-education'
+        ];
+        
+        const resultsDiv = document.getElementById('results');
+        
+        templates.forEach(templateId => {
+            const imgPath = `/templates/${templateId}.png`;
+            const img = new Image();
+            const result = document.createElement('div');
+            result.style.marginBottom = '10px';
+            
+            img.onload = function() {
+                result.innerHTML = `✅ ${imgPath} - Found (${img.width}x${img.height})`;
+                result.style.color = 'green';
+            };
+            
+            img.onerror = function() {
+                result.innerHTML = `❌ ${imgPath} - Not Found`;
+                result.style.color = 'red';
+            };
+            
+            img.src = imgPath;
+            resultsDiv.appendChild(result);
+        });
+    </script>
+</body>
+</html>
+</content>
+</invoke>

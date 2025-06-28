@@ -243,17 +243,17 @@ export default function AIParserPanel({ onParsedData, initialText = '' }: AIPars
               </div>
               
               {/* Social Links */}
-              {(parsedData.personalInfo.linkedin || parsedData.personalInfo.github || parsedData.personalInfo.website) && (
+              {(parsedData.personalInfo?.linkedin || parsedData.personalInfo?.github || parsedData.personalInfo?.website) && (
                 <div className="mt-4 pt-4 border-t">
                   <label className="text-sm font-medium text-gray-600">Social Links</label>
                   <div className="mt-2 space-y-1">
-                    {parsedData.personalInfo.linkedin && (
+                    {parsedData.personalInfo?.linkedin && (
                       <div className="text-sm text-blue-600">{parsedData.personalInfo.linkedin}</div>
                     )}
-                    {parsedData.personalInfo.github && (
+                    {parsedData.personalInfo?.github && (
                       <div className="text-sm text-blue-600">{parsedData.personalInfo.github}</div>
                     )}
-                    {parsedData.personalInfo.website && (
+                    {parsedData.personalInfo?.website && (
                       <div className="text-sm text-blue-600">{parsedData.personalInfo.website}</div>
                     )}
                   </div>

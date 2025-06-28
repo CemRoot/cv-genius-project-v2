@@ -5,6 +5,8 @@ export interface PersonalInfo {
   address: string
   linkedin?: string
   website?: string
+  github?: string
+  portfolio?: string
   summary?: string
   title?: string
   nationality?: string
@@ -124,6 +126,9 @@ export interface CVData {
   version: number
   designSettings?: DesignSettings
 }
+
+// Type alias for compatibility
+export type CV = CVData
 
 export interface ATSScore {
   overall: number

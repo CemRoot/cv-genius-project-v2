@@ -4,7 +4,7 @@ import type { CVData } from '@/types/cv'
 
 interface DOCXExportRequest {
   cvData: CVData
-  template: 'modern' | 'classic' | 'creative'
+  templateId?: string
 }
 
 // Format Irish date
@@ -772,7 +772,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('DOCX API body received:', body ? 'OK' : 'Empty')
     
-    const { cvData, template }: DOCXExportRequest = body
+    const { cvData, templateId }: DOCXExportRequest = body
 
     // Validation
     if (!cvData || !cvData.personal) {

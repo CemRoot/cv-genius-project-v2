@@ -76,3 +76,4 @@ scripts/admin/**
 admin-keys/
 security/
 auth-keys/
+.config/

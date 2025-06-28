@@ -1,7 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { AlertTriangle, RefreshCw, Home } from "lucide-react"
+import "./404.css"
 
 export default function GlobalError({
   error,
@@ -13,57 +12,48 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-          <div className="max-w-md mx-auto text-center">
-            <div className="flex justify-center mb-6">
-              <AlertTriangle className="h-16 w-16 text-red-500" />
+        <section className="page_404">
+          <div className="container">
+            <div className="row">
+              <div className="col-sm-12">
+                <div className="col-sm-10 col-sm-offset-1 text-center">
+                  <div className="four_zero_four_bg">
+                    <h1 className="text-center">ERROR</h1>
+                  </div>
+                  
+                  <div className="contant_box_404">
+                    <h3 className="h2">
+                      Oops! Something went wrong
+                    </h3>
+                    
+                    <p>An unexpected error has occurred. Don't worry, your data is safe!</p>
+                    
+                    {process.env.NODE_ENV === 'development' && (
+                      <details className="mt-4 mb-4 text-left bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
+                        <summary className="cursor-pointer font-medium mb-2">
+                          Technical Details
+                        </summary>
+                        <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                          {error.message}
+                          {error.digest && `\nDigest: ${error.digest}`}
+                        </pre>
+                      </details>
+                    )}
+                    
+                    <div className="flex gap-4 justify-center">
+                      <button onClick={reset} className="link_404">
+                        Try Again
+                      </button>
+                      <a href="/" className="link_404">
+                        Go to Home
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <h1 className="text-2xl font-bold mb-4">Ah Jaysus, Something's Gone Wrong!</h1>
-            
-            <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 text-left">
-              <p className="text-orange-700 italic">
-                "Well now, that's not supposed to happen! Don't worry, 
-                your CV data is still safe as houses in your browser."
-              </p>
-              <p className="text-orange-600 text-sm mt-1">- CVGenius Error Handler</p>
-            </div>
-
-            <p className="text-muted-foreground mb-6">
-              Something unexpected happened, but sure we'll sort it out in no time. 
-              Your data is safe, and this is probably just a temporary hiccup.
-            </p>
-
-            {process.env.NODE_ENV === 'development' && (
-              <details className="mb-6 text-left bg-muted/30 p-4 rounded-lg">
-                <summary className="cursor-pointer font-medium mb-2">
-                  Technical Details (Development)
-                </summary>
-                <pre className="text-xs overflow-auto whitespace-pre-wrap">
-                  {error.message}
-                  {error.digest && `\nDigest: ${error.digest}`}
-                </pre>
-              </details>
-            )}
-
-            <div className="space-y-4">
-              <Button onClick={reset} variant="cvgenius" className="w-full">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Try Again
-              </Button>
-              
-              <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full">
-                <Home className="mr-2 h-4 w-4" />
-                Go Home
-              </Button>
-            </div>
-
-            <p className="text-xs text-muted-foreground mt-6">
-              If this keeps happening, drop us a line in our WhatsApp group. 
-              The Dublin tech community is always happy to help!
-            </p>
           </div>
-        </div>
+        </section>
       </body>
     </html>
   )

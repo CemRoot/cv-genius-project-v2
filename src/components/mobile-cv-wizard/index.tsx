@@ -68,7 +68,17 @@ export function MobileCVWizard({ onComplete, initialData }: MobileCVWizardProps)
   const router = useRouter()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
-  const { currentCV, updatePersonalInfo, saveCV } = useCVStore()
+  const { 
+    currentCV, 
+    updatePersonalInfo, 
+    saveCV,
+    addExperience,
+    removeExperience,
+    addEducation,
+    removeEducation,
+    addSkill,
+    removeSkill
+  } = useCVStore()
   
   const [currentStep, setCurrentStep] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
@@ -132,8 +142,8 @@ export function MobileCVWizard({ onComplete, initialData }: MobileCVWizardProps)
 
       const { text } = await response.json()
 
-      // Analyze the CV content
-      const analyzeResponse = await fetch('/api/ai/analyze-cv', {
+      // Analyze the CV content - use analyze-cv-text endpoint instead
+      const analyzeResponse = await fetch('/api/ai/analyze-cv-text', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -153,16 +163,70 @@ export function MobileCVWizard({ onComplete, initialData }: MobileCVWizardProps)
         email: cvData.email || '',
         phone: cvData.phone || '',
         address: cvData.location || 'Dublin, Ireland',
-        summary: cvData.summary || ''
+        summary: cvData.summary || '',
+        // Add missing fields with empty defaults
+        linkedin: cvData.linkedin || '',
+        website: cvData.website || '',
+        workAuthorization: cvData.workAuthorization || '',
+        professionalTitle: cvData.professionalTitle || ''
       })
       
-      // TODO: Add methods to update experience, education, and skills
-      // For now, we'll just update the personal info
+      // Update experience if available
+      if (cvData.experience && Array.isArray(cvData.experience)) {
+        // Clear existing experience first
+        currentCV.experience.forEach(exp => removeExperience(exp.id))
+        
+        // Add new experience entries
+        cvData.experience.forEach((exp: any) => {
+          addExperience({
+            position: exp.title || '',
+            company: exp.company || '',
+            startDate: exp.startDate || '',
+            endDate: exp.endDate || '',
+            current: exp.current || false,
+            description: exp.description || '',
+            location: exp.location || ''
+          })
+        })
+      }
+      
+      // Update education if available
+      if (cvData.education && Array.isArray(cvData.education)) {
+        // Clear existing education first
+        currentCV.education.forEach(edu => removeEducation(edu.id))
+        
+        // Add new education entries
+        cvData.education.forEach((edu: any) => {
+          addEducation({
+            degree: edu.degree || '',
+            institution: edu.institution || '',
+            startDate: edu.startDate || edu.year || '',
+            endDate: edu.endDate || edu.year || '',
+            current: false,
+            description: edu.description || ''
+          })
+        })
+      }
+      
+      // Update skills if available
+      if (cvData.skills && Array.isArray(cvData.skills)) {
+        // Clear existing skills first
+        currentCV.skills.forEach(skill => removeSkill(skill.id))
+        
+        // Add new skills
+        cvData.skills.forEach((skillName: string) => {
+          addSkill({
+            name: skillName,
+            level: 'Intermediate',
+            category: 'Technical'
+          })
+        })
+      }
 
       toast.success('CV Imported', 'Your information has been extracted successfully!')
       
-      // Skip to review or complete
-      setCurrentStep(steps.length - 1)
+      // Don't skip steps, let user review and edit the imported data
+      setCurrentStep(0)
     } catch (error) {
       console.error('Upload error:', error)
       toast.error('Import Failed', 'Failed to import your CV. Please fill the form manually.')

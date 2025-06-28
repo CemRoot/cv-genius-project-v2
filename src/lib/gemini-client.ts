@@ -106,7 +106,7 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 // Generate content with context-aware configuration and retry logic
 export async function generateContent(prompt: string, options?: {
   model?: 'gemini-2.0-flash'
-  context?: 'coverLetter' | 'cvOptimization' | 'keywordExtraction' | 'jobAnalysis' | 'cvAnalysis'
+  context?: 'coverLetter' | 'cvOptimization' | 'keywordExtraction' | 'jobAnalysis' | 'cvAnalysis' | 'cvExtraction'
   temperature?: number
   maxTokens?: number
   retryAttempts?: number
