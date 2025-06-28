@@ -21,6 +21,8 @@ const SECURITY_CHECKPOINT = () => {
 }
 
 import { useState, useEffect } from 'react'
+import { MobileAdminLayout } from './components/mobile-admin-layout'
+import { MobileAdminContent } from './components/mobile-admin-content'
 import { useRouter } from 'next/navigation'
 import { SecurityHooks } from '@/lib/security-obfuscation'
 import { Button } from '@/components/ui/button'
@@ -547,12 +549,12 @@ Focus on information relevant for Irish job applications.`,
   // Login screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <Card className="w-full max-w-md p-8">
-          <div className="text-center mb-8">
-            <Lock className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
-            <p className="text-gray-600 mt-2">Enter admin password to continue</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-6 md:p-8">
+          <div className="text-center mb-6 md:mb-8">
+            <Lock className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 text-gray-600" />
+            <h1 className="text-xl md:text-2xl font-bold">Admin Panel</h1>
+            <p className="text-sm md:text-base text-gray-600 mt-2">Enter admin password to continue</p>
           </div>
           
           <div className="space-y-4">
@@ -609,6 +611,64 @@ Focus on information relevant for Irish job applications.`,
     )
   }
 
+  // Check if on mobile
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Use mobile layout for small screens
+  if (isMobile) {
+    return (
+      <MobileAdminLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onLogout={handleLogout}
+        is2FAEnabled={is2FAEnabled}
+      >
+        <MobileAdminContent
+          activeTab={activeTab}
+          contextAISettings={contextAISettings}
+          activeAIContext={activeAIContext}
+          setActiveAIContext={setActiveAIContext}
+          setContextAISettings={setContextAISettings}
+          saveContextSettings={saveContextSettings}
+          // Security props
+          is2FAEnabled={is2FAEnabled}
+          show2FASetup={show2FASetup}
+          setShow2FASetup={setShow2FASetup}
+          qrCode={qrCode}
+          setupSecret={setupSecret}
+          password={password}
+          setPassword={setPassword}
+          twoFactorToken={twoFactorToken}
+          setTwoFactorToken={setTwoFactorToken}
+          setup2FA={setup2FA}
+          verify2FASetup={verify2FASetup}
+          disable2FA={disable2FA}
+          // IP Management props
+          currentIP={currentIP}
+          ipWhitelist={ipWhitelist}
+          isFirstTimeSetup={isFirstTimeSetup}
+          newIPAddress={newIPAddress}
+          setNewIPAddress={setNewIPAddress}
+          newIPLabel={newIPLabel}
+          setNewIPLabel={setNewIPLabel}
+          addCurrentIP={addCurrentIP}
+          addCustomIP={addCustomIP}
+          removeIP={removeIP}
+        />
+      </MobileAdminLayout>
+    )
+  }
+
+  // Desktop layout remains the same
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">

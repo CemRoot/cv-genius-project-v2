@@ -14,6 +14,10 @@ CVGenius is a privacy-first, AI-powered CV builder platform designed for interna
 - **AI Cover Letter Generator** - 6 professional templates with AI assistance
 - **Mobile-First Design** - PWA support with offline capabilities
 - **Admin Panel** - Content management and analytics dashboard
+- **Comprehensive CV Sections** - All standard CV sections including Projects, Certifications, Languages, Interests, and References
+- **Section Reordering** - Customize the order of CV sections
+- **Mobile CV Upload** - Upload and analyze existing CVs from mobile devices
+- **404 Error Pages** - Custom 404 pages with helpful navigation
 
 ## 🚀 Quick Start for Developers
 
@@ -98,7 +102,7 @@ npm run clean         # Clean build cache
 
 ## 🏗 Tech Stack
 
-- **Framework**: Next.js 15.3.3 (App Router)
+- **Framework**: Next.js 15.3.4 (App Router)
 - **Language**: TypeScript 5.x
 - **Styling**: Tailwind CSS 3.4 + shadcn/ui components
 - **AI Integration**: Google Gemini 2.0 Flash API
@@ -109,6 +113,7 @@ npm run clean         # Clean build cache
 - **Animations**: Framer Motion 12.x
 - **Icons**: Lucide React
 - **Performance**: Vercel Speed Insights
+- **Drag & Drop**: @dnd-kit/sortable for section reordering
 
 ## 📂 Project Structure
 
@@ -335,14 +340,27 @@ MIT License - Open source project made with ❤️ for the global developer comm
 
 ## Recent Updates (2025)
 
-### ✅ Major Fixes Completed
+### ✅ Major Features & Fixes Completed
 
+- **Complete CV Builder Overhaul**: Enhanced multi-step form with 10 comprehensive sections
+- **All CV Sections Added**: Personal Info, Summary, Experience, Education, Skills, Projects, Certifications, Languages, Interests, and References
+- **Section Reordering**: Dynamic section management with drag-and-drop reordering capability
+- **Classic Template Improvements**: Black and white professional design optimized for ATS
+- **Mobile Responsive Builder**: Split-view design with mobile-optimized tab navigation
+- **Custom 404 Error Pages**: All error pages now feature consistent design with navigation
+- **Template Gallery**: Fixed template rendering and preview functionality
 - **Cover Letter PDF Export**: Fixed blue highlighting and font rendering issues
 - **Name Display Bug**: Fixed "John Doe" placeholder appearing instead of user names
 - **Cache Management**: Implemented webpack cache clearing solutions
 - **Mobile Optimization**: Enhanced mobile PDF export capabilities
 - **Admin Security**: JWT authentication with 2FA support implemented
 
+### 🚀 New Components Added
+
+- **SectionReorderPanel**: `/src/components/cv/section-reorder-panel.tsx` - Drag-and-drop section management
+- **Form Components**: Added CertificationsForm, LanguagesForm, InterestsForm, and ReferencesForm
+- **Mobile-First Forms**: All forms optimized for mobile with proper spacing and validation
+
 ### 🔄 Current Status
 
-All core features are production-ready with comprehensive error handling and user experience optimization.
+All core features are production-ready with comprehensive error handling and user experience optimization. The CV builder now supports all standard CV sections with optional fields that can be skipped if not needed.
