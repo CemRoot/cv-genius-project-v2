@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { Save, Shield, Smartphone, QrCode, Lock, Eye, EyeOff } from 'lucide-react'
+import { Save, Shield, Smartphone, QrCode, Lock, Eye, EyeOff, Wand2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MobileAdminContentProps {
@@ -43,6 +43,9 @@ interface MobileAdminContentProps {
   addCurrentIP: () => void
   addCustomIP: () => void
   removeIP: (ip: string) => void
+  // Vercel integration props
+  updateVercelEnvironment?: () => void
+  syncWithVercel?: () => void
   // Password change props
   showPasswordChange?: boolean
   setShowPasswordChange?: (show: boolean) => void
@@ -664,6 +667,50 @@ export function MobileAdminContent(props: MobileAdminContentProps) {
               )}
             </CardContent>
           </Card>
+
+          {/* Vercel Integration */}
+          {(props.updateVercelEnvironment || props.syncWithVercel) && (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="pt-4">
+                <h3 className="font-medium text-blue-800 mb-3 text-sm flex items-center gap-2">
+                  <Wand2 className="w-4 h-4" />
+                  Vercel Production Sync
+                </h3>
+                
+                <div className="space-y-3">
+                  <p className="text-xs text-blue-700">
+                    Sync IP whitelist with Vercel production environment.
+                  </p>
+                  
+                  <div className="space-y-2">
+                    {props.updateVercelEnvironment && (
+                      <Button 
+                        onClick={props.updateVercelEnvironment}
+                        variant="outline" 
+                        size="sm"
+                        className="w-full flex items-center gap-2 border-blue-300 text-blue-700"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Update Production
+                      </Button>
+                    )}
+                    
+                    {props.syncWithVercel && (
+                      <Button 
+                        onClick={props.syncWithVercel}
+                        variant="outline" 
+                        size="sm"
+                        className="w-full flex items-center gap-2 border-blue-300 text-blue-700"
+                      >
+                        <Wand2 className="w-4 h-4" />
+                        Sync with Vercel
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Security Notes */}
           <Card className="bg-yellow-50 border-yellow-200">

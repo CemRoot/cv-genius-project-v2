@@ -3,6 +3,7 @@ import * as jose from 'jose'
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
 import speakeasy from 'speakeasy'
+import bcrypt from 'bcryptjs'
 import Admin2FAState from '@/lib/admin-2fa-state'
 
 // JWT secret
@@ -11,9 +12,18 @@ const JWT_SECRET = new TextEncoder().encode(
 )
 
 // Admin credentials - MUST be stored in environment variables
+const getPasswordHash = () => {
+  const base64Hash = process.env.ADMIN_PWD_HASH_B64
+  if (base64Hash) {
+    return Buffer.from(base64Hash, 'base64').toString()
+  }
+  // Fallback for development
+  return '$2b$10$Tqa0S3UvitFTWIpNp0HjPuT5wfPjIHp3nTS.0TVby4WH9OcyTY2j.'
+}
+
 const ADMIN_CREDENTIALS = {
   username: process.env.ADMIN_USERNAME || 'admin',
-  passwordHash: process.env.ADMIN_PASSWORD_HASH || 'MUST_SET_IN_ENV'
+  passwordHash: getPasswordHash()
 }
 
 // Failed login attempts tracking
@@ -47,10 +57,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify credentials
-    const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
+    // Verify credentials using bcrypt
+    const isPasswordValid = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash)
     
-    if (username !== ADMIN_CREDENTIALS.username || passwordHash !== ADMIN_CREDENTIALS.passwordHash) {
+    if (username !== ADMIN_CREDENTIALS.username || !isPasswordValid) {
       // Track failed attempt
       const current = loginAttempts.get(clientIP) || { count: 0, lockoutUntil: 0 }
       current.count++

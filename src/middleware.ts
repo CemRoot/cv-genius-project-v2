@@ -106,7 +106,7 @@ const isAdminIPAllowed = (request: NextRequest): boolean => {
   return isAllowed
 }
 
-// Security headers
+// Security headers (with Vercel Analytics support)
 const securityHeaders = {
   'X-DNS-Prefetch-Control': 'on',
   'X-XSS-Protection': '1; mode=block',
@@ -114,12 +114,13 @@ const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live; img-src 'self' data: https:; object-src 'none';",
 }
 
-// Relaxed CSP for admin routes
+// Relaxed CSP for admin routes (includes Vercel Analytics)
 const adminSecurityHeaders = {
   ...securityHeaders,
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; connect-src 'self'; img-src 'self' data:;",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://vercel.com; img-src 'self' data: https:; object-src 'none';",
 }
 
 // JWT secret (use environment variable in production)
