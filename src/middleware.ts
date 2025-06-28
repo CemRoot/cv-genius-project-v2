@@ -76,7 +76,17 @@ const getIPWhitelist = (): string[] => {
 
 // Admin panel IP protection
 const isAdminIPAllowed = (request: NextRequest): boolean => {
-  if (process.env.NODE_ENV === 'development') return true
+  // Development mode bypass
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 Development mode: Bypassing IP whitelist check')
+    return true
+  }
+  
+  // Emergency bypass (for setup)
+  if (process.env.DISABLE_IP_WHITELIST === 'true') {
+    console.log('⚠️ IP whitelist disabled via environment variable')
+    return true
+  }
   
   const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
                    request.headers.get('x-real-ip') || 
