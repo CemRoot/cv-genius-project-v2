@@ -9,7 +9,7 @@ interface DublinPharmaTemplateProps {
 }
 
 export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPharmaTemplateProps) {
-  console.log('💊 Dublin Pharma Template rendered')
+  // Dublin Pharma Template rendered
   const data = cv || cvData
   if (!data) {
     return <div className="p-8 text-center">Loading...</div>

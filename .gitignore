@@ -77,3 +77,32 @@ admin-keys/
 security/
 auth-keys/
 .config/
+
+# Production environment files
+.env.production
+.env.production.local
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup and temporary files
+*.backup
+*.bak
+*.tmp
+*.temp
+
+# API Keys and credentials (even if accidentally saved)
+**/api-keys.*
+**/credentials.*
+**/secrets.*
+**/*secret*
+**/*password*
+**/*token*
+**/*key*.json
+
+# Debug and development files
+debug*.log
+test*.json
+mock*.json

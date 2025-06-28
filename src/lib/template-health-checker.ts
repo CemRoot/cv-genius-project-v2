@@ -168,7 +168,7 @@ Status: ${result.passed ? 'PASSED' : 'FAILED'}
       }
 
     } catch (error) {
-      console.error('Auto-repair failed:', error)
+      // Silent error handling for production
     }
 
     return repairs
@@ -208,6 +208,7 @@ Status: ${result.passed ? 'PASSED' : 'FAILED'}
         location: 'Dublin',
         startDate: '2016-09-01',
         endDate: '2020-06-01',
+        current: false,
         grade: 'First Class Honours'
       }],
       skills: [{
@@ -245,6 +246,6 @@ export const templateHealthChecker = new TemplateHealthChecker()
 export async function checkTemplateHealth(): Promise<void> {
   if (process.env.NODE_ENV === 'development') {
     const report = await templateHealthChecker.generateReport()
-    console.log(report)
+    // Report generated for development use
   }
 }

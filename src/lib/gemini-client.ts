@@ -9,9 +9,7 @@ if (typeof window !== 'undefined') {
 
 const API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
 
-if (!API_KEY && process.env.NODE_ENV !== 'development') {
-  console.warn('GEMINI_API_KEY environment variable is not set')
-}
+// API key validation is handled in validateApiKey function
 
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null
 
@@ -153,7 +151,6 @@ export async function generateContent(prompt: string, options?: {
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
-      console.error(`Gemini API Error (attempt ${attempt + 1}/${maxRetries}):`, error)
       
       // Check if it's a 503 overload error
       const errorMessage = lastError.message
@@ -176,7 +173,6 @@ export async function generateContent(prompt: string, options?: {
       
       // Calculate exponential backoff: 1s, 2s, 4s
       const backoffMs = Math.pow(2, attempt) * 1000
-      console.log(`Retrying in ${backoffMs}ms due to overload...`)
       await wait(backoffMs)
     }
   }

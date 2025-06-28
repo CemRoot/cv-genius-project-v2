@@ -29,7 +29,6 @@ export class IPWhitelistManager {
       const envWhitelist = process.env.ADMIN_IP_WHITELIST
       if (envWhitelist) {
         this.data = JSON.parse(envWhitelist)
-        console.log('🔒 IP whitelist loaded from environment')
         return this.data!
       }
 
@@ -37,11 +36,10 @@ export class IPWhitelistManager {
       if (typeof window === 'undefined' && fs.existsSync(IP_WHITELIST_FILE)) {
         const data = fs.readFileSync(IP_WHITELIST_FILE, 'utf8')
         this.data = JSON.parse(data)
-        console.log('🔒 IP whitelist loaded from file')
         return this.data!
       }
     } catch (error) {
-      console.error('Error loading IP whitelist:', error)
+      // Silent error handling for production
     }
 
     // Default whitelist with localhost
@@ -75,15 +73,12 @@ export class IPWhitelistManager {
       // For local development, save to file
       if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
         fs.writeFileSync(IP_WHITELIST_FILE, JSON.stringify(this.data, null, 2))
-        console.log('💾 IP whitelist saved to file (development)')
       }
 
       // Note: For Vercel production, you need to manually update environment variable
-      console.log('💾 IP whitelist updated (restart required for Vercel)')
-      console.log('⚠️  For production persistence, set ADMIN_IP_WHITELIST environment variable to:', whitelistJson)
       
     } catch (error) {
-      console.error('Error saving IP whitelist:', error)
+      // Silent error handling for production
     }
   }
 
@@ -112,7 +107,6 @@ export class IPWhitelistManager {
       if (existingEntry) {
         existingEntry.isActive = true
         existingEntry.label = label
-        console.log(`🔒 IP ${ip} reactivated in whitelist`)
       } else {
         whitelist.entries.push({
           ip,
@@ -120,13 +114,11 @@ export class IPWhitelistManager {
           label,
           isActive: true
         })
-        console.log(`🔒 IP ${ip} added to whitelist as "${label}"`)
       }
 
       this.saveWhitelist()
       return true
     } catch (error) {
-      console.error('Error adding IP to whitelist:', error)
       return false
     }
   }
@@ -140,12 +132,10 @@ export class IPWhitelistManager {
       if (entry) {
         entry.isActive = false
         this.saveWhitelist()
-        console.log(`🔒 IP ${ip} removed from whitelist`)
         return true
       }
       return false
     } catch (error) {
-      console.error('Error removing IP from whitelist:', error)
       return false
     }
   }
