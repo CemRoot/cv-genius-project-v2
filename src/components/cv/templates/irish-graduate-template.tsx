@@ -9,7 +9,7 @@ interface IrishGraduateTemplateProps {
 }
 
 export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGraduateTemplateProps) {
-  console.log('🎓 Irish Graduate Template rendered')
+  // Irish Graduate Template rendered
   const data = cv || cvData
   if (!data) {
     return <div className="p-8 text-center">Loading...</div>

@@ -638,8 +638,6 @@ export class DublinCoverLetterTemplateManager {
 
   constructor() {
     this.templates = dublinCoverLetterTemplates;
-    console.log('🚀 Dublin Template Manager initialized with templates:', Object.keys(this.templates));
-    console.log('📊 Total templates:', Object.keys(this.templates).length);
   }
 
   getAllTemplates(): CoverLetterTemplate[] {
@@ -655,47 +653,28 @@ export class DublinCoverLetterTemplateManager {
   }
 
   getTemplate(id: string): CoverLetterTemplate | null {
-    console.log('🔍 getTemplate called with ID:', id);
-    console.log('📋 Available template keys:', Object.keys(this.templates));
-    
     // First try direct lookup
     if (this.templates[id]) {
-      console.log('✅ Found template by key:', id);
       return this.templates[id];
     }
     
     // Then try finding by template ID
     const template = Object.values(this.templates).find(t => t.id === id);
-    if (template) {
-      console.log('✅ Found template by ID search:', id);
-    } else {
-      console.log('❌ Template not found:', id);
-    }
     return template || null;
   }
 
   generateHTML(templateId: string, content: CoverLetterContent): string {
-    console.log('🎯 Dublin Manager generateHTML called:', templateId);
     const template = this.getTemplate(templateId);
     if (!template) {
-      console.error('❌ Template not found:', templateId);
       return '';
     }
 
-    console.log('✅ Template found:', template.name, 'baseTemplate:', template.baseTemplate);
-
     // If template has a baseTemplate, use hybrid approach
     if (template.baseTemplate) {
-      console.log('🔄 Using hybrid approach for baseTemplate:', template.baseTemplate);
-      const html = this.createHybridHTML(template, content);
-      console.log('✅ Hybrid HTML generated, length:', html.length);
-      return html;
+      return this.createHybridHTML(template, content);
     }
 
-    console.log('🔄 Using Dublin layout approach');
-    const html = this.createDublinLayoutHTML(template, content);
-    console.log('✅ Dublin HTML generated, length:', html.length);
-    return html;
+    return this.createDublinLayoutHTML(template, content);
   }
 
   generateCSS(templateId: string): string {

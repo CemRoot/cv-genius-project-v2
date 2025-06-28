@@ -9,7 +9,7 @@ interface DublinTechTemplateProps {
 }
 
 export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechTemplateProps) {
-  console.log('🚀 Dublin Tech Template rendered')
+  // Dublin Tech Template rendered
   const data = cv || cvData
   if (!data) {
     return <div className="p-8 text-center">Loading...</div>

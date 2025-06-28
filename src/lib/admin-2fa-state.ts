@@ -20,7 +20,6 @@ export class Admin2FAState {
       const envState = process.env[this.ENV_KEY]
       if (envState) {
         this.state = JSON.parse(envState)
-        console.log('🔐 2FA state loaded from environment:', { enabled: this.state?.enabled })
         return this.state!
       }
 
@@ -33,12 +32,11 @@ export class Admin2FAState {
         if (fs.existsSync(STATE_FILE)) {
           const data = fs.readFileSync(STATE_FILE, 'utf8')
           this.state = JSON.parse(data)
-          console.log('🔐 2FA state loaded from file:', { enabled: this.state?.enabled })
           return this.state!
         }
       }
     } catch (error) {
-      console.error('Error loading 2FA state:', error)
+      // Silent error handling for production
     }
 
     // Default state
@@ -63,16 +61,13 @@ export class Admin2FAState {
         const path = require('path')
         const STATE_FILE = path.join(process.cwd(), '.2fa-state.json')
         fs.writeFileSync(STATE_FILE, JSON.stringify(this.state, null, 2))
-        console.log('💾 2FA state saved to file (development)')
       }
 
       // Note: For Vercel production, you need to manually update environment variable
       // or use a database for true persistence
-      console.log('💾 2FA state updated (restart required for Vercel)')
-      console.log('⚠️  For production persistence, set ADMIN_2FA_STATE environment variable to:', stateJson)
       
     } catch (error) {
-      console.error('Error saving 2FA state:', error)
+      // Silent error handling for production
     }
   }
 
@@ -96,7 +91,6 @@ export class Admin2FAState {
     const state = this.loadState()
     state.enabled = enabled
     this.saveState()
-    console.log(`🔐 2FA ${enabled ? 'enabled' : 'disabled'} for admin`)
   }
 
   static reset(): void {
@@ -106,7 +100,6 @@ export class Admin2FAState {
       lastUpdated: new Date().toISOString()
     }
     this.saveState()
-    console.log('🔓 2FA state reset')
   }
 
   static getStatus(): { enabled: boolean; lastUpdated: string } {

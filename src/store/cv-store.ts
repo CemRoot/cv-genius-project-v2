@@ -159,9 +159,7 @@ export const useCVStore = create<CVStore>()(
       canRedo: false,
       
       updatePersonalInfo: (info) => set((state) => {
-        console.log('📝 Updating personal info in store:', info)
         const newPersonalInfo = { ...state.currentCV.personal, ...info }
-        console.log('📝 New personal info state:', newPersonalInfo)
         
         const newCV = {
           ...state.currentCV,
