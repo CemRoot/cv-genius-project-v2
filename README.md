@@ -190,6 +190,28 @@ npm run type-check
 2. **Cover Letter**: Complete the flow in `/cover-letter`
 3. **ATS Check**: Test ATS analysis in `/ats-check`
 
+## 🔒 Security Configuration
+
+### Admin Panel Security
+
+**IMPORTANT**: Before deploying to production, ensure proper admin credentials:
+
+1. **Generate secure admin password hash**:
+```bash
+echo -n "your-secure-password" | openssl dgst -sha256
+```
+
+2. **Set environment variables**:
+```bash
+ADMIN_USERNAME=your_secure_username
+ADMIN_PASSWORD_HASH=generated_hash_from_step_1
+JWT_SECRET=generate_32_char_random_string
+```
+
+3. **NEVER commit credentials to version control**
+4. **Use strong, unique passwords**
+5. **Enable 2FA after first login**
+
 ## 🌐 Deployment
 
 ### Deploy to Vercel (Recommended)

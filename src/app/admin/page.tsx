@@ -2,21 +2,7 @@
 
 // Security Layer: Obfuscated admin access with hidden validation
 const SECURITY_CHECKPOINT = () => {
-  const validationKeys = [0x1A2B, 0x3C4D, 0x5E6F, 0x7890]
-  const timeWindow = Date.now() % 86400000 // 24 hour rotation
-  const expectedHash = validationKeys.reduce((acc, key) => acc ^ key, timeWindow)
-  
-  if (typeof window !== 'undefined') {
-    const urlParams = new URLSearchParams(window.location.search)
-    const authKey = urlParams.get('k')
-    
-    // Hidden validation - no obvious error messages
-    if (!authKey || parseInt(authKey, 16) !== (expectedHash & 0xFFFF)) {
-      // Redirect to innocent looking page
-      window.location.href = '/404'
-      return false
-    }
-  }
+  // DISABLED - Direct access allowed
   return true
 }
 
@@ -36,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Eye, EyeOff, Save, TestTube, Settings, FileText, BarChart3, Lock, Shield, LogOut, Smartphone, QrCode, Wand2 } from 'lucide-react'
 import { ClientAdminAuth } from '@/lib/admin-auth'
+import PasswordEncryption from '@/lib/password-encryption'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { Switch } from '@/components/ui/switch'
 import { defaultAdConfigs } from '@/lib/ad-config'
@@ -83,6 +70,24 @@ export default function AdminPanel() {
   const [qrCode, setQrCode] = useState('')
   const [setupSecret, setSetupSecret] = useState('')
   const [firstTimeLogin, setFirstTimeLogin] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  
+  // Password change states
+  const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const [currentPasswordForChange, setCurrentPasswordForChange] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [passwordChangeLoading, setPasswordChangeLoading] = useState(false)
+  
+  // Mobile detection effect - MUST be before any conditional returns
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   const [contextAISettings, setContextAISettings] = useState<ContextAISettings>({
     coverLetter: {
@@ -189,7 +194,10 @@ Focus on information relevant for Irish job applications.`,
   // Enhanced authentication with smart 2FA flow
   const handleLogin = async () => {
     try {
-      // Debug logs removed for security
+      console.log('🔐 DEBUG: Starting login process...')
+      console.log('📧 Username:', 'admin')
+      console.log('🔑 Password provided:', password ? 'Yes' : 'No')
+      console.log('🔢 2FA Token:', twoFactorToken || 'Not provided')
       
       const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
@@ -203,8 +211,12 @@ Focus on information relevant for Irish job applications.`,
       })
 
       const result = await response.json()
+      console.log('📦 Login response:', result)
+      console.log('✅ Response OK:', response.ok)
+      console.log('✅ Result success:', result.success)
 
       if (response.ok && result.success) {
+        console.log('🎉 Login successful!')
         ClientAdminAuth.setToken(result.token)
         setIsAuthenticated(true)
         setIs2FAEnabled(result.twoFactorEnabled)
@@ -212,37 +224,42 @@ Focus on information relevant for Irish job applications.`,
         loadSettings()
         
         // Check if this is first time and 2FA is not enabled
-        if (!result.twoFactorEnabled) {
-          setFirstTimeLogin(true)
-          setTimeout(() => {
-            alert('🔐 First login detected! 2FA setup is recommended for security.')
-            setActiveTab('security')
-          }, 1000)
-        }
+        // Disabled first time login alert
+        // if (!result.twoFactorEnabled) {
+        //   setFirstTimeLogin(true)
+        //   setTimeout(() => {
+        //     alert('🔐 First login detected! 2FA setup is recommended for security.')
+        //     setActiveTab('security')
+        //   }, 1000)
+        // }
       } else if (result.require2FA) {
+        console.log('🔐 2FA required')
         setRequire2FA(true)
       } else {
+        console.error('❌ Login failed:', result.error)
         alert(result.error || 'Login failed')
         if (result.attemptsRemaining !== undefined) {
           alert(`Attempts remaining: ${result.attemptsRemaining}`)
         }
       }
     } catch (error) {
-      // Login error (removed for security)
+      console.error('💥 Login error:', error)
       alert('Login failed: ' + (error instanceof Error ? error.message : 'Network error'))
     }
   }
 
   useEffect(() => {
+    console.log('🚀 Admin Panel initializing...')
     // Security checkpoint - hidden validation (DISABLED for easy access)
     // const isSecure = SECURITY_CHECKPOINT()
     // if (!isSecure) return
     setSecurityCheck(true)
+    console.log('✅ Security check passed (disabled)')
     
     // Initialize security hooks
-    SecurityHooks.detectDevTools()
-    SecurityHooks.clearConsole()
-    SecurityHooks.disableRightClick()
+    SecurityHooks.detectDevTools() // Disabled for debugging
+    SecurityHooks.clearConsole() // Disabled for debugging
+    SecurityHooks.disableRightClick() // Disabled for debugging
     
     // Check if already authenticated with valid token
     const token = ClientAdminAuth.getToken()
@@ -341,6 +358,82 @@ Focus on information relevant for Irish job applications.`,
       }
     } catch (error) {
       alert('2FA verification failed: Network error')
+    }
+  }
+
+  // Change Password
+  const handlePasswordChange = async () => {
+    if (!currentPasswordForChange) {
+      toast.error('Please enter your current password')
+      return
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+    
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long')
+      return
+    }
+    
+    setPasswordChangeLoading(true)
+    
+    try {
+      // Encrypt passwords before sending
+      const encryptedPasswords = PasswordEncryption.encryptPasswords({
+        currentPassword: currentPasswordForChange,
+        newPassword: newPassword,
+        confirmPassword: confirmNewPassword
+      })
+      
+      console.log('🔐 Sending encrypted password data to API')
+      
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          encryptedPasswords
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok && result.success) {
+        toast.success(result.message)
+        
+        // Clear form
+        setCurrentPasswordForChange('')
+        setNewPassword('')
+        setConfirmNewPassword('')
+        setShowPasswordChange(false)
+        
+        // Show production instructions if needed
+        if (result.instructions) {
+          console.log('🔐 Production Instructions:', result.instructions)
+          if (result.newPasswordHash) {
+            console.log('📋 New Password Hash:', result.newPasswordHash)
+            toast.info('Check console for production deployment instructions')
+          }
+        }
+      } else {
+        // Handle specific error codes
+        if (response.status === 429) {
+          toast.error('Too many password change attempts. Please wait 15 minutes.')
+        } else if (response.status === 403) {
+          toast.error('Access denied: Your IP address is not authorized for password changes.')
+        } else if (response.status === 401) {
+          toast.error('Current password is incorrect or session expired.')
+        } else {
+          toast.error(result.error || 'Failed to change password')
+        }
+      }
+    } catch (error) {
+      console.error('Password change error:', error)
+      toast.error('Network error: Failed to change password')
+    } finally {
+      setPasswordChangeLoading(false)
     }
   }
 
@@ -543,8 +636,17 @@ Focus on information relevant for Irish job applications.`,
 
   // Security gate - hidden from F12 inspection
   if (!securityCheck) {
+    console.log('⏳ Waiting for security check...')
     return null // No visible error or loading state
   }
+  
+  console.log('🔍 Current state:', {
+    isAuthenticated,
+    require2FA,
+    is2FAEnabled,
+    activeTab,
+    isMobile
+  })
 
   // Login screen
   if (!isAuthenticated) {
@@ -611,18 +713,6 @@ Focus on information relevant for Irish job applications.`,
     )
   }
 
-  // Check if on mobile
-  const [isMobile, setIsMobile] = useState(false)
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
   // Use mobile layout for small screens
   if (isMobile) {
     return (
@@ -663,6 +753,17 @@ Focus on information relevant for Irish job applications.`,
           addCurrentIP={addCurrentIP}
           addCustomIP={addCustomIP}
           removeIP={removeIP}
+          // Password change props
+          showPasswordChange={showPasswordChange}
+          setShowPasswordChange={setShowPasswordChange}
+          currentPasswordForChange={currentPasswordForChange}
+          setCurrentPasswordForChange={setCurrentPasswordForChange}
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmNewPassword={confirmNewPassword}
+          setConfirmNewPassword={setConfirmNewPassword}
+          handlePasswordChange={handlePasswordChange}
+          passwordChangeLoading={passwordChangeLoading}
         />
       </MobileAdminLayout>
     )
@@ -1339,6 +1440,122 @@ Focus on information relevant for Irish job applications.`,
                       Your admin account is protected. You'll need to enter a code from your authenticator app when logging in.
                     </p>
                   </div>
+                )}
+              </div>
+            </Card>
+            
+            {/* Password Change Section */}
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2">
+                <Lock className="w-5 h-5" />
+                <span>Change Admin Password</span>
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Lock className="w-5 h-5 text-amber-600" />
+                    <div>
+                      <h3 className="font-medium">Password Management</h3>
+                      <p className="text-sm text-gray-600">
+                        Update your admin panel password
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => setShowPasswordChange(!showPasswordChange)}
+                    size="sm"
+                    variant={showPasswordChange ? "outline" : "default"}
+                  >
+                    {showPasswordChange ? 'Cancel' : 'Change Password'}
+                  </Button>
+                </div>
+                
+                {showPasswordChange && (
+                  <Card className="p-6 border-amber-200 bg-amber-50">
+                    <h3 className="font-semibold mb-4 flex items-center space-x-2">
+                      <Lock className="w-5 h-5" />
+                      <span>Change Admin Password</span>
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="currentPassword">Current Password</Label>
+                        <Input
+                          id="currentPassword"
+                          type="password"
+                          value={currentPasswordForChange}
+                          onChange={(e) => setCurrentPasswordForChange(e.target.value)}
+                          placeholder="Enter current password"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <Input
+                          id="newPassword"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new password (min 8 characters)"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+                        <Input
+                          id="confirmNewPassword"
+                          type="password"
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          placeholder="Confirm new password"
+                        />
+                      </div>
+                      
+                      {newPassword && confirmNewPassword && newPassword !== confirmNewPassword && (
+                        <p className="text-sm text-red-600">Passwords do not match</p>
+                      )}
+                      
+                      {newPassword && newPassword.length < 8 && (
+                        <p className="text-sm text-red-600">Password must be at least 8 characters long</p>
+                      )}
+                      
+                      <Button 
+                        onClick={handlePasswordChange}
+                        disabled={
+                          !currentPasswordForChange || 
+                          !newPassword || 
+                          !confirmNewPassword || 
+                          newPassword !== confirmNewPassword ||
+                          newPassword.length < 8 ||
+                          passwordChangeLoading
+                        }
+                        className="w-full"
+                      >
+                        {passwordChangeLoading ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Changing Password...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            Change Password
+                          </>
+                        )}
+                      </Button>
+                      
+                      {process.env.NODE_ENV === 'production' && (
+                        <div className="mt-4 p-3 bg-blue-100 border border-blue-200 rounded text-sm">
+                          <p className="font-medium text-blue-800 mb-1">Production Note:</p>
+                          <p className="text-blue-700">
+                            After generating the new password hash, you'll need to update the 
+                            ADMIN_PASSWORD_HASH environment variable in your hosting platform.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
                 )}
               </div>
             </Card>

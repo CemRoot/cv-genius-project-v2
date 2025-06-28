@@ -21,5 +21,3 @@ export function TemplateGalleryDebug() {
     </div>
   )
 }
-</content>
-</invoke>
