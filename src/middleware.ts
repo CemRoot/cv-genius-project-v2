@@ -64,20 +64,36 @@ const sensitiveAdminRoutes = [
 // Rate limiting store (in production use Redis)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
-// IP whitelist (add your IP here)
-const IP_WHITELIST = [
-  '::1', // localhost IPv6
-  '127.0.0.1', // localhost IPv4
-  '192.168.1.11', // Your network IP
-  // Add your production IP here
-]
+// IP whitelist from environment variable
+const getIPWhitelist = (): string[] => {
+  const envWhitelist = process.env.ADMIN_IP_WHITELIST
+  if (!envWhitelist) {
+    // Default development IPs if no env var set
+    return ['::1', '127.0.0.1', 'localhost', '192.168.1.11']
+  }
+  return envWhitelist.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0)
+}
 
 // Admin panel IP protection
 const isAdminIPAllowed = (request: NextRequest): boolean => {
   if (process.env.NODE_ENV === 'development') return true
   
-  const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-  return IP_WHITELIST.some(allowedIP => clientIP.includes(allowedIP))
+  const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                   request.headers.get('x-real-ip') || 
+                   'unknown'
+  
+  const allowedIPs = getIPWhitelist()
+  const isAllowed = allowedIPs.some(allowedIP => 
+    clientIP === allowedIP || 
+    clientIP.includes(allowedIP) ||
+    allowedIP === 'localhost' && (clientIP === '127.0.0.1' || clientIP === '::1')
+  )
+  
+  if (!isAllowed) {
+    console.warn(`🚨 Blocked admin access from IP: ${clientIP}. Allowed IPs: ${allowedIPs.join(', ')}`)
+  }
+  
+  return isAllowed
 }
 
 // Security headers
@@ -132,10 +148,11 @@ export async function middleware(request: NextRequest) {
   })
   
   if (isAdminRoute) {
-    // 1. IP Whitelist Check for admin panel (DISABLED for easier access)
-    // if (pathname === '/admin' && !isAdminIPAllowed(request)) {
-    //   return new NextResponse('Forbidden - IP not allowed', { status: 403 })
-    // }
+    // 1. IP Whitelist Check for admin panel
+    if (pathname === '/admin' && !isAdminIPAllowed(request)) {
+      // Return 404 instead of 403 to hide admin panel existence
+      return new NextResponse('Not Found', { status: 404 })
+    }
 
     // 2. Rate Limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
@@ -165,14 +182,20 @@ export async function middleware(request: NextRequest) {
     }
 
     // 3. JWT Authentication Check for API routes (skip public routes)
+    let requestHeaders = new Headers(request.headers)
+    
     if (pathname.startsWith('/api/admin') && !isPublicAdminRoute) {
       const authHeader = request.headers.get('authorization')
+      console.log('🔐 DEBUG: Auth check for:', pathname)
+      console.log('🎫 Has auth header:', !!authHeader)
       
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('❌ No valid auth header')
         return new NextResponse('Unauthorized', { status: 401 })
       }
       
       const token = authHeader.substring(7)
+      console.log('🔑 Token length:', token.length)
       
       try {
         // Verify JWT token
@@ -181,14 +204,20 @@ export async function middleware(request: NextRequest) {
           audience: 'cvgenius-admin-api',
         })
         
+        console.log('✅ JWT verified, payload:', payload)
+        
         // Check if token has admin role
         if (payload.role !== 'admin') {
+          console.log('🚫 Not admin role:', payload.role)
           return new NextResponse('Forbidden', { status: 403 })
         }
         
         // Add user info to request headers for use in API routes
-        response.headers.set('x-admin-id', String(payload.sub))
-        response.headers.set('x-admin-email', String(payload.email))
+        requestHeaders.set('x-admin-id', String(payload.sub))
+        requestHeaders.set('x-admin-email', String(payload.email))
+        requestHeaders.set('x-admin-role', String(payload.role || 'admin'))
+        
+        console.log('✅ Headers set for:', payload.email)
         
       } catch (error) {
         console.error('JWT Verification failed:', error)
@@ -215,6 +244,15 @@ export async function middleware(request: NextRequest) {
       if (isSensitiveAdminRoute) {
         console.log('🔐 Sensitive 2FA route accessed with valid CSRF:', pathname)
       }
+    }
+    
+    // Return response with modified headers for authenticated requests
+    if (pathname.startsWith('/api/admin') && !isPublicAdminRoute) {
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      })
     }
   }
 

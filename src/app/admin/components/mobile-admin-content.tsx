@@ -43,6 +43,17 @@ interface MobileAdminContentProps {
   addCurrentIP: () => void
   addCustomIP: () => void
   removeIP: (ip: string) => void
+  // Password change props
+  showPasswordChange?: boolean
+  setShowPasswordChange?: (show: boolean) => void
+  currentPasswordForChange?: string
+  setCurrentPasswordForChange?: (password: string) => void
+  newPassword?: string
+  setNewPassword?: (password: string) => void
+  confirmNewPassword?: string
+  setConfirmNewPassword?: (password: string) => void
+  handlePasswordChange?: () => void
+  passwordChangeLoading?: boolean
 }
 
 export function MobileAdminContent(props: MobileAdminContentProps) {
@@ -422,6 +433,118 @@ export function MobileAdminContent(props: MobileAdminContentProps) {
                           Disable
                         </Button>
                       </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Password Change Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                Change Password
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-5 h-5 text-amber-600" />
+                      <span className="font-medium">Password Management</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600 mb-3">
+                    Update your admin panel password
+                  </p>
+                  
+                  <Button 
+                    onClick={() => props.setShowPasswordChange?.(!props.showPasswordChange)}
+                    className="w-full"
+                    variant={props.showPasswordChange ? "outline" : "default"}
+                  >
+                    {props.showPasswordChange ? 'Cancel' : 'Change Password'}
+                  </Button>
+                </div>
+                
+                {props.showPasswordChange && (
+                  <Card className="border-amber-200 bg-amber-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Lock className="w-5 h-5" />
+                        Update Password
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label className="text-sm">Current Password</Label>
+                        <Input
+                          type="password"
+                          value={props.currentPasswordForChange || ''}
+                          onChange={(e) => props.setCurrentPasswordForChange?.(e.target.value)}
+                          placeholder="Enter current password"
+                          className="mt-2"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">New Password</Label>
+                        <Input
+                          type="password"
+                          value={props.newPassword || ''}
+                          onChange={(e) => props.setNewPassword?.(e.target.value)}
+                          placeholder="Min 8 characters"
+                          className="mt-2"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">Confirm Password</Label>
+                        <Input
+                          type="password"
+                          value={props.confirmNewPassword || ''}
+                          onChange={(e) => props.setConfirmNewPassword?.(e.target.value)}
+                          placeholder="Confirm new password"
+                          className="mt-2"
+                        />
+                      </div>
+                      
+                      {props.newPassword && props.confirmNewPassword && props.newPassword !== props.confirmNewPassword && (
+                        <p className="text-xs text-red-600">Passwords do not match</p>
+                      )}
+                      
+                      {props.newPassword && props.newPassword.length < 8 && (
+                        <p className="text-xs text-red-600">Password must be at least 8 characters</p>
+                      )}
+                      
+                      <Button 
+                        onClick={props.handlePasswordChange}
+                        disabled={
+                          !props.currentPasswordForChange || 
+                          !props.newPassword || 
+                          !props.confirmNewPassword || 
+                          props.newPassword !== props.confirmNewPassword ||
+                          props.newPassword.length < 8 ||
+                          props.passwordChangeLoading
+                        }
+                        className="w-full"
+                      >
+                        {props.passwordChangeLoading ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Updating...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            Update Password
+                          </>
+                        )}
+                      </Button>
                     </CardContent>
                   </Card>
                 )}

@@ -838,7 +838,7 @@ export class IrishCVTemplateManager {
       
       .cv-container.classic .title {
         font-size: 16px;
-        color: #4a90a4;
+        color: #333;
         margin: 0 0 15px 0;
         font-style: italic;
         font-weight: normal;
@@ -1091,7 +1091,7 @@ export class IrishCVTemplateManager {
       
       .cv-container.classic .cert-date {
         font-size: 12px;
-        color: #666;
+        color: #333;
       }
       
       .cv-container.classic .cert-issuer {
@@ -1101,7 +1101,7 @@ export class IrishCVTemplateManager {
       
       .cv-container.classic .cert-id {
         font-size: 12px;
-        color: #666;
+        color: #333;
         font-style: italic;
       }
       
@@ -1120,7 +1120,7 @@ export class IrishCVTemplateManager {
         justify-content: space-between;
         font-size: 13px;
         padding: 5px 0;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid #ccc;
       }
       
       .cv-container.classic .lang-name {
@@ -1147,8 +1147,8 @@ export class IrishCVTemplateManager {
       .cv-container.classic .reference-item {
         margin-bottom: 15px;
         padding: 10px;
-        background: #f8f8f8;
-        border: 1px solid #e0e0e0;
+        background: #f5f5f5;
+        border: 1px solid #ccc;
       }
       
       .cv-container.classic .reference-item h3 {

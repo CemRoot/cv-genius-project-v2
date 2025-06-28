@@ -1,5 +1,7 @@
 import * as jose from 'jose'
 import SecurityObfuscator from './security-obfuscation'
+import fs from 'fs/promises'
+import path from 'path'
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
@@ -22,7 +24,7 @@ export class AdminAuth {
         audience: 'cvgenius-admin-api',
       })
 
-      return payload as AdminSession
+      return payload as unknown as AdminSession
     } catch (error) {
       console.error('Token verification failed:', error)
       return null
@@ -60,6 +62,46 @@ export class AdminAuth {
     } catch {
       return { needsRefresh: false, isValid: false }
     }
+  }
+}
+
+// Standalone functions for API usage
+export async function verifyAdminToken(token: string): Promise<AdminSession | null> {
+  return AdminAuth.verifyToken(token)
+}
+
+export async function checkIPWhitelist(clientIP: string): Promise<boolean> {
+  try {
+    const dataPath = path.join(process.cwd(), 'data')
+    const ipWhitelistPath = path.join(dataPath, 'admin-ip-whitelist.json')
+    
+    // Check if whitelist file exists
+    try {
+      await fs.access(ipWhitelistPath)
+    } catch {
+      // If no whitelist file exists, allow all IPs (first time setup)
+      console.log('🔍 No IP whitelist found, allowing access for setup')
+      return true
+    }
+
+    const whitelistData = await fs.readFile(ipWhitelistPath, 'utf-8')
+    const whitelist = JSON.parse(whitelistData)
+    
+    // Check if IP is in whitelist
+    const isAllowed = whitelist.ips?.some((entry: any) => 
+      entry.ip === clientIP || 
+      entry.ip === 'localhost' && (clientIP === '127.0.0.1' || clientIP === '::1')
+    ) || false
+    
+    if (!isAllowed) {
+      console.warn(`🚨 Access denied for IP: ${clientIP}`)
+    }
+    
+    return isAllowed
+  } catch (error) {
+    console.error('Error checking IP whitelist:', error)
+    // If there's an error reading whitelist, deny access for security
+    return false
   }
 }
 
@@ -105,8 +147,13 @@ export class ClientAdminAuth {
     url: string,
     options: RequestInit = {}
   ): Promise<Response> {
+    console.log('🔐 DEBUG: Making authenticated request to:', url)
+    
     const token = this.getToken()
     const csrfToken = this.getCsrfToken()
+    
+    console.log('🎫 Token exists:', !!token)
+    console.log('🛡️ CSRF token exists:', !!csrfToken)
 
     const headers = new Headers(options.headers)
     
@@ -125,6 +172,8 @@ export class ClientAdminAuth {
         const urlParts = url.split('/api/admin/')
         const endpointPath = urlParts[1]?.split('?')[0]
         
+        console.log('🔍 Endpoint path:', endpointPath)
+        
         // Map common endpoints to obfuscated aliases
         const endpointMap: Record<string, string> = {
           'auth/login': 'auth_login',
@@ -134,18 +183,26 @@ export class ClientAdminAuth {
           'settings': 'admin_settings',
           'test-prompt': 'admin_test',
           'auth/refresh': 'auth_refresh',
-          'auth/logout': 'auth_logout'
+          'auth/logout': 'auth_logout',
+          'ip-whitelist': 'admin_ip_whitelist' // Fixed endpoint mapping
         }
 
         const alias = endpointMap[endpointPath]
         if (alias) {
+          console.log('🔄 Mapping to alias:', alias)
           secureUrl = SecurityObfuscator.getSecureEndpoint(alias)
+        } else {
+          console.log('⚠️ No alias mapping for:', endpointPath)
         }
       } catch (error) {
         // Fallback to original URL if obfuscation fails
-        console.debug('Security obfuscation failed, using original URL')
+        console.error('❌ Security obfuscation failed:', error)
+        console.debug('Using original URL')
       }
     }
+
+    console.log('📡 Final URL:', secureUrl)
+    console.log('📋 Request method:', options.method || 'GET')
 
     const response = await fetch(secureUrl, {
       ...options,

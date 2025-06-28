@@ -10,11 +10,10 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
 )
 
-// Admin credentials (in production, store hashed in database)
+// Admin credentials - MUST be stored in environment variables
 const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  // Password: cvgenius2025admin (hashed with SHA-256)
-  passwordHash: 'f8f403a41c6308a3b69d4d7fe1efa322be3bc6de344eb0535dd7560f79d858db'
+  username: process.env.ADMIN_USERNAME || 'admin',
+  passwordHash: process.env.ADMIN_PASSWORD_HASH || 'MUST_SET_IN_ENV'
 }
 
 // Failed login attempts tracking
