@@ -19,7 +19,7 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
     const timeWindow = Date.now() % 86400000
     const expectedHash = validationKeys.reduce((acc, key) => acc ^ key, timeWindow)
     
-    return parseInt(accessKey, 16) === (expectedHash & 0xFFFF)
+    return parseInt(accessKey!, 16) === (expectedHash & 0xFFFF)
   }
 
   // API endpoint security parameter validation

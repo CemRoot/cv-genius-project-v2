@@ -31,6 +31,11 @@ export const GEMINI_CONFIG = {
       temperature: 0.5,      // Balanced for feedback
       maxOutputTokens: 2000,
       topP: 0.85
+    },
+    cvExtraction: {
+      temperature: 0.3,      // Low temperature for accurate extraction
+      maxOutputTokens: 2048,
+      topP: 0.8
     }
   },
 

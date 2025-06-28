@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CVData, PersonalInfo, Experience, Education, Skill, Language, Project, Certification, Interest, Reference, CVSection, DesignSettings } from '@/types/cv'
+import { offlineStorage, syncManager } from '@/lib/offline-storage'
 
 interface CVStore {
   // Current CV data
@@ -38,6 +39,9 @@ interface CVStore {
   removeSkill: (id: string) => void
   
   updateLanguages: (languages: Language[]) => void
+  addLanguage: (language: Omit<Language, 'id'>) => void
+  updateLanguage: (id: string, language: Partial<Language>) => void
+  removeLanguage: (id: string) => void
   
   addProject: (project: Omit<Project, 'id'>) => void
   updateProject: (id: string, project: Partial<Project>) => void
@@ -57,6 +61,10 @@ interface CVStore {
   
   updateSection: (id: string, updates: Partial<CVSection>) => void
   reorderSections: (fromIndex: number, toIndex: number) => void
+  toggleSectionVisibility: (id: string) => void
+  moveSectionUp: (id: string) => void
+  moveSectionDown: (id: string) => void
+  resetToDefaultSections: () => void
   
   setTemplate: (template: string) => void
   setActiveSection: (section: string) => void
@@ -127,6 +135,14 @@ const createDefaultCV = (): CVData => ({
   version: 1
 })
 
+// Helper to save CV offline when changes are made
+const saveOfflineIfNeeded = async (cv: CVData) => {
+  if (!navigator.onLine) {
+    await offlineStorage.saveCV(cv)
+    syncManager.addToSyncQueue(cv.id)
+  }
+}
+
 export const useCVStore = create<CVStore>()(
   persist(
     (set, get) => ({
@@ -143,15 +159,22 @@ export const useCVStore = create<CVStore>()(
       canRedo: false,
       
       updatePersonalInfo: (info) => set((state) => {
+        console.log('📝 Updating personal info in store:', info)
+        const newPersonalInfo = { ...state.currentCV.personal, ...info }
+        console.log('📝 New personal info state:', newPersonalInfo)
+        
         const newCV = {
           ...state.currentCV,
-          personal: { ...state.currentCV.personal, ...info },
+          personal: newPersonalInfo,
           lastModified: new Date().toISOString()
         }
         
         // Add to history
         const newHistory = state.history.slice(0, state.historyIndex + 1)
         newHistory.push(state.currentCV) // Save current state before change
+        
+        // Save to offline storage if needed
+        saveOfflineIfNeeded(newCV)
         
         return {
           currentCV: newCV,
@@ -257,6 +280,32 @@ export const useCVStore = create<CVStore>()(
         currentCV: {
           ...state.currentCV,
           languages,
+          lastModified: new Date().toISOString()
+        }
+      })),
+      
+      addLanguage: (language) => set((state) => ({
+        currentCV: {
+          ...state.currentCV,
+          languages: [...(state.currentCV.languages || []), { ...language, id: crypto.randomUUID() }],
+          lastModified: new Date().toISOString()
+        }
+      })),
+      
+      updateLanguage: (id, updates) => set((state) => ({
+        currentCV: {
+          ...state.currentCV,
+          languages: (state.currentCV.languages || []).map(lang => 
+            lang.id === id ? { ...lang, ...updates } : lang
+          ),
+          lastModified: new Date().toISOString()
+        }
+      })),
+      
+      removeLanguage: (id) => set((state) => ({
+        currentCV: {
+          ...state.currentCV,
+          languages: (state.currentCV.languages || []).filter(lang => lang.id !== id),
           lastModified: new Date().toISOString()
         }
       })),
@@ -391,6 +440,76 @@ export const useCVStore = create<CVStore>()(
           }
         }
       }),
+
+      toggleSectionVisibility: (id) => set((state) => ({
+        currentCV: {
+          ...state.currentCV,
+          sections: state.currentCV.sections.map(section => 
+            section.id === id ? { ...section, visible: !section.visible } : section
+          ),
+          lastModified: new Date().toISOString()
+        }
+      })),
+
+      moveSectionUp: (id) => set((state) => {
+        const sections = [...state.currentCV.sections]
+        const currentIndex = sections.findIndex(s => s.id === id)
+        if (currentIndex > 0) {
+          const newIndex = currentIndex - 1
+          const [moved] = sections.splice(currentIndex, 1)
+          sections.splice(newIndex, 0, moved)
+          // Update order numbers
+          sections.forEach((section, index) => {
+            section.order = index + 1
+          })
+        }
+        return {
+          currentCV: {
+            ...state.currentCV,
+            sections,
+            lastModified: new Date().toISOString()
+          }
+        }
+      }),
+
+      moveSectionDown: (id) => set((state) => {
+        const sections = [...state.currentCV.sections]
+        const currentIndex = sections.findIndex(s => s.id === id)
+        if (currentIndex < sections.length - 1) {
+          const newIndex = currentIndex + 1
+          const [moved] = sections.splice(currentIndex, 1)
+          sections.splice(newIndex, 0, moved)
+          // Update order numbers
+          sections.forEach((section, index) => {
+            section.order = index + 1
+          })
+        }
+        return {
+          currentCV: {
+            ...state.currentCV,
+            sections,
+            lastModified: new Date().toISOString()
+          }
+        }
+      }),
+
+      resetToDefaultSections: () => set((state) => ({
+        currentCV: {
+          ...state.currentCV,
+          sections: [
+            { id: crypto.randomUUID(), type: 'summary', title: 'Summary', visible: true, order: 1 },
+            { id: crypto.randomUUID(), type: 'skills', title: 'Skills', visible: true, order: 2 },
+            { id: crypto.randomUUID(), type: 'experience', title: 'Experience', visible: true, order: 3 },
+            { id: crypto.randomUUID(), type: 'education', title: 'Education', visible: true, order: 4 },
+            { id: crypto.randomUUID(), type: 'projects', title: 'Projects', visible: true, order: 5 },
+            { id: crypto.randomUUID(), type: 'certifications', title: 'Certifications', visible: true, order: 6 },
+            { id: crypto.randomUUID(), type: 'languages', title: 'Languages', visible: true, order: 7 },
+            { id: crypto.randomUUID(), type: 'interests', title: 'Interests', visible: true, order: 8 },
+            { id: crypto.randomUUID(), type: 'references', title: 'References', visible: true, order: 9 }
+          ],
+          lastModified: new Date().toISOString()
+        }
+      })),
       
       setTemplate: (template) => set((state) => ({
         currentCV: {

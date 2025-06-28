@@ -11,6 +11,7 @@ import HydrationFix from "@/components/hydration-fix"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { DynamicAdManager } from "@/components/ads/dynamic-ad-manager"
 import AccessibilityWidget, { AccessibilityCSS } from "@/components/accessibility/accessibility-widget"
+import { PWAProvider } from "@/components/pwa-provider"
 import "@/lib/console-error-filter"
 
 // Load font for admin and base layout
@@ -284,15 +285,17 @@ export default function RootLayout({
           Skip to main content
         </a>
         
-        <DynamicAdManager>
-          <ToastProvider>
-            <ErrorBoundary>
-              <main id="main-content" tabIndex={-1}>
-                {children}
-              </main>
-            </ErrorBoundary>
-          </ToastProvider>
-        </DynamicAdManager>
+        <PWAProvider>
+          <DynamicAdManager>
+            <ToastProvider>
+              <ErrorBoundary>
+                <main id="main-content" tabIndex={-1}>
+                  {children}
+                </main>
+              </ErrorBoundary>
+            </ToastProvider>
+          </DynamicAdManager>
+        </PWAProvider>
         
         {/* Fix hydration issues caused by browser extensions */}
         <HydrationFix />

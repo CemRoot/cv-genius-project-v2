@@ -92,20 +92,29 @@ OUTPUT FORMAT - Return ONLY this JSON structure:
   "email": "[Extract email with @ symbol]",
   "phone": "[Extract phone with all digits/symbols as shown]",
   "location": "[Extract city, country or address]",
+  "linkedin": "[LinkedIn URL if present]",
+  "website": "[Personal website or portfolio URL if present]",
+  "professionalTitle": "[Current job title or professional designation]",
+  "workAuthorization": "[Work permit status if mentioned - e.g. 'EU Citizen', 'Stamp 4', 'Critical Skills']",
   "summary": "[Professional summary if present]",
   "experience": [
     {
       "title": "[Job title]",
       "company": "[Company name]",
-      "duration": "[Date range]",
-      "description": "[Main responsibilities]"
+      "location": "[Job location if mentioned]",
+      "startDate": "[Start date or year]",
+      "endDate": "[End date or year, or 'Present' if current]",
+      "current": [true if currently working there, false otherwise],
+      "description": "[Main responsibilities and achievements]"
     }
   ],
   "education": [
     {
       "degree": "[Degree/certification]",
       "institution": "[School/University name]",
-      "year": "[Graduation year or date range]"
+      "startDate": "[Start year if available]",
+      "endDate": "[End year or graduation year]",
+      "description": "[Additional details like GPA, honors, relevant coursework]"
     }
   ],
   "skills": ["[skill1]", "[skill2]", "[skill3]"]
@@ -126,7 +135,7 @@ Remember: Extract ALL contact information found. Return ONLY the JSON object, no
 
     // Generate AI response with retry
     const result = await generateContent(prompt, {
-      context: 'cvAnalysis',
+      context: 'cvExtraction',
       maxTokens: 4096, // Increased for better extraction
       temperature: 0.0, // Zero temperature for most deterministic extraction
       retryAttempts: 3 // Enable retry for 503 errors
@@ -322,6 +331,10 @@ function extractCVDataManually(cvContent: string) {
     email: '',
     phone: '',
     location: '',
+    linkedin: '',
+    website: '',
+    professionalTitle: '',
+    workAuthorization: '',
     summary: '',
     experience: [] as any[],
     education: [] as any[],
@@ -407,6 +420,36 @@ function extractCVDataManually(cvContent: string) {
         console.log('✓ Found location:', data.location)
         break
       }
+    }
+  }
+  
+  // Extract LinkedIn
+  const linkedinPatterns = [
+    /(?:linkedin\.com\/in\/|linkedin:)[\/\s]*([a-zA-Z0-9\-]+)/gi,
+    /https?:\/\/(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9\-]+/gi
+  ]
+  
+  for (const pattern of linkedinPatterns) {
+    const matches = cvContent.match(pattern)
+    if (matches && matches.length > 0) {
+      data.linkedin = matches[0]
+      console.log('✓ Found LinkedIn:', data.linkedin)
+      break
+    }
+  }
+  
+  // Extract website
+  const websitePatterns = [
+    /(?:website|portfolio|github)[:\s]*(https?:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi,
+    /https?:\/\/(?!linkedin)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/g
+  ]
+  
+  for (const pattern of websitePatterns) {
+    const matches = cvContent.match(pattern)
+    if (matches && matches.length > 0) {
+      data.website = matches[0]
+      console.log('✓ Found website:', data.website)
+      break
     }
   }
   
