@@ -376,20 +376,13 @@ Focus on information relevant for Irish job applications.`,
     setPasswordChangeLoading(true)
     
     try {
-      // Encrypt passwords before sending
-      const encryptedPasswords = PasswordEncryption.encryptPasswords({
-        currentPassword: currentPasswordForChange,
-        newPassword: newPassword,
-        confirmPassword: confirmNewPassword
-      })
-      
-      // Debug logs removed for production security
-      
+      // Send passwords directly (encryption removed for compatibility)
       const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          encryptedPasswords
+          currentPassword: currentPasswordForChange,
+          newPassword: newPassword
         })
       })
       
