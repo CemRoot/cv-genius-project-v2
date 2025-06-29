@@ -17,17 +17,10 @@ const JWT_SECRET = process.env.JWT_SECRET
 // Admin credentials must be stored in environment variables
 const getPasswordHash = () => {
   const base64Hash = process.env.ADMIN_PWD_HASH_B64
-  console.log('🔑 ENV VARIABLES CHECK:', {
-    hasAdminUsername: !!process.env.ADMIN_USERNAME,
-    hasAdminPwdHash: !!base64Hash,
-    adminUsernameValue: process.env.ADMIN_USERNAME,
-    pwdHashLength: base64Hash?.length,
-    nodeEnv: process.env.NODE_ENV,
-    hasJwtSecret: !!process.env.JWT_SECRET
-  })
+  // Environment variables check removed for production security
   
   if (!base64Hash) {
-    console.log('❌ ADMIN_PWD_HASH_B64 missing!')
+    // Error logging removed for security
     throw new Error('ADMIN_PWD_HASH_B64 environment variable is required')
   }
   return Buffer.from(base64Hash, 'base64').toString()
@@ -45,26 +38,15 @@ const loginAttempts = new Map<string, { count: number; lockoutUntil: number }>()
 
 export async function POST(request: NextRequest) {
   try {
-    // IMMEDIATE DEBUG AT START
-    console.log('🔍 LOGIN ATTEMPT STARTED:', {
-      url: request.nextUrl.href,
-      method: request.method,
-      timestamp: new Date().toISOString()
-    })
+    // Debug logging removed for production security
 
     const body = await request.json()
     const { username, password, twoFactorToken } = body
 
-    console.log('📝 REQUEST BODY RECEIVED:', {
-      hasUsername: !!username,
-      hasPassword: !!password,
-      has2FA: !!twoFactorToken,
-      usernameLength: username?.length,
-      passwordLength: password?.length
-    })
+    // Request logging removed for security
 
     if (!username || !password) {
-      console.log('❌ MISSING CREDENTIALS')
+      // Credential validation
       return NextResponse.json(
         { error: 'Username and password are required' },
         { status: 400 }
@@ -92,15 +74,7 @@ export async function POST(request: NextRequest) {
     // Verify credentials using bcrypt
     const isPasswordValid = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash)
     
-    // TEMPORARY DEBUG
-    console.log('DEBUG LOGIN:', {
-      receivedUsername: username,
-      expectedUsername: ADMIN_CREDENTIALS.username,
-      receivedPassword: password,
-      passwordHashExists: !!ADMIN_CREDENTIALS.passwordHash,
-      passwordHashLength: ADMIN_CREDENTIALS.passwordHash.length,
-      isPasswordValid
-    })
+    // Debug information removed for security
     
     if (username !== ADMIN_CREDENTIALS.username || !isPasswordValid) {
       // Track failed attempt
@@ -258,7 +232,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Admin Login Error:', error)
+    // Error handling without logging sensitive details
     return NextResponse.json(
       { error: 'Authentication failed' },
       { status: 500 }
