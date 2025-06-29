@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as jose from 'jose'
 import SecurityAuditLogger from '@/lib/security-audit'
 
-// JWT secret
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
-)
+// JWT secret must be set via environment variable
+const JWT_SECRET = process.env.JWT_SECRET 
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
+  : (() => {
+      throw new Error('JWT_SECRET environment variable is required')
+    })()
 
 // Auth check function
 async function checkAuth(request: NextRequest) {
