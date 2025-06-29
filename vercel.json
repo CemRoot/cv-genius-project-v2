@@ -1,6 +1,4 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
   "framework": "nextjs",
   "headers": [
     {
@@ -38,23 +36,11 @@
       ]
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "src/app/api/admin/**": {
-      "maxDuration": 10
-    },
-    "src/app/api/ai/**": {
-      "maxDuration": 30
-    }
-  },
   "redirects": [
     {
       "source": "/admin-panel",
       "destination": "/admin",
       "permanent": true
     }
-  ],
-  "regions": ["iad1"]
+  ]
 }
