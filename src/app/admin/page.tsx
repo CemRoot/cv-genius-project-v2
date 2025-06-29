@@ -195,26 +195,21 @@ Focus on information relevant for Irish job applications.`,
   // Enhanced authentication with smart 2FA flow
   const handleLogin = async () => {
     try {
-      console.log('🔐 DEBUG: Starting login process...')
-      console.log('📧 Username:', 'admin')
-      console.log('🔑 Password provided:', password ? 'Yes' : 'No')
-      console.log('🔢 2FA Token:', twoFactorToken || 'Not provided')
-      
+      // Removed debug logs for security
       const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           username: 'admin',
           password: password,
-          twoFactorToken: twoFactorToken || undefined
-        })
+          twoFactorToken: twoFactorToken || null
+        }),
+        credentials: 'include'
       })
 
       const result = await response.json()
-      console.log('📦 Login response:', result)
-      console.log('✅ Response OK:', response.ok)
-      console.log('✅ Result success:', result.success)
 
       if (response.ok && result.success) {
         console.log('🎉 Login successful!')
@@ -234,7 +229,7 @@ Focus on information relevant for Irish job applications.`,
         //   }, 1000)
         // }
       } else if (result.require2FA) {
-        console.log('🔐 2FA required')
+        // Debug logs removed for production security
         setRequire2FA(true)
       } else {
         alert(result.error || 'Login failed')
@@ -388,7 +383,7 @@ Focus on information relevant for Irish job applications.`,
         confirmPassword: confirmNewPassword
       })
       
-      console.log('🔐 Sending encrypted password data to API')
+      // Debug logs removed for production security
       
       const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/auth/change-password', {
         method: 'POST',
@@ -411,10 +406,9 @@ Focus on information relevant for Irish job applications.`,
         
         // Show production instructions if needed
         if (result.instructions) {
-          console.log('🔐 Production Instructions:', result.instructions)
+          // Debug logs removed for production security
           if (result.newPasswordHash) {
-            console.log('📋 New Password Hash:', result.newPasswordHash)
-            toast.info('Check console for production deployment instructions')
+            toast.info('Password updated successfully')
           }
         }
       } else {
@@ -694,13 +688,7 @@ Focus on information relevant for Irish job applications.`,
     return null // No visible error or loading state
   }
   
-  console.log('🔍 Current state:', {
-    isAuthenticated,
-    require2FA,
-    is2FAEnabled,
-    activeTab,
-    isMobile
-  })
+  // Removed debug logging for production security
 
   // Login screen
   if (!isAuthenticated) {

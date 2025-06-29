@@ -15,14 +15,15 @@ class SecurityObfuscator {
   ])
 
   static getSecureEndpoint(alias: string): string {
-    console.log('🔍 DEBUG: Getting endpoint for alias:', alias)
-    const baseEndpoint = this.ENDPOINT_MAP.get(alias)
-    if (!baseEndpoint) {
-      console.error('❌ Invalid endpoint alias:', alias)
-      throw new Error('Invalid endpoint alias')
+    // Debug logs removed for production security
+    const endpoint = this.ENDPOINT_MAP.get(alias)
+    
+    if (endpoint) {
+      return endpoint
     }
-    console.log('✅ Endpoint found:', baseEndpoint)
-    return baseEndpoint
+    
+    // Fallback to original alias if not found
+    return `/api/admin/${alias}`
   }
 
   static generateAccessKey(): string {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -39,18 +39,24 @@ export default function EditCoverLetterPage() {
   }, [router])
 
   // Save functionality
-  const handleSave = async () => {
-    setIsSaving(true)
+  const handleSave = useCallback(async () => {
+    if (!contextState.resumeData?.personalInfo?.fullName) {
+      addToast({
+        type: 'error',
+        title: 'CV data not loaded',
+        description: 'Please go back and try again.'
+      })
+      return
+    }
+
     try {
+      setIsSaving(true)
       // Save to localStorage
       localStorage.setItem('generated-cover-letter', coverLetterText)
       // Set a flag to indicate we're coming from edit
       localStorage.setItem('cover-letter-edited', 'true')
       
-      console.log('💾 Save Debug:')
-      console.log('- Saved text length:', coverLetterText.length)
-      console.log('- Flag set to:', localStorage.getItem('cover-letter-edited'))
-      console.log('- Saved text preview:', coverLetterText.substring(0, 100) + '...')
+      // Debug logs removed for production security
       
       addToast({
         type: 'success',
@@ -69,7 +75,7 @@ export default function EditCoverLetterPage() {
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [coverLetterText, router, addToast, contextState.resumeData?.personalInfo?.fullName])
 
   // AI Text Improvement
   const handleAiEdit = async () => {
@@ -154,11 +160,7 @@ export default function EditCoverLetterPage() {
       const userPhone = contextState.resumeData?.personalInfo?.phone || resumeData.personalInfo?.phone || templateData.personalInfo?.phone || ''
       const userAddress = contextState.resumeData?.personalInfo?.location || resumeData.personalInfo?.location || templateData.personalInfo?.location || 'Dublin, Ireland'
       
-      console.log('🔄 Regenerate Debug:')
-      console.log('- Context resume data:', contextState.resumeData?.personalInfo)
-      console.log('- userEmail:', userEmail)
-      console.log('- userPhone:', userPhone)
-      console.log('- userAddress:', userAddress)
+      // Debug logs removed for production security
 
       const response = await fetch('/api/ai/generate-cover-letter', {
         method: 'POST',

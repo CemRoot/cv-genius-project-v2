@@ -3,9 +3,12 @@ import SecurityObfuscator from './security-obfuscation'
 import fs from 'fs/promises'
 import path from 'path'
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
-)
+// JWT secret must be set via environment variable
+const JWT_SECRET = process.env.JWT_SECRET 
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
+  : (() => {
+      throw new Error('JWT_SECRET environment variable is required')
+    })()
 
 export interface AdminSession {
   sub: string
@@ -147,17 +150,13 @@ export class ClientAdminAuth {
     url: string,
     options: RequestInit = {}
   ): Promise<Response> {
-    console.log('🔐 DEBUG: Making authenticated request to:', url)
+    // Debug logs removed for production security
     
     const token = this.getToken()
     let csrfToken = this.getCsrfToken()
     
-    console.log('🎫 Token exists:', !!token)
-    console.log('🛡️ CSRF token exists:', !!csrfToken)
-
     // Auto-restore missing CSRF token if JWT exists
     if (token && !csrfToken && typeof window !== 'undefined') {
-      console.log('🔄 Auto-restoring missing CSRF token...')
       try {
         const restoreResponse = await fetch('/api/admin/auth/restore-csrf', {
           method: 'POST',
@@ -172,13 +171,10 @@ export class ClientAdminAuth {
           if (restoreData.csrfToken) {
             // CSRF token will be set via Set-Cookie header automatically
             csrfToken = restoreData.csrfToken
-            console.log('✅ CSRF token restored successfully')
           }
-        } else {
-          console.log('❌ CSRF restore failed, token might be expired')
         }
       } catch (error) {
-        console.log('❌ CSRF restore error:', error)
+        // Silent error handling for security
       }
     }
 
@@ -199,8 +195,6 @@ export class ClientAdminAuth {
         const urlParts = url.split('/api/admin/')
         const endpointPath = urlParts[1]?.split('?')[0]
         
-        console.log('🔍 Endpoint path:', endpointPath)
-        
         // Map common endpoints to obfuscated aliases
         const endpointMap: Record<string, string> = {
           'auth/login': 'auth_login',
@@ -211,25 +205,17 @@ export class ClientAdminAuth {
           'test-prompt': 'admin_test',
           'auth/refresh': 'auth_refresh',
           'auth/logout': 'auth_logout',
-          'ip-whitelist': 'admin_ip_whitelist' // Fixed endpoint mapping
+          'ip-whitelist': 'admin_ip_whitelist'
         }
 
         const alias = endpointMap[endpointPath]
         if (alias) {
-          console.log('🔄 Mapping to alias:', alias)
           secureUrl = SecurityObfuscator.getSecureEndpoint(alias)
-        } else {
-          console.log('⚠️ No alias mapping for:', endpointPath)
         }
       } catch (error) {
         // Fallback to original URL if obfuscation fails
-        console.error('❌ Security obfuscation failed:', error)
-        console.debug('Using original URL')
       }
     }
-
-    console.log('📡 Final URL:', secureUrl)
-    console.log('📋 Request method:', options.method || 'GET')
 
     const response = await fetch(secureUrl, {
       ...options,

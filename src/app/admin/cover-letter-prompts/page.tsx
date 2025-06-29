@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Save, RefreshCw, FileText, Wand2 } from 'lucide-react'
+import { Loader2, Save, RefreshCw, FileText, Wand2, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
+import { ClientAdminAuth } from '@/lib/admin-auth'
 
 interface PromptConfig {
   generation: {
@@ -41,6 +43,7 @@ interface PromptConfig {
 
 export default function CoverLetterPromptsPage() {
   const { addToast } = useToast()
+  const router = useRouter()
   
   // States
   const [prompts, setPrompts] = useState<PromptConfig | null>(null)
@@ -56,7 +59,7 @@ export default function CoverLetterPromptsPage() {
 
   const loadPrompts = async () => {
     try {
-      const response = await fetch('/api/admin/cover-letter-prompts')
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/cover-letter-prompts')
       const data = await response.json()
       
       if (data.success) {
@@ -111,7 +114,7 @@ export default function CoverLetterPromptsPage() {
     
     setIsSaving(true)
     try {
-      const response = await fetch('/api/admin/cover-letter-prompts', {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/cover-letter-prompts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -200,6 +203,18 @@ export default function CoverLetterPromptsPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {/* Back Button */}
+          <div className="mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/admin')}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Admin Panel
+            </Button>
+          </div>
+          
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">

@@ -20,6 +20,53 @@ export interface AdConfig {
   }
 }
 
+// Get ad configuration from environment variables
+const getAdSenseClient = () => process.env.NEXT_PUBLIC_ADSENSE_CLIENT
+const getAdSenseSlot = (type: string) => {
+  switch (type) {
+    case 'sidebar':
+      return process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT
+    case 'inline':
+      return process.env.NEXT_PUBLIC_ADSENSE_INLINE_SLOT
+    case 'footer':
+      return process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT
+    case 'sticky':
+      return process.env.NEXT_PUBLIC_ADSENSE_STICKY_SLOT
+    default:
+      return undefined
+  }
+}
+
+const getMonetagZone = (type: string) => {
+  switch (type) {
+    case 'popup':
+      return process.env.NEXT_PUBLIC_MONETAG_ZONE_POPUP
+    case 'push':
+      return process.env.NEXT_PUBLIC_MONETAG_ZONE_PUSH
+    case 'native':
+      return process.env.NEXT_PUBLIC_MONETAG_ZONE_NATIVE
+    case 'inpage':
+      return process.env.NEXT_PUBLIC_MONETAG_ZONE_INPAGE
+    default:
+      return undefined
+  }
+}
+
+const getMobileAdKey = (position: string) => {
+  switch (position) {
+    case 'top':
+      return process.env.NEXT_PUBLIC_MOBILE_AD_TOP
+    case 'bottom':
+      return process.env.NEXT_PUBLIC_MOBILE_AD_BOTTOM
+    case 'floating':
+      return process.env.NEXT_PUBLIC_MOBILE_AD_FLOATING
+    case 'interstitial':
+      return process.env.NEXT_PUBLIC_MOBILE_AD_INTERSTITIAL
+    default:
+      return undefined
+  }
+}
+
 export const defaultAdConfigs: AdConfig[] = [
   {
     id: 'banner-main',
@@ -48,10 +95,10 @@ export const defaultAdConfigs: AdConfig[] = [
     name: 'Sidebar AdSense (300x300)',
     type: 'sidebar',
     enabled: true,
-    zone: 'ca-pub-1742989559393752',
+    zone: getAdSenseClient(),
     settings: {
-      adSenseClient: process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752',
-      adSenseSlot: process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT || 'dev-placeholder',
+      adSenseClient: getAdSenseClient(),
+      adSenseSlot: getAdSenseSlot('sidebar'),
       delay: 2000,
       platform: 'adsense'
     }
@@ -61,7 +108,7 @@ export const defaultAdConfigs: AdConfig[] = [
     name: 'Monetag OnClick Popunder',
     type: 'popup',
     enabled: false,
-    zone: '9469379',
+    zone: getMonetagZone('popup'),
     settings: {
       delay: 5000,
       cooldown: 600000, // 10 dakika
@@ -73,7 +120,7 @@ export const defaultAdConfigs: AdConfig[] = [
     name: 'Monetag Push Notification',
     type: 'push',
     enabled: false,
-    zone: '9469382',
+    zone: getMonetagZone('push'),
     settings: {
       delay: 30000,
       cooldown: 3600000, // 1 saat
@@ -85,7 +132,7 @@ export const defaultAdConfigs: AdConfig[] = [
     name: 'Monetag Native Banner',
     type: 'native',
     enabled: false,
-    zone: '9469381',
+    zone: getMonetagZone('native'),
     settings: {
       delay: 4000,
       restrictedPages: ['/admin']
@@ -96,7 +143,7 @@ export const defaultAdConfigs: AdConfig[] = [
     name: 'Monetag In-Page Push',
     type: 'push',
     enabled: false,
-    zone: '9469380',
+    zone: getMonetagZone('inpage'),
     settings: {
       delay: 10000,
       cooldown: 1800000, // 30 dakika
@@ -111,7 +158,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: true,
     settings: {
       mobilePosition: 'top',
-      mobileKey: 'REPLACE_WITH_MOBILE_TOP_KEY',
+      mobileKey: getMobileAdKey('top'),
       width: 320,
       height: 50,
       delay: 2000,
@@ -125,7 +172,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: true,
     settings: {
       mobilePosition: 'bottom',
-      mobileKey: 'REPLACE_WITH_MOBILE_BOTTOM_KEY',
+      mobileKey: getMobileAdKey('bottom'),
       width: 320,
       height: 50,
       delay: 3000,
@@ -139,7 +186,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: false,
     settings: {
       mobilePosition: 'floating',
-      mobileKey: 'REPLACE_WITH_MOBILE_FLOAT_KEY',
+      mobileKey: getMobileAdKey('floating'),
       width: 300,
       height: 250,
       delay: 5000,
@@ -154,7 +201,7 @@ export const defaultAdConfigs: AdConfig[] = [
     enabled: false,
     settings: {
       mobilePosition: 'floating',
-      mobileKey: 'REPLACE_WITH_MOBILE_INTERSTITIAL_KEY',
+      mobileKey: getMobileAdKey('interstitial'),
       width: 320,
       height: 480,
       delay: 8000,
@@ -170,8 +217,8 @@ export const defaultAdConfigs: AdConfig[] = [
     type: 'inline',
     enabled: true,
     settings: {
-      adSenseClient: process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752',
-      adSenseSlot: process.env.NEXT_PUBLIC_ADSENSE_INLINE_SLOT || 'dev-placeholder',
+      adSenseClient: getAdSenseClient(),
+      adSenseSlot: getAdSenseSlot('inline'),
       width: 728,
       height: 250,
       delay: 2000,
@@ -186,8 +233,8 @@ export const defaultAdConfigs: AdConfig[] = [
     type: 'footer',
     enabled: true,
     settings: {
-      adSenseClient: process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752',
-      adSenseSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT || 'dev-placeholder',
+      adSenseClient: getAdSenseClient(),
+      adSenseSlot: getAdSenseSlot('footer'),
       width: 728,
       height: 90,
       delay: 1500,
@@ -231,8 +278,8 @@ export const defaultAdConfigs: AdConfig[] = [
     type: 'sticky',
     enabled: false,
     settings: {
-      adSenseClient: process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752',
-      adSenseSlot: process.env.NEXT_PUBLIC_ADSENSE_STICKY_SLOT || 'dev-placeholder',
+      adSenseClient: getAdSenseClient(),
+      adSenseSlot: getAdSenseSlot('sticky'),
       width: 160,
       height: 600,
       delay: 3000,
