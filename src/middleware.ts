@@ -55,6 +55,11 @@ const loginFlow2FARoutes = [
   '/api/admin/auth/2fa/verify'
 ]
 
+// Routes that need JWT but are exempt from CSRF (for restoration purposes)
+const csrfExemptRoutes = [
+  '/api/admin/auth/restore-csrf'
+]
+
 // Admin routes that need special handling but still require CSRF for safety
 const sensitiveAdminRoutes = [
   '/api/admin/auth/2fa/setup',
@@ -151,6 +156,7 @@ export async function middleware(request: NextRequest) {
   const isPublicAdminRoute = publicAdminRoutes.includes(pathname)
   const isLoginFlow2FA = loginFlow2FARoutes.includes(pathname)
   const isSensitiveAdminRoute = sensitiveAdminRoutes.includes(pathname)
+  const isCsrfExempt = csrfExemptRoutes.includes(pathname)
   
   // Apply appropriate security headers
   const headersToApply = isAdminRoute ? adminSecurityHeaders : securityHeaders
@@ -170,7 +176,9 @@ export async function middleware(request: NextRequest) {
     const identifier = clientIP
     const now = Date.now()
     const windowMs = 15 * 60 * 1000 // 15 minutes
-    const maxRequests = 100 // Max 100 requests per 15 minutes
+    
+    // More relaxed rate limiting for development
+    const maxRequests = process.env.NODE_ENV === 'development' ? 500 : 100 // 500 for dev, 100 for production
     
     const rateLimit = rateLimitStore.get(identifier) || { count: 0, resetTime: now + windowMs }
     
@@ -184,6 +192,7 @@ export async function middleware(request: NextRequest) {
     rateLimitStore.set(identifier, rateLimit)
     
     if (rateLimit.count > maxRequests) {
+      console.log(`🚫 Rate limit exceeded for ${clientIP}: ${rateLimit.count}/${maxRequests}`)
       return new NextResponse('Too Many Requests', { 
         status: 429,
         headers: {
@@ -236,8 +245,8 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // 4. CSRF Protection for POST/PUT/DELETE (all admin routes except public and login-flow 2FA)
-    if (['POST', 'PUT', 'DELETE'].includes(request.method) && !isPublicAdminRoute && !isLoginFlow2FA) {
+    // 4. CSRF Protection for POST/PUT/DELETE (all admin routes except public, login-flow 2FA, and CSRF exempt)
+    if (['POST', 'PUT', 'DELETE'].includes(request.method) && !isPublicAdminRoute && !isLoginFlow2FA && !isCsrfExempt) {
       const csrfToken = request.headers.get('x-csrf-token')
       const sessionCsrf = request.cookies.get('csrf-token')?.value
       

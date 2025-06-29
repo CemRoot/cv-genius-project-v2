@@ -150,10 +150,37 @@ export class ClientAdminAuth {
     console.log('🔐 DEBUG: Making authenticated request to:', url)
     
     const token = this.getToken()
-    const csrfToken = this.getCsrfToken()
+    let csrfToken = this.getCsrfToken()
     
     console.log('🎫 Token exists:', !!token)
     console.log('🛡️ CSRF token exists:', !!csrfToken)
+
+    // Auto-restore missing CSRF token if JWT exists
+    if (token && !csrfToken && typeof window !== 'undefined') {
+      console.log('🔄 Auto-restoring missing CSRF token...')
+      try {
+        const restoreResponse = await fetch('/api/admin/auth/restore-csrf', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (restoreResponse.ok) {
+          const restoreData = await restoreResponse.json()
+          if (restoreData.csrfToken) {
+            // CSRF token will be set via Set-Cookie header automatically
+            csrfToken = restoreData.csrfToken
+            console.log('✅ CSRF token restored successfully')
+          }
+        } else {
+          console.log('❌ CSRF restore failed, token might be expired')
+        }
+      } catch (error) {
+        console.log('❌ CSRF restore error:', error)
+      }
+    }
 
     const headers = new Headers(options.headers)
     

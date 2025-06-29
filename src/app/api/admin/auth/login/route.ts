@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import speakeasy from 'speakeasy'
 import bcrypt from 'bcryptjs'
 import Admin2FAState from '@/lib/admin-2fa-state'
+import SecurityAuditLogger from '@/lib/security-audit'
 
 // JWT secret
 const JWT_SECRET = new TextEncoder().encode(
@@ -43,6 +44,8 @@ export async function POST(request: NextRequest) {
 
     // Get client IP for rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+    const auditLogger = SecurityAuditLogger.getInstance()
     
     // Check if IP is locked out
     const attemptData = loginAttempts.get(clientIP)
@@ -71,6 +74,17 @@ export async function POST(request: NextRequest) {
       }
       
       loginAttempts.set(clientIP, current)
+      
+      // Log failed login attempt
+      await auditLogger.logLoginAttempt({
+        ip: clientIP,
+        timestamp: new Date().toISOString(),
+        success: false,
+        username,
+        failureReason: username !== ADMIN_CREDENTIALS.username ? 'Invalid username' : 'Invalid password',
+        userAgent,
+        location: await auditLogger.getIPLocation(clientIP)
+      })
       
       return NextResponse.json(
         { 
@@ -130,6 +144,16 @@ export async function POST(request: NextRequest) {
 
     // Clear failed attempts on successful login
     loginAttempts.delete(clientIP)
+    
+    // Log successful login attempt
+    await auditLogger.logLoginAttempt({
+      ip: clientIP,
+      timestamp: new Date().toISOString(),
+      success: true,
+      username,
+      userAgent,
+      location: await auditLogger.getIPLocation(clientIP)
+    })
 
     // Generate JWT token
     const token = await new jose.SignJWT({
