@@ -102,6 +102,16 @@ auth-keys/
 **/*token*
 **/*key*.json
 
+# Admin authentication files (CRITICAL - NEVER COMMIT)
+auth.json
+auth_test.json
+auth_response.json
+auth*.json
+
+# Admin data files (contains sensitive information)
+data/admin-*
+data/*.json
+
 # Debug and development files
 debug*.log
 test*.json

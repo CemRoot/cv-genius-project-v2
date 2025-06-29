@@ -26,6 +26,7 @@ import PasswordEncryption from '@/lib/password-encryption'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { Switch } from '@/components/ui/switch'
 import { defaultAdConfigs } from '@/lib/ad-config'
+import { SecurityHeader } from '@/components/admin/security-header'
 
 interface AISettings {
   temperature: number
@@ -236,7 +237,6 @@ Focus on information relevant for Irish job applications.`,
         console.log('🔐 2FA required')
         setRequire2FA(true)
       } else {
-        console.error('❌ Login failed:', result.error)
         alert(result.error || 'Login failed')
         if (result.attemptsRemaining !== undefined) {
           alert(`Attempts remaining: ${result.attemptsRemaining}`)
@@ -829,6 +829,7 @@ Focus on information relevant for Irish job applications.`,
   // Desktop layout remains the same
   return (
     <div className="min-h-screen bg-gray-50">
+      <SecurityHeader isAuthenticated={isAuthenticated} />
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">

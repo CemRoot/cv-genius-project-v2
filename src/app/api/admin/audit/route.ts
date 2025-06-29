@@ -1,4 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as jose from 'jose'
+import SecurityAuditLogger from '@/lib/security-audit'
+
+// JWT secret
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
+)
+
+// Auth check function
+async function checkAuth(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const token = authHeader.split(' ')[1]
+    await jose.jwtVerify(token, JWT_SECRET)
+    return null // No error
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+  }
+}
 
 interface AuditLog {
   id: string
@@ -17,47 +40,66 @@ let auditLogs: AuditLog[] = []
 
 export async function GET(request: NextRequest) {
   try {
-    // Authentication is handled by middleware
-    const adminId = request.headers.get('x-admin-id')
-    const adminEmail = request.headers.get('x-admin-email')
-    
-    if (!adminId || !adminEmail) {
-      return NextResponse.json(
-        { error: 'Unauthorized access' },
-        { status: 401 }
-      )
+    // Check authentication and authorization
+    const authResponse = await checkAuth(request)
+    if (authResponse) {
+      return authResponse
     }
 
-    // Get query parameters
     const url = new URL(request.url)
-    const limit = parseInt(url.searchParams.get('limit') || '50')
-    const offset = parseInt(url.searchParams.get('offset') || '0')
     const action = url.searchParams.get('action')
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const eventId = url.searchParams.get('eventId')
 
-    // Filter logs
-    let filteredLogs = [...auditLogs]
-    if (action) {
-      filteredLogs = filteredLogs.filter(log => log.action.includes(action))
+    const auditLogger = SecurityAuditLogger.getInstance()
+
+    switch (action) {
+      case 'stats':
+        const stats = auditLogger.getSecurityStats()
+        return NextResponse.json({
+          success: true,
+          stats
+        })
+
+      case 'events':
+        const events = auditLogger.getRecentEvents(limit)
+        return NextResponse.json({
+          success: true,
+          events
+        })
+
+      case 'event-details':
+        if (!eventId) {
+          return NextResponse.json(
+            { error: 'Event ID is required' },
+            { status: 400 }
+          )
+        }
+        const eventDetails = auditLogger.getEventDetails(eventId)
+        if (!eventDetails) {
+          return NextResponse.json(
+            { error: 'Event not found' },
+            { status: 404 }
+          )
+        }
+        return NextResponse.json({
+          success: true,
+          event: eventDetails
+        })
+
+      default:
+        // Return combined dashboard data
+        return NextResponse.json({
+          success: true,
+          stats: auditLogger.getSecurityStats(),
+          recentEvents: auditLogger.getRecentEvents(20)
+        })
     }
-
-    // Sort by timestamp (newest first)
-    filteredLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-
-    // Paginate
-    const paginatedLogs = filteredLogs.slice(offset, offset + limit)
-
-    return NextResponse.json({
-      success: true,
-      logs: paginatedLogs,
-      total: filteredLogs.length,
-      limit,
-      offset
-    })
 
   } catch (error) {
-    console.error('Audit Log API Error:', error)
+    console.error('Audit API Error:', error)
     return NextResponse.json(
-      { error: 'Failed to retrieve audit logs' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -65,45 +107,50 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication and authorization
+    const authResponse = await checkAuth(request)
+    if (authResponse) {
+      return authResponse
+    }
+
     const body = await request.json()
-    const { action, details, success = true } = body
+    const { action } = body
 
-    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
-    const adminId = request.headers.get('x-admin-id') || 'system'
-    const adminEmail = request.headers.get('x-admin-email') || 'system@cvgenius.com'
+    const auditLogger = SecurityAuditLogger.getInstance()
 
-    const auditEntry: AuditLog = {
-      id: crypto.randomUUID(),
-      timestamp: new Date().toISOString(),
-      adminId,
-      adminEmail,
-      action,
-      details,
-      ip: clientIP,
-      userAgent,
-      success
+    switch (action) {
+      case 'clear-old-logs':
+        const daysOld = parseInt(body.daysOld) || 30
+        auditLogger.clearOldLogs(daysOld)
+        return NextResponse.json({
+          success: true,
+          message: `Cleared logs older than ${daysOld} days`
+        })
+
+      case 'manual-log':
+        await auditLogger.logEvent({
+          eventType: body.eventType,
+          userId: body.userId || 'admin',
+          ip: request.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          metadata: body.metadata || {}
+        })
+        return NextResponse.json({
+          success: true,
+          message: 'Event logged successfully'
+        })
+
+      default:
+        return NextResponse.json(
+          { error: 'Invalid action' },
+          { status: 400 }
+        )
     }
-
-    // In production, save to database
-    auditLogs.push(auditEntry)
-
-    // Keep only last 1000 entries in memory
-    if (auditLogs.length > 1000) {
-      auditLogs = auditLogs.slice(-1000)
-    }
-
-    console.log(`📋 Audit Log: ${action} by ${adminEmail} from ${clientIP}`)
-
-    return NextResponse.json({
-      success: true,
-      message: 'Audit log created'
-    })
 
   } catch (error) {
-    console.error('Audit Log Creation Error:', error)
+    console.error('Audit API POST Error:', error)
     return NextResponse.json(
-      { error: 'Failed to create audit log' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
