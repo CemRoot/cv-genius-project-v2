@@ -177,15 +177,16 @@ export async function middleware(request: NextRequest) {
       clientIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     })
     
-    if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !isAdminIPAllowed(request)) {
-      console.log('🚫 IP ACCESS DENIED for', pathname)
-      // Redirect to 404 page instead of returning plain text
-      if (pathname === '/admin') {
-        return NextResponse.rewrite(new URL('/404', request.url))
-      }
-      // For API routes, return 404 status
-      return new NextResponse('Not Found', { status: 404 })
-    }
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    // if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !isAdminIPAllowed(request)) {
+    //   console.log('🚫 IP ACCESS DENIED for', pathname)
+    //   // Redirect to 404 page instead of returning plain text
+    //   if (pathname === '/admin') {
+    //     return NextResponse.rewrite(new URL('/404', request.url))
+    //   }
+    //   // For API routes, return 404 status
+    //   return new NextResponse('Not Found', { status: 404 })
+    // }
     
     console.log('✅ IP ACCESS ALLOWED for', pathname)
 
