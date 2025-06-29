@@ -167,11 +167,21 @@ export async function middleware(request: NextRequest) {
   })
   
   if (isAdminRoute) {
-    // 1. IP Whitelist Check for admin panel
-    if (pathname === '/admin' && !isAdminIPAllowed(request)) {
+    // 1. IP Whitelist Check for admin panel AND admin API routes
+    console.log('🔒 ADMIN ROUTE ACCESS CHECK:', {
+      path: pathname,
+      isAdminRoute,
+      isDisabled: process.env.DISABLE_IP_WHITELIST === 'true',
+      clientIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    })
+    
+    if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !isAdminIPAllowed(request)) {
+      console.log('🚫 IP ACCESS DENIED for', pathname)
       // Return 404 instead of 403 to hide admin panel existence
       return new NextResponse('Not Found', { status: 404 })
     }
+    
+    console.log('✅ IP ACCESS ALLOWED for', pathname)
 
     // 2. Rate Limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
