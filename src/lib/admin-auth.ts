@@ -3,12 +3,19 @@ import SecurityObfuscator from './security-obfuscation'
 import fs from 'fs/promises'
 import path from 'path'
 
-// JWT secret must be set via environment variable
-const JWT_SECRET = process.env.JWT_SECRET 
-  ? new TextEncoder().encode(process.env.JWT_SECRET)
-  : (() => {
-      throw new Error('JWT_SECRET environment variable is required')
-    })()
+// JWT secret must be set via environment variable (server-side only)
+function getJWTSecret() {
+  if (typeof window !== 'undefined') {
+    // Client-side: JWT_SECRET not needed
+    return null
+  }
+  
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required')
+  }
+  
+  return new TextEncoder().encode(process.env.JWT_SECRET)
+}
 
 export interface AdminSession {
   sub: string
@@ -22,7 +29,12 @@ export interface AdminSession {
 export class AdminAuth {
   static async verifyToken(token: string): Promise<AdminSession | null> {
     try {
-      const { payload } = await jose.jwtVerify(token, JWT_SECRET, {
+      const jwtSecret = getJWTSecret()
+      if (!jwtSecret) {
+        throw new Error('JWT verification not available on client-side')
+      }
+      
+      const { payload } = await jose.jwtVerify(token, jwtSecret, {
         issuer: 'cvgenius-admin',
         audience: 'cvgenius-admin-api',
       })
