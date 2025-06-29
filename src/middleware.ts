@@ -87,8 +87,10 @@ const isAdminIPAllowed = (request: NextRequest): boolean => {
     return true
   }
   
-  // Emergency bypass (for setup)
-  if (process.env.DISABLE_IP_WHITELIST === 'true') {
+  // Emergency bypass (for setup) - Check both ways for Vercel Edge Runtime
+  const disableWhitelist = process.env.DISABLE_IP_WHITELIST === 'true' || 
+                          process.env.NEXT_PUBLIC_DISABLE_IP_WHITELIST === 'true'
+  if (disableWhitelist) {
     console.log('⚠️ IP whitelist disabled via environment variable')
     return true
   }
@@ -177,7 +179,11 @@ export async function middleware(request: NextRequest) {
     
     if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !isAdminIPAllowed(request)) {
       console.log('🚫 IP ACCESS DENIED for', pathname)
-      // Return 404 instead of 403 to hide admin panel existence
+      // Redirect to 404 page instead of returning plain text
+      if (pathname === '/admin') {
+        return NextResponse.rewrite(new URL('/404', request.url))
+      }
+      // For API routes, return 404 status
       return new NextResponse('Not Found', { status: 404 })
     }
     
