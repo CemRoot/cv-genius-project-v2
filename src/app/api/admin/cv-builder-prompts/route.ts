@@ -4,6 +4,20 @@ import path from 'path'
 
 const PROMPTS_FILE = path.join(process.cwd(), 'data', 'cv-builder-prompts.json')
 
+// Authentication helper
+function checkAuth(request: NextRequest) {
+  const adminId = request.headers.get('x-admin-id')
+  const adminRole = request.headers.get('x-admin-role')
+  
+  if (!adminId || adminRole !== 'admin') {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+  return null
+}
+
 // Default CV Builder prompts configuration
 const DEFAULT_CV_PROMPTS = {
   textImprovement: {
@@ -164,7 +178,11 @@ async function ensureDataDir() {
 }
 
 // GET - Retrieve current CV Builder prompts
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Check authentication
+  const authError = checkAuth(request)
+  if (authError) return authError
+
   try {
     await ensureDataDir()
     
@@ -198,6 +216,10 @@ export async function GET() {
 
 // POST - Save CV Builder prompts
 export async function POST(request: NextRequest) {
+  // Check authentication
+  const authError = checkAuth(request)
+  if (authError) return authError
+
   try {
     const { prompts } = await request.json()
     
@@ -256,7 +278,11 @@ export async function POST(request: NextRequest) {
 }
 
 // PUT - Reset to defaults
-export async function PUT() {
+export async function PUT(request: NextRequest) {
+  // Check authentication
+  const authError = checkAuth(request)
+  if (authError) return authError
+
   try {
     await ensureDataDir()
     await fs.writeFile(PROMPTS_FILE, JSON.stringify(DEFAULT_CV_PROMPTS, null, 2))

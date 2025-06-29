@@ -8,12 +8,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { password } = body
 
-    // Verify admin password first
-    const crypto = require('crypto')
-    const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
-    const expectedHash = 'f8f403a41c6308a3b69d4d7fe1efa322be3bc6de344eb0535dd7560f79d858db' // cvgenius2025admin
-
-    if (passwordHash !== expectedHash) {
+    // Verify admin password using bcrypt
+    const bcrypt = require('bcryptjs')
+    const adminPasswordHash = process.env.ADMIN_PWD_HASH_B64
+    
+    if (!adminPasswordHash) {
+      throw new Error('ADMIN_PWD_HASH_B64 environment variable is required')
+    }
+    
+    const decodedHash = Buffer.from(adminPasswordHash, 'base64').toString()
+    const isValidPassword = await bcrypt.compare(password, decodedHash)
+    
+    if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Invalid password' },
         { status: 401 }
@@ -33,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Generate QR code
     const qrCodeDataUrl = await QRCode.toDataURL(secret.otpauth_url!)
 
-    console.log('🔐 2FA Setup initiated for admin')
+    // Debug logs removed for production security
 
     return NextResponse.json({
       success: true,

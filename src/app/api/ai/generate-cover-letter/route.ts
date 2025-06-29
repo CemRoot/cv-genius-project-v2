@@ -147,19 +147,19 @@ export async function POST(request: NextRequest) {
       })) : []
     }
 
-    // Debug contact info
-    console.log('🔍 API Contact Info Debug:')
-    console.log('userEmail:', userEmail)
-    console.log('userPhone:', userPhone)
-    console.log('userAddress:', userAddress)
-    
+    // Create personalized contact info
+    const contactInfo = {
+      name: simplifiedCVData.personal.fullName || 'Your Name',
+      email: userEmail || 'your.email@example.com',
+      phone: userPhone || 'Your Phone Number',
+      address: userAddress || 'Your Address'
+    }
+
     // Generate Irish format cover letter prompt with contact info
     const contactLines = []
     if (userEmail) contactLines.push(userEmail)
     if (userPhone && userPhone !== '+353 (0) 1 234 5678') contactLines.push(userPhone)
     if (userAddress && userAddress !== 'Dublin, Ireland') contactLines.push(userAddress)
-    
-    console.log('contactLines:', contactLines)
     
     // Format date properly for Irish format
     const formattedDate = currentDate || new Date().toLocaleDateString('en-IE', { 

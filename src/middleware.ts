@@ -128,10 +128,12 @@ const adminSecurityHeaders = {
   'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://vercel.com; img-src 'self' data: https:; object-src 'none';",
 }
 
-// JWT secret (use environment variable in production)
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
-)
+// JWT secret must be set via environment variable
+const JWT_SECRET = process.env.JWT_SECRET 
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
+  : (() => {
+      throw new Error('JWT_SECRET environment variable is required')
+    })()
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
@@ -206,16 +208,12 @@ export async function middleware(request: NextRequest) {
     
     if (pathname.startsWith('/api/admin') && !isPublicAdminRoute) {
       const authHeader = request.headers.get('authorization')
-      console.log('🔐 DEBUG: Auth check for:', pathname)
-      console.log('🎫 Has auth header:', !!authHeader)
       
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        console.log('❌ No valid auth header')
         return new NextResponse('Unauthorized', { status: 401 })
       }
       
       const token = authHeader.substring(7)
-      console.log('🔑 Token length:', token.length)
       
       try {
         // Verify JWT token
@@ -224,11 +222,8 @@ export async function middleware(request: NextRequest) {
           audience: 'cvgenius-admin-api',
         })
         
-        console.log('✅ JWT verified, payload:', payload)
-        
         // Check if token has admin role
         if (payload.role !== 'admin') {
-          console.log('🚫 Not admin role:', payload.role)
           return new NextResponse('Forbidden', { status: 403 })
         }
         
@@ -237,10 +232,7 @@ export async function middleware(request: NextRequest) {
         requestHeaders.set('x-admin-email', String(payload.email))
         requestHeaders.set('x-admin-role', String(payload.role || 'admin'))
         
-        console.log('✅ Headers set for:', payload.email)
-        
       } catch (error) {
-        console.error('JWT Verification failed:', error)
         return new NextResponse('Invalid token', { status: 401 })
       }
     }
@@ -251,18 +243,13 @@ export async function middleware(request: NextRequest) {
       const sessionCsrf = request.cookies.get('csrf-token')?.value
       
       if (!csrfToken || !sessionCsrf || csrfToken !== sessionCsrf) {
-        console.log('🚨 CSRF token validation failed:', { 
-          path: pathname, 
-          hasHeaderToken: !!csrfToken, 
-          hasCookieToken: !!sessionCsrf,
-          tokensMatch: csrfToken === sessionCsrf
-        })
+        // Debug logs removed for production security
         return new NextResponse('CSRF token validation failed', { status: 403 })
       }
       
       // Extra validation for sensitive 2FA routes
       if (isSensitiveAdminRoute) {
-        console.log('🔐 Sensitive 2FA route accessed with valid CSRF:', pathname)
+        // Debug logs removed for production security
       }
     }
     

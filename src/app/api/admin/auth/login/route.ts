@@ -7,23 +7,26 @@ import bcrypt from 'bcryptjs'
 import Admin2FAState from '@/lib/admin-2fa-state'
 import SecurityAuditLogger from '@/lib/security-audit'
 
-// JWT secret
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
-)
+// JWT secret must be set via environment variable
+const JWT_SECRET = process.env.JWT_SECRET 
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
+  : (() => {
+      throw new Error('JWT_SECRET environment variable is required')
+    })()
 
-// Admin credentials - MUST be stored in environment variables
+// Admin credentials must be stored in environment variables
 const getPasswordHash = () => {
   const base64Hash = process.env.ADMIN_PWD_HASH_B64
-  if (base64Hash) {
-    return Buffer.from(base64Hash, 'base64').toString()
+  if (!base64Hash) {
+    throw new Error('ADMIN_PWD_HASH_B64 environment variable is required')
   }
-  // Fallback for development
-  return '$2b$10$Tqa0S3UvitFTWIpNp0HjPuT5wfPjIHp3nTS.0TVby4WH9OcyTY2j.'
+  return Buffer.from(base64Hash, 'base64').toString()
 }
 
 const ADMIN_CREDENTIALS = {
-  username: process.env.ADMIN_USERNAME || 'admin',
+  username: process.env.ADMIN_USERNAME || (() => {
+    throw new Error('ADMIN_USERNAME environment variable is required')
+  })(),
   passwordHash: getPasswordHash()
 }
 

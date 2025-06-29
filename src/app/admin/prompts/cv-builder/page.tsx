@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Save, RefreshCw, Sparkles, FileText, Briefcase, GraduationCap, Award } from 'lucide-react'
+import { Save, RefreshCw, Sparkles, FileText, Briefcase, GraduationCap, Award, ArrowLeft } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 
@@ -112,6 +113,7 @@ Return organized skills in categories.`,
 ]
 
 export default function CVBuilderPromptsPage() {
+  const router = useRouter()
   const [prompts, setPrompts] = useState<CVBuilderPrompt[]>(defaultPrompts)
   const [selectedPrompt, setSelectedPrompt] = useState<CVBuilderPrompt | null>(prompts[0])
   const [isSaving, setIsSaving] = useState(false)
@@ -151,6 +153,18 @@ export default function CVBuilderPromptsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {/* Back Button */}
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/admin')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Admin Panel
+        </Button>
+      </div>
+      
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">CV Builder AI Prompts</h1>
