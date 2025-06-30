@@ -9,6 +9,7 @@ import {
   ChevronRight, Home, Menu, X, Bell, Search, Filter,
   Users, Activity, Server, Database, Globe, Zap, Wand2
 } from 'lucide-react'
+import './admin-login.css'
 
 // UI Components
 import { Button } from '@/components/ui/button'
@@ -72,7 +73,6 @@ export default function AdminPanel() {
   // Auth States
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loginLoading, setLoginLoading] = useState(false)
@@ -163,7 +163,7 @@ export default function AdminPanel() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          username, 
+          username: 'admin', // Always use 'admin' as username
           password,
           ...(twoFactorToken && { twoFactorToken })
         })
@@ -231,100 +231,96 @@ export default function AdminPanel() {
     )
   }
 
-  // Login screen
+  // Login screen with glassmorphism design
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="w-full max-w-md">
-          <Card className="shadow-2xl">
-            <CardHeader className="space-y-1 text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-blue-600 rounded-full">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-              <CardDescription>
-                Enter your credentials to access the admin panel
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    disabled={loginLoading}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
+      <section className="admin-login-section">
+        <div className="form-box">
+          <div className="form-value">
+            <form onSubmit={handleLogin}>
+              <h2 className="form-title">Admin Panel</h2>
+              
+              {!require2FA ? (
+                <>
+                  {/* Password input */}
+                  <div className="inputbox">
+                    <Lock className="icon" />
+                    <input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       disabled={loginLoading}
+                      placeholder=" "
+                      autoFocus
                     />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
+                    <label>Password</label>
+                    {showPassword ? (
+                      <EyeOff 
+                        className="icon eye-icon" 
+                        onClick={() => setShowPassword(false)}
+                      />
+                    ) : (
+                      <Eye 
+                        className="icon eye-icon" 
+                        onClick={() => setShowPassword(true)}
+                      />
+                    )}
                   </div>
-                </div>
-
-                {require2FA && (
-                  <div className="space-y-2">
-                    <Label htmlFor="2fa">2FA Code</Label>
-                    <Input
-                      id="2fa"
+                  
+                  <div className="forget">
+                    <label>Secure Admin Access</label>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* 2FA input */}
+                  <div className="inputbox fade-in">
+                    <Shield className="icon" />
+                    <input
                       type="text"
-                      placeholder="Enter 6-digit code"
                       value={twoFactorToken}
                       onChange={(e) => setTwoFactorToken(e.target.value)}
                       maxLength={6}
                       required
                       disabled={loginLoading}
+                      placeholder=" "
+                      autoFocus
                     />
+                    <label>2FA Code</label>
                   </div>
+                  
+                  <div className="forget">
+                    <label>Enter your 6-digit authentication code</label>
+                  </div>
+                </>
+              )}
+              
+              <button 
+                type="submit" 
+                className="admin-login-button"
+                disabled={loginLoading}
+              >
+                {loginLoading ? (
+                  <span className="button-content">
+                    <RefreshCw className="animate-spin" style={{ width: '16px', height: '16px' }} />
+                    {require2FA ? 'Verifying...' : 'Logging in...'}
+                  </span>
+                ) : (
+                  require2FA ? 'Verify' : 'Log in'
                 )}
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={loginLoading}
-                >
-                  {loginLoading ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="mr-2 h-4 w-4" />
-                      Login
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </button>
+              
+              <div className="security-info">
+                <p>
+                  <Shield className="security-icon" />
+                  Protected by CV Genius Security
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      </section>
     )
   }
 
