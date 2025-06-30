@@ -23,27 +23,31 @@ export async function GET(request: NextRequest) {
     const auditLogger = SecurityAuditLogger.getInstance()
     const securityStats = auditLogger.getSecurityStats()
 
-    // Calculate real stats based on available data
+    // Real stats - no fake data
     const stats = {
       dashboard: {
-        totalUsers: Math.floor(Math.random() * 2000) + 1000, // Simulated for now
-        activeUsers: Math.floor(Math.random() * 500) + 100,
-        totalCVs: Math.floor(Math.random() * 10000) + 5000,
-        todayLogins: securityStats.totalLogins,
+        totalUsers: 0, // No database, no users
+        activeUsers: 0,
+        totalCVs: 0,
+        todayLogins: securityStats.totalLogins || 0,
         growth: {
-          users: '+12%',
-          cvs: '+423'
+          users: '0%',
+          cvs: '0'
         }
       },
       system: {
-        api: checkAPIHealth(),
-        database: 'healthy', // Would check actual DB connection
-        storage: checkStorageHealth(),
-        performance: calculatePerformance()
+        api: 'healthy', // API is working if we got here
+        database: 'not_configured', // No database connection
+        storage: 'local_only', // Only local storage
+        performance: 100, // No load, perfect performance
+        connections: 0, // No database connections
+        cpu: 0, // Cannot measure in browser/edge runtime
+        memory: 0, // Cannot measure in browser/edge runtime
+        requests: securityStats.totalLogins || 0 // Only count actual logins
       },
       security: {
-        twoFactorEnabled: checkTwoFactorStatus(),
-        ipWhitelistEnabled: process.env.DISABLE_IP_WHITELIST !== 'true',
+        twoFactorEnabled: false, // Not implemented
+        ipWhitelistEnabled: false, // Disabled
         currentIP: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         ...securityStats
       }
@@ -63,26 +67,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function checkAPIHealth(): 'healthy' | 'degraded' | 'down' {
-  // Check various API endpoints
-  // For now, return healthy if we got this far
-  return 'healthy'
-}
-
-function checkStorageHealth(): 'healthy' | 'degraded' | 'down' {
-  // Check if we can write/read from storage
-  // Check available disk space
-  return 'healthy'
-}
-
-function calculatePerformance(): number {
-  // Calculate based on response times, CPU usage, memory usage
-  // For now, return a value between 85-100
-  return Math.floor(Math.random() * 15) + 85
-}
-
-function checkTwoFactorStatus(): boolean {
-  // Check if 2FA is enabled for the admin account
-  // This would normally check from database
-  return false // Default to false for now
-}

@@ -525,7 +525,7 @@ function DashboardSection({ stats, systemHealth }: { stats: AdminStats, systemHe
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
+            <p className="text-xs text-muted-foreground">{stats.growth?.users || 'No data'}</p>
           </CardContent>
         </Card>
 
@@ -547,7 +547,7 @@ function DashboardSection({ stats, systemHealth }: { stats: AdminStats, systemHe
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalCVs.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+423 today</p>
+            <p className="text-xs text-muted-foreground">{stats.growth?.cvs || 'No new CVs'}</p>
           </CardContent>
         </Card>
 
@@ -586,8 +586,8 @@ function DashboardSection({ stats, systemHealth }: { stats: AdminStats, systemHe
                 <Database className="w-4 h-4" />
                 <span className="text-sm font-medium">Database</span>
               </div>
-              <Badge variant={systemHealth.database === 'healthy' ? 'default' : 'destructive'}>
-                {systemHealth.database}
+              <Badge variant={systemHealth.database === 'not_configured' ? 'secondary' : systemHealth.database === 'healthy' ? 'default' : 'destructive'}>
+                {systemHealth.database === 'not_configured' ? 'Not Configured' : systemHealth.database}
               </Badge>
             </div>
 
@@ -596,8 +596,8 @@ function DashboardSection({ stats, systemHealth }: { stats: AdminStats, systemHe
                 <Server className="w-4 h-4" />
                 <span className="text-sm font-medium">Storage</span>
               </div>
-              <Badge variant={systemHealth.storage === 'healthy' ? 'default' : 'destructive'}>
-                {systemHealth.storage}
+              <Badge variant={systemHealth.storage === 'local_only' ? 'secondary' : systemHealth.storage === 'healthy' ? 'default' : 'destructive'}>
+                {systemHealth.storage === 'local_only' ? 'Local Only' : systemHealth.storage}
               </Badge>
             </div>
 
@@ -1161,19 +1161,19 @@ function UsersSection() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Average CVs per User</span>
                   <span className="font-medium">
-                    {userData ? (userData.totalCVs / userData.totalUsers).toFixed(1) : '...'}
+                    {userData && userData.totalUsers > 0 ? (userData.totalCVs / userData.totalUsers).toFixed(1) : '0.0'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Active User Rate</span>
                   <span className="font-medium">
-                    {userData ? `${((userData.activeUsers / userData.totalUsers) * 100).toFixed(1)}%` : '...'}
+                    {userData && userData.totalUsers > 0 ? `${((userData.activeUsers / userData.totalUsers) * 100).toFixed(1)}%` : '0.0%'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Daily Login Rate</span>
                   <span className="font-medium">
-                    {userData ? `${((userData.todayLogins / userData.totalUsers) * 100).toFixed(1)}%` : '...'}
+                    {userData && userData.totalUsers > 0 ? `${((userData.todayLogins / userData.totalUsers) * 100).toFixed(1)}%` : '0.0%'}
                   </span>
                 </div>
               </div>
@@ -1363,21 +1363,39 @@ function AdsSection() {
                     <p className="font-medium">Popup Zone</p>
                     <p className="text-sm text-muted-foreground">ID: 9469379</p>
                   </div>
-                  <Switch checked={true} />
+                  <Switch 
+                    checked={adSettings.monetagPopup} 
+                    onCheckedChange={(checked) => {
+                      setAdSettings({...adSettings, monetagPopup: checked})
+                      toast.success(`Popup zone ${checked ? 'enabled' : 'disabled'}`)
+                    }}
+                  />
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded">
                   <div>
                     <p className="font-medium">Push Notifications</p>
                     <p className="text-sm text-muted-foreground">ID: 9469382</p>
                   </div>
-                  <Switch checked={true} />
+                  <Switch 
+                    checked={adSettings.monetagPush} 
+                    onCheckedChange={(checked) => {
+                      setAdSettings({...adSettings, monetagPush: checked})
+                      toast.success(`Push notifications ${checked ? 'enabled' : 'disabled'}`)
+                    }}
+                  />
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded">
                   <div>
                     <p className="font-medium">Native Ads</p>
                     <p className="text-sm text-muted-foreground">ID: 9469381</p>
                   </div>
-                  <Switch checked={false} />
+                  <Switch 
+                    checked={adSettings.monetagNative} 
+                    onCheckedChange={(checked) => {
+                      setAdSettings({...adSettings, monetagNative: checked})
+                      toast.success(`Native ads ${checked ? 'enabled' : 'disabled'}`)
+                    }}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -1397,21 +1415,39 @@ function AdsSection() {
                     <p className="font-medium">Enable Ads</p>
                     <p className="text-sm text-muted-foreground">Show ads to users</p>
                   </div>
-                  <Switch checked={true} />
+                  <Switch 
+                    checked={adSettings.enableAds} 
+                    onCheckedChange={(checked) => {
+                      setAdSettings({...adSettings, enableAds: checked})
+                      toast.success(`Ads ${checked ? 'enabled' : 'disabled'}`)
+                    }}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Mobile Ads</p>
                     <p className="text-sm text-muted-foreground">Show ads on mobile devices</p>
                   </div>
-                  <Switch checked={true} />
+                  <Switch 
+                    checked={adSettings.mobileAds} 
+                    onCheckedChange={(checked) => {
+                      setAdSettings({...adSettings, mobileAds: checked})
+                      toast.success(`Mobile ads ${checked ? 'enabled' : 'disabled'}`)
+                    }}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Test Mode</p>
                     <p className="text-sm text-muted-foreground">Show test ads only</p>
                   </div>
-                  <Switch checked={false} />
+                  <Switch 
+                    checked={adSettings.testMode} 
+                    onCheckedChange={(checked) => {
+                      setAdSettings({...adSettings, testMode: checked})
+                      toast.success(`Test mode ${checked ? 'enabled' : 'disabled'}`)
+                    }}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -1425,13 +1461,14 @@ function AdsSection() {
 function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
   const [activeTab, setActiveTab] = useState('health')
   const [systemData] = useState({
-    uptime: '24d 15h 32m',
-    cpu: 23,
-    memory: 67,
-    disk: 45,
-    requests: 12847,
-    avgResponseTime: 145,
-    errorRate: 0.02
+    uptime: 'N/A',
+    cpu: 0,
+    memory: 0,
+    disk: 0,
+    requests: 0,
+    avgResponseTime: 0,
+    errorRate: 0,
+    connections: 0
   })
 
   return (
@@ -1493,10 +1530,10 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Connections</span>
-                    <span>12/100</span>
+                    <span>Status</span>
+                    <span>No Database</span>
                   </div>
-                  <Progress value={12} className="h-2" />
+                  <Progress value={0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -1513,10 +1550,10 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Used Space</span>
-                    <span>{systemData.disk}%</span>
+                    <span>Type</span>
+                    <span>Local Only</span>
                   </div>
-                  <Progress value={systemData.disk} className="h-2" />
+                  <Progress value={0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -1598,18 +1635,11 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
               <CardDescription>System maintenance and optimization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full" variant="outline">
-                <Database className="w-4 h-4 mr-2" />
-                Clear Cache
-              </Button>
-              <Button className="w-full" variant="outline">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Restart Services
-              </Button>
-              <Button className="w-full" variant="outline">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clean Temporary Files
-              </Button>
+              <div className="text-center py-8 text-gray-500">
+                <Database className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>No maintenance tasks available</p>
+                <p className="text-sm mt-2">System is running in serverless mode</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1626,9 +1656,6 @@ function SettingsSection() {
     siteUrl: 'https://cvgenius-one.vercel.app',
     maintenanceMode: false,
     debugMode: false,
-    emailNotifications: true,
-    autoBackup: true,
-    backupFrequency: 'daily',
     maxFileSize: '10',
     allowedFormats: 'pdf,docx,txt'
   })
@@ -1698,60 +1725,6 @@ function SettingsSection() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Settings</CardTitle>
-            <CardDescription>Configure system notifications</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Email Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive system alerts via email</p>
-              </div>
-              <Switch 
-                checked={settings.emailNotifications}
-                onCheckedChange={(checked) => setSettings({...settings, emailNotifications: checked})}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Backup Settings</CardTitle>
-            <CardDescription>Configure automatic backups</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Auto Backup</p>
-                <p className="text-sm text-muted-foreground">Automatically backup data</p>
-              </div>
-              <Switch 
-                checked={settings.autoBackup}
-                onCheckedChange={(checked) => setSettings({...settings, autoBackup: checked})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Backup Frequency</Label>
-              <Select 
-                value={settings.backupFrequency}
-                onValueChange={(value) => setSettings({...settings, backupFrequency: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader>
