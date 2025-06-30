@@ -116,3 +116,6 @@ data/*.json
 debug*.log
 test*.json
 mock*.json
+
+# Build output
+dist/
