@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
+import { VercelKVManager } from '@/lib/vercel-kv-manager'
 
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
@@ -69,8 +70,18 @@ const sensitiveAdminRoutes = [
 // Rate limiting store (in production use Redis)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
-// IP whitelist from environment variable
-const getIPWhitelist = (): string[] => {
+// IP whitelist from environment variable or Vercel KV
+const getIPWhitelist = async (): Promise<string[]> => {
+  try {
+    // Try to get from Vercel KV first
+    const kvWhitelist = await VercelKVManager.getIPWhitelist()
+    if (kvWhitelist && kvWhitelist.length > 0) {
+      return kvWhitelist
+    }
+  } catch (error) {
+    // Fallback to env var
+  }
+  
   const envWhitelist = process.env.ADMIN_IP_WHITELIST
   if (!envWhitelist) {
     // Default development IPs if no env var set
@@ -80,7 +91,7 @@ const getIPWhitelist = (): string[] => {
 }
 
 // Admin panel IP protection
-const isAdminIPAllowed = (request: NextRequest): boolean => {
+const isAdminIPAllowed = async (request: NextRequest): Promise<boolean> => {
   // Development mode bypass
   if (process.env.NODE_ENV === 'development') {
     console.log('🔧 Development mode: Bypassing IP whitelist check')
@@ -99,7 +110,7 @@ const isAdminIPAllowed = (request: NextRequest): boolean => {
                    request.headers.get('x-real-ip') || 
                    'unknown'
   
-  const allowedIPs = getIPWhitelist()
+  const allowedIPs = await getIPWhitelist()
   const isAllowed = allowedIPs.some(allowedIP => 
     clientIP === allowedIP || 
     clientIP.includes(allowedIP) ||
@@ -177,16 +188,16 @@ export async function middleware(request: NextRequest) {
       clientIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     })
     
-    // TEMPORARILY DISABLED FOR DEBUGGING
-    // if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !isAdminIPAllowed(request)) {
-    //   console.log('🚫 IP ACCESS DENIED for', pathname)
-    //   // Redirect to 404 page instead of returning plain text
-    //   if (pathname === '/admin') {
-    //     return NextResponse.rewrite(new URL('/404', request.url))
-    //   }
-    //   // For API routes, return 404 status
-    //   return new NextResponse('Not Found', { status: 404 })
-    // }
+    // IP Whitelist Check
+    if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !(await isAdminIPAllowed(request))) {
+      console.log('🚫 IP ACCESS DENIED for', pathname)
+      // Redirect to 404 page instead of returning plain text
+      if (pathname === '/admin') {
+        return NextResponse.rewrite(new URL('/404', request.url))
+      }
+      // For API routes, return 404 status
+      return new NextResponse('Not Found', { status: 404 })
+    }
     
     console.log('✅ IP ACCESS ALLOWED for', pathname)
 

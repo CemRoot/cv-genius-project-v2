@@ -47,8 +47,9 @@ export async function GET(request: NextRequest) {
       },
       security: {
         twoFactorEnabled: false, // Not implemented
-        ipWhitelistEnabled: false, // Disabled
+        ipWhitelistEnabled: process.env.DISABLE_IP_WHITELIST !== 'true',
         currentIP: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+        ipWhitelist: process.env.ADMIN_IP_WHITELIST?.split(',').map(ip => ip.trim()).filter(Boolean) || [],
         ...securityStats
       }
     }

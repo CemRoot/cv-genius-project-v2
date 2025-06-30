@@ -629,17 +629,40 @@ function SecuritySection() {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [securityData, setSecurityData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [ipWhitelist, setIpWhitelist] = useState<string[]>([])
+  const [showIPDialog, setShowIPDialog] = useState(false)
+  const [newIP, setNewIP] = useState('')
+  const [ipLoading, setIpLoading] = useState(false)
+  const [vercelStatus, setVercelStatus] = useState<any>(null)
 
   useEffect(() => {
     // Get security data from window object (set by loadDashboardData)
     if (window.adminSecurityStats) {
       setSecurityData(window.adminSecurityStats)
+      // Load IP whitelist from env
+      const envIPs = window.adminSecurityStats.ipWhitelist || []
+      setIpWhitelist(envIPs)
       setLoading(false)
     } else {
       // If not available, fetch it
       fetchSecurityData()
     }
+    
+    // Check Vercel status
+    checkVercelStatus()
   }, [])
+  
+  const checkVercelStatus = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/vercel-status')
+      if (response.ok) {
+        const data = await response.json()
+        setVercelStatus(data.vercel)
+      }
+    } catch (error) {
+      console.error('Failed to check Vercel status')
+    }
+  }
 
   const fetchSecurityData = async () => {
     try {
@@ -682,7 +705,14 @@ function SecuritySection() {
       const data = await response.json()
       
       if (response.ok && data.success) {
-        toast.success('Password changed successfully')
+        if (data.vercelUpdated) {
+          toast.success('Password changed successfully and synced with Vercel!')
+        } else {
+          toast.success('Password changed successfully (local only)')
+          if (vercelStatus && vercelStatus.configured) {
+            toast.info('Failed to sync with Vercel - update may be required')
+          }
+        }
         setShowPasswordDialog(false)
         setCurrentPassword('')
         setNewPassword('')
@@ -774,9 +804,9 @@ function SecuritySection() {
                     </div>
                   )}
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => setShowIPDialog(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Add IP Address
+                  Manage IP Whitelist
                 </Button>
               </div>
             </div>
@@ -842,6 +872,228 @@ function SecuritySection() {
               ) : (
                 'Change Password'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* IP Whitelist Dialog */}
+      <Dialog open={showIPDialog} onOpenChange={setShowIPDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manage IP Whitelist</DialogTitle>
+            <DialogDescription>
+              Control which IP addresses can access the admin panel
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {vercelStatus && !vercelStatus.configured && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Vercel Integration Not Configured</AlertTitle>
+                <AlertDescription>
+                  To sync IP changes with Vercel, set VERCEL_TOKEN and VERCEL_PROJECT_ID environment variables.
+                </AlertDescription>
+              </Alert>
+            )}
+            <div className="space-y-2">
+              <Label>Current Whitelist</Label>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {ipWhitelist.length > 0 ? (
+                  ipWhitelist.map((ip, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
+                      <span className="text-sm font-mono">{ip}</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setIpWhitelist(ipWhitelist.filter((_ip, i) => i !== index))
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No IPs in whitelist</p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Add New IP</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="192.168.1.100"
+                  value={newIP}
+                  onChange={(e) => setNewIP(e.target.value)}
+                />
+                <Button
+                  onClick={() => {
+                    if (newIP && !ipWhitelist.includes(newIP)) {
+                      setIpWhitelist([...ipWhitelist, newIP])
+                      setNewIP('')
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const currentIP = securityData?.currentIP
+                  if (currentIP && !ipWhitelist.includes(currentIP)) {
+                    setIpWhitelist([...ipWhitelist, currentIP])
+                  }
+                }}
+              >
+                Add Current IP ({securityData?.currentIP})
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowIPDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                setIpLoading(true)
+                try {
+                  const response = await ClientAdminAuth.makeAuthenticatedRequest(
+                    '/api/admin/ip-whitelist/update-vercel',
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ips: ipWhitelist })
+                    }
+                  )
+                  
+                  if (response.ok) {
+                    toast.success('IP whitelist updated successfully!')
+                    setShowIPDialog(false)
+                    // Update local security data
+                    setSecurityData((prev: any) => ({
+                      ...prev,
+                      ipWhitelist: ipWhitelist
+                    }))
+                  } else {
+                    const data = await response.json()
+                    toast.error(data.error || 'Failed to update IP whitelist')
+                  }
+                } catch (error) {
+                  toast.error('Network error')
+                } finally {
+                  setIpLoading(false)
+                }
+              }}
+              disabled={ipLoading}
+            >
+              {ipLoading ? 'Updating...' : 'Update in Vercel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* IP Whitelist Dialog */}
+      <Dialog open={showIPDialog} onOpenChange={setShowIPDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage IP Whitelist</DialogTitle>
+            <DialogDescription>
+              Add or remove IP addresses from the whitelist
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Current Whitelist</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {ipWhitelist.length > 0 ? (
+                  ipWhitelist.map((ip, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
+                      <span className="text-sm font-mono">{ip}</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const filtered = ipWhitelist.filter((_, i) => i !== index)
+                          setIpWhitelist(filtered)
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No IPs in whitelist</p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Add New IP</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="192.168.1.100"
+                  value={newIP}
+                  onChange={(e) => setNewIP(e.target.value)}
+                />
+                <Button
+                  onClick={() => {
+                    if (newIP && !ipWhitelist.includes(newIP)) {
+                      setIpWhitelist([...ipWhitelist, newIP])
+                      setNewIP('')
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const currentIP = securityData?.currentIP
+                  if (currentIP && !ipWhitelist.includes(currentIP)) {
+                    setIpWhitelist([...ipWhitelist, currentIP])
+                  }
+                }}
+              >
+                Add Current IP ({securityData?.currentIP})
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowIPDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                setIpLoading(true)
+                try {
+                  const response = await ClientAdminAuth.makeAuthenticatedRequest(
+                    '/api/admin/ip-whitelist/update-vercel',
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ips: ipWhitelist })
+                    }
+                  )
+                  
+                  if (response.ok) {
+                    toast.success('IP whitelist updated in Vercel!')
+                    setShowIPDialog(false)
+                  } else {
+                    toast.error('Failed to update IP whitelist')
+                  }
+                } catch (error) {
+                  toast.error('Network error')
+                } finally {
+                  setIpLoading(false)
+                }
+              }}
+              disabled={ipLoading}
+            >
+              {ipLoading ? 'Updating...' : 'Update in Vercel'}
             </Button>
           </DialogFooter>
         </DialogContent>
