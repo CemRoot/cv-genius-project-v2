@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import "./404.css"
+import "@/styles/404.css"
 
 export default function Error({
   error,

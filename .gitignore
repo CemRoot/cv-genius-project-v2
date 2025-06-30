@@ -119,3 +119,9 @@ mock*.json
 
 # Build output
 dist/
+
+# Test files that might contain sensitive data
+test-*.js
+setup-*.js
+*-test.js
+*-setup.js

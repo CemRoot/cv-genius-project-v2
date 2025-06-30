@@ -3,15 +3,14 @@
 ## ✅ Tamamlananlar
 
 ### 1. **Vercel API Entegrasyonu**
-- VERCEL_TOKEN: `DyU2iJGL1OND1pDb7uHXcApz` ✅
-- VERCEL_PROJECT_ID: `prj_oNhAHtIOUUfnivdkASGa67XER7CW` ✅
+- VERCEL_TOKEN: [CONFIGURED] ✅
+- VERCEL_PROJECT_ID: [CONFIGURED] ✅
 - Vercel API bağlantısı test edildi ve çalışıyor ✅
 
 ### 2. **IP Whitelist Yönetimi**
 - `/api/admin/ip-whitelist/update-vercel` endpoint'i oluşturuldu ✅
 - Admin panelde IP yönetim arayüzü eklendi ✅
 - ADMIN_IP_WHITELIST Vercel'e eklendi ✅
-- Mevcut IP'ler: `::1,127.0.0.1,192.168.1.11`
 - IP whitelist aktif hale getirildi ✅
 
 ### 3. **Şifre Güncelleme**
@@ -42,9 +41,8 @@
 ## 📝 Önemli Notlar
 
 1. **IP Whitelist Aktif**: DISABLE_IP_WHITELIST artık yorum satırında
-2. **Mevcut IP'ler**: ::1, 127.0.0.1, 192.168.1.11
-3. **Vercel Değişiklikleri**: Production'da etkili olması için yeniden deployment gerekir
-4. **Vercel KV**: Henüz yapılandırılmamış (opsiyonel)
+2. **Vercel Değişiklikleri**: Production'da etkili olması için yeniden deployment gerekir
+3. **Vercel KV**: Henüz yapılandırılmamış (opsiyonel)
 
 ## 🚀 Sonraki Adımlar
 
@@ -58,3 +56,8 @@
 - IP whitelist'ten tüm IP'leri silmeyin, kendinizi kilitlersiniz!
 - Şifre değiştirdikten sonra yeni şifreyi güvenli bir yerde saklayın
 - Vercel'deki değişiklikler ancak yeni deployment'tan sonra geçerli olur
+
+## 🔐 Güvenlik Notu
+
+Hassas bilgiler (API token'ları, proje ID'leri vb.) asla public dosyalara yazılmamalıdır. 
+Bu bilgiler sadece .env.local dosyasında saklanmalıdır.

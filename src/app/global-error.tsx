@@ -1,6 +1,6 @@
 "use client"
 
-import "./404.css"
+import "@/styles/404.css"
 
 export default function GlobalError({
   error,
