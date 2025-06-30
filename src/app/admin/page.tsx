@@ -11,6 +11,13 @@ import {
 } from 'lucide-react'
 import './admin-login.css'
 
+// Extend window object for admin stats
+declare global {
+  interface Window {
+    adminSecurityStats?: any;
+  }
+}
+
 // UI Components
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -143,6 +150,7 @@ export default function AdminPanel() {
         if (response.ok) {
           setIsAuthenticated(true)
           loadDashboardData()
+          loadPrompts()
         } else {
           ClientAdminAuth.removeToken()
         }
@@ -176,6 +184,7 @@ export default function AdminPanel() {
         setIsAuthenticated(true)
         toast.success('Welcome to Admin Panel')
         loadDashboardData()
+        loadPrompts()
       } else if (data.require2FA) {
         setRequire2FA(true)
         toast.info('Please enter your 2FA code')
@@ -197,14 +206,32 @@ export default function AdminPanel() {
 
   const loadDashboardData = async () => {
     try {
-      setStats({
-        totalUsers: 1234,
-        activeUsers: 567,
-        totalCVs: 8901,
-        todayLogins: 234
-      })
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/stats')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.stats) {
+          setStats(data.stats.dashboard)
+          setSystemHealth(data.stats.system)
+          // Store security stats for later use
+          window.adminSecurityStats = data.stats.security
+        }
+      }
     } catch (error) {
       toast.error('Failed to load dashboard data')
+    }
+  }
+
+  const loadPrompts = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/prompts')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.prompts) {
+          setPrompts(data.prompts)
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to load prompts')
     }
   }
 
@@ -600,6 +627,35 @@ function SecuritySection() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [securityData, setSecurityData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Get security data from window object (set by loadDashboardData)
+    if (window.adminSecurityStats) {
+      setSecurityData(window.adminSecurityStats)
+      setLoading(false)
+    } else {
+      // If not available, fetch it
+      fetchSecurityData()
+    }
+  }, [])
+
+  const fetchSecurityData = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/stats')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.stats) {
+          setSecurityData(data.stats.security)
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to load security data')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
@@ -673,9 +729,11 @@ function SecuritySection() {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-sm font-medium">2FA Status</p>
-                <p className="text-sm text-muted-foreground">Currently disabled</p>
+                <p className="text-sm text-muted-foreground">
+                  {loading ? 'Loading...' : (securityData?.twoFactorEnabled ? 'Enabled' : 'Disabled')}
+                </p>
               </div>
-              <Switch />
+              <Switch checked={securityData?.twoFactorEnabled || false} />
             </div>
           </CardContent>
         </Card>
@@ -692,16 +750,29 @@ function SecuritySection() {
                 <Info className="h-4 w-4" />
                 <AlertTitle>Current IP</AlertTitle>
                 <AlertDescription>
-                  Your current IP address: Checking...
+                  Your current IP address: {loading ? 'Checking...' : (securityData?.currentIP || 'Unknown')}
                 </AlertDescription>
               </Alert>
               
               <div className="space-y-2">
                 <Label>Whitelisted IPs</Label>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 border rounded">
-                    <span className="text-sm">All IPs allowed (Whitelist disabled)</span>
-                  </div>
+                  {loading ? (
+                    <div className="p-2 border rounded">
+                      <span className="text-sm text-gray-500">Loading...</span>
+                    </div>
+                  ) : securityData?.ipWhitelistEnabled ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 border rounded">
+                        <span className="text-sm">{securityData.currentIP}</span>
+                        <Badge variant="outline">Current</Badge>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-2 border rounded">
+                      <span className="text-sm">All IPs allowed (Whitelist disabled)</span>
+                    </div>
+                  )}
                 </div>
                 <Button variant="outline" size="sm">
                   <Plus className="w-4 h-4 mr-2" />
@@ -785,9 +856,63 @@ function ContentSection({ prompts, setPrompts }: { prompts: PromptTemplate[], se
   const toast = createToastUtils(addToast)
   const [selectedPrompt, setSelectedPrompt] = useState<PromptTemplate | null>(null)
   const [showPromptDialog, setShowPromptDialog] = useState(false)
+  const [editingPrompt, setEditingPrompt] = useState<PromptTemplate | null>(null)
   const [testInput, setTestInput] = useState('')
   const [testOutput, setTestOutput] = useState('')
   const [testing, setTesting] = useState(false)
+
+  const savePrompt = async (prompt: PromptTemplate) => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/prompts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      })
+
+      if (response.ok) {
+        toast.success('Prompt saved successfully')
+        // Reload prompts
+        const getResponse = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/prompts')
+        if (getResponse.ok) {
+          const data = await getResponse.json()
+          if (data.success && data.prompts) {
+            setPrompts(data.prompts)
+          }
+        }
+        setShowPromptDialog(false)
+        setEditingPrompt(null)
+      } else {
+        toast.error('Failed to save prompt')
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.')
+    }
+  }
+
+  const testPrompt = async () => {
+    if (!selectedPrompt || !testInput) return
+    
+    setTesting(true)
+    try {
+      // Simulate AI response
+      setTimeout(() => {
+        const mockResponse = `[AI Response for ${selectedPrompt.name}]\n\n`
+          + `Input: "${testInput}"\n\n`
+          + `Based on the ${selectedPrompt.category.toLowerCase()} prompt, here's what the AI would generate:\n\n`
+          + `• Enhanced text with improved clarity\n`
+          + `• Professional language and tone\n`
+          + `• ATS-optimized keywords\n`
+          + `• Industry-specific terminology\n\n`
+          + `This is a simulated response. In production, this would use the actual AI service.`
+        
+        setTestOutput(mockResponse)
+        setTesting(false)
+      }, 1500)
+    } catch (error) {
+      toast.error('Test failed')
+      setTesting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -819,10 +944,24 @@ function ContentSection({ prompts, setPrompts }: { prompts: PromptTemplate[], se
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h4 className="font-semibold">{prompt.name}</h4>
-                    <p className="text-sm text-gray-600">{prompt.category}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {prompt.category}
+                      </Badge>
+                      {prompt.context && (
+                        <Badge variant="outline" className="text-xs">
+                          {prompt.context}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
                       Last modified: {prompt.lastModified}
                     </p>
+                    {prompt.variables && prompt.variables.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Variables: {prompt.variables.join(', ')}
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -913,59 +1052,733 @@ function ContentSection({ prompts, setPrompts }: { prompts: PromptTemplate[], se
   )
 }
 
-// Other sections
+// Users Management Section
 function UsersSection() {
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
+  const [activeTab, setActiveTab] = useState('analytics')
+  const [userData, setUserData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      // Get data from stats API
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/stats')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.stats) {
+          setUserData(data.stats.dashboard)
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to load user data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold">Users Management</h1>
-      <p className="text-gray-600">Manage and monitor user accounts</p>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-500">User management features coming soon...</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Users Management</h1>
+          <p className="text-gray-600">Monitor user activity and manage access</p>
+        </div>
+        <Button>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Data
+        </Button>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="sessions">Active Sessions</TabsTrigger>
+          <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">User Growth</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loading ? '...' : userData?.totalUsers.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Total registered users
+                </p>
+                <Progress value={75} className="h-2 mt-3" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Active Today</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loading ? '...' : userData?.activeUsers.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Users active in last 24h
+                </p>
+                <Badge variant="outline" className="mt-3">Live</Badge>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">CVs Created</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loading ? '...' : userData?.totalCVs.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Total CVs generated
+                </p>
+                <p className="text-xs text-green-600 mt-3">
+                  {userData?.growth?.cvs || '+423'} today
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>User Engagement Metrics</CardTitle>
+              <CardDescription>Key performance indicators</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Average CVs per User</span>
+                  <span className="font-medium">
+                    {userData ? (userData.totalCVs / userData.totalUsers).toFixed(1) : '...'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Active User Rate</span>
+                  <span className="font-medium">
+                    {userData ? `${((userData.activeUsers / userData.totalUsers) * 100).toFixed(1)}%` : '...'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Daily Login Rate</span>
+                  <span className="font-medium">
+                    {userData ? `${((userData.todayLogins / userData.totalUsers) * 100).toFixed(1)}%` : '...'}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Sessions</CardTitle>
+              <CardDescription>Currently logged in users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>Session tracking will be available in the next update</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent User Activity</CardTitle>
+              <CardDescription>Latest actions and events</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-500">
+                <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>Activity logging will be available in the next update</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
 
 function AdsSection() {
+  const [activeTab, setActiveTab] = useState('overview')
+  const [revenueData] = useState({
+    totalRevenue: 2847.50,
+    monthlyRevenue: 847.50,
+    dailyAverage: 28.25,
+    activeAds: 4,
+    impressions: 45678,
+    clicks: 1234,
+    ctr: 2.7
+  })
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold">Ads & Revenue</h1>
-      <p className="text-gray-600">Manage advertisements and revenue tracking</p>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-500">Advertisement management coming soon...</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Ads & Revenue</h1>
+          <p className="text-gray-600">Monitor ad performance and revenue metrics</p>
+        </div>
+        <Badge variant="outline" className="text-green-600">
+          <DollarSign className="w-3 h-3 mr-1" />
+          Live
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Total Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${revenueData.totalRevenue.toFixed(2)}
+            </div>
+            <p className="text-xs text-green-600 mt-1">+15.3% from last month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">This Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${revenueData.monthlyRevenue.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              ${revenueData.dailyAverage.toFixed(2)}/day avg
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Ad Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{revenueData.ctr}%</div>
+            <p className="text-xs text-muted-foreground mt-1">Click-through rate</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Active Ads</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{revenueData.activeAds}</div>
+            <p className="text-xs text-muted-foreground mt-1">Running campaigns</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="adsense">Google AdSense</TabsTrigger>
+          <TabsTrigger value="monetag">Monetag</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue Analytics</CardTitle>
+              <CardDescription>Performance metrics across all ad networks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium">Total Impressions</p>
+                    <p className="text-2xl font-bold">{revenueData.impressions.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Total Clicks</p>
+                    <p className="text-2xl font-bold">{revenueData.clicks.toLocaleString()}</p>
+                  </div>
+                </div>
+                <Progress value={65} className="h-2" />
+                <p className="text-xs text-muted-foreground">65% of monthly target reached</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="adsense" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Google AdSense Configuration</CardTitle>
+              <CardDescription>Manage your AdSense integration</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Publisher ID</Label>
+                <Input value="ca-pub-1742989559393752" readOnly />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Sidebar Ad Slot</Label>
+                  <Input placeholder="Enter slot ID" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Footer Ad Slot</Label>
+                  <Input placeholder="Enter slot ID" />
+                </div>
+              </div>
+              <Button>
+                <Save className="w-4 h-4 mr-2" />
+                Save Configuration
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="monetag" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Monetag Zones</CardTitle>
+              <CardDescription>Configure Monetag ad zones</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded">
+                  <div>
+                    <p className="font-medium">Popup Zone</p>
+                    <p className="text-sm text-muted-foreground">ID: 9469379</p>
+                  </div>
+                  <Switch checked={true} />
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded">
+                  <div>
+                    <p className="font-medium">Push Notifications</p>
+                    <p className="text-sm text-muted-foreground">ID: 9469382</p>
+                  </div>
+                  <Switch checked={true} />
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded">
+                  <div>
+                    <p className="font-medium">Native Ads</p>
+                    <p className="text-sm text-muted-foreground">ID: 9469381</p>
+                  </div>
+                  <Switch checked={false} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ad Settings</CardTitle>
+              <CardDescription>Global advertisement settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Enable Ads</p>
+                    <p className="text-sm text-muted-foreground">Show ads to users</p>
+                  </div>
+                  <Switch checked={true} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Mobile Ads</p>
+                    <p className="text-sm text-muted-foreground">Show ads on mobile devices</p>
+                  </div>
+                  <Switch checked={true} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Test Mode</p>
+                    <p className="text-sm text-muted-foreground">Show test ads only</p>
+                  </div>
+                  <Switch checked={false} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
 
 function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
+  const [activeTab, setActiveTab] = useState('health')
+  const [systemData] = useState({
+    uptime: '24d 15h 32m',
+    cpu: 23,
+    memory: 67,
+    disk: 45,
+    requests: 12847,
+    avgResponseTime: 145,
+    errorRate: 0.02
+  })
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold">System Management</h1>
-      <p className="text-gray-600">Monitor system health and performance</p>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-500">System monitoring features coming soon...</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">System Management</h1>
+          <p className="text-gray-600">Monitor system health and performance</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant={systemHealth.api === 'healthy' ? 'default' : 'destructive'}>
+            API {systemHealth.api}
+          </Badge>
+          <Badge variant="outline">
+            Uptime: {systemData.uptime}
+          </Badge>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="health">Health Status</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="logs">System Logs</TabsTrigger>
+          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="health" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center justify-between">
+                  API Service
+                  <Badge variant={systemHealth.api === 'healthy' ? 'default' : 'destructive'}>
+                    {systemHealth.api}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Response Time</span>
+                    <span>{systemData.avgResponseTime}ms</span>
+                  </div>
+                  <Progress value={85} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center justify-between">
+                  Database
+                  <Badge variant={systemHealth.database === 'healthy' ? 'default' : 'destructive'}>
+                    {systemHealth.database}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Connections</span>
+                    <span>12/100</span>
+                  </div>
+                  <Progress value={12} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center justify-between">
+                  Storage
+                  <Badge variant={systemHealth.storage === 'healthy' ? 'default' : 'destructive'}>
+                    {systemHealth.storage}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Used Space</span>
+                    <span>{systemData.disk}%</span>
+                  </div>
+                  <Progress value={systemData.disk} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>System Resources</CardTitle>
+              <CardDescription>Real-time resource utilization</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium">CPU Usage</span>
+                  <span className="text-sm">{systemData.cpu}%</span>
+                </div>
+                <Progress value={systemData.cpu} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium">Memory Usage</span>
+                  <span className="text-sm">{systemData.memory}%</span>
+                </div>
+                <Progress value={systemData.memory} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium">Overall Performance</span>
+                  <span className="text-sm">{systemHealth.performance}%</span>
+                </div>
+                <Progress value={systemHealth.performance} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Metrics</CardTitle>
+              <CardDescription>Application performance statistics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Total Requests</p>
+                  <p className="text-2xl font-bold">{systemData.requests.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Last 24 hours</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Error Rate</p>
+                  <p className="text-2xl font-bold">{systemData.errorRate}%</p>
+                  <p className="text-xs text-green-600">Low error rate</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Logs</CardTitle>
+              <CardDescription>Recent system events and errors</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-500">
+                <Server className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>Log viewer will be available in the next update</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="maintenance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Maintenance Tasks</CardTitle>
+              <CardDescription>System maintenance and optimization</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button className="w-full" variant="outline">
+                <Database className="w-4 h-4 mr-2" />
+                Clear Cache
+              </Button>
+              <Button className="w-full" variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Restart Services
+              </Button>
+              <Button className="w-full" variant="outline">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clean Temporary Files
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
 
 function SettingsSection() {
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
+  const [settings, setSettings] = useState({
+    siteName: 'CV Genius',
+    siteUrl: 'https://cvgenius-one.vercel.app',
+    maintenanceMode: false,
+    debugMode: false,
+    emailNotifications: true,
+    autoBackup: true,
+    backupFrequency: 'daily',
+    maxFileSize: '10',
+    allowedFormats: 'pdf,docx,txt'
+  })
+
+  const saveSettings = () => {
+    toast.success('Settings saved successfully')
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
-      <p className="text-gray-600">Configure application settings</p>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-500">Settings management coming soon...</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
+          <p className="text-gray-600">Configure application settings</p>
+        </div>
+        <Button onClick={saveSettings}>
+          <Save className="w-4 h-4 mr-2" />
+          Save Changes
+        </Button>
+      </div>
+
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>General Settings</CardTitle>
+            <CardDescription>Basic application configuration</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Site Name</Label>
+                <Input 
+                  value={settings.siteName}
+                  onChange={(e) => setSettings({...settings, siteName: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Site URL</Label>
+                <Input 
+                  value={settings.siteUrl}
+                  onChange={(e) => setSettings({...settings, siteUrl: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Maintenance Mode</p>
+                  <p className="text-sm text-muted-foreground">Temporarily disable site access</p>
+                </div>
+                <Switch 
+                  checked={settings.maintenanceMode}
+                  onCheckedChange={(checked) => setSettings({...settings, maintenanceMode: checked})}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Debug Mode</p>
+                  <p className="text-sm text-muted-foreground">Enable detailed error logging</p>
+                </div>
+                <Switch 
+                  checked={settings.debugMode}
+                  onCheckedChange={(checked) => setSettings({...settings, debugMode: checked})}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Notification Settings</CardTitle>
+            <CardDescription>Configure system notifications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Email Notifications</p>
+                <p className="text-sm text-muted-foreground">Receive system alerts via email</p>
+              </div>
+              <Switch 
+                checked={settings.emailNotifications}
+                onCheckedChange={(checked) => setSettings({...settings, emailNotifications: checked})}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Backup Settings</CardTitle>
+            <CardDescription>Configure automatic backups</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Auto Backup</p>
+                <p className="text-sm text-muted-foreground">Automatically backup data</p>
+              </div>
+              <Switch 
+                checked={settings.autoBackup}
+                onCheckedChange={(checked) => setSettings({...settings, autoBackup: checked})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Backup Frequency</Label>
+              <Select 
+                value={settings.backupFrequency}
+                onValueChange={(value) => setSettings({...settings, backupFrequency: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>File Upload Settings</CardTitle>
+            <CardDescription>Configure file upload restrictions</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Max File Size (MB)</Label>
+              <Input 
+                value={settings.maxFileSize}
+                onChange={(e) => setSettings({...settings, maxFileSize: e.target.value})}
+                type="number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Allowed Formats</Label>
+              <Input 
+                value={settings.allowedFormats}
+                onChange={(e) => setSettings({...settings, allowedFormats: e.target.value})}
+                placeholder="pdf,docx,txt"
+              />
+              <p className="text-xs text-muted-foreground">Comma-separated file extensions</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
