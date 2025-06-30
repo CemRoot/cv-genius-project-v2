@@ -1216,15 +1216,25 @@ function UsersSection() {
 }
 
 function AdsSection() {
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
   const [activeTab, setActiveTab] = useState('overview')
+  const [adSettings, setAdSettings] = useState({
+    enableAds: true,
+    mobileAds: true,
+    testMode: false,
+    monetagPopup: true,
+    monetagPush: true,
+    monetagNative: false
+  })
   const [revenueData] = useState({
-    totalRevenue: 2847.50,
-    monthlyRevenue: 847.50,
-    dailyAverage: 28.25,
-    activeAds: 4,
-    impressions: 45678,
-    clicks: 1234,
-    ctr: 2.7
+    totalRevenue: 0,
+    monthlyRevenue: 0,
+    dailyAverage: 0,
+    activeAds: 0,
+    impressions: 0,
+    clicks: 0,
+    ctr: 0
   })
 
   return (
@@ -1247,9 +1257,9 @@ function AdsSection() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${revenueData.totalRevenue.toFixed(2)}
+              $0.00
             </div>
-            <p className="text-xs text-green-600 mt-1">+15.3% from last month</p>
+            <p className="text-xs text-muted-foreground mt-1">No revenue yet</p>
           </CardContent>
         </Card>
 
