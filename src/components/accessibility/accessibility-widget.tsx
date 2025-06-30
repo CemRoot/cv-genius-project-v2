@@ -72,27 +72,62 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
 
   if (!isOpen) {
     return (
-      <div className={className}>
-        {/* Sadece mobil ve tablet cihazlarda göster */}
-        <Button
-          onClick={() => setIsOpen(true)}
-          variant="outline"
-          size="sm"
-          className="md:hidden fixed bottom-4 right-4 z-50 rounded-full p-3 shadow-lg bg-white hover:bg-gray-50"
-          aria-label="Open accessibility settings"
+      <>
+        {/* Accessibility button - only visible on mobile/tablet */}
+        <div 
+          className="md:hidden fixed bottom-4 right-4 z-50" 
+          style={{ 
+            position: 'fixed',
+            bottom: '16px',
+            right: '16px',
+            zIndex: 50
+          }}
         >
-          <Settings className="h-5 w-5" />
-        </Button>
-      </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              e.nativeEvent.stopImmediatePropagation()
+              
+              // Disable smooth scrolling temporarily
+              const html = document.documentElement
+              const originalScrollBehavior = html.style.scrollBehavior
+              html.style.scrollBehavior = 'auto'
+              
+              setIsOpen(true)
+              
+              // Restore scroll behavior after a brief delay
+              setTimeout(() => {
+                html.style.scrollBehavior = originalScrollBehavior
+              }, 100)
+              
+              return false
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation()
+            }}
+            type="button"
+            className="rounded-full p-3 shadow-lg bg-white hover:bg-gray-50 border border-gray-200 transition-all duration-200 hover:scale-105 active:scale-95"
+            aria-label="Open accessibility settings"
+            style={{ 
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+        </div>
+      </>
     )
   }
 
   return (
-    <div className={className}>
+    <>
       {/* Backdrop - mobilde tam ekran kapla */}
       <div 
         className="md:hidden fixed inset-0 bg-black/20 z-40" 
         onClick={() => setIsOpen(false)}
+        style={{ position: 'fixed' }}
       />
       
       {/* Panel - mobilde alt kısımdan çık, tablet+ da köşede göster */}
@@ -206,7 +241,7 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
         className="sr-only"
         id="accessibility-announcements"
       />
-    </div>
+    </>
   )
 }
 
