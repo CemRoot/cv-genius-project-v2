@@ -1,8 +1,15 @@
 # CVGenius - AI-Powered CV Builder Platform
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 🚀 **Production-Ready** | 🔒 **Secure Admin Panel** | 🤖 **AI-Powered** | 📱 **Mobile-First**
 
 CVGenius is a privacy-first, AI-powered CV builder platform with comprehensive admin dashboard. Features advanced security, multi-template support, and AI-powered optimization for global job markets.
+
+🌐 **Live Demo**: [https://cvgenius-one.vercel.app](https://cvgenius-one.vercel.app)
 
 ## ✨ Key Features
 
@@ -217,7 +224,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎯 Quick Links
 
-- **🏠 Demo**: [Live Demo](https://your-domain.com)
-- **👨‍💼 Admin Panel**: [Admin Dashboard](https://your-domain.com/admin)
-- **📋 API Docs**: [API Documentation](/docs/api)
-- **🔒 Security Guide**: [Security Documentation](/docs/SECURITY_AUDIT_TODO.md)
+- **🏠 Demo**: [Live Demo](https://cvgenius-one.vercel.app)
+- **👨‍💼 Admin Panel**: [Admin Dashboard](https://cvgenius-one.vercel.app/admin)
+- **📋 Contributing**: [Contributing Guide](CONTRIBUTING.md)
+- **🔒 Security**: [Security Policy](SECURITY.md)
+- **📜 License**: [MIT License](LICENSE)
