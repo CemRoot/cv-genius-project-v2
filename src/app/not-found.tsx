@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Home } from "lucide-react"
-import "./404.css"
+import "@/styles/404.css"
 
 export default function NotFound() {
   return (

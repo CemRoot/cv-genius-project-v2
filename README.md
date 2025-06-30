@@ -226,6 +226,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **🏠 Demo**: [Live Demo](https://cvgenius-one.vercel.app)
 - **👨‍💼 Admin Panel**: [Admin Dashboard](https://cvgenius-one.vercel.app/admin)
-- **📋 Contributing**: [Contributing Guide](CONTRIBUTING.md)
-- **🔒 Security**: [Security Policy](SECURITY.md)
+- **📋 Contributing**: [Contributing Guide](docs/CONTRIBUTING.md)
+- **🔒 Security**: [Security Policy](docs/SECURITY.md)
 - **📜 License**: [MIT License](LICENSE)
