@@ -1,0 +1,23 @@
+{
+  "siteTitle": "CV Genius",
+  "maintenanceMode": false,
+  "maxFileSize": "10MB",
+  "allowedFileTypes": ["pdf", "doc", "docx"],
+  "rateLimit": {
+    "enabled": true,
+    "requestsPerMinute": 60
+  },
+  "features": {
+    "aiAnalysis": true,
+    "pdfExport": true,
+    "templateSelection": true,
+    "coverLetterGeneration": true
+  },
+  "ads": {
+    "enabled": true,
+    "adsenseEnabled": true,
+    "monetagEnabled": true,
+    "mobileAdsEnabled": true
+  },
+  "lastUpdated": "2024-12-19T10:00:00.000Z"
+} 

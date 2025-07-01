@@ -1,0 +1,39 @@
+{
+  "prompts": [
+    {
+      "id": "cv_analysis",
+      "name": "CV Analysis",
+      "category": "analysis",
+      "prompt": "Analyze this CV and provide comprehensive feedback on structure, content, and improvements.",
+      "temperature": 0.3,
+      "maxTokens": 1000,
+      "variables": ["cv_content"],
+      "lastModified": "2024-12-19T10:00:00.000Z"
+    },
+    {
+      "id": "skills_improvement",
+      "name": "Skills Enhancement",
+      "category": "improvement",
+      "prompt": "Suggest ways to improve the skills section of this CV based on the target job role.",
+      "temperature": 0.4,
+      "maxTokens": 800,
+      "variables": ["skills_section", "target_role"],
+      "lastModified": "2024-12-19T10:00:00.000Z"
+    },
+    {
+      "id": "ats_optimization",
+      "name": "ATS Optimization",
+      "category": "ats",
+      "prompt": "Optimize this CV for ATS systems while maintaining readability and professional appearance.",
+      "temperature": 0.2,
+      "maxTokens": 1200,
+      "variables": ["cv_content", "job_description"],
+      "lastModified": "2024-12-19T10:00:00.000Z"
+    }
+  ],
+  "settings": {
+    "defaultTemperature": 0.3,
+    "defaultMaxTokens": 1000,
+    "lastUpdated": "2024-12-19T10:00:00.000Z"
+  }
+} 
