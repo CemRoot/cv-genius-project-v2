@@ -1721,6 +1721,8 @@ function AdsSection() {
 }
 
 function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
   const [activeTab, setActiveTab] = useState('health')
   const [systemData] = useState({
     uptime: 'N/A',
@@ -1732,13 +1734,60 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
     errorRate: 0,
     connections: 0
   })
+  const [apiConfig, setApiConfig] = useState<any>(null)
+  const [configLoading, setConfigLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetchApiConfig()
+  }, [])
+
+  const fetchApiConfig = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/api-config')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setApiConfig(data.config)
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to load API configuration')
+    } finally {
+      setConfigLoading(false)
+    }
+  }
+
+  const updateApiConfig = async (updates: any) => {
+    setSaving(true)
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/api-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(data.message || 'Configuration updated')
+        // Refresh config
+        fetchApiConfig()
+      } else {
+        toast.error('Failed to update configuration')
+      }
+    } catch (error) {
+      toast.error('Network error')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">System Management</h1>
-          <p className="text-gray-600">Monitor system health and performance</p>
+          <p className="text-gray-600">Monitor system health and API services</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant={systemHealth.api === 'healthy' ? 'default' : 'destructive'}>
@@ -1753,6 +1802,7 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="health">Health Status</TabsTrigger>
+          <TabsTrigger value="apis">API Services</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="logs">System Logs</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
@@ -1848,6 +1898,175 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
                 </div>
                 <Progress value={systemHealth.performance} className="h-2" />
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="apis" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>API Services Configuration</CardTitle>
+              <CardDescription>Manage and monitor API integrations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {configLoading ? (
+                <div className="text-center py-8">
+                  <RefreshCw className="w-8 h-8 mx-auto animate-spin text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-500">Loading configuration...</p>
+                </div>
+              ) : apiConfig ? (
+                <>
+                  {/* Gemini AI */}
+                  <div className="p-4 border rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Wand2 className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <h4 className="font-semibold">Google Gemini AI</h4>
+                          <p className="text-sm text-gray-500">AI-powered CV improvements</p>
+                        </div>
+                      </div>
+                      <Badge variant={apiConfig.gemini.enabled ? 'default' : 'secondary'}>
+                        {apiConfig.gemini.enabled ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    <div className="ml-8 space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        {apiConfig.gemini.hasKey ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        )}
+                        <span>Server Key: {apiConfig.gemini.hasKey ? 'Configured' : 'Not configured'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {apiConfig.gemini.hasPublicKey ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-gray-400" />
+                        )}
+                        <span>Public Key: {apiConfig.gemini.hasPublicKey ? 'Configured' : 'Not configured'}</span>
+                      </div>
+                      <p className="text-gray-500">Model: {apiConfig.gemini.model}</p>
+                    </div>
+                  </div>
+
+                  {/* HuggingFace */}
+                  <div className="p-4 border rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Zap className="w-5 h-5 text-purple-500" />
+                        <div>
+                          <h4 className="font-semibold">HuggingFace API</h4>
+                          <p className="text-sm text-gray-500">ATS analysis and scoring</p>
+                        </div>
+                      </div>
+                      <Badge variant={apiConfig.huggingface.enabled ? 'default' : 'secondary'}>
+                        {apiConfig.huggingface.enabled ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    <div className="ml-8 space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        {apiConfig.huggingface.hasKey ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        )}
+                        <span>API Key: {apiConfig.huggingface.hasKey ? 'Configured' : 'Not configured'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vercel Integration */}
+                  <div className="p-4 border rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Server className="w-5 h-5 text-black" />
+                        <div>
+                          <h4 className="font-semibold">Vercel Integration</h4>
+                          <p className="text-sm text-gray-500">Dynamic environment management</p>
+                        </div>
+                      </div>
+                      <Badge variant={apiConfig.vercel.enabled ? 'default' : 'secondary'}>
+                        {apiConfig.vercel.enabled ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    <div className="ml-8 space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        {apiConfig.vercel.hasToken ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        )}
+                        <span>API Token: {apiConfig.vercel.hasToken ? 'Configured' : 'Not configured'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {apiConfig.vercel.hasProjectId ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        )}
+                        <span>Project ID: {apiConfig.vercel.hasProjectId ? 'Configured' : 'Not configured'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {apiConfig.vercel.kvEnabled ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Info className="w-4 h-4 text-gray-400" />
+                        )}
+                        <span>KV Storage: {apiConfig.vercel.kvEnabled ? 'Enabled' : 'Not enabled'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Security Settings */}
+                  <div className="p-4 border rounded-lg space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-red-500" />
+                      <div>
+                        <h4 className="font-semibold">Security Features</h4>
+                        <p className="text-sm text-gray-500">Control security settings</p>
+                      </div>
+                    </div>
+                    <div className="ml-8 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">IP Whitelist</p>
+                          <p className="text-sm text-gray-500">Restrict admin panel access</p>
+                        </div>
+                        <Switch
+                          checked={apiConfig.security.ipWhitelistEnabled}
+                          onCheckedChange={(checked) => {
+                            updateApiConfig({ ipWhitelistEnabled: checked })
+                          }}
+                          disabled={saving}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Maintenance Mode</p>
+                          <p className="text-sm text-gray-500">Temporarily disable site access</p>
+                        </div>
+                        <Switch
+                          checked={apiConfig.features.maintenanceMode}
+                          onCheckedChange={(checked) => {
+                            updateApiConfig({ maintenanceMode: checked })
+                          }}
+                          disabled={saving}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Configuration Error</AlertTitle>
+                  <AlertDescription>
+                    Failed to load API configuration. Please refresh the page.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
