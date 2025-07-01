@@ -213,6 +213,7 @@ export class ClientAdminAuth {
           'auth/2fa/setup': 'auth_2fa_setup',
           'auth/2fa/verify': 'auth_2fa_verify',
           'auth/2fa/disable': 'auth_2fa_disable',
+          'auth/change-password': 'auth_change_password',
           'settings': 'admin_settings',
           'test-prompt': 'admin_test',
           'auth/refresh': 'auth_refresh',

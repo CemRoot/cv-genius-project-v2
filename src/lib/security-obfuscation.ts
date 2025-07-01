@@ -7,6 +7,7 @@ class SecurityObfuscator {
     ['auth_2fa_setup', '/api/admin/auth/2fa/setup'],
     ['auth_2fa_verify', '/api/admin/auth/2fa/verify'],
     ['auth_2fa_disable', '/api/admin/auth/2fa/disable'],
+    ['auth_change_password', '/api/admin/auth/change-password'],
     ['admin_settings', '/api/admin/settings'],
     ['admin_test', '/api/admin/test-prompt'],
     ['auth_refresh', '/api/admin/auth/refresh'],
