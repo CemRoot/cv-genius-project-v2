@@ -147,13 +147,13 @@ const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdnjs.cloudflare.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none'; worker-src 'self' blob: https://cdnjs.cloudflare.com;",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdnjs.cloudflare.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; object-src 'none'; worker-src 'self' blob: https://cdnjs.cloudflare.com;",
 }
 
 // Relaxed CSP for admin routes (includes Vercel Analytics)
 const adminSecurityHeaders = {
   ...securityHeaders,
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdnjs.cloudflare.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://vercel.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none'; worker-src 'self' blob: https://cdnjs.cloudflare.com;",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdnjs.cloudflare.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://vercel.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; object-src 'none'; worker-src 'self' blob: https://cdnjs.cloudflare.com;",
 }
 
 // JWT secret must be set via environment variable
