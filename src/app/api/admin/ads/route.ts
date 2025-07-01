@@ -82,9 +82,12 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    console.log('🔧 Admin Ads API - PUT request received')
+    
     // Verify admin authentication
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ No auth header or invalid format')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -92,18 +95,23 @@ export async function PUT(request: NextRequest) {
     const adminSession = await verifyAdminToken(token)
     
     if (!adminSession) {
+      console.log('❌ Invalid or expired session')
       return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 })
     }
 
     const body = await request.json()
+    console.log('📤 Request body received:', body)
+    
     const { setting, enabled, settings: newSettings } = body
 
     if (!setting || typeof enabled !== 'boolean') {
+      console.log('❌ Invalid request parameters:', { setting, enabled, hasNewSettings: !!newSettings })
       return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 })
     }
 
     // Load current settings
     const currentSettings = await loadAdSettings()
+    console.log('📖 Current settings loaded:', currentSettings)
     
     // Update the specific setting
     const updatedSettings: AdminAdSettings = {
@@ -118,8 +126,12 @@ export async function PUT(request: NextRequest) {
       updatedSettings.lastUpdated = new Date().toISOString()
     }
 
+    console.log('💾 About to save settings:', updatedSettings)
+    
     // Save updated settings
     await saveAdSettings(updatedSettings)
+    
+    console.log('✅ Settings saved successfully')
 
     return NextResponse.json({
       success: true,

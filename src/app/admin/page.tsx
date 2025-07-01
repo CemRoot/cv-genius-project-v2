@@ -1604,29 +1604,41 @@ function AdsSection() {
 
   const saveAdSetting = async (key: string, value: boolean) => {
     setSaving(true)
+    console.log('🔧 Admin Panel - Saving ad setting:', { key, value, currentSettings: adSettings })
+    
     try {
+      const requestBody = { 
+        setting: key, 
+        enabled: value,
+        settings: { ...adSettings, [key]: value }
+      }
+      console.log('📤 Sending request to /api/admin/ads:', requestBody)
+      
       const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ads', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          setting: key, 
-          enabled: value,
-          settings: { ...adSettings, [key]: value }
-        })
+        body: JSON.stringify(requestBody)
       })
+      
+      console.log('📥 Response status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
+        console.log('📥 API Response data:', data)
+        
         if (data.success) {
           setAdSettings(prev => ({ ...prev, [key]: value }))
           toast.success(data.message || `${key} ${value ? 'enabled' : 'disabled'}`)
+          console.log('✅ Settings updated successfully, new state:', { ...adSettings, [key]: value })
           
           // Note: Environment variables now managed through local data files
           // No need for Vercel API calls - admin panel controls ads directly
         } else {
+          console.error('❌ API returned success: false', data)
           toast.error(data.error || 'Failed to update ad setting')
         }
       } else {
+        console.error('❌ Response not OK:', response.status, response.statusText)
         toast.error('Failed to update ad setting')
       }
     } catch (error) {
