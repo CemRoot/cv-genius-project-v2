@@ -100,9 +100,13 @@ export default function ResultsPage() {
     // Check if we have an edited cover letter
     const editedText = localStorage.getItem('generated-cover-letter')
     const isFromEdit = localStorage.getItem('cover-letter-edited') === 'true'
+    const cachedJobDescription = localStorage.getItem('last-generated-job-description')
+    const currentJobDescription = localStorage.getItem('cover-letter-job-description') || ''
     
+    // Check if job description has changed since last generation
+    const jobDescriptionChanged = cachedJobDescription !== currentJobDescription
     
-    if (editedText && isFromEdit) {
+    if (editedText && isFromEdit && !jobDescriptionChanged) {
       // Don't clear the edit flag immediately - keep it until user navigates away or generates new letter
       setGeneratedLetter(editedText)
       setIsGenerating(false)
@@ -246,6 +250,8 @@ export default function ResultsPage() {
         const newLetter = result.coverLetter.content
         setGeneratedLetter(newLetter)
         updateLocalStorage(newLetter)
+        // Save the job description used for this generation
+        localStorage.setItem('last-generated-job-description', data.jobDescription || '')
       } else {
         throw new Error(result.error || 'Failed to generate cover letter')
       }

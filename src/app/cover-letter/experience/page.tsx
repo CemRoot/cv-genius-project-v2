@@ -46,6 +46,12 @@ export default function ExperiencePage() {
     // Only update context step once on mount
     if (!hasInitialized.current) {
       hasInitialized.current = true
+      
+      // Clear old cached cover letter data when starting new flow
+      localStorage.removeItem('generated-cover-letter')
+      localStorage.removeItem('cover-letter-edited')
+      localStorage.removeItem('last-generated-job-description')
+      
       if (state.currentStep !== 'experience') {
         setContextStep('experience')
       }
