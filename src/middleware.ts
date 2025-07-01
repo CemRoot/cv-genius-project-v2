@@ -95,8 +95,9 @@ const getIPWhitelist = async (): Promise<string[]> => {
   
   const envWhitelist = process.env.ADMIN_IP_WHITELIST
   if (!envWhitelist) {
-    // Default development IPs if no env var set
-    return ['::1', '127.0.0.1', 'localhost', '192.168.1.11']
+    // Default development IPs if no env var set - PRODUCTION SHOULD ALWAYS SET THIS!
+    console.warn('⚠️ ADMIN_IP_WHITELIST not set! Using development defaults - NOT SECURE FOR PRODUCTION!')
+    return ['::1', '127.0.0.1', 'localhost']
   }
   return envWhitelist.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0)
 }
@@ -117,23 +118,70 @@ const isAdminIPAllowed = async (request: NextRequest): Promise<boolean> => {
     return true
   }
   
-  const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                   request.headers.get('x-real-ip') || 
-                   'unknown'
+  // Get client IP with better detection for IPv4/IPv6
+  const xForwardedFor = request.headers.get('x-forwarded-for')
+  const xRealIp = request.headers.get('x-real-ip')
+  const cfConnectingIp = request.headers.get('cf-connecting-ip') // Cloudflare
+  
+  let clientIP = 'unknown'
+  
+  if (xForwardedFor) {
+    // x-forwarded-for can contain multiple IPs, get the first (original client)
+    clientIP = xForwardedFor.split(',')[0].trim()
+  } else if (cfConnectingIp) {
+    clientIP = cfConnectingIp.trim()
+  } else if (xRealIp) {
+    clientIP = xRealIp.trim()
+  }
+  
+  // Clean up IPv6 format if needed
+  if (clientIP.startsWith('::ffff:')) {
+    clientIP = clientIP.substring(7) // Remove IPv4-mapped IPv6 prefix
+  }
   
   console.log(`🔍 Checking IP access for admin route. Client IP: ${clientIP}`)
   
   const allowedIPs = await getIPWhitelist()
-  const isAllowed = allowedIPs.some(allowedIP => 
-    clientIP === allowedIP || 
-    clientIP.includes(allowedIP) ||
-    allowedIP === 'localhost' && (clientIP === '127.0.0.1' || clientIP === '::1')
-  )
+  
+  // Enhanced IP matching logic for IPv4/IPv6
+  const isAllowed = allowedIPs.some(allowedIP => {
+    const cleanAllowedIP = allowedIP.trim()
+    
+    // Exact match
+    if (clientIP === cleanAllowedIP) return true
+    
+    // IPv6 case-insensitive match
+    if (clientIP.toLowerCase() === cleanAllowedIP.toLowerCase()) return true
+    
+    // Localhost variants
+    if (cleanAllowedIP === 'localhost' && 
+        (clientIP === '127.0.0.1' || clientIP === '::1' || clientIP.toLowerCase() === 'localhost')) {
+      return true
+    }
+    
+    // IPv4-mapped IPv6 format
+    if (clientIP.startsWith('::ffff:') && clientIP.substring(7) === cleanAllowedIP) return true
+    
+    // Development IPs
+    if (process.env.NODE_ENV === 'development' && 
+        (clientIP.startsWith('192.168.') || clientIP.startsWith('10.') || clientIP.startsWith('172.'))) {
+      return cleanAllowedIP.startsWith('192.168.') || cleanAllowedIP.startsWith('10.') || cleanAllowedIP.startsWith('172.')
+    }
+    
+    return false
+  })
   
   if (!isAllowed) {
-    console.warn(`🚨 Blocked admin access from IP: ${clientIP}. Allowed IPs: ${allowedIPs.join(', ')}`)
+    console.warn(`🚨 SECURITY ALERT: Blocked admin access from IP: ${clientIP}`)
+    console.warn(`🔒 Allowed IPs: ${allowedIPs.join(', ')}`)
+    console.warn(`🌍 Headers: ${JSON.stringify({
+      'x-forwarded-for': request.headers.get('x-forwarded-for'),
+      'cf-connecting-ip': request.headers.get('cf-connecting-ip'),
+      'x-real-ip': request.headers.get('x-real-ip'),
+      'user-agent': request.headers.get('user-agent')?.substring(0, 50)
+    })}`)
   } else {
-    console.log(`✅ IP access granted for ${clientIP}`)
+    console.log(`✅ IP access granted for ${clientIP} (from allowed list)`)
   }
   
   return isAllowed
