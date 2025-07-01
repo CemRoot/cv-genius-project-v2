@@ -203,7 +203,7 @@ export class HuggingFaceATSClient {
       let industryAnalysis
       if (industry) {
         console.log('🎯 Analyzing for industry:', industry)
-        industryAnalysis = await this.analyzeIndustrySpecific(cleanText, industry)
+        industryAnalysis = await this.analyzeIndustrySpecific(cleanText, industry, jobDescription)
         console.log('✅ Industry analysis completed:', industryAnalysis.alignment)
       } else {
         console.log('⚠️ No industry specified, skipping industry analysis')
@@ -264,25 +264,38 @@ export class HuggingFaceATSClient {
     }
   }
 
-  async analyzeIndustrySpecific(cvText: string, industry: string): Promise<{
+  async analyzeIndustrySpecific(cvText: string, industry: string, jobDescription?: string): Promise<{
     alignment: number
     criticalKeywords: string[]
     foundKeywords: string[]
     missingCriticalKeywords: string[]
     recommendations: string[]
   }> {
-    const industryKeywords = this.getIndustryKeywords(industry)
+    let industryKeywords: string[] = []
+    
+    // If we have a job description, extract keywords from it instead of using hardcoded lists
+    if (jobDescription) {
+      console.log('🔍 Using job description keywords for industry analysis')
+      industryKeywords = this.extractBasicSkills(jobDescription)
+    } else {
+      // Only fall back to hardcoded keywords if no job description is provided
+      console.log('⚠️ No job description provided, falling back to hardcoded industry keywords')
+      industryKeywords = this.getIndustryKeywords(industry)
+    }
+    
     const cvLower = cvText.toLowerCase()
     
     const foundKeywords = industryKeywords.filter(keyword => 
       cvLower.includes(keyword.toLowerCase())
     )
     
-    const alignment = Math.round((foundKeywords.length / industryKeywords.length) * 100)
+    const alignment = industryKeywords.length > 0 ? Math.round((foundKeywords.length / industryKeywords.length) * 100) : 50
     
     const missingCriticalKeywords = industryKeywords.filter(keyword => 
       !cvLower.includes(keyword.toLowerCase())
     ).slice(0, 5)
+    
+    console.log('📊 Industry analysis - alignment:', alignment + '%')
     
     const recommendations = this.generateIndustryRecommendations(industry, foundKeywords, missingCriticalKeywords)
     
@@ -297,25 +310,42 @@ export class HuggingFaceATSClient {
 
   // Helper methods
   private extractBasicSkills(text: string): string[] {
-    const skillPatterns = [
-      /\b(python|java|javascript|typescript|c\+\+|c#|ruby|go|rust|php|swift|kotlin)\b/gi,
-      /\b(react|angular|vue|django|flask|spring|express|laravel|rails)\b/gi,
-      /\b(sql|mysql|postgresql|mongodb|redis|elasticsearch|oracle)\b/gi,
-      /\b(aws|azure|gcp|docker|kubernetes|jenkins|git|ci\/cd|terraform)\b/gi,
-      /\b(leadership|communication|teamwork|problem solving|analytical|creative)\b/gi,
-      /\b(dublin|cork|galway|irish market|eu citizen|stamp 4)\b/gi
+    const textLower = text.toLowerCase()
+    
+    // More precise keyword extraction - only include if actually present
+    const allPossibleSkills = [
+      'python', 'java', 'javascript', 'typescript', 'c++', 'c#', 'ruby', 'go', 'rust', 'php', 'swift', 'kotlin',
+      'react', 'angular', 'vue', 'django', 'flask', 'spring', 'express', 'laravel', 'rails',
+      'sql', 'mysql', 'postgresql', 'mongodb', 'redis', 'elasticsearch', 'oracle',
+      'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'jenkins', 'git', 'ci/cd', 'terraform',
+      'rest', 'api', 'restful apis', 'graphql',
+      'leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative',
+      'dublin', 'cork', 'galway', 'irish market', 'eu citizen', 'stamp 4'
     ]
     
-    const skills = new Set<string>()
+    const foundSkills = new Set<string>()
     
-    skillPatterns.forEach(pattern => {
-      const matches = text.match(pattern)
-      if (matches) {
-        matches.forEach(skill => skills.add(skill.toLowerCase()))
+    // Check each skill individually for exact presence
+    allPossibleSkills.forEach(skill => {
+      // Create a regex that looks for the skill as a whole word or phrase
+      const skillRegex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+      
+      if (skillRegex.test(textLower)) {
+        foundSkills.add(skill.toLowerCase())
       }
     })
     
-    return Array.from(skills)
+    // Special handling for compound terms
+    if (textLower.includes('rest') && (textLower.includes('api') || textLower.includes('restful'))) {
+      foundSkills.add('rest')
+      foundSkills.add('api')
+    }
+    
+    if (textLower.includes('ci/cd') || (textLower.includes('ci') && textLower.includes('cd'))) {
+      foundSkills.add('ci/cd')
+    }
+    
+    return Array.from(foundSkills)
   }
 
   private analyzeStructure(text: string): any {

@@ -543,15 +543,42 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
   if (jobDescription) {
     const jobLower = jobDescription.toLowerCase()
     
-    // Add job-specific keywords for AI/Python roles
-    const aiKeywords = ['python', 'ai', 'api', 'llm', 'openai', 'hugging face', 'langchain', 'nodejs', 'backend', 'integration', 'prompt', 'engineering', 'machine learning', 'automation', 'workflow']
-    jobSpecificKeywords = aiKeywords.filter(keyword => jobLower.includes(keyword))
+    // Instead of using hardcoded keywords + AI keywords, extract actual keywords from job description
+    console.log('🎯 Extracting keywords from job description for precise matching')
     
-    targetKeywords = allKeywords.filter(keyword => 
-      jobLower.includes(keyword.toLowerCase())
-    )
+    // Extract meaningful keywords from the job description
+    const jobWords = jobLower
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 2)
+      .filter(word => !['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'you', 'your', 'our', 'we', 'they', 'them', 'their', 'who', 'what', 'when', 'where', 'why', 'how'].includes(word))
     
-    targetKeywords = [...new Set([...targetKeywords, ...jobSpecificKeywords])]
+    // Count frequency and take most common words as potential keywords
+    const wordCount: Record<string, number> = {}
+    jobWords.forEach(word => {
+      wordCount[word] = (wordCount[word] || 0) + 1
+    })
+    
+    // Get words that appear more than once and are likely to be important
+    const frequentWords = Object.entries(wordCount)
+      .filter(([word, count]) => count > 1 || allKeywords.includes(word))
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 30) // Take top 30 most relevant words
+      .map(([word]) => word)
+    
+    // Also include any words from our standard keywords that appear in the job description
+    const relevantStandardKeywords = allKeywords.filter(keyword => {
+      // Use word boundary regex to avoid false positives like "java" in "javascript"
+      const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i')
+      return regex.test(jobLower)
+    })
+    
+    // Combine and deduplicate
+    targetKeywords = [...new Set([...relevantStandardKeywords, ...frequentWords])]
+    
+    console.log('✅ Extracted', targetKeywords.length, 'relevant keywords from job description')
+  } else {
+    console.log('⚠️ No job description provided, using standard keyword list')
   }
 
   const matchedKeywords: { [key: string]: number } = {}
@@ -569,6 +596,12 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
     } else {
       missingKeywords.push(keyword)
     }
+  })
+
+  console.log('📊 Keyword analysis:', {
+    matched: Object.keys(matchedKeywords).length,
+    missing: missingKeywords.length,
+    total: targetKeywords.length
   })
 
   return {
