@@ -6,7 +6,7 @@ import { VercelKVManager } from '@/lib/vercel-kv-manager'
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
   // EMERGENCY BYPASS: Always allow admin access when IP whitelist is disabled
-  if (process.env.DISABLE_IP_WHITELIST === 'true') {
+  if (process.env.DISABLE_IP_WHITELIST?.trim() === 'true') {
     console.log('🚨 EMERGENCY BYPASS: Admin access allowed due to DISABLE_IP_WHITELIST=true')
     return true
   }
@@ -110,8 +110,8 @@ const isAdminIPAllowed = async (request: NextRequest): Promise<boolean> => {
   }
   
   // Emergency bypass (for setup) - Check both ways for Vercel Edge Runtime
-  const disableWhitelist = process.env.DISABLE_IP_WHITELIST === 'true' || 
-                          process.env.NEXT_PUBLIC_DISABLE_IP_WHITELIST === 'true'
+  const disableWhitelist = process.env.DISABLE_IP_WHITELIST?.trim() === 'true' || 
+                          process.env.NEXT_PUBLIC_DISABLE_IP_WHITELIST?.trim() === 'true'
   if (disableWhitelist) {
     console.log('⚠️ EMERGENCY BYPASS: IP whitelist disabled via environment variable')
     return true
