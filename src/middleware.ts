@@ -166,6 +166,8 @@ const JWT_SECRET = process.env.JWT_SECRET
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
   const pathname = request.nextUrl.pathname
+  
+  // Environment variables have been added to production - deployment trigger
 
   // Silent handling of Chrome DevTools requests
   if (pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
