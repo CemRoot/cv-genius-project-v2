@@ -389,10 +389,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
       </div>
 
       {/* Footer - Only show if references section is not visible */}
-      {(() => {
-        const isReferencesVisible = isSectionVisible('references')
-        return !isReferencesVisible
-      })() && (
+      {!isSectionVisible('references') && (
         <div className="text-center text-xs text-gray-600 mt-8 pt-4 border-t border-gray-300">
           <p>References available upon request</p>
         </div>
