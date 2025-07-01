@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 // Force Node.js runtime for PDF parsing
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // 30 seconds timeout
+export const preferredRegion = 'auto'
 
 // Direct PDF parsing function with error handling
 async function extractPDFText(buffer: ArrayBuffer): Promise<string> {

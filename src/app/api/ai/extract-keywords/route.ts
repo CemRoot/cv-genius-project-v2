@@ -4,6 +4,12 @@ import { GLOBAL_PROMPTS, LANGUAGE_ADAPTATIONS } from '@/lib/ai/global-prompts'
 import { GLOBAL_KEYWORDS, analyzeKeywordDensity } from '@/lib/keywords/global-keywords'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
+// Configuration for AI processing
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // 30 seconds timeout
+export const preferredRegion = 'auto'
+
 export async function POST(request: NextRequest) {
   try {
     // Check if Gemini API key is configured

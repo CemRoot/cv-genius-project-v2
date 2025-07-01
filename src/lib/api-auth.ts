@@ -40,10 +40,14 @@ export async function validateAiApiRequest(request: NextRequest): Promise<{
   const referer = request.headers.get('referer')
   const host = request.headers.get('host')
   
-  // Debug logging in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('API Auth Debug:', { origin, referer, host })
-  }
+  // Debug logging for troubleshooting
+  console.log('API Auth Headers:', { 
+    origin, 
+    referer, 
+    host,
+    userAgent: request.headers.get('user-agent'),
+    method: request.method
+  })
   
   // Allow requests from the same origin (your website)
   // Note: 'null' origin can happen with file:// URLs or some same-origin requests

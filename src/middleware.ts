@@ -189,9 +189,13 @@ export async function middleware(request: NextRequest) {
   const isCsrfExempt = csrfExemptRoutes.includes(pathname)
   
   // Apply appropriate security headers
+  // Skip CSP header as it's set in vercel.json
   const headersToApply = isAdminRoute ? adminSecurityHeaders : securityHeaders
   Object.entries(headersToApply).forEach(([key, value]) => {
-    response.headers.set(key, value)
+    // Skip CSP as it's handled by vercel.json
+    if (key !== 'Content-Security-Policy') {
+      response.headers.set(key, value)
+    }
   })
   
   if (isAdminRoute) {

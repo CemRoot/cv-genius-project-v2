@@ -4,6 +4,12 @@ import { LANGUAGE_ADAPTATIONS } from '@/lib/ai/global-prompts'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 import { loadCoverLetterPrompts, getTemplatePrompt, getTonePrompt } from '@/lib/cover-letter-prompts-loader'
 
+// Configuration for AI processing
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // 30 seconds timeout
+export const preferredRegion = 'auto'
+
 // Cover letter template definitions
 const coverLetterTemplates = {
   basic: 'Basic',

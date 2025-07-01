@@ -4,6 +4,12 @@ import fs from 'fs/promises'
 import path from 'path'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
+// Configuration for AI processing
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // 30 seconds timeout
+export const preferredRegion = 'auto'
+
 // Load CV Builder prompts from admin settings
 async function loadCVBuilderPrompts() {
   try {

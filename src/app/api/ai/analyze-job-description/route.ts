@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
+// Configuration for AI processing
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // 30 seconds timeout
+export const preferredRegion = 'auto'
+
 const ANALYSIS_PROMPT = `
 Analyze the following job description and extract:
 1. Company Name (if mentioned)

@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, validateApiKey, checkRateLimit } from '@/lib/gemini-client'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
+// Configuration for AI processing
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // 30 seconds timeout
+export const preferredRegion = 'auto'
+
 export async function POST(request: NextRequest) {
   try {
     // Validate API authentication
