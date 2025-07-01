@@ -40,7 +40,41 @@ export async function validateAiApiRequest(request: NextRequest): Promise<{
   const referer = request.headers.get('referer')
   const host = request.headers.get('host')
   
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('API Auth Debug:', { origin, referer, host })
+  }
+  
   // Allow requests from the same origin (your website)
+  // Note: 'null' origin can happen with file:// URLs or some same-origin requests
+  if ((origin === 'null' || origin === null) && referer && host) {
+    // Use referer for validation when origin is null
+    const refererUrl = new URL(referer)
+    if (refererUrl.host === host) {
+      // Rate limit by IP for same-origin requests
+      const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                      request.headers.get('x-real-ip') || 
+                      'unknown'
+      
+      const rateLimitResult = await VercelKVRateLimiter.checkRateLimit({
+        identifier: `ip:${clientIP}`,
+        maxRequests: 100, // 100 requests per 15 minutes per IP
+        windowMs: 15 * 60 * 1000 // 15 minutes
+      })
+      
+      if (!rateLimitResult.allowed) {
+        return {
+          valid: false,
+          error: 'Rate limit exceeded',
+          status: 429,
+          retryAfter: rateLimitResult.retryAfter
+        }
+      }
+      
+      return { valid: true }
+    }
+  }
+  
   if (origin && host) {
     const originUrl = new URL(origin)
     if (originUrl.host === host) {
