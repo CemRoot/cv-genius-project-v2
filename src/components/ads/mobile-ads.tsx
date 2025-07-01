@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAdConfig } from './dynamic-ad-manager'
 
 interface MobileAdsProps {
   position?: 'top' | 'bottom' | 'floating'
@@ -9,6 +10,19 @@ interface MobileAdsProps {
 
 export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProps) {
   const [isVisible, setIsVisible] = useState(false)
+  
+  let adminSettings
+  try {
+    ({ adminSettings } = useAdConfig())
+  } catch (error) {
+    // Context henüz yüklenmemişse ads gösterme
+    return null
+  }
+
+  // Admin ayarlarından ads veya mobile ads kapatıldıysa hiçbir şey gösterme
+  if (!adminSettings.enableAds || !adminSettings.mobileAds) {
+    return null
+  }
 
   useEffect(() => {
     // Show placeholder immediately for testing (responsive check via CSS)

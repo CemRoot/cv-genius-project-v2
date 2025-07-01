@@ -11,10 +11,15 @@ interface InlineAdsProps {
 export function InlineAds({ position = 3, className = '' }: InlineAdsProps) {
   const [isVisible, setIsVisible] = useState(false)
   
-  let getAdsByType
+  let getAdsByType, adminSettings
   try {
-    ({ getAdsByType } = useAdConfig())
+    ({ getAdsByType, adminSettings } = useAdConfig())
   } catch (error) {
+    return null
+  }
+
+  // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
+  if (!adminSettings.enableAds) {
     return null
   }
 

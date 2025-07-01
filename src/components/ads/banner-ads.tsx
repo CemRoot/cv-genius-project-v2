@@ -12,12 +12,18 @@ interface BannerAdsProps {
 export function BannerAds({ className = '', size = 'large', position = 'header' }: BannerAdsProps) {
   const [showCleanAd, setShowCleanAd] = useState(false)
   
-  let getAdsByType
+  let getAdsByType, adminSettings
   try {
-    ({ getAdsByType } = useAdConfig())
+    ({ getAdsByType, adminSettings } = useAdConfig())
   } catch (error) {
     // Context not ready yet, show placeholder
     getAdsByType = () => []
+    adminSettings = { enableAds: false, mobileAds: false, testMode: true, monetagPopup: false, monetagPush: false, monetagNative: false }
+  }
+
+  // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
+  if (!adminSettings.enableAds) {
+    return null
   }
 
   useEffect(() => {
@@ -58,23 +64,17 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     }
   }, [size, position, getAdsByType])
 
-  // In development, always show placeholder
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  
   // Admin ayarlarından reklam durumunu kontrol et
-  if (!isDevelopment) {
-    try {
-      const bannerAds = getAdsByType('banner').filter(ad => 
-        ad.position === position || !ad.position
-      )
-      
-      if (bannerAds.length === 0) {
-        return null // Reklam gösterme
-      }
-    } catch (error) {
-      return null
-    }
+  const bannerAds = getAdsByType('banner').filter(ad => 
+    ad.position === position || !ad.position
+  )
+  
+  if (bannerAds.length === 0) {
+    return null // Reklam gösterme
   }
+
+  // Development modunda test göster
+  const isDevelopment = process.env.NODE_ENV === 'development'
 
   const sizeConfig = {
     large: { height: '90px', format: 'leaderboard' },

@@ -11,11 +11,16 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const [adLoaded, setAdLoaded] = useState(false)
   const [showPlaceholder, setShowPlaceholder] = useState(false)
   
-  let getAdsByType
+  let getAdsByType, adminSettings
   try {
-    ({ getAdsByType } = useAdConfig())
+    ({ getAdsByType, adminSettings } = useAdConfig())
   } catch (error) {
     // Context henüz yüklenmemişse default davranış
+    return null
+  }
+
+  // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
+  if (!adminSettings.enableAds) {
     return null
   }
 
