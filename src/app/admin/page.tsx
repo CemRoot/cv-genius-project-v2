@@ -54,12 +54,16 @@ interface AdminStats {
   activeUsers: number
   totalCVs: number
   todayLogins: number
+  growth?: {
+    users: string
+    cvs: string
+  }
 }
 
 interface SystemHealth {
-  api: 'healthy' | 'degraded' | 'down'
-  database: 'healthy' | 'degraded' | 'down'
-  storage: 'healthy' | 'degraded' | 'down'
+  api: 'healthy' | 'degraded' | 'down' | 'not_configured'
+  database: 'healthy' | 'degraded' | 'down' | 'not_configured'
+  storage: 'healthy' | 'degraded' | 'down' | 'local_only'
   performance: number
 }
 
@@ -70,6 +74,7 @@ interface PromptTemplate {
   prompt: string
   variables: string[]
   lastModified: string
+  context?: string
 }
 
 export default function AdminPanel() {
@@ -1536,6 +1541,74 @@ function AdsSection() {
     clicks: 0,
     ctr: 0
   })
+  const [saving, setSaving] = useState(false)
+
+  // Load current ad settings on component mount
+  useEffect(() => {
+    loadAdSettings()
+  }, [])
+
+  const loadAdSettings = async () => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ads')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.settings) {
+          setAdSettings(data.settings)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load ad settings:', error)
+    }
+  }
+
+  const saveAdSetting = async (key: string, value: boolean) => {
+    setSaving(true)
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/ads', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          setting: key, 
+          enabled: value,
+          settings: { ...adSettings, [key]: value }
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setAdSettings(prev => ({ ...prev, [key]: value }))
+          toast.success(data.message || `${key} ${value ? 'enabled' : 'disabled'}`)
+          
+          // Update environment if needed
+          if (key === 'enableAds') {
+            await updateVercelEnvironment('DISABLE_ADS', value ? 'false' : 'true')
+          }
+        } else {
+          toast.error(data.error || 'Failed to update ad setting')
+        }
+      } else {
+        toast.error('Failed to update ad setting')
+      }
+    } catch (error) {
+      toast.error('Network error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const updateVercelEnvironment = async (key: string, value: string) => {
+    try {
+      await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/vercel/update-environment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value })
+      })
+    } catch (error) {
+      console.error('Failed to update Vercel environment:', error)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -1675,10 +1748,7 @@ function AdsSection() {
                   </div>
                   <Switch 
                     checked={adSettings.monetagPopup} 
-                    onCheckedChange={(checked) => {
-                      setAdSettings({...adSettings, monetagPopup: checked})
-                      toast.success(`Popup zone ${checked ? 'enabled' : 'disabled'}`)
-                    }}
+                    onCheckedChange={(checked) => saveAdSetting('monetagPopup', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded">
@@ -1688,10 +1758,7 @@ function AdsSection() {
                   </div>
                   <Switch 
                     checked={adSettings.monetagPush} 
-                    onCheckedChange={(checked) => {
-                      setAdSettings({...adSettings, monetagPush: checked})
-                      toast.success(`Push notifications ${checked ? 'enabled' : 'disabled'}`)
-                    }}
+                    onCheckedChange={(checked) => saveAdSetting('monetagPush', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded">
@@ -1701,10 +1768,7 @@ function AdsSection() {
                   </div>
                   <Switch 
                     checked={adSettings.monetagNative} 
-                    onCheckedChange={(checked) => {
-                      setAdSettings({...adSettings, monetagNative: checked})
-                      toast.success(`Native ads ${checked ? 'enabled' : 'disabled'}`)
-                    }}
+                    onCheckedChange={(checked) => saveAdSetting('monetagNative', checked)}
                   />
                 </div>
               </div>
@@ -1727,10 +1791,7 @@ function AdsSection() {
                   </div>
                   <Switch 
                     checked={adSettings.enableAds} 
-                    onCheckedChange={(checked) => {
-                      setAdSettings({...adSettings, enableAds: checked})
-                      toast.success(`Ads ${checked ? 'enabled' : 'disabled'}`)
-                    }}
+                    onCheckedChange={(checked) => saveAdSetting('enableAds', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -1740,10 +1801,7 @@ function AdsSection() {
                   </div>
                   <Switch 
                     checked={adSettings.mobileAds} 
-                    onCheckedChange={(checked) => {
-                      setAdSettings({...adSettings, mobileAds: checked})
-                      toast.success(`Mobile ads ${checked ? 'enabled' : 'disabled'}`)
-                    }}
+                    onCheckedChange={(checked) => saveAdSetting('mobileAds', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -1753,10 +1811,7 @@ function AdsSection() {
                   </div>
                   <Switch 
                     checked={adSettings.testMode} 
-                    onCheckedChange={(checked) => {
-                      setAdSettings({...adSettings, testMode: checked})
-                      toast.success(`Test mode ${checked ? 'enabled' : 'disabled'}`)
-                    }}
+                    onCheckedChange={(checked) => saveAdSetting('testMode', checked)}
                   />
                 </div>
               </div>
@@ -1772,23 +1827,47 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const [activeTab, setActiveTab] = useState('health')
-  const [systemData] = useState({
-    uptime: 'N/A',
+  const [systemData, setSystemData] = useState({
+    uptime: 'Loading...',
     cpu: 0,
     memory: 0,
     disk: 0,
     requests: 0,
     avgResponseTime: 0,
     errorRate: 0,
-    connections: 0
+    connections: 0,
+    systemLogs: []
   })
   const [apiConfig, setApiConfig] = useState<any>(null)
   const [configLoading, setConfigLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     fetchApiConfig()
+    fetchSystemData()
+    
+    // Auto-refresh system data every 30 seconds
+    const interval = setInterval(fetchSystemData, 30000)
+    return () => clearInterval(interval)
   }, [])
+
+  const fetchSystemData = async () => {
+    setRefreshing(true)
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/system-health')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setSystemData(data.systemData)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch system data:', error)
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const fetchApiConfig = async () => {
     try {
@@ -1827,6 +1906,25 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
       toast.error('Network error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const testApiEndpoint = async (endpoint: string) => {
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest(`/api/admin/test-endpoint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(`${endpoint} - Response time: ${data.responseTime}ms`)
+      } else {
+        toast.error(`${endpoint} - Failed to test`)
+      }
+    } catch (error) {
+      toast.error(`${endpoint} - Network error`)
     }
   }
 
