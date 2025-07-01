@@ -10,6 +10,7 @@ import { BannerAds } from "@/components/ads/banner-ads"
 import { useAdConfig } from "@/components/ads/dynamic-ad-manager"
 import { MainLayout } from "@/components/layout/main-layout"
 import { MobileOnboarding, useMobileOnboarding } from "@/components/mobile"
+import { AdSection } from "@/components/ads/ad-section"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -148,7 +149,7 @@ export default function HomePage() {
       {/* Header Banner Ad - Below Hero */}
       <div className="py-4 bg-muted/20 relative z-30">
         <div className="container mx-auto px-4">
-          <BannerAds position="content" size="large" />
+          <AdSection type="banner" size="large" />
         </div>
       </div>
 
@@ -230,7 +231,7 @@ export default function HomePage() {
             </div>
 
             {/* Sidebar Ads */}
-            <SidebarAdSection />
+            <AdSection type="sidebar" />
           </div>
         </div>
       </section>
@@ -377,7 +378,7 @@ export default function HomePage() {
       {/* Bottom Banner Ad */}
       <section className="bg-white py-6 border-t">
         <div className="container mx-auto px-4">
-          <AdController type="banner" size="large" />
+          <AdSection type="banner" size="large" />
         </div>
       </section>
 
