@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
     
     // Validate API key
     const apiKeyValidation = validateApiKey()
+    console.log('improve-cv-text: API key validation:', apiKeyValidation ? 'failed' : 'passed')
+    
     if (apiKeyValidation) {
       return apiKeyValidation
     }

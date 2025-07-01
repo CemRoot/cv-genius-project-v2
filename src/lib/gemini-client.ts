@@ -7,7 +7,14 @@ if (typeof window !== 'undefined') {
   throw new Error('Gemini client should only be used on the server side')
 }
 
-const API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
+const API_KEY = process.env.GEMINI_API_KEY
+
+// Log for debugging (remove in production)
+console.log('Gemini Client Init:', {
+  hasApiKey: !!API_KEY,
+  keyLength: API_KEY?.length || 0,
+  keyPrefix: API_KEY?.substring(0, 5) + '...' || 'missing'
+})
 
 // API key validation is handled in validateApiKey function
 
@@ -15,13 +22,18 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null
 
 // Utility function to check API key configuration
 export function validateApiKey() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
-  if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey || apiKey === 'your_gemini_api_key_here' || apiKey.length < 20) {
+    console.log('validateApiKey: API key missing or invalid')
     return NextResponse.json(
       { 
         error: 'AI service not configured', 
-        message: 'Please set your GEMINI_API_KEY in .env.local file to use AI features.',
-        setup: 'Get your API key from https://makersuite.google.com/app/apikey'
+        message: 'GEMINI_API_KEY is not properly configured on the server.',
+        setup: 'Please ensure GEMINI_API_KEY is set in Vercel environment variables.',
+        debug: {
+          hasKey: !!apiKey,
+          keyLength: apiKey?.length || 0
+        }
       },
       { status: 503 }
     )
