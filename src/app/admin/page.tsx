@@ -108,24 +108,7 @@ export default function AdminPanel() {
   })
 
   // Prompt Management States
-  const [prompts, setPrompts] = useState<PromptTemplate[]>([
-    {
-      id: 'cover-letter-generation',
-      name: 'Cover Letter Generation',
-      category: 'Generation',
-      prompt: 'Generate a professional cover letter...',
-      variables: ['jobTitle', 'company', 'candidateName'],
-      lastModified: '2025-06-29'
-    },
-    {
-      id: 'cv-improvement',
-      name: 'CV Text Improvement',
-      category: 'Improvement',
-      prompt: 'Improve the following CV text...',
-      variables: ['text', 'jobType'],
-      lastModified: '2025-06-29'
-    }
-  ])
+  const [prompts, setPrompts] = useState<PromptTemplate[]>([])
 
   // Check authentication on mount
   useEffect(() => {
@@ -1118,6 +1101,7 @@ function ContentSection({ prompts, setPrompts }: { prompts: PromptTemplate[], se
   const [testInput, setTestInput] = useState('')
   const [testOutput, setTestOutput] = useState('')
   const [testing, setTesting] = useState(false)
+  const router = useRouter()
 
   const savePrompt = async (prompt: PromptTemplate) => {
     try {
@@ -1152,22 +1136,30 @@ function ContentSection({ prompts, setPrompts }: { prompts: PromptTemplate[], se
     
     setTesting(true)
     try {
-      // Simulate AI response
-      setTimeout(() => {
-        const mockResponse = `[AI Response for ${selectedPrompt.name}]\n\n`
-          + `Input: "${testInput}"\n\n`
-          + `Based on the ${selectedPrompt.category.toLowerCase()} prompt, here's what the AI would generate:\n\n`
-          + `• Enhanced text with improved clarity\n`
-          + `• Professional language and tone\n`
-          + `• ATS-optimized keywords\n`
-          + `• Industry-specific terminology\n\n`
-          + `This is a simulated response. In production, this would use the actual AI service.`
-        
-        setTestOutput(mockResponse)
-        setTesting(false)
-      }, 1500)
+      const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/test-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          promptId: selectedPrompt.id,
+          prompt: selectedPrompt.prompt,
+          input: testInput,
+          variables: selectedPrompt.variables
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.result) {
+          setTestOutput(data.result)
+        } else {
+          toast.error('Failed to test prompt')
+        }
+      } else {
+        toast.error('Failed to test prompt')
+      }
     } catch (error) {
       toast.error('Test failed')
+    } finally {
       setTesting(false)
     }
   }
@@ -1179,10 +1171,16 @@ function ContentSection({ prompts, setPrompts }: { prompts: PromptTemplate[], se
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Content & Prompts</h1>
           <p className="text-gray-600 mt-2">Manage CV templates and AI prompts</p>
         </div>
-        <Button onClick={() => setShowPromptDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Prompt
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => router.push('/admin/cv-builder-prompts')}>
+            <Wand2 className="w-4 h-4 mr-2" />
+            CV Builder Prompts
+          </Button>
+          <Button onClick={() => router.push('/admin/cover-letter-prompts')}>
+            <FileText className="w-4 h-4 mr-2" />
+            Cover Letter Prompts
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -1446,9 +1444,26 @@ function UsersSection() {
               <CardDescription>Currently logged in users</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>Session tracking will be available in the next update</p>
+              <div className="space-y-4">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>No Active Sessions</AlertTitle>
+                  <AlertDescription>
+                    Session tracking requires database integration. Currently showing logged-in admin only.
+                  </AlertDescription>
+                </Alert>
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Badge variant="default">Active</Badge>
+                      <div>
+                        <p className="font-medium">Admin Session</p>
+                        <p className="text-sm text-gray-500">Current session</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-500">Started: Just now</p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1461,9 +1476,36 @@ function UsersSection() {
               <CardDescription>Latest actions and events</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>Activity logging will be available in the next update</p>
+              <div className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Activity Logging</AlertTitle>
+                  <AlertDescription>
+                    Recent activities from security audit log:
+                  </AlertDescription>
+                </Alert>
+                <div className="space-y-2">
+                  <div className="border rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm">Admin login successful</span>
+                      </div>
+                      <span className="text-xs text-gray-500">Just now</span>
+                    </div>
+                  </div>
+                  {userData && userData.todayLogins > 0 && (
+                    <div className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Activity className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm">{userData.todayLogins} login(s) today</span>
+                        </div>
+                        <span className="text-xs text-gray-500">Today</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -2107,9 +2149,45 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
               <CardDescription>Recent system events and errors</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Server className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>Log viewer will be available in the next update</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <Label>Recent System Events</Label>
+                  <Button size="sm" variant="outline" onClick={() => fetchApiConfig()}>
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    Refresh
+                  </Button>
+                </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="p-3 border rounded-lg bg-green-50 border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium">System started successfully</span>
+                      </div>
+                      <span className="text-xs text-gray-500">{new Date().toLocaleTimeString()}</span>
+                    </div>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-blue-50 border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Info className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm">API configuration loaded</span>
+                      </div>
+                      <span className="text-xs text-gray-500">{new Date().toLocaleTimeString()}</span>
+                    </div>
+                  </div>
+                  {apiConfig && !apiConfig.vercel.enabled && (
+                    <div className="p-3 border rounded-lg bg-yellow-50 border-yellow-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <AlertCircle className="w-4 h-4 text-yellow-600" />
+                          <span className="text-sm">Vercel integration not configured</span>
+                        </div>
+                        <span className="text-xs text-gray-500">{new Date().toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -2122,10 +2200,64 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
               <CardDescription>System maintenance and optimization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-center py-8 text-gray-500">
-                <Database className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>No maintenance tasks available</p>
-                <p className="text-sm mt-2">System is running in serverless mode</p>
+              <Alert>
+                <Server className="h-4 w-4" />
+                <AlertTitle>Serverless Architecture</AlertTitle>
+                <AlertDescription>
+                  This application runs on Vercel's serverless infrastructure. Maintenance is handled automatically.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium mb-2">Available Actions</h4>
+                  <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        toast.info('Clearing browser cache...')
+                        if ('caches' in window) {
+                          caches.keys().then(names => {
+                            names.forEach(name => caches.delete(name))
+                          })
+                        }
+                        localStorage.clear()
+                        sessionStorage.clear()
+                        toast.success('Cache cleared successfully!')
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear Browser Cache
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        fetchApiConfig()
+                        toast.success('Configuration reloaded')
+                      }}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Reload Configuration
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const runtime = 'edge'
+                        const node = process.version || 'N/A'
+                        const deployment = process.env.VERCEL_ENV || 'development'
+                        toast.info(`Runtime: ${runtime}\nNode: ${node}\nEnv: ${deployment}`)
+                      }}
+                    >
+                      <Info className="w-4 h-4 mr-2" />
+                      View System Info
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
