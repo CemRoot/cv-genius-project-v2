@@ -30,10 +30,17 @@ export function validateApiKey() {
 }
 
 // Model configurations with context-aware settings
-export const models = {
-  geminiPro: genAI?.getGenerativeModel({ model: 'gemini-2.0-flash' }),
-  geminiProVision: genAI?.getGenerativeModel({ model: 'gemini-2.0-flash' })
+export const getModels = () => {
+  if (!genAI) {
+    return null
+  }
+  return {
+    geminiPro: genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }),
+    geminiProVision: genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+  }
 }
+
+export const models = getModels()
 
 // Safety settings for professional content
 export const safetySettings = [
@@ -119,11 +126,13 @@ export async function generateContent(prompt: string, options?: {
         throw new Error('Gemini client not initialized - GEMINI_API_KEY missing')
       }
       
-      const model = models.geminiPro
+      const currentModels = models || getModels()
       
-      if (!model) {
-        throw new Error('Gemini model not available')
+      if (!currentModels || !currentModels.geminiPro) {
+        throw new Error('Gemini model not available - API key may be missing or invalid')
       }
+      
+      const model = currentModels.geminiPro
 
       // Get context-specific configuration
       const contextConfig = options?.context ? getContextConfig(options.context) : generationConfig

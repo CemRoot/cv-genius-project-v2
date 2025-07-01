@@ -10,8 +10,12 @@ export const preferredRegion = 'auto'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('improve-cv-text: Starting request')
+    
     // Validate API authentication
     const authResult = await validateAiApiRequest(request)
+    console.log('improve-cv-text: Auth result:', authResult)
+    
     if (!authResult.valid) {
       return createApiErrorResponse(
         authResult.error!,
@@ -144,11 +148,24 @@ Please return the enhanced, professionally formatted CV text that maintains all 
 FINAL REMINDER: Return ONLY plain text - no asterisks, no bold markers, no markdown formatting. Use CAPITAL LETTERS for section headings only. DO NOT DUPLICATE any sections or information.
 `
 
-    const result = await generateContent(improvePrompt, {
-      context: 'cvOptimization',
-      temperature: 0.1, // Very low temperature for precise ATS formatting
-      maxTokens: 4000
-    })
+    let result
+    try {
+      result = await generateContent(improvePrompt, {
+        context: 'cvOptimization',
+        temperature: 0.1, // Very low temperature for precise ATS formatting
+        maxTokens: 4000
+      })
+    } catch (genError: any) {
+      console.error('Gemini generation error:', genError)
+      return NextResponse.json(
+        { 
+          error: 'AI service temporarily unavailable',
+          details: genError.message || 'Failed to generate content',
+          suggestion: 'Please ensure GEMINI_API_KEY is set in environment variables'
+        },
+        { status: 503 }
+      )
+    }
 
     if (!result.success || !result.content) {
       return NextResponse.json(
