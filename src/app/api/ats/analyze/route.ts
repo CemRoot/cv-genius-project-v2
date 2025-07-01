@@ -543,71 +543,60 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
   if (jobDescription) {
     const jobLower = jobDescription.toLowerCase()
     
-    // Instead of using hardcoded keywords + AI keywords, extract actual keywords from job description
-    console.log('🎯 Extracting keywords from job description for precise matching')
+    // Instead of extracting every word, use the HuggingFace client's intelligent extraction
+    console.log('🎯 Using HuggingFace intelligent keyword extraction for precise matching')
     
-    // Extract meaningful keywords from the job description
-    const jobWords = jobLower
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(word => word.length > 2)
-      .filter(word => !['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'you', 'your', 'our', 'we', 'they', 'them', 'their', 'who', 'what', 'when', 'where', 'why', 'how'].includes(word))
+    // Get the HuggingFace client for intelligent keyword extraction
+    const { getHuggingFaceClient } = require('@/lib/integrations/huggingface-client')
+    const hfClient = getHuggingFaceClient()
     
-    // Count frequency and take most common words as potential keywords
-    const wordCount: Record<string, number> = {}
-    jobWords.forEach(word => {
-      wordCount[word] = (wordCount[word] || 0) + 1
-    })
+    // Use the intelligent extraction method - this will only return meaningful keywords
+    const meaningfulJobKeywords = hfClient.extractJobSpecificKeywords ? 
+      hfClient.extractJobSpecificKeywords(jobDescription) : 
+      hfClient.extractBasicSkills(jobDescription)
     
-    // Get words that appear more than once and are likely to be important
-    const frequentWords = Object.entries(wordCount)
-      .filter(([word, count]) => count > 1 || allKeywords.includes(word))
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 30) // Take top 30 most relevant words
-      .map(([word]) => word)
-    
-    // Also include any words from our standard keywords that appear in the job description
+    // Also include any words from our standard keywords that appear in the job description with word boundaries
     const relevantStandardKeywords = allKeywords.filter(keyword => {
-      // Use word boundary regex to avoid false positives like "java" in "javascript"
-      const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i')
+      // Use word boundary regex to avoid false positives like \"java\" in \"javascript\"
+      const regex = new RegExp(`\\\\b${keyword.toLowerCase()}\\\\b`, 'i')
       return regex.test(jobLower)
     })
     
-    // Combine and deduplicate
-    targetKeywords = [...new Set([...relevantStandardKeywords, ...frequentWords])]
+    // Combine meaningful job keywords with relevant standard keywords
+    jobSpecificKeywords = [...new Set([...meaningfulJobKeywords, ...relevantStandardKeywords])]
+    targetKeywords = jobSpecificKeywords
     
-    console.log('✅ Extracted', targetKeywords.length, 'relevant keywords from job description')
-  } else {
-    console.log('⚠️ No job description provided, using standard keyword list')
+    console.log('✅ Extracted meaningful keywords:', jobSpecificKeywords.length)
   }
-
+  
+  const cvLower = cvText.toLowerCase()
   const matchedKeywords: { [key: string]: number } = {}
   const missingKeywords: string[] = []
   
   targetKeywords.forEach(keyword => {
-    const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'gi')
+    const regex = new RegExp(`\\\\b${keyword.toLowerCase()}\\\\b`, 'gi')
     const matches = cvText.match(regex)
     const count = matches ? matches.length : 0
     
     if (count > 0) {
-      const wordCount = cvText.split(/\s+/).length
+      const wordCount = cvText.split(/\\s+/).length
       const density = Math.round((count / wordCount) * 1000) / 10
       matchedKeywords[keyword] = density
     } else {
       missingKeywords.push(keyword)
     }
   })
-
+  
   console.log('📊 Keyword analysis:', {
     matched: Object.keys(matchedKeywords).length,
     missing: missingKeywords.length,
     total: targetKeywords.length
   })
-
+  
   return {
     total: targetKeywords.length,
     matched: Object.keys(matchedKeywords).length,
-    missing: missingKeywords,
+    missing: missingKeywords.slice(0, 10), // Limit to 10 most relevant missing keywords
     density: matchedKeywords
   }
 }

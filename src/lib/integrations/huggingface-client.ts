@@ -275,27 +275,28 @@ export class HuggingFaceATSClient {
     
     // If we have a job description, extract keywords from it instead of using hardcoded lists
     if (jobDescription) {
-      console.log('🔍 Using job description keywords for industry analysis')
-      industryKeywords = this.extractBasicSkills(jobDescription)
+      console.log('🔍 Using intelligent job description keyword extraction for industry analysis')
+      industryKeywords = this.extractJobSpecificKeywords(jobDescription)
     } else {
       // Only fall back to hardcoded keywords if no job description is provided
       console.log('⚠️ No job description provided, falling back to hardcoded industry keywords')
       industryKeywords = this.getIndustryKeywords(industry)
     }
     
-    const cvLower = cvText.toLowerCase()
+    const cvSkills = this.extractBasicSkills(cvText)
+    const foundKeywords = cvSkills.filter(skill => industryKeywords.some(keyword => 
+      keyword.toLowerCase().includes(skill.toLowerCase()) || 
+      skill.toLowerCase().includes(keyword.toLowerCase())
+    ))
     
-    const foundKeywords = industryKeywords.filter(keyword => 
-      cvLower.includes(keyword.toLowerCase())
-    )
+    const missingCriticalKeywords = industryKeywords.filter(keyword => !foundKeywords.some(found => 
+      found.toLowerCase().includes(keyword.toLowerCase()) || 
+      keyword.toLowerCase().includes(found.toLowerCase())
+    )).slice(0, 8) // Limit missing keywords to prevent overwhelming output
     
-    const alignment = industryKeywords.length > 0 ? Math.round((foundKeywords.length / industryKeywords.length) * 100) : 50
-    
-    const missingCriticalKeywords = industryKeywords.filter(keyword => 
-      !cvLower.includes(keyword.toLowerCase())
-    ).slice(0, 5)
-    
-    console.log('📊 Industry analysis - alignment:', alignment + '%')
+    const alignment = industryKeywords.length > 0 
+      ? Math.round((foundKeywords.length / industryKeywords.length) * 100) 
+      : 75
     
     const recommendations = this.generateIndustryRecommendations(industry, foundKeywords, missingCriticalKeywords)
     
@@ -312,36 +313,62 @@ export class HuggingFaceATSClient {
   private extractBasicSkills(text: string): string[] {
     const textLower = text.toLowerCase()
     
-    // More precise keyword extraction - only include if actually present
-    const allPossibleSkills = [
+    // Comprehensive skill categories - focused on meaningful technical and professional terms
+    const technicalSkills = [
+      // Programming Languages
       'python', 'java', 'javascript', 'typescript', 'c++', 'c#', 'ruby', 'go', 'rust', 'php', 'swift', 'kotlin',
+      'r', 'matlab', 'scala', 'perl', 'bash', 'powershell',
+      
+      // Frameworks & Libraries  
       'react', 'angular', 'vue', 'django', 'flask', 'spring', 'express', 'laravel', 'rails',
-      'sql', 'mysql', 'postgresql', 'mongodb', 'redis', 'elasticsearch', 'oracle',
+      'nodejs', 'nextjs', 'nuxtjs', 'react native', 'flutter', 'xamarin',
+      
+      // Databases
+      'sql', 'mysql', 'postgresql', 'mongodb', 'redis', 'elasticsearch', 'oracle', 'cassandra',
+      'dynamodb', 'sqlite', 'mariadb', 'neo4j',
+      
+      // Cloud & DevOps
       'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'jenkins', 'git', 'ci/cd', 'terraform',
-      'rest', 'api', 'restful apis', 'graphql',
-      'leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative',
-      'dublin', 'cork', 'galway', 'irish market', 'eu citizen', 'stamp 4'
+      'ansible', 'helm', 'gitlab', 'github', 'bitbucket', 'travis', 'circleci',
+      
+      // APIs & Architecture
+      'rest', 'api', 'restful apis', 'graphql', 'soap', 'microservices', 'serverless',
+      'grpc', 'webhook', 'oauth', 'jwt',
+      
+      // Tools & Technologies
+      'agile', 'scrum', 'kanban', 'jira', 'confluence', 'slack', 'teams',
+      'webpack', 'gradle', 'maven', 'npm', 'yarn', 'pip'
     ]
     
+    const softSkills = [
+      'leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative',
+      'project management', 'time management', 'organization', 'detail oriented',
+      'collaboration', 'adaptability', 'innovation', 'mentoring', 'training'
+    ]
+    
+    const locationSkills = [
+      'dublin', 'cork', 'galway', 'irish market', 'eu citizen', 'stamp 4', 'work authorization',
+      'visa', 'remote', 'hybrid', 'on-site'
+    ]
+    
+    const allSkills = [...technicalSkills, ...softSkills, ...locationSkills]
     const foundSkills = new Set<string>()
     
-    // Check each skill individually for exact presence
-    allPossibleSkills.forEach(skill => {
-      // Create a regex that looks for the skill as a whole word or phrase
+    // Check each skill with proper word boundaries to avoid false positives
+    allSkills.forEach(skill => {
       const skillRegex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-      
       if (skillRegex.test(textLower)) {
         foundSkills.add(skill.toLowerCase())
       }
     })
     
-    // Special handling for compound terms
-    if (textLower.includes('rest') && (textLower.includes('api') || textLower.includes('restful'))) {
-      foundSkills.add('rest')
+    // Special compound terms handling
+    if ((textLower.includes('rest') && textLower.includes('api')) || textLower.includes('restful')) {
+      foundSkills.add('rest api')
       foundSkills.add('api')
     }
     
-    if (textLower.includes('ci/cd') || (textLower.includes('ci') && textLower.includes('cd'))) {
+    if (textLower.includes('ci/cd') || (textLower.includes('continuous integration') && textLower.includes('continuous deployment'))) {
       foundSkills.add('ci/cd')
     }
     
@@ -518,6 +545,89 @@ export class HuggingFaceATSClient {
     recommendations.push(...specificAdvice.slice(0, 2))
     
     return recommendations
+  }
+
+  // NEW: Intelligent job-specific keyword extraction (public method)
+  extractJobSpecificKeywords(jobDescription: string): string[] {
+    const jobLower = jobDescription.toLowerCase()
+    const meaningfulKeywords = new Set<string>()
+    
+    // Extract our predefined skills that appear in the job description
+    const basicSkills = this.extractBasicSkills(jobDescription)
+    basicSkills.forEach(skill => meaningfulKeywords.add(skill))
+    
+    // Define patterns for meaningful job-specific terms
+    const meaningfulPatterns = [
+      // Job titles and roles
+      /\b(senior|junior|lead|principal|staff|architect|manager|director|analyst|specialist|engineer|developer|designer|consultant)\b/g,
+      
+      // Important qualifications
+      /\b(bachelor|master|phd|degree|certification|certified|license|accredited)\b/g,
+      
+      // Business terms
+      /\b(enterprise|startup|saas|b2b|b2c|ecommerce|fintech|healthtech|edtech)\b/g,
+      
+      // Experience levels
+      /\b(\d+\+?\s*years?|experienced?|expert|proficient|advanced|intermediate|beginner)\b/g,
+      
+      // Industry buzzwords
+      /\b(innovation|digital transformation|scalability|performance|security|compliance|automation)\b/g
+    ]
+    
+    meaningfulPatterns.forEach(pattern => {
+      const matches = jobLower.match(pattern)
+      if (matches) {
+        matches.forEach(match => {
+          const cleaned = match.trim().toLowerCase()
+          if (cleaned.length > 2) {
+            meaningfulKeywords.add(cleaned)
+          }
+        })
+      }
+    })
+    
+    // Extract specific industry keywords if mentioned
+    const industryKeywords = {
+      'fintech': ['trading', 'banking', 'payments', 'blockchain', 'cryptocurrency', 'regulatory'],
+      'healthcare': ['patient', 'clinical', 'medical', 'healthcare', 'hipaa', 'fhir'],
+      'ecommerce': ['marketplace', 'payment gateway', 'inventory', 'shopping cart', 'logistics'],
+      'ai/ml': ['machine learning', 'artificial intelligence', 'deep learning', 'nlp', 'computer vision', 'tensorflow', 'pytorch']
+    }
+    
+    Object.entries(industryKeywords).forEach(([industry, keywords]) => {
+      if (jobLower.includes(industry) || keywords.some(kw => jobLower.includes(kw))) {
+        keywords.forEach(kw => {
+          if (jobLower.includes(kw)) {
+            meaningfulKeywords.add(kw)
+          }
+        })
+      }
+    })
+    
+    // Filter out overly common words that don't add value
+    const commonWords = new Set([
+      'new', 'work', 'working', 'role', 'position', 'job', 'company', 'team', 'member', 'members',
+      'experience', 'experienced', 'skills', 'skill', 'knowledge', 'ability', 'strong', 'good',
+      'excellent', 'great', 'best', 'top', 'high', 'quality', 'professional', 'business',
+      'development', 'technical', 'technology', 'solution', 'solutions', 'system', 'systems',
+      'application', 'applications', 'service', 'services', 'product', 'products', 'project', 'projects',
+      'customer', 'client', 'user', 'users', 'support', 'help', 'assist', 'manage', 'management',
+      'understand', 'understanding', 'knowledge', 'learn', 'learning', 'improve', 'improvement',
+      'deliver', 'delivery', 'implement', 'implementation', 'create', 'creating', 'build', 'building',
+      'develop', 'developing', 'design', 'designing', 'maintain', 'maintaining', 'test', 'testing',
+      'ensure', 'provide', 'collaborate', 'collaboration', 'communicate', 'communication',
+      'opportunity', 'opportunities', 'challenge', 'challenges', 'requirement', 'requirements',
+      'responsible', 'responsibility', 'duties', 'task', 'tasks', 'goal', 'goals', 'objective', 'objectives'
+    ])
+    
+    // Remove common words and very short terms
+    const filteredKeywords = Array.from(meaningfulKeywords).filter(keyword => 
+      !commonWords.has(keyword) && 
+      keyword.length > 2 && 
+      !/^\d+$/.test(keyword) // Remove pure numbers
+    )
+    
+    return filteredKeywords.slice(0, 15) // Limit to most relevant keywords
   }
 }
 
