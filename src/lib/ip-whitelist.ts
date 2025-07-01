@@ -28,8 +28,23 @@ export class IPWhitelistManager {
       // Try to load from environment variable first (Vercel compatible)
       const envWhitelist = process.env.ADMIN_IP_WHITELIST
       if (envWhitelist) {
-        this.data = JSON.parse(envWhitelist)
-        return this.data!
+        try {
+          // JSON formatı ise
+          this.data = JSON.parse(envWhitelist)
+          return this.data!
+        } catch (e) {
+          // Düz string ise (virgül ile ayrılmış)
+          this.data = {
+            entries: envWhitelist.split(',').map(ip => ({
+              ip: ip.trim(),
+              addedAt: new Date().toISOString(),
+              label: 'Env IP',
+              isActive: true
+            })),
+            lastUpdated: new Date().toISOString()
+          }
+          return this.data
+        }
       }
 
       // Fallback to file system for local development
