@@ -5,6 +5,11 @@ import { VercelKVManager } from '@/lib/vercel-kv-manager'
 
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
+  // Temporary bypass for admin access issues
+  if (request.nextUrl.pathname === '/admin' && process.env.DISABLE_IP_WHITELIST === 'true') {
+    return true
+  }
+  
   // Admin panel access validation
   if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
     const accessKey = request.nextUrl.searchParams.get('k')
@@ -132,13 +137,13 @@ const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live; img-src 'self' data: https:; object-src 'none';",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none';",
 }
 
 // Relaxed CSP for admin routes (includes Vercel Analytics)
 const adminSecurityHeaders = {
   ...securityHeaders,
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://vercel.com; img-src 'self' data: https:; object-src 'none';",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://va.vercel-scripts.com https://vercel.live https://vercel.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none';",
 }
 
 // JWT secret must be set via environment variable
