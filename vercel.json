@@ -1,5 +1,2 @@
 {
-  "env": {
-    "DISABLE_IP_WHITELIST": "true"
-  }
 }
