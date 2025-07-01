@@ -50,7 +50,18 @@ export function SecurityHeader({ isAuthenticated }: SecurityHeaderProps) {
 
       if (response.ok) {
         const data = await response.json()
-        setStats(data.stats)
+        if (data.success && data.stats?.security) {
+          setStats({
+            totalLogins: data.stats.security.totalLogins || 0,
+            failedLogins: data.stats.security.failedLogins || 0,
+            lastLogin: data.stats.security.lastLogin || 'Never',
+            lastLoginIP: data.stats.security.lastLoginIP || 'Unknown',
+            totalSessions: data.stats.security.totalSessions || 0,
+            activeSessions: data.stats.security.activeSessions || 1,
+            blockedIPs: data.stats.security.blockedIPs || [],
+            recentAttempts: data.stats.security.recentAttempts || []
+          })
+        }
       } else if (response.status === 429) {
         console.warn('Rate limit reached for security stats, will retry in 2 minutes')
       } else {

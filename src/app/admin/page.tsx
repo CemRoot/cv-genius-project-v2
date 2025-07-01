@@ -763,7 +763,13 @@ function SecuritySection() {
                   {loading ? 'Loading...' : (securityData?.twoFactorEnabled ? 'Enabled' : 'Disabled')}
                 </p>
               </div>
-              <Switch checked={securityData?.twoFactorEnabled || false} />
+              <Switch 
+                checked={securityData?.twoFactorEnabled || false} 
+                disabled={true}
+                onCheckedChange={() => {
+                  toast.info('2FA management is available through the dedicated 2FA page')
+                }}
+              />
             </div>
           </CardContent>
         </Card>

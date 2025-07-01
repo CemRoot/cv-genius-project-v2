@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import SecurityAuditLogger from '@/lib/security-audit'
+import fs from 'fs'
+import path from 'path'
 
 // In production, these would come from a database
 // For now, we'll use in-memory storage and calculate from available data
@@ -22,6 +24,19 @@ export async function GET(request: NextRequest) {
     // Get security stats from audit logger
     const auditLogger = SecurityAuditLogger.getInstance()
     const securityStats = auditLogger.getSecurityStats()
+    
+    // Get 2FA status from file
+    let twoFactorEnabled = false
+    try {
+      const twoFAStatePath = path.join(process.cwd(), '.2fa-state.json')
+      if (fs.existsSync(twoFAStatePath)) {
+        const twoFAState = JSON.parse(fs.readFileSync(twoFAStatePath, 'utf-8'))
+        twoFactorEnabled = twoFAState.enabled || false
+      }
+    } catch (error) {
+      // If we can't read 2FA state, check environment
+      twoFactorEnabled = process.env.ADMIN_2FA_STATE === 'ENABLED'
+    }
 
     // Real stats - no fake data
     const stats = {
@@ -46,10 +61,13 @@ export async function GET(request: NextRequest) {
         requests: securityStats.totalLogins || 0 // Only count actual logins
       },
       security: {
-        twoFactorEnabled: false, // Not implemented
+        twoFactorEnabled: twoFactorEnabled,
         ipWhitelistEnabled: process.env.DISABLE_IP_WHITELIST !== 'true',
-        currentIP: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+        currentIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown',
         ipWhitelist: process.env.ADMIN_IP_WHITELIST?.split(',').map(ip => ip.trim()).filter(Boolean) || [],
+        lastLogin: securityStats.lastLogin || 'Never',
+        lastLoginIP: securityStats.lastLoginIP || 'Unknown',
+        totalSessions: securityStats.totalLogins || 0,
         ...securityStats
       }
     }
