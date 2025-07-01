@@ -13,12 +13,14 @@ Analyze the following job description and extract:
 1. Company Name (if mentioned)
 2. Job Title/Role
 3. Location (if mentioned)
+4. If posted by recruitment agency (check for "our client", "my client", "the client")
 
 Return ONLY a JSON object with this exact format:
 {
   "company": "Company Name" or null,
   "role": "Job Title" or null,
   "location": "Location" or null,
+  "isRecruitmentAgency": true/false,
   "confidence": {
     "company": 0-100,
     "role": 0-100,
@@ -26,12 +28,18 @@ Return ONLY a JSON object with this exact format:
   }
 }
 
-Important:
-- Set values to null if not found
-- Confidence score: 100 = definitely found, 0 = not found, 50 = guessed
-- For role, extract the main job title (e.g., "Senior Python Developer", "Software Engineer")
-- For company, look for company names, avoid generic terms
+Important rules:
+- If you see "our client", "my client", "the client" followed by description, set company to null and isRecruitmentAgency to true
+- For role, extract the EXACT job title (e.g., "Senior Python (AI) Developer: Generative AI Projects" → "Senior Python (AI) Developer")
+- For location, extract specific locations (e.g., "Remote: Europe" → "Europe", "Dublin, Ireland" → "Dublin, Ireland")
+- Confidence score: 100 = explicitly stated, 50 = inferred, 0 = not found
+- Do NOT guess company names from industry descriptions
 - Return valid JSON only, no explanation
+
+Examples:
+- "Our client, a global leader..." → company: null, isRecruitmentAgency: true
+- "Join Microsoft as..." → company: "Microsoft", isRecruitmentAgency: false
+- "Senior Python (AI) Developer: Generative AI Projects" → role: "Senior Python (AI) Developer"
 
 Job Description:
 `
@@ -102,6 +110,7 @@ export async function POST(request: NextRequest) {
       company: parsedResult.company || null,
       role: parsedResult.role || null,
       location: parsedResult.location || null,
+      isRecruitmentAgency: parsedResult.isRecruitmentAgency || false,
       confidence: {
         company: parsedResult.confidence?.company || 0,
         role: parsedResult.confidence?.role || 0,

@@ -60,11 +60,14 @@ export default function JobDescriptionPage() {
       const result = await response.json()
 
       if (result.success && result.data) {
-        const { company, role, location, confidence } = result.data
+        const { company, role, location, confidence, isRecruitmentAgency } = result.data
         
         // Check if we need manual input
-        const needsManualInput = !company || !role || 
-          confidence.company < 50 || confidence.role < 50
+        // For recruitment agency postings, we always need manual input for company name
+        const needsManualInput = !role || 
+          confidence.role < 50 || 
+          isRecruitmentAgency || 
+          (!company && !isRecruitmentAgency)
 
         if (needsManualInput) {
           setDetectedInfo({ company, role, location })
@@ -291,8 +294,8 @@ export default function JobDescriptionPage() {
                   Complete Job Details
                 </DialogTitle>
                 <DialogDescription className="text-blue-100">
-                  {detectedInfo?.company || detectedInfo?.role ? 
-                    "We found some information but need your help to complete it." :
+                  {detectedInfo?.role ? 
+                    "This appears to be posted by a recruitment agency. Please enter the company name you're applying to." :
                     "Help us personalize your cover letter by providing the company and role details."
                   }
                 </DialogDescription>
@@ -316,9 +319,9 @@ export default function JobDescriptionPage() {
                 className="h-12 text-base px-4"
                 autoFocus
               />
-              {detectedInfo?.company && (
-                <p className="text-xs text-gray-500 italic">
-                  Detected: "{detectedInfo.company}" - Please verify or update
+              {!detectedInfo?.company && detectedInfo?.role && (
+                <p className="text-xs text-amber-600 italic">
+                  💡 Tip: Since this is from a recruitment agency, enter the actual company name you're applying to
                 </p>
               )}
             </div>
