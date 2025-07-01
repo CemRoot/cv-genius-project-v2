@@ -142,7 +142,7 @@ export class VercelAPI {
   }
   
   /**
-   * Check if Vercel API is properly configured
+   * Check if Vercel API is configured
    */
   static isConfigured(): boolean {
     return !!(process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID)
