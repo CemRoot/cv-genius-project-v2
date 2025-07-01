@@ -310,7 +310,7 @@ export class HuggingFaceATSClient {
   }
 
   // Helper methods
-  private extractBasicSkills(text: string): string[] {
+  extractBasicSkills(text: string): string[] {
     const textLower = text.toLowerCase()
     
     // Comprehensive skill categories - focused on meaningful technical and professional terms

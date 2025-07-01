@@ -547,7 +547,6 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
     console.log('🎯 Using HuggingFace intelligent keyword extraction for precise matching')
     
     // Get the HuggingFace client for intelligent keyword extraction
-    const { getHuggingFaceClient } = require('@/lib/integrations/huggingface-client')
     const hfClient = getHuggingFaceClient()
     
     // Use the intelligent extraction method - this will only return meaningful keywords
