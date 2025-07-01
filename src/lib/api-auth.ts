@@ -35,13 +35,74 @@ export async function validateAiApiRequest(request: NextRequest): Promise<{
   status?: number
   retryAfter?: number
 }> {
-  // Get API key
+  // Check if request is from the same origin (frontend)
+  const origin = request.headers.get('origin')
+  const referer = request.headers.get('referer')
+  const host = request.headers.get('host')
+  
+  // Allow requests from the same origin (your website)
+  if (origin && host) {
+    const originUrl = new URL(origin)
+    if (originUrl.host === host) {
+      // Rate limit by IP for same-origin requests
+      const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                      request.headers.get('x-real-ip') || 
+                      'unknown'
+      
+      const rateLimitResult = await VercelKVRateLimiter.checkRateLimit({
+        identifier: `ip:${clientIP}`,
+        maxRequests: 100, // 100 requests per 15 minutes per IP
+        windowMs: 15 * 60 * 1000 // 15 minutes
+      })
+      
+      if (!rateLimitResult.allowed) {
+        return {
+          valid: false,
+          error: 'Rate limit exceeded',
+          status: 429,
+          retryAfter: rateLimitResult.retryAfter
+        }
+      }
+      
+      return { valid: true }
+    }
+  }
+  
+  // Check referer as fallback
+  if (referer && host) {
+    const refererUrl = new URL(referer)
+    if (refererUrl.host === host) {
+      // Rate limit by IP for same-origin requests
+      const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                      request.headers.get('x-real-ip') || 
+                      'unknown'
+      
+      const rateLimitResult = await VercelKVRateLimiter.checkRateLimit({
+        identifier: `ip:${clientIP}`,
+        maxRequests: 100, // 100 requests per 15 minutes per IP
+        windowMs: 15 * 60 * 1000 // 15 minutes
+      })
+      
+      if (!rateLimitResult.allowed) {
+        return {
+          valid: false,
+          error: 'Rate limit exceeded',
+          status: 429,
+          retryAfter: rateLimitResult.retryAfter
+        }
+      }
+      
+      return { valid: true }
+    }
+  }
+  
+  // For external requests, require API key
   const apiKey = getApiKeyFromRequest(request)
   
   if (!apiKey) {
     return {
       valid: false,
-      error: 'API key required. Please provide x-api-key header or api_key query parameter.',
+      error: 'API key required for external requests. Please provide x-api-key header or api_key query parameter.',
       status: 401
     }
   }

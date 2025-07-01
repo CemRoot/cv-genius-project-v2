@@ -547,8 +547,7 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
       const response = await fetch('/api/ai/improve-text', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || 'default-key'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
           text,
