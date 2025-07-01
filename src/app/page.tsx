@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { IrishFlag, ShamrockIcon } from "@/components/ui/irish-flag"
 import { AdController } from "@/components/ads/ad-controller"
 import { BannerAds } from "@/components/ads/banner-ads"
+import { useAdConfig } from "@/components/ads/dynamic-ad-manager"
 import { MainLayout } from "@/components/layout/main-layout"
 import { MobileOnboarding, useMobileOnboarding } from "@/components/mobile"
 
@@ -22,6 +23,30 @@ const staggerChildren = {
       staggerChildren: 0.1
     }
   }
+}
+
+// Sidebar Ad Section with admin controls
+function SidebarAdSection() {
+  let adminSettings
+  try {
+    ({ adminSettings } = useAdConfig())
+  } catch (error) {
+    // Context not ready or ads disabled
+    return null
+  }
+
+  // Don't render the entire sidebar section if ads are disabled
+  if (!adminSettings.enableAds) {
+    return null
+  }
+
+  return (
+    <div className="lg:w-80 w-full flex justify-center lg:justify-start">
+      <div className="sticky top-8 w-full max-w-xs mx-auto lg:mx-0">
+        <AdController type="sidebar" />
+      </div>
+    </div>
+  )
 }
 
 export default function HomePage() {
@@ -205,11 +230,7 @@ export default function HomePage() {
             </div>
 
             {/* Sidebar Ads */}
-            <div className="lg:w-80 w-full flex justify-center lg:justify-start">
-              <div className="sticky top-8 w-full max-w-xs mx-auto lg:mx-0">
-                <AdController type="sidebar" />
-              </div>
-            </div>
+            <SidebarAdSection />
           </div>
         </div>
       </section>
