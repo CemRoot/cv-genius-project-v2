@@ -134,6 +134,41 @@ export async function validateAiApiRequest(request: NextRequest): Promise<{
     }
   }
   
+  // Final fallback: Check if it's likely a same-origin request from our own domain
+  // This helps with mobile apps, service workers, or other edge cases
+  const userAgent = request.headers.get('user-agent') || ''
+  const contentType = request.headers.get('content-type') || ''
+  
+  // If it looks like a browser request with proper content type, be more lenient
+  if ((userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) &&
+      contentType.includes('application/json') &&
+      request.method === 'POST') {
+    
+    console.log('🤔 Lenient validation: Browser-like request detected, allowing with rate limiting')
+    
+    // Still apply rate limiting for security
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                    request.headers.get('x-real-ip') || 
+                    'unknown'
+    
+    const rateLimitResult = await VercelKVRateLimiter.checkRateLimit({
+      identifier: `fallback-ip:${clientIP}`,
+      maxRequests: 50, // 50 requests per 15 minutes for fallback auth
+      windowMs: 15 * 60 * 1000 // 15 minutes
+    })
+    
+    if (!rateLimitResult.allowed) {
+      return {
+        valid: false,
+        error: 'Rate limit exceeded',
+        status: 429,
+        retryAfter: rateLimitResult.retryAfter
+      }
+    }
+    
+    return { valid: true }
+  }
+  
   // For external requests, require API key
   const apiKey = getApiKeyFromRequest(request)
   

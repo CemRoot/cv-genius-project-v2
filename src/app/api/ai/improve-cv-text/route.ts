@@ -12,9 +12,15 @@ export async function POST(request: NextRequest) {
   try {
     console.log('improve-cv-text: Starting request')
     
-    // Validate API authentication
+    // Validate API authentication - more lenient for same-origin requests
     const authResult = await validateAiApiRequest(request)
-    console.log('improve-cv-text: Auth result:', authResult)
+    console.log('improve-cv-text: Auth result:', { 
+      valid: authResult.valid, 
+      error: authResult.error,
+      origin: request.headers.get('origin'),
+      referer: request.headers.get('referer'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50)
+    })
     
     if (!authResult.valid) {
       return createApiErrorResponse(
@@ -41,9 +47,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (cvText.length < 100) {
+    if (cvText.length < 50) {
       return NextResponse.json(
-        { error: 'CV text is too short (minimum 100 characters)' },
+        { error: 'CV text is too short (minimum 50 characters)' },
         { status: 400 }
       )
     }

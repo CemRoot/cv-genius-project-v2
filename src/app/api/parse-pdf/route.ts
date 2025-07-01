@@ -11,13 +11,20 @@ async function extractPDFText(buffer: ArrayBuffer): Promise<string> {
   try {
     console.log('🔧 Starting PDF parsing...')
     
-    // Try to import pdf-parse-debugging-disabled
-    let pdfParse;
+    // Try to import pdf-parse-debugging-disabled with fallback
+    let pdfParse: any;
     try {
       pdfParse = (await import('pdf-parse-debugging-disabled')).default
     } catch (importError) {
       console.error('Failed to import pdf-parse-debugging-disabled:', importError)
-      throw new Error('PDF parsing library not available. Please try again later.')
+      // Try alternative import
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        pdfParse = require('pdf-parse-debugging-disabled')
+      } catch (requireError) {
+        console.error('Failed to require pdf-parse-debugging-disabled:', requireError)
+        throw new Error('PDF parsing temporarily unavailable. Please copy and paste your CV text instead.')
+      }
     }
     
     // Convert ArrayBuffer to Buffer
@@ -124,9 +131,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    // More conservative file size limit for Vercel
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit  
       return NextResponse.json(
-        { success: false, error: 'File size too large. Maximum 10MB allowed.' },
+        { success: false, error: 'File size too large. Maximum 5MB allowed for reliable processing.' },
         { status: 400 }
       )
     }
