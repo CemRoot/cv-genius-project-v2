@@ -1621,10 +1621,8 @@ function AdsSection() {
           setAdSettings(prev => ({ ...prev, [key]: value }))
           toast.success(data.message || `${key} ${value ? 'enabled' : 'disabled'}`)
           
-          // Update environment if needed
-          if (key === 'enableAds') {
-            await updateVercelEnvironment('DISABLE_ADS', value ? 'false' : 'true')
-          }
+          // Note: Environment variables now managed through local data files
+          // No need for Vercel API calls - admin panel controls ads directly
         } else {
           toast.error(data.error || 'Failed to update ad setting')
         }
@@ -1638,17 +1636,18 @@ function AdsSection() {
     }
   }
 
-  const updateVercelEnvironment = async (key: string, value: string) => {
-    try {
-      await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/vercel/update-environment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, value })
-      })
-    } catch (error) {
-      console.error('Failed to update Vercel environment:', error)
-    }
-  }
+  // Vercel environment updates removed - ads now controlled via local data files
+  // const updateVercelEnvironment = async (key: string, value: string) => {
+  //   try {
+  //     await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/vercel/update-environment', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ key, value })
+  //     })
+  //   } catch (error) {
+  //     console.error('Failed to update Vercel environment:', error)
+  //   }
+  // }
 
   return (
     <div className="space-y-6">
