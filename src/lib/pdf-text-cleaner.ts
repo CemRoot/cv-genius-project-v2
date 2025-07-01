@@ -46,6 +46,24 @@ export function cleanPDFText(text: string): string {
     .replace(/\b(speci)\s+(fi)\s+(c)\b/gi, 'specific')
     .replace(/\b(scientifi)\s+(c)\b/gi, 'scientific')
     
+    // Enhanced word-breaking fixes from action plan
+    // merge "pro fi cient" → "proficient", "e ffi ciency" → "efficiency"
+    .replace(/([A-Za-z])\s+fi\s+([A-Za-z])/g, '$1fi$2')
+    .replace(/([A-Za-z])\s+fl\s+([A-Za-z])/g, '$1fl$2')
+    .replace(/([A-Za-z])\s+ff\s+([A-Za-z])/g, '$1ff$2')
+    .replace(/([A-Za-z])\s+ffi\s+([A-Za-z])/g, '$1ffi$2')
+    .replace(/([A-Za-z])\s+ffl\s+([A-Za-z])/g, '$1ffl$2')
+    
+    // Common technical term patterns
+    .replace(/\b([A-Za-z]+)\s+(tion)\b/gi, '$1$2') // "applica tion" → "application"
+    .replace(/\b([A-Za-z]+)\s+(ment)\b/gi, '$1$2') // "manage ment" → "management"
+    .replace(/\b([A-Za-z]+)\s+(ness)\b/gi, '$1$2') // "business" type words
+    .replace(/\b([A-Za-z]+)\s+(able)\b/gi, '$1$2') // "reli able" → "reliable"
+    .replace(/\b([A-Za-z]+)\s+(ible)\b/gi, '$1$2') // "respons ible" → "responsible"
+    .replace(/\b([A-Za-z]+)\s+(ical)\b/gi, '$1$2') // "techn ical" → "technical"
+    .replace(/\b([A-Za-z]+)\s+(ance)\b/gi, '$1$2') // "perform ance" → "performance"
+    .replace(/\b([A-Za-z]+)\s+(ence)\b/gi, '$1$2') // "experi ence" → "experience"
+    
     // Fix broken words from PDF extraction - ligature patterns
     .replace(/(\w+)\s+(fi)\s+(\w+)/g, (match, p1, p2, p3) => {
       // Common ligature breaks in technical terms

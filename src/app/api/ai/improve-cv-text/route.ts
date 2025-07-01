@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, validateApiKey, checkRateLimit } from '@/lib/gemini-client'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
-// Configuration for AI processing
+// Configuration for AI processing - Enhanced runtime configuration
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30 // 30 seconds timeout

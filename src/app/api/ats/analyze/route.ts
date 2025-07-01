@@ -573,12 +573,12 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
   const missingKeywords: string[] = []
   
   targetKeywords.forEach(keyword => {
-    const regex = new RegExp(`\\\\b${keyword.toLowerCase()}\\\\b`, 'gi')
+    const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'gi')
     const matches = cvText.match(regex)
     const count = matches ? matches.length : 0
     
     if (count > 0) {
-      const wordCount = cvText.split(/\\s+/).length
+      const wordCount = cvText.split(/\s+/).length
       const density = Math.round((count / wordCount) * 1000) / 10
       matchedKeywords[keyword] = density
     } else {

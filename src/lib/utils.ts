@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { cleanPDFText } from "@/lib/pdf-text-cleaner"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -35,93 +36,8 @@ export function formatIrishPhone(phone: string): string {
 
 // Text cleaning utilities for PDF copy-paste
 export function cleanPdfText(text: string): string {
-  if (!text) return text
-  
-  return text
-    // Fix specific broken words from the example
-    .replace(/\bIaman\b/gi, 'I am an')
-    .replace(/\bwhois\b/gi, 'who is')
-    .replace(/\bpursuinga\b/gi, 'pursuing a')
-    .replace(/\bdegreein\b/gi, 'degree in')
-    .replace(/\batthe\b/gi, 'at the')
-    .replace(/\bpossessarobust\b/gi, 'possess a robust')
-    .replace(/\bhavinggained\b/gi, 'having gained')
-    .replace(/\bexperiencein\b/gi, 'experience in')
-    .replace(/\bAsthe\b/gi, 'As the')
-    .replace(/\bfounderofa\b/gi, 'founder of a')
-    .replace(/\bIwas\b/gi, 'I was')
-    .replace(/\bforthe\b/gi, 'for the')
-    .replace(/\bofan\b/gi, 'of an')
-    .replace(/\bthatwas\b/gi, 'that was')
-    .replace(/\bterminatedasa\b/gi, 'terminated as a')
-    .replace(/\bresultof\b/gi, 'result of')
-    .replace(/\bobstaclesin\b/gi, 'obstacles in')
-    .replace(/\bI aspireto\b/gi, 'I aspire to')
-    .replace(/\benhancemyprofi\b/gi, 'enhance my profi')
-    .replace(/\bciencyinartificial\b/gi, 'ciency in artificial')
-    .replace(/\bassistance\b/gi, 'assistance')
-    .replace(/\bwellasto\b/gi, 'well as to')
-    .replace(/\bparticipatein\b/gi, 'participate in')
-    .replace(/\bprojectsthathavea\b/gi, 'projects that have a')
-    .replace(/\bimpactonthefield\b/gi, 'impact on the field')
-    // Fix broken words with specific patterns - ligature issues
-    .replace(/\b(Arti)\s+(fi)\s+(cial)\b/gi, 'Artificial')
-    .replace(/\b(Arti)\s+(fical)\b/gi, 'Artificial')
-    .replace(/\b(Artifi)\s+(cial)\b/gi, 'Artificial')
-    .replace(/\b(Intel)\s+(li)\s+(gence)\b/gi, 'Intelligence')
-    .replace(/\b(Intel)\s+(ligence)\b/gi, 'Intelligence')
-    .replace(/\b(Intelli)\s+(gence)\b/gi, 'Intelligence') 
-    .replace(/\b(signifi)\s+(cant)\b/gi, 'significant')
-    .replace(/\b(Mana)\s+(gement)\b/gi, 'Management')
-    .replace(/\b(Deve)\s+(lopment)\b/gi, 'Development')
-    .replace(/\b(Res)\s+(ponsible)\b/gi, 'Responsible')
-    .replace(/\b(Expe)\s+(rience)\b/gi, 'Experience')
-    .replace(/\b(Commu)\s+(nication)\b/gi, 'Communication')
-    .replace(/\b(Colla)\s+(boration)\b/gi, 'Collaboration')
-    .replace(/\b(Orga)\s+(nization)\b/gi, 'Organization')
-    .replace(/\b(Imple)\s+(mentation)\b/gi, 'Implementation')
-    .replace(/\b(Techno)\s+(logy)\b/gi, 'Technology')
-    .replace(/\b(Profes)\s+(sional)\b/gi, 'Professional')
-    .replace(/\b(Analy)\s+(sis)\b/gi, 'Analysis')
-    .replace(/\b(Strate)\s+(gic)\b/gi, 'Strategic')
-    .replace(/\b(Creati)\s+(vity)\b/gi, 'Creativity')
-    .replace(/\b(Innova)\s+(tion)\b/gi, 'Innovation')
-    // Fix common concatenated words only in English patterns
-    .replace(/\b([a-z]+)a([A-Z][a-z]+)\b/g, '$1 a $2') // "pursinga" -> "pursuing a"
-    .replace(/\b([a-z]+)the([A-Z][a-z]+)\b/g, '$1 the $2') // "atthe" -> "at the"
-    .replace(/\b([a-z]+)in([A-Z][a-z]+)\b/g, '$1 in $2') // "degreein" -> "degree in"  
-    .replace(/\b([a-z]+)of([A-Z][a-z]+)\b/g, '$1 of $2') // "resultof" -> "result of"
-    .replace(/\b([a-z]+)to([A-Z][a-z]+)\b/g, '$1 to $2') // "aspireto" -> "aspire to"
-    // Generic pattern for words broken in the middle
-    .replace(/\b([A-Za-z]{3,})\s+([a-z]{2,6})\b/g, (match, word1, word2) => {
-      // Common word ending patterns
-      const endings = ['tion', 'sion', 'ment', 'ness', 'able', 'ible', 'ical', 'inal', 'ance', 'ence', 'ive', 'ing', 'ed', 'er', 'est', 'ly', 'ty', 'cy', 'ry', 'fy', 'ize', 'ise', 'age', 'ful', 'less', 'ward', 'wise']
-      
-      // Check if word2 looks like a word ending
-      if (endings.some(ending => word2.endsWith(ending) || word2 === ending)) {
-        return `${word1}${word2}`
-      }
-      
-      // Check if combined word is likely correct (basic heuristic)
-      const combined = word1 + word2
-      if (combined.length > 8 && word2.length >= 3 && word2.length <= 6) {
-        return combined
-      }
-      
-      return match
-    })
-    // Fix common PDF extraction issues
-    .replace(/\bfi\b/g, 'fi') // Fix fi ligature
-    .replace(/\bfl\b/g, 'fl') // Fix fl ligature  
-    .replace(/\bffi\b/g, 'ffi') // Fix ffi ligature
-    .replace(/\bffl\b/g, 'ffl') // Fix ffl ligature
-    // Fix hyphenated words split across lines
-    .replace(/(\w+)-\s*\n\s*(\w+)/g, '$1$2')
-    // Remove excessive whitespace but preserve intentional spaces
-    .replace(/[ \t]+/g, ' ')
-    // Clean up multiple newlines
-    .replace(/\n\s*\n\s*\n/g, '\n\n')
-    .trim()
+  // Use the enhanced PDF text cleaner to ensure consistency
+  return cleanPDFText(text)
 }
 
 // Validate and format text input (only for PDF paste, not for regular text)
