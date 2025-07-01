@@ -147,10 +147,17 @@ export async function PUT(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Admin auth kontrolü
+    // Verify admin authentication
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !isValidAdminAuth(authHeader)) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = authHeader.substring(7)
+    const adminSession = await verifyAdminToken(token)
+    
+    if (!adminSession) {
+      return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 })
     }
 
     const newAdConfig: AdConfig = await request.json()
@@ -175,10 +182,17 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Admin auth kontrolü
+    // Verify admin authentication
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !isValidAdminAuth(authHeader)) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = authHeader.substring(7)
+    const adminSession = await verifyAdminToken(token)
+    
+    if (!adminSession) {
+      return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 })
     }
 
     const { adId } = await request.json()
@@ -219,13 +233,3 @@ export async function GET_PUBLIC() {
   }
 }
 
-function isValidAdminAuth(authHeader: string): boolean {
-  // Basit auth kontrolü - production'da daha güvenli olmalı
-  // Bearer token veya session tabanlı auth kullanılmalı
-  const token = authHeader.replace('Bearer ', '')
-  
-  // Admin session kontrolü
-  // Gerçek uygulamada JWT veya session store kontrolü yapılmalı
-  return token === 'admin-session-token' || 
-         process.env.NODE_ENV === 'development'
-}

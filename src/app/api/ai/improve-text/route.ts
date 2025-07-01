@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit } from '@/lib/gemini-client'
 import fs from 'fs/promises'
 import path from 'path'
+import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 // Load CV Builder prompts from admin settings
 async function loadCVBuilderPrompts() {

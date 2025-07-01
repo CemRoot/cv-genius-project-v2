@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getHuggingFaceClient } from '@/lib/integrations/huggingface-client'
 import { checkRateLimit } from '@/lib/gemini-client'
+import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 interface HuggingFaceATSRequest {
   cvText: string

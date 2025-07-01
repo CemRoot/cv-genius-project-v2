@@ -8,6 +8,7 @@ import {
   validateATSFormat,
   analyzeEnterpriseATSCompatibility
 } from '@/lib/ats-utils'
+import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 // ATS Keywords for Irish market
 const ATS_KEYWORDS = {

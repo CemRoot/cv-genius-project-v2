@@ -5,8 +5,8 @@ import { VercelKVManager } from '@/lib/vercel-kv-manager'
 
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
-  // Admin panel access validation - DISABLED for easier access
-  if (false && request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
+  // Admin panel access validation
+  if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
     const accessKey = request.nextUrl.searchParams.get('k')
     if (!accessKey) return false
 

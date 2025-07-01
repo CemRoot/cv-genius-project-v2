@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
+import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 const ANALYSIS_PROMPT = `
 Analyze the following job description and extract:

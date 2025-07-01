@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
 import { GLOBAL_PROMPTS, LANGUAGE_ADAPTATIONS } from '@/lib/ai/global-prompts'
+import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
   try {

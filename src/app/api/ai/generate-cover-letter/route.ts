@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
 import { LANGUAGE_ADAPTATIONS } from '@/lib/ai/global-prompts'
+import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 // Cover letter template definitions
 const coverLetterTemplates = {
@@ -24,16 +25,27 @@ type CoverLetterTone = keyof typeof toneOptions
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate API authentication
+    const authResult = await validateAiApiRequest(request)
+    if (!authResult.valid) {
+      return createApiErrorResponse(
+        authResult.error!,
+        authResult.status!,
+        authResult.retryAfter
+      )
+    }
+    
     // Check if Gemini API key is configured
     const apiKeyError = validateApiKey()
     if (apiKeyError) {
       return apiKeyError
     }
 
-    // Get user ID for rate limiting
-    const userId = request.headers.get('x-user-id') || 'anonymous'
+    // Get user ID for rate limiting (now with API key prefix)
+    const apiKey = request.headers.get('x-api-key') || 'anonymous'
+    const userId = `api:${apiKey}`
     
-    // Check rate limit
+    // Additional rate limit check for Gemini API
     const rateLimit = checkRateLimit(userId)
     if (!rateLimit.allowed) {
       return NextResponse.json(

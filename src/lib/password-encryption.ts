@@ -29,17 +29,21 @@ export class PasswordEncryption {
       const iv = crypto.randomBytes(16)
       const encryptionKey = getEncryptionKey()
       if (!encryptionKey) throw new Error('Encryption not available on client-side')
-      const key = Buffer.from(encryptionKey.slice(0, 64), 'hex') // Use first 32 bytes
       
-      // Create cipher with IV
-      const cipher = crypto.createCipher('aes-256-cbc', key)
+      // Derive a proper 32-byte key from the encryption key
+      const key = crypto.createHash('sha256').update(encryptionKey).digest()
+      
+      // Create cipher with IV (using the modern createCipheriv)
+      const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
       
       // Encrypt the text
       let encrypted = cipher.update(text, 'utf8', 'hex')
       encrypted += cipher.final('hex')
       
-      // For compatibility, create a mock tag
-      const tag = crypto.createHash('sha256').update(encrypted + iv.toString('hex')).digest('hex').slice(0, 32)
+      // Create HMAC for authentication
+      const hmac = crypto.createHmac('sha256', key)
+      hmac.update(encrypted + iv.toString('hex'))
+      const tag = hmac.digest('hex')
       
       return {
         encrypted: encrypted,
@@ -60,16 +64,21 @@ export class PasswordEncryption {
       const { encrypted, iv, tag } = encryptedData
       const encryptionKey = getEncryptionKey()
       if (!encryptionKey) throw new Error('Decryption not available on client-side')
-      const key = Buffer.from(encryptionKey.slice(0, 64), 'hex') // Use first 32 bytes
       
-      // Verify tag for integrity
-      const expectedTag = crypto.createHash('sha256').update(encrypted + iv).digest('hex').slice(0, 32)
+      // Derive the same 32-byte key from the encryption key
+      const key = crypto.createHash('sha256').update(encryptionKey).digest()
+      
+      // Verify HMAC for integrity
+      const hmac = crypto.createHmac('sha256', key)
+      hmac.update(encrypted + iv)
+      const expectedTag = hmac.digest('hex')
+      
       if (tag !== expectedTag) {
         throw new Error('Data integrity check failed')
       }
       
-      // Create decipher
-      const decipher = crypto.createDecipher('aes-256-cbc', key)
+      // Create decipher with IV (using the modern createDecipheriv)
+      const decipher = crypto.createDecipheriv('aes-256-cbc', key, Buffer.from(iv, 'hex'))
       
       // Decrypt the text
       let decrypted = decipher.update(encrypted, 'hex', 'utf8')
