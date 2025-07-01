@@ -264,20 +264,25 @@ TONE GUIDANCE: Strategic and visionary tone. Focus on organizational transformat
     
     // Enhanced prompt with job description analysis
     const jobAnalysisSection = jobDescription ? `
-JOB DESCRIPTION ANALYSIS:
+CRITICAL: YOU MUST USE THE FOLLOWING JOB DESCRIPTION TO CREATE THE COVER LETTER:
+===========================================================================
 ${jobDescription}
+===========================================================================
 
-ANALYSIS REQUIREMENTS:
-1. Extract key skills and requirements from the job description
-2. Identify must-have vs nice-to-have qualifications
-3. Note company culture indicators and values
-4. Find keywords for ATS optimization
-5. Understand the role's core responsibilities
-6. Identify what the employer values most
-7. Extract company location if mentioned (otherwise default to Dublin, Ireland)
-8. Look for specific contact person name if mentioned
-9. Identify where the job was advertised (website, LinkedIn, etc.)
-${extractedFromDescription ? '10. Note: This appears to be posted by a recruitment agency, so refer to the company generically (e.g., "your organisation", "the bank", "your firm")' : ''}
+MANDATORY JOB DESCRIPTION ANALYSIS AND USAGE:
+1. THIS IS THE ACTUAL JOB THE APPLICANT IS APPLYING FOR - USE IT!
+2. Extract ALL key skills, technologies, and requirements mentioned
+3. The cover letter MUST reference specific requirements from THIS job description
+4. Use the EXACT job title from the description: "${position}"
+5. Reference specific technologies/skills mentioned (e.g., if it mentions Python, FastAPI, LangChain, etc., include these)
+6. Match the tone and language style used in the job description
+7. Address the specific responsibilities mentioned
+8. Show how the applicant's background aligns with THESE specific requirements
+9. DO NOT use generic phrases - be specific to THIS job
+10. If recruitment agency posting, refer to "your organisation" instead of specific company name
+${extractedFromDescription ? '11. Note: This appears to be posted by a recruitment agency, so refer to the company generically' : ''}
+
+CRITICAL REMINDER: The cover letter MUST be about the "${position}" position described above, NOT any other job!
 ` : ''
 
     const prompt = `${adminPrompts.generation.systemPrompt}
@@ -316,9 +321,9 @@ Dublin, Ireland
 STEP 4: Add blank line, then salutation:
 Dear Hiring Manager,
 
-OPENING PARAGRAPH: Identify yourself as an applicant, state the exact position applying for. ${jobSource ? `Mention that you learned about the vacancy through ${jobSource}.` : (jobDescription ? 'If the job source is not clear from the job description, write "as advertised" instead of using brackets or placeholders.' : 'Mention that you learned about the position through their careers page.')}
+OPENING PARAGRAPH: ${jobDescription ? `CRITICAL: You MUST write about the "${position}" position from the job description provided above. Reference the ACTUAL job, not a generic position.` : ''} Identify yourself as an applicant, state the exact position applying for. ${jobSource ? `Mention that you learned about the vacancy through ${jobSource}.` : (jobDescription ? 'If the job source is not clear from the job description, write "as advertised" instead of using brackets or placeholders.' : 'Mention that you learned about the position through their careers page.')}
 
-SECOND PARAGRAPH: Explain why you are interested in this work and this organisation. ${experienceLevel === 'no' ? 'Focus on your academic background, coursework, projects, and enthusiasm for the field. Emphasize your eagerness to learn and contribute.' : 'Briefly mention your academic background, relevant qualifications, and related work experience that qualify you for the position.'} Summarise your talents and how they might benefit the employer. Use proper grammar - if mentioning multiple strengths, use "strengths in [area1], [area2], and [area3]" or if a single area "strength in [area]".
+SECOND PARAGRAPH: ${jobDescription ? `CRITICAL: Reference SPECIFIC skills/technologies from the job description (e.g., if it mentions Python, FastAPI, Azure, GenAI, etc., you MUST mention how your background relates to these).` : ''} Explain why you are interested in this work and this organisation. ${experienceLevel === 'no' ? 'Focus on your academic background, coursework, projects, and enthusiasm for the field. Emphasize your eagerness to learn and contribute.' : 'Briefly mention your academic background, relevant qualifications, and related work experience that qualify you for the position.'} Summarise your talents and how they might benefit the employer. Use proper grammar - if mentioning multiple strengths, use "strengths in [area1], [area2], and [area3]" or if a single area "strength in [area]".
 
 THIRD PARAGRAPH: Refer to the fact that you have enclosed your CV, and draw attention to any further points of relevance to your application. ${experienceLevel === 'no' ? 'Highlight relevant coursework, academic projects, volunteer work, or extracurricular activities that demonstrate your potential.' : ''}
 
@@ -372,19 +377,27 @@ REQUIREMENTS:
 - Professional but ${tone === 'enthusiastic' ? 'energetic' : tone === 'friendly' ? 'warm' : 'formal'} tone
 
 ${jobDescription ? `
-JOB DESCRIPTION TARGETING INSTRUCTIONS:
-- Analyze the job description thoroughly before writing
-- Extract the actual company name if mentioned (e.g., "My client is one of the largest banks" suggests a recruitment agency posting)
-- If company name is not mentioned, refer to them by their industry (e.g., "your prestigious banking institution" instead of generic company name)
-- Match the candidate's background to specific requirements mentioned
-- Use keywords and phrases from the job description naturally
-- Address the core responsibilities mentioned in the job posting
-- Highlight achievements that relate to the job requirements
-- Show understanding of the company's needs and values
-- Reference specific qualifications or skills mentioned in the posting
-- Demonstrate how the candidate solves the company's specific challenges
-- Use industry terminology and language style matching the job description
-- IMPORTANT: Never use placeholders or brackets in the final output
+FINAL CRITICAL INSTRUCTIONS FOR JOB DESCRIPTION USAGE:
+======================================================
+YOU HAVE BEEN PROVIDED WITH A SPECIFIC JOB DESCRIPTION ABOVE. YOU MUST:
+
+1. Write about the EXACT job: "${position}" at "${actualCompany}"
+2. Reference SPECIFIC requirements from the job description provided:
+   - If it mentions Python, FastAPI, LangChain, Azure, etc. - USE THESE TERMS
+   - If it mentions "Generative AI", "RAG", "prompt engineering" - REFERENCE THESE
+   - Match the technical language and terminology used
+3. DO NOT write a generic cover letter - it MUST be tailored to THIS specific job
+4. The opening paragraph MUST mention the exact position title
+5. The second paragraph MUST reference specific skills/technologies from the job description
+6. Show how the applicant's background matches the SPECIFIC requirements listed
+
+ABSOLUTELY DO NOT:
+- Write about healthcare, MEG, or any other company/industry not mentioned in the job description
+- Use generic phrases like "your company" without context
+- Ignore the technical requirements listed in the job description
+- Create a cover letter for a different position
+
+THE JOB DESCRIPTION PROVIDED IS THE SINGLE MOST IMPORTANT INPUT - USE IT!
 ` : ''}
 
 EXAMPLE OF CORRECT FORMAT (DO NOT COPY CONTENT, ONLY FORMAT):

@@ -1,39 +1,30 @@
 {
-  "prompts": [
-    {
-      "id": "cover_letter_generation",
-      "name": "Cover Letter Generation",
-      "category": "generation",
-      "prompt": "Generate a professional cover letter based on the CV content and job description. Focus on relevant experience and skills.",
-      "temperature": 0.4,
-      "maxTokens": 1500,
-      "variables": ["cv_content", "job_description", "company_name"],
-      "lastModified": "2024-12-19T10:00:00.000Z"
+  "generation": {
+    "systemPrompt": "You are a professional cover letter writer specializing in Irish business correspondence format. Create a cover letter following the exact Irish/UK business letter structure.\n\nCRITICAL INSTRUCTION: When a job description is provided, you MUST analyze it thoroughly and create a cover letter specifically tailored to that exact job. DO NOT create generic cover letters or reference jobs not mentioned in the provided job description.",
+    "templates": {
+      "basic": "Create a professional cover letter that opens with genuine interest in the specific role and highlights 2-3 key qualifications. If a job description is provided, reference specific requirements from it.",
+      "professional": "Create a polished, corporate-style cover letter that emphasizes professional achievements with specific metrics. If a job description is provided, align achievements with the job requirements.",
+      "creative": "Create an engaging cover letter that opens with a compelling hook while maintaining professionalism. If a job description is provided, creatively connect your background to the specific role.",
+      "executive": "Create an executive-level cover letter that opens with strong leadership credentials and strategic achievements. If a job description is provided, demonstrate how your executive experience addresses their strategic needs.",
+      "highPerformer": "Create a high-performer cover letter that showcases exceptional achievements and quantifiable results. If a job description is provided, match your achievements to their performance expectations.",
+      "graduate": "Create a graduate-focused cover letter that emphasizes education, potential, and enthusiasm for learning. If a job description is provided, connect your academic background to the specific requirements.",
+      "careerChange": "Create a career-change cover letter that effectively translates transferable skills to the new industry. If a job description is provided, explicitly map your skills to the new role's requirements."
     },
-    {
-      "id": "cover_letter_improvement",
-      "name": "Cover Letter Enhancement",
-      "category": "improvement",
-      "prompt": "Improve this existing cover letter to make it more compelling and professional.",
-      "temperature": 0.3,
-      "maxTokens": 1200,
-      "variables": ["existing_cover_letter"],
-      "lastModified": "2024-12-19T10:00:00.000Z"
-    },
-    {
-      "id": "industry_specific",
-      "name": "Industry-Specific Cover Letter",
-      "category": "specialized",
-      "prompt": "Create a cover letter tailored specifically for the target industry, incorporating industry-specific language and requirements.",
-      "temperature": 0.5,
-      "maxTokens": 1400,
-      "variables": ["cv_content", "industry", "job_role"],
-      "lastModified": "2024-12-19T10:00:00.000Z"
+    "tones": {
+      "formal": "Use a formal, professional tone suitable for traditional industries. Maintain this tone while addressing specific job requirements if provided.",
+      "friendly": "Use a warm, approachable tone while maintaining professionalism. Apply this tone to discussing the specific role and requirements if a job description is provided.",
+      "enthusiastic": "Use an energetic, passionate tone that conveys genuine excitement. Channel this enthusiasm toward the specific opportunity described in the job posting if provided."
     }
-  ],
-  "settings": {
-    "defaultTemperature": 0.4,
-    "defaultMaxTokens": 1300,
-    "lastUpdated": "2024-12-19T10:00:00.000Z"
+  },
+  "editing": {
+    "systemPrompt": "You are a professional editor specializing in cover letters. Improve and refine the provided cover letter while maintaining the applicant's voice.",
+    "improvementPrompt": "Enhance this cover letter by improving clarity, impact, and professionalism while keeping the core message intact.",
+    "regenerationPrompt": "Regenerate this cover letter with a fresh approach while maintaining the key information and requirements."
+  },
+  "aiSettings": {
+    "temperature": 0.7,
+    "maxTokens": 2048,
+    "topK": 40,
+    "topP": 0.95
   }
-} 
+}

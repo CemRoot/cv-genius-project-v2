@@ -35,7 +35,9 @@ interface CoverLetterPromptsConfig {
 // Default prompts if file doesn't exist
 const DEFAULT_PROMPTS: CoverLetterPromptsConfig = {
   generation: {
-    systemPrompt: `You are a professional cover letter writer specializing in Irish business correspondence format. Create a cover letter following the exact Irish/UK business letter structure.`,
+    systemPrompt: `You are a professional cover letter writer specializing in Irish business correspondence format. Create a cover letter following the exact Irish/UK business letter structure.
+
+CRITICAL INSTRUCTION: When a job description is provided, you MUST analyze it thoroughly and create a cover letter specifically tailored to that exact job. DO NOT create generic cover letters or reference jobs not mentioned in the provided job description.`,
     templates: {
       basic: `Create a professional cover letter that opens with genuine interest in the specific role and highlights 2-3 key qualifications.`,
       professional: `Create a polished, corporate-style cover letter that emphasizes professional achievements with specific metrics.`,

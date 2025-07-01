@@ -111,6 +111,7 @@ auth*.json
 # Admin data files (contains sensitive information)
 data/admin-*
 data/*.json
+!data/cover-letter-prompts.json
 
 # Debug and development files
 debug*.log
