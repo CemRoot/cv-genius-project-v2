@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit, validateApiKey } from '@/lib/gemini-client'
 import { LANGUAGE_ADAPTATIONS } from '@/lib/ai/global-prompts'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
+import { loadCoverLetterPrompts, getTemplatePrompt, getTonePrompt } from '@/lib/cover-letter-prompts-loader'
 
 // Cover letter template definitions
 const coverLetterTemplates = {
@@ -250,6 +251,11 @@ TONE GUIDANCE: Strategic and visionary tone. Focus on organizational transformat
       }
     }
 
+    // Load admin-managed prompts
+    const adminPrompts = await loadCoverLetterPrompts()
+    const templatePrompt = getTemplatePrompt(adminPrompts, template)
+    const tonePrompt = getTonePrompt(adminPrompts, tone)
+    
     // Enhanced prompt with job description analysis
     const jobAnalysisSection = jobDescription ? `
 JOB DESCRIPTION ANALYSIS:
@@ -268,7 +274,7 @@ ANALYSIS REQUIREMENTS:
 ${extractedFromDescription ? '10. Note: This appears to be posted by a recruitment agency, so refer to the company generically (e.g., "your organisation", "the bank", "your firm")' : ''}
 ` : ''
 
-    const prompt = `You are a professional cover letter writer specializing in Irish business correspondence format. Create a cover letter following the exact Irish/UK business letter structure.
+    const prompt = `${adminPrompts.generation.systemPrompt}
 
 INFORMATION PROVIDED:
 Position: ${position}
@@ -278,7 +284,11 @@ Background: ${background}
 Key Achievements: ${achievements?.join(', ') || 'None provided'}
 Job Requirements: ${jobRequirements || 'Not specified'}
 ${experienceContext}${jobAnalysisSection}Template Style: ${template}
+Template Guidance: ${templatePrompt}
+
 Tone: ${tone}
+Tone Guidance: ${tonePrompt}
+
 Custom Instructions: ${customInstructions || 'None'}
 
 MANDATORY IRISH FORMAT - YOU MUST GENERATE THE LETTER IN THIS EXACT FORMAT:
@@ -406,10 +416,13 @@ FINAL INSTRUCTIONS:
 
 Write the complete cover letter now, starting with the applicant's name and contact details at the top.`
 
-    // Generate AI response with context-aware configuration
+    // Generate AI response with admin-configured settings
     const result = await generateContent(prompt, {
       context: 'coverLetter',
-      maxTokens: 2048
+      maxTokens: adminPrompts.aiSettings.maxTokens,
+      temperature: adminPrompts.aiSettings.temperature,
+      topK: adminPrompts.aiSettings.topK,
+      topP: adminPrompts.aiSettings.topP
     })
 
     if (!result.success) {

@@ -59,10 +59,13 @@ function SortableExperienceItem({
   handleSubmit,
   errors,
   watch,
+  setValue,
   fields,
   append,
   removeField,
-  formatDateForDisplay 
+  formatDateForDisplay,
+  improveWithAI,
+  isImproving
 }: {
   experience: Experience
   editingId: string | null
@@ -76,10 +79,13 @@ function SortableExperienceItem({
   handleSubmit: ReturnType<typeof useForm<ExperienceFormData>>['handleSubmit']
   errors: ReturnType<typeof useForm<ExperienceFormData>>['formState']['errors']
   watch: ReturnType<typeof useForm<ExperienceFormData>>['watch']
+  setValue: ReturnType<typeof useForm<ExperienceFormData>>['setValue']
   fields: never[]
   append: () => void
   removeField: () => void
   formatDateForDisplay: (date: string) => string
+  improveWithAI: (text: string, fieldType: 'description' | 'achievements', experienceId?: string) => Promise<string>
+  isImproving: { [key: string]: boolean }
 }) {
   const {
     attributes,
@@ -275,9 +281,27 @@ function SortableExperienceItem({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`description-${experience.id}`}>
-                    Description <span className="text-red-500">*</span>
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={`description-${experience.id}`}>
+                      Description <span className="text-red-500">*</span>
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        const currentText = watch("description")
+                        if (currentText) {
+                          const improved = await improveWithAI(currentText, 'description', experience.id)
+                          setValue("description", improved)
+                        }
+                      }}
+                      disabled={isImproving[`${experience.id}-description`] || !watch("description")}
+                    >
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      {isImproving[`${experience.id}-description`] ? 'Improving...' : 'AI Improve'}
+                    </Button>
+                  </div>
                   <Textarea
                     id={`description-${experience.id}`}
                     {...register("description")}
@@ -294,9 +318,27 @@ function SortableExperienceItem({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`achievements-${experience.id}`}>
-                    Key Achievements
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={`achievements-${experience.id}`}>
+                      Key Achievements
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        const currentText = watch("achievements")
+                        if (currentText) {
+                          const improved = await improveWithAI(currentText, 'achievements', experience.id)
+                          setValue("achievements", improved)
+                        }
+                      }}
+                      disabled={isImproving[`${experience.id}-achievements`] || !watch("achievements")}
+                    >
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      {isImproving[`${experience.id}-achievements`] ? 'Improving...' : 'AI Improve'}
+                    </Button>
+                  </div>
                   <Textarea
                     id={`achievements-${experience.id}`}
                     {...register("achievements")}
@@ -361,6 +403,8 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [isImproving, setIsImproving] = useState<{ [key: string]: boolean }>({})
+  const [improveField, setImproveField] = useState<'description' | 'achievements' | null>(null)
 
   // Detect mobile device
   useEffect(() => {
@@ -492,6 +536,40 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
     }
   }
 
+  // AI Improve function
+  const improveWithAI = async (text: string, fieldType: 'description' | 'achievements', experienceId?: string) => {
+    if (!text) return text
+    
+    const improveKey = experienceId ? `${experienceId}-${fieldType}` : fieldType
+    setIsImproving({ ...isImproving, [improveKey]: true })
+    
+    try {
+      const response = await fetch('/api/ai/improve-text', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || 'default-key'
+        },
+        body: JSON.stringify({ 
+          text,
+          type: 'experience',
+          fieldType: fieldType
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        return result.improvedText || text
+      }
+      return text
+    } catch (error) {
+      console.error('AI improvement failed:', error)
+      return text
+    } finally {
+      setIsImproving({ ...isImproving, [improveKey]: false })
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Existing Experiences with Drag & Drop */}
@@ -522,10 +600,13 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
                     handleSubmit={handleSubmit}
                     errors={errors}
                     watch={watch}
+                    setValue={setValue}
                     fields={[]}
                     append={() => {}}
                     removeField={() => {}}
                     formatDateForDisplay={formatDateForDisplay}
+                    improveWithAI={improveWithAI}
+                    isImproving={isImproving}
                   />
                 ))}
               </div>
@@ -640,9 +721,27 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">
-                Role Description <span className="text-red-500">*</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description">
+                  Role Description <span className="text-red-500">*</span>
+                </Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    const currentText = watch("description")
+                    if (currentText) {
+                      const improved = await improveWithAI(currentText, 'description')
+                      setValue("description", improved)
+                    }
+                  }}
+                  disabled={isImproving['description'] || !watch("description")}
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  {isImproving['description'] ? 'Improving...' : 'AI Improve'}
+                </Button>
+              </div>
               <Textarea
                 id="description"
                 {...register("description")}
@@ -656,9 +755,27 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="achievements">
-                Key Achievements
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="achievements">
+                  Key Achievements
+                </Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    const currentText = watch("achievements")
+                    if (currentText) {
+                      const improved = await improveWithAI(currentText, 'achievements')
+                      setValue("achievements", improved)
+                    }
+                  }}
+                  disabled={isImproving['achievements'] || !watch("achievements")}
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  {isImproving['achievements'] ? 'Improving...' : 'AI Improve'}
+                </Button>
+              </div>
               <Textarea
                 id="achievements"
                 {...register("achievements")}
