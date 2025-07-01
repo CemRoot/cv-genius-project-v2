@@ -4,38 +4,49 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// Direct PDF parsing function using pdf-parse-debugging-disabled
+// Direct PDF parsing function with error handling
 async function extractPDFText(buffer: ArrayBuffer): Promise<string> {
   try {
     console.log('🔧 Starting PDF parsing...')
     
-    // Import the debugging-disabled version to avoid test file errors
-    const pdfParse = (await import('pdf-parse-debugging-disabled')).default
+    // Try to import pdf-parse-debugging-disabled
+    let pdfParse;
+    try {
+      pdfParse = (await import('pdf-parse-debugging-disabled')).default
+    } catch (importError) {
+      console.error('Failed to import pdf-parse-debugging-disabled:', importError)
+      throw new Error('PDF parsing library not available. Please try again later.')
+    }
     
     // Convert ArrayBuffer to Buffer
     const nodeBuffer = Buffer.from(buffer)
     
     console.log('📄 Buffer size:', nodeBuffer.length)
     
-    // Parse the PDF with options to avoid test file access
-    const data = await pdfParse(nodeBuffer, {
-      // Ensure we're not in debug mode
-      max: 0
-    })
+    // Parse the PDF with error handling
+    let data;
+    try {
+      data = await pdfParse(nodeBuffer, {
+        // Ensure we're not in debug mode
+        max: 0,
+        // Add version info to help with debugging
+        version: 'v2.0.550'
+      })
+    } catch (parseError: any) {
+      console.error('PDF parse error:', parseError)
+      // Provide more specific error message
+      if (parseError.message?.includes('No PDF header found')) {
+        throw new Error('Invalid PDF file. Please ensure the file is a valid PDF document.')
+      }
+      throw new Error(`PDF parsing failed: ${parseError.message || 'Unknown error'}`)
+    }
     
     console.log('✅ PDF parsed successfully')
     console.log('📄 Pages:', data.numpages)
     console.log('📄 Text length:', data.text?.length || 0)
-    console.log('📄 First 500 chars:', data.text?.substring(0, 500))
-    
-    // Debug: Check for concatenated contact info patterns
-    const concatenatedPatterns = data.text?.match(/\d{7,}[a-zA-Z]+@|@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[a-zA-Z]|[a-zA-Z0-9]https?:\/\//g)
-    if (concatenatedPatterns) {
-      console.log('⚠️ Found concatenated patterns that need fixing:', concatenatedPatterns)
-    }
     
     if (!data.text || data.text.trim().length < 50) {
-      throw new Error('PDF contains insufficient readable text')
+      throw new Error('PDF contains insufficient readable text. This might be a scanned PDF or image-based document.')
     }
     
     // Clean and return the text with improved spacing
