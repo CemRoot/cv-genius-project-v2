@@ -4,6 +4,16 @@ import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate API authentication
+    const authResult = await validateAiApiRequest(request)
+    if (!authResult.valid) {
+      return createApiErrorResponse(
+        authResult.error!,
+        authResult.status!,
+        authResult.retryAfter
+      )
+    }
+    
     // Validate API key
     const apiKeyValidation = validateApiKey()
     if (apiKeyValidation) {
