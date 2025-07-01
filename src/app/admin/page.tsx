@@ -120,8 +120,48 @@ export default function AdminPanel() {
     checkAuth()
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+    
+    // SECURITY: Listen for storage events to detect cookie/storage clearing
+    const handleStorageChange = (e: StorageEvent) => {
+      // If admin token was removed from localStorage, force logout
+      if (e.key === 'admin-token' && e.newValue === null && isAuthenticated) {
+        console.warn('🚨 SECURITY: Admin token removed from storage - forcing logout')
+        setIsAuthenticated(false)
+        toast.error('Session expired - logged out for security')
+        window.location.href = '/admin'
+      }
+    }
+    
+    // SECURITY: Listen for cookie changes to detect manual cookie clearing
+    const checkCookieIntegrity = () => {
+      if (isAuthenticated) {
+        const token = ClientAdminAuth.getToken()
+        const csrfToken = ClientAdminAuth.getCsrfToken()
+        
+        // If JWT exists but CSRF token is missing, cookies were cleared
+        if (token && !csrfToken) {
+          console.warn('🚨 SECURITY: CSRF token missing but JWT exists - cookies likely cleared')
+          setIsAuthenticated(false)
+          ClientAdminAuth.removeToken()
+          localStorage.clear()
+          sessionStorage.clear()
+          toast.error('Security violation detected - logged out')
+          window.location.href = '/admin'
+        }
+      }
+    }
+    
+    // SECURITY: Monitor for manual cookie/storage clearing
+    const securityInterval = setInterval(checkCookieIntegrity, 5000) // Check every 5 seconds
+    
+    window.addEventListener('storage', handleStorageChange)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(securityInterval)
+    }
+  }, [isAuthenticated]) // Add isAuthenticated as dependency
 
   const checkMobile = () => {
     setIsMobile(window.innerWidth < 768)
@@ -2313,20 +2353,26 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
-                      onClick={() => {
-                        toast.info('Clearing browser cache...')
+                      onClick={async () => {
+                        toast.info('Clearing all cache and logging out for security...')
+                        
+                        // Clear browser cache
                         if ('caches' in window) {
-                          caches.keys().then(names => {
-                            names.forEach(name => caches.delete(name))
-                          })
+                          try {
+                            const cacheNames = await caches.keys()
+                            await Promise.all(cacheNames.map(name => caches.delete(name)))
+                          } catch (error) {
+                            console.error('Cache clearing error:', error)
+                          }
                         }
-                        localStorage.clear()
-                        sessionStorage.clear()
-                        toast.success('Cache cleared successfully!')
+                        
+                        // SECURITY: Since we're clearing storage, also perform secure logout
+                        await ClientAdminAuth.logout()
+                        toast.success('Cache cleared and logged out for security!')
                       }}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Clear Browser Cache
+                      Clear Cache & Logout
                     </Button>
                     
                     <Button 

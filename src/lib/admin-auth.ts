@@ -167,8 +167,22 @@ export class ClientAdminAuth {
     const token = this.getToken()
     let csrfToken = this.getCsrfToken()
     
-    // Auto-restore missing CSRF token if JWT exists
-    if (token && !csrfToken && typeof window !== 'undefined') {
+    // SECURITY FIX: If JWT exists but CSRF token is missing, cookies were likely cleared
+    // This indicates a potential security breach or user cookie clearing - force logout
+    if (token && !csrfToken && ['POST', 'PUT', 'DELETE'].includes(options.method?.toUpperCase() || 'GET')) {
+      console.warn('🚨 SECURITY: JWT exists but CSRF token missing - forcing logout')
+      this.removeToken()
+      if (typeof window !== 'undefined') {
+        // Clear all local storage to ensure complete logout
+        localStorage.clear()
+        sessionStorage.clear()
+        window.location.href = '/admin'
+      }
+      throw new Error('Session security violation - forced logout')
+    }
+    
+    // Auto-restore missing CSRF token if JWT exists (only for GET requests)
+    if (token && !csrfToken && typeof window !== 'undefined' && !['POST', 'PUT', 'DELETE'].includes(options.method?.toUpperCase() || 'GET')) {
       try {
         const restoreResponse = await fetch('/api/admin/auth/restore-csrf', {
           method: 'POST',
@@ -184,9 +198,27 @@ export class ClientAdminAuth {
             // CSRF token will be set via Set-Cookie header automatically
             csrfToken = restoreData.csrfToken
           }
+        } else {
+          // CSRF restore failed - force logout for security
+          console.warn('🚨 SECURITY: CSRF token restore failed - forcing logout')
+          this.removeToken()
+          if (typeof window !== 'undefined') {
+            localStorage.clear()
+            sessionStorage.clear()
+            window.location.href = '/admin'
+          }
+          throw new Error('CSRF restoration failed - forced logout')
         }
       } catch (error) {
-        // Silent error handling for security
+        // CSRF restore failed - force logout for security
+        console.warn('🚨 SECURITY: CSRF token restore error - forcing logout')
+        this.removeToken()
+        if (typeof window !== 'undefined') {
+          localStorage.clear()
+          sessionStorage.clear()
+          window.location.href = '/admin'
+        }
+        throw new Error('CSRF restoration error - forced logout')
       }
     }
 
@@ -276,8 +308,22 @@ export class ClientAdminAuth {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // SECURITY: Complete cleanup of all authentication data
       this.removeToken()
       if (typeof window !== 'undefined') {
+        // Clear all possible storage locations
+        localStorage.clear()
+        sessionStorage.clear()
+        
+        // Clear all cookies by setting them to expire
+        document.cookie.split(";").forEach(cookie => {
+          const eqPos = cookie.indexOf("=")
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+        })
+        
+        console.log('🔒 SECURITY: Complete logout - all storage cleared')
         window.location.href = '/admin'
       }
     }
