@@ -18,12 +18,8 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
     return true
   }
   
-  // Admin panel access validation - IP whitelist is sufficient security
-  if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
-    // IP whitelist check will be done later in middleware
-    // If IP passes, allow direct admin access without key
-    return true
-  }
+  // Admin panel access validation will be done in main middleware
+  // Don't bypass security here for admin routes
 
   // API endpoint security parameter validation
   if (request.nextUrl.pathname.startsWith('/api/admin/')) {
@@ -241,20 +237,103 @@ export async function middleware(request: NextRequest) {
   
   if (isAdminRoute) {
     // IP Whitelist Check for admin panel AND admin API routes
+    const isIPAllowed = await isAdminIPAllowed(request)
     
-    // Simple IP Whitelist Check for admin routes
-    if (pathname === '/admin' || pathname.startsWith('/api/admin/')) {
-      const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-      
-      // Simplified whitelist - your specific IP
-      const allowedIPs = ['86.41.242.48', '127.0.0.1', '::1', 'localhost']
-      
-             if (!allowedIPs.includes(clientIP)) {
-         if (pathname === '/admin') {
-           return NextResponse.rewrite(new URL('/404', request.url))
-         }
-         return new NextResponse('Not Found', { status: 404 })
-       }
+    if (!isIPAllowed) {
+      if (pathname === '/admin') {
+        // Return custom 403 HTML with beautiful CSS and GIF
+        const accessDeniedHTML = `
+<!DOCTYPE html>
+<html lang="en-IE" class="scroll-smooth h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Access Denied - CVGenius</title>
+  <style>
+    .page_404 {
+      padding: 40px 0;
+      background: #fff;
+      font-family: "Arvo", serif;
+    }
+    .four_zero_four_bg {
+      background-image: url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif);
+      height: 400px;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      animation: float 3s ease-in-out infinite;
+    }
+    .four_zero_four_bg h1 {
+      font-size: 80px;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .link_404 {
+      color: #fff !important;
+      padding: 10px 20px;
+      background: #39ac31;
+      margin: 20px 0;
+      display: inline-block;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    .link_404:hover {
+      background: #2d8f26;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .contant_box_404 {
+      margin-top: -50px;
+      text-align: center;
+    }
+    .contant_box_404 h3 {
+      font-size: 32px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    .contant_box_404 p {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .container {
+      width: 100%;
+      padding: 0 15px;
+      margin: 0 auto;
+      max-width: 1140px;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
+</head>
+<body>
+  <section class="page_404">
+    <div class="container">
+      <div class="four_zero_four_bg">
+        <h1>403</h1>
+      </div>
+      <div class="contant_box_404">
+        <h3>🛡️ Access Denied</h3>
+        <p>You don't have permission to access this area!</p>
+        <p style="font-size: 14px; color: #999;">Only authorized users can access the admin panel.</p>
+        <a href="/" class="link_404">🏠 Go to Home</a>
+      </div>
+    </div>
+  </section>
+</body>
+</html>`
+        return new NextResponse(accessDeniedHTML, { 
+          status: 403,
+          headers: { 'Content-Type': 'text/html' }
+        })
+      }
+      // For API routes, return 404 to hide existence
+      return new NextResponse('Not Found', { status: 404 })
     }
 
 
