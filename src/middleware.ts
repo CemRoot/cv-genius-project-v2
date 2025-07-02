@@ -14,8 +14,8 @@ export async function middleware(request: NextRequest) {
     
     console.log(`🔒 ADMIN ROUTE: ${pathname} | IP: ${clientIP}`)
     
-    // Simple whitelist - only allow your IP
-    const allowedIPs = ['86.41.242.48']
+    // Simple whitelist - TEMPORARILY BLOCK MY IP FOR TESTING
+    const allowedIPs = ['127.0.0.1'] // Blocking my real IP to test
     
     if (!allowedIPs.includes(clientIP)) {
       console.log(`🚫 BLOCKED: ${clientIP} not in whitelist`)
