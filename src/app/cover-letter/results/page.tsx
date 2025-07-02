@@ -106,7 +106,10 @@ export default function ResultsPage() {
     // Check if job description has changed since last generation
     const jobDescriptionChanged = cachedJobDescription !== currentJobDescription
     
-    if (editedText && isFromEdit && !jobDescriptionChanged) {
+    // Check if this is a signature-only change
+    const isSignatureOnlyChange = localStorage.getItem('signature-only-change') === 'true'
+    
+    if ((editedText && isFromEdit && !jobDescriptionChanged) || isSignatureOnlyChange) {
       // Don't clear the edit flag immediately - keep it until user navigates away or generates new letter
       setGeneratedLetter(editedText)
       setIsGenerating(false)
@@ -144,6 +147,11 @@ export default function ResultsPage() {
       
       
       setCollectedData(data)
+      
+      // Clear the signature-only flag after using it
+      if (isSignatureOnlyChange) {
+        localStorage.removeItem('signature-only-change')
+      }
     } else {
       // No edited text, generate new with improved data handling
       const templateDataFromStorage = JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')
@@ -180,9 +188,20 @@ export default function ResultsPage() {
       setCollectedData(data)
       
       const performGeneration = async () => {
-        // Clear the edit flag when generating new letter
-        localStorage.removeItem('cover-letter-edited')
-        await generateCoverLetter(data)
+        // Check if this is just a signature change
+        const isSignatureOnlyChange = localStorage.getItem('signature-only-change') === 'true'
+        
+        if (isSignatureOnlyChange && editedText) {
+          // If only signature changed, use existing letter
+          setGeneratedLetter(editedText)
+          setIsGenerating(false)
+          // Clear the signature-only flag
+          localStorage.removeItem('signature-only-change')
+        } else {
+          // Clear the edit flag when generating new letter
+          localStorage.removeItem('cover-letter-edited')
+          await generateCoverLetter(data)
+        }
       }
       
       performGeneration()

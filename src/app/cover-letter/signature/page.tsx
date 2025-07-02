@@ -142,6 +142,18 @@ export default function SignaturePage() {
     
     if (signatureData) {
       localStorage.setItem('cover-letter-signature', JSON.stringify(signatureData))
+      
+      // Check if we came from edit page (user has an existing cover letter)
+      const existingLetter = localStorage.getItem('generated-cover-letter')
+      const wasEdited = localStorage.getItem('cover-letter-edited') === 'true'
+      
+      // If there's an existing letter, preserve the edit state
+      if (existingLetter && !wasEdited) {
+        // Mark as edited to prevent regeneration
+        localStorage.setItem('cover-letter-edited', 'true')
+        localStorage.setItem('signature-only-change', 'true')
+      }
+      
       router.push('/cover-letter/results')
     }
   }
