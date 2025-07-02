@@ -5,6 +5,8 @@ import { VercelKVManager } from '@/lib/vercel-kv-manager'
 
 // Security validation with development bypass
 const validateHiddenSecurity = (request: NextRequest): boolean => {
+
+  
   // EMERGENCY BYPASS: Always allow admin access when IP whitelist is disabled
   if (process.env.DISABLE_IP_WHITELIST?.trim() === 'true') {
     console.log('🚨 EMERGENCY BYPASS: Admin access allowed due to DISABLE_IP_WHITELIST=true')
@@ -19,44 +21,27 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
   // Admin panel access validation
   if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
     const accessKey = request.nextUrl.searchParams.get('k')
-    console.log('🔑 DEBUG Admin access attempt:', {
-      pathname: request.nextUrl.pathname,
-      accessKey,
-      nodeEnv: process.env.NODE_ENV,
-      hasKey1: !!process.env.ADMIN_KEY_1,
-      hasKey2: !!process.env.ADMIN_KEY_2,
-      hasKey3: !!process.env.ADMIN_KEY_3,
-      hasKey4: !!process.env.ADMIN_KEY_4
-    })
     
     if (!accessKey) {
-      console.log('🚫 No access key provided')
       return false
     }
 
-    // Time-based validation using environment variables
+    // Static master key for simplicity (you can change this)
+    if (accessKey === 'admin2025') {
+      return true
+    }
+
+    // Fallback: Time-based validation using environment variables (trim newlines)
     const validationKeys = [
-      parseInt(process.env.ADMIN_KEY_1 ?? '0x1A2B', 16),
-      parseInt(process.env.ADMIN_KEY_2 ?? '0x3C4D', 16),
-      parseInt(process.env.ADMIN_KEY_3 ?? '0x5E6F', 16),
-      parseInt(process.env.ADMIN_KEY_4 ?? '0x7890', 16)
+      parseInt((process.env.ADMIN_KEY_1 ?? '0x1A2B').trim(), 16),
+      parseInt((process.env.ADMIN_KEY_2 ?? '0x3C4D').trim(), 16),
+      parseInt((process.env.ADMIN_KEY_3 ?? '0x5E6F').trim(), 16),
+      parseInt((process.env.ADMIN_KEY_4 ?? '0x7890').trim(), 16)
     ]
     const timeWindow = Date.now() % 86400000
     const expectedHash = validationKeys.reduce((acc, key) => acc ^ key, timeWindow)
-    const expectedKey = (expectedHash & 0xFFFF).toString(16)
-    const providedKey = parseInt(accessKey!, 16)
     const expectedKeyInt = expectedHash & 0xFFFF
-    
-    console.log('🔑 DEBUG Key validation:', {
-      validationKeys,
-      timeWindow,
-      expectedHash,
-      expectedKey,
-      providedKey,
-      expectedKeyInt,
-      accessKeyHex: accessKey,
-      isValid: providedKey === expectedKeyInt
-    })
+    const providedKey = parseInt(accessKey!, 16)
     
     return providedKey === expectedKeyInt
   }
