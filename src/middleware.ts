@@ -19,7 +19,20 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
   // Admin panel access validation
   if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
     const accessKey = request.nextUrl.searchParams.get('k')
-    if (!accessKey) return false
+    console.log('🔑 DEBUG Admin access attempt:', {
+      pathname: request.nextUrl.pathname,
+      accessKey,
+      nodeEnv: process.env.NODE_ENV,
+      hasKey1: !!process.env.ADMIN_KEY_1,
+      hasKey2: !!process.env.ADMIN_KEY_2,
+      hasKey3: !!process.env.ADMIN_KEY_3,
+      hasKey4: !!process.env.ADMIN_KEY_4
+    })
+    
+    if (!accessKey) {
+      console.log('🚫 No access key provided')
+      return false
+    }
 
     // Time-based validation using environment variables
     const validationKeys = [
@@ -30,8 +43,22 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
     ]
     const timeWindow = Date.now() % 86400000
     const expectedHash = validationKeys.reduce((acc, key) => acc ^ key, timeWindow)
+    const expectedKey = (expectedHash & 0xFFFF).toString(16)
+    const providedKey = parseInt(accessKey!, 16)
+    const expectedKeyInt = expectedHash & 0xFFFF
     
-    return parseInt(accessKey!, 16) === (expectedHash & 0xFFFF)
+    console.log('🔑 DEBUG Key validation:', {
+      validationKeys,
+      timeWindow,
+      expectedHash,
+      expectedKey,
+      providedKey,
+      expectedKeyInt,
+      accessKeyHex: accessKey,
+      isValid: providedKey === expectedKeyInt
+    })
+    
+    return providedKey === expectedKeyInt
   }
 
   // API endpoint security parameter validation
