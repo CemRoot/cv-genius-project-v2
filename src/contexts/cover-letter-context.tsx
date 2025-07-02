@@ -54,6 +54,18 @@ export interface CoverLetterState {
     skills?: string[]
     education?: any[]
   }
+  // Background information for "create new" mode
+  backgroundInfo?: {
+    fullName?: string
+    currentRole?: string
+    yearsOfExperience?: string
+    education?: string
+    keySkills?: string
+    careerGoals?: string
+    achievements?: string
+    skipped?: boolean
+    timestamp?: string
+  }
 }
 
 type CoverLetterAction =
@@ -73,6 +85,7 @@ type CoverLetterAction =
   | { type: 'SET_WORK_STYLE'; payload: string }
   | { type: 'SET_SIGNATURE'; payload: any }
   | { type: 'SET_RESUME_DATA'; payload: any }
+  | { type: 'SET_BACKGROUND_INFO'; payload: any }
   | { type: 'UPDATE_COVER_LETTER_DATA'; payload: any }
   | { type: 'RESET_STATE' }
 
@@ -183,6 +196,9 @@ function coverLetterReducer(state: CoverLetterState, action: CoverLetterAction):
     case 'SET_RESUME_DATA':
       newState = { ...state, resumeData: action.payload, extractedFromResume: true }
       break
+    case 'SET_BACKGROUND_INFO':
+      newState = { ...state, backgroundInfo: action.payload }
+      break
     case 'UPDATE_COVER_LETTER_DATA':
       newState = { ...state, ...action.payload }
       break
@@ -216,6 +232,7 @@ interface CoverLetterContextType {
   setWorkStyle: (style: string) => void
   setSignature: (signature: any) => void
   setResumeData: (data: any) => void
+  setBackgroundInfo: (info: any) => void
   updateCoverLetterData: (data: any) => void
   resetState: () => void
 }
@@ -292,6 +309,8 @@ export function CoverLetterProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_SIGNATURE', payload: signature }),
     setResumeData: (data: any) => 
       dispatch({ type: 'SET_RESUME_DATA', payload: data }),
+    setBackgroundInfo: (info: any) => 
+      dispatch({ type: 'SET_BACKGROUND_INFO', payload: info }),
     updateCoverLetterData: (data: any) => 
       dispatch({ type: 'UPDATE_COVER_LETTER_DATA', payload: data }),
     resetState: () => dispatch({ type: 'RESET_STATE' })

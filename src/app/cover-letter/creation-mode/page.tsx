@@ -17,8 +17,8 @@ export default function CreationModePage() {
     setCreationMode(mode) // Save to context
     
     if (mode === 'create') {
-      setCurrentStep('customize')
-      router.push('/cover-letter/customize')
+      setCurrentStep('background')
+      router.push('/cover-letter/background')
     } else {
       setCurrentStep('upload-resume')
       router.push('/cover-letter/upload-resume')

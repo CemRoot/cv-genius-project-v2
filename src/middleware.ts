@@ -18,32 +18,11 @@ const validateHiddenSecurity = (request: NextRequest): boolean => {
     return true
   }
   
-  // Admin panel access validation
+  // Admin panel access validation - IP whitelist is sufficient security
   if (request.nextUrl.pathname === '/admin' && process.env.NODE_ENV === 'production') {
-    const accessKey = request.nextUrl.searchParams.get('k')
-    
-    if (!accessKey) {
-      return false
-    }
-
-    // Static master key for simplicity (you can change this)
-    if (accessKey === 'admin2025') {
-      return true
-    }
-
-    // Fallback: Time-based validation using environment variables (trim newlines)
-    const validationKeys = [
-      parseInt((process.env.ADMIN_KEY_1 ?? '0x1A2B').trim(), 16),
-      parseInt((process.env.ADMIN_KEY_2 ?? '0x3C4D').trim(), 16),
-      parseInt((process.env.ADMIN_KEY_3 ?? '0x5E6F').trim(), 16),
-      parseInt((process.env.ADMIN_KEY_4 ?? '0x7890').trim(), 16)
-    ]
-    const timeWindow = Date.now() % 86400000
-    const expectedHash = validationKeys.reduce((acc, key) => acc ^ key, timeWindow)
-    const expectedKeyInt = expectedHash & 0xFFFF
-    const providedKey = parseInt(accessKey!, 16)
-    
-    return providedKey === expectedKeyInt
+    // IP whitelist check will be done later in middleware
+    // If IP passes, allow direct admin access without key
+    return true
   }
 
   // API endpoint security parameter validation
@@ -270,7 +249,14 @@ export async function middleware(request: NextRequest) {
     })
     
     // IP Whitelist Check
-    if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !(await isAdminIPAllowed(request))) {
+    const ipAllowed = await isAdminIPAllowed(request)
+    console.log('🔍 IP CHECK RESULT:', {
+      pathname,
+      ipAllowed,
+      clientIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    })
+    
+    if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !ipAllowed) {
       console.log('🚫 IP ACCESS DENIED for', pathname)
       // Redirect to 404 page instead of returning plain text
       if (pathname === '/admin') {

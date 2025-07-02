@@ -331,7 +331,7 @@ FINAL PARAGRAPH: Reiterate your interest and indicate your availability for inte
 
 Yours sincerely,
 
-${applicantName}
+${applicantName.toUpperCase()}
 
 CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
 1. SENDER FIRST: Start with ${applicantName} and their contact info at the TOP
@@ -341,6 +341,7 @@ CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
 5. NO PLACEHOLDERS: Never use brackets [] or placeholder text
 6. NO SIGNATURES IN HEADER: The applicant name appears ONLY at the top and after "Yours sincerely" at the end
 7. EXACT ORDER: You MUST follow the order shown above - sender info FIRST, not after "Hiring Manager"
+8. SIGNATURE IN BLOCK CAPITALS: The name after "Yours sincerely" MUST be in ALL CAPITAL LETTERS (e.g., JOHN SMITH not John Smith)
 
 WRONG FORMAT (DO NOT DO THIS):
 Hiring Manager
@@ -424,7 +425,7 @@ Dear Hiring Manager,
 
 Yours sincerely,
 
-John Smith
+JOHN SMITH
 
 FINAL INSTRUCTIONS:
 - Generate the letter starting with ${applicantName} at the very top

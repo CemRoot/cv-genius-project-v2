@@ -222,6 +222,31 @@ export default function ResultsPage() {
       const strengths = Array.isArray(data.strengths) ? data.strengths : []
       const workStyle = data.workStyle || 'professional'
       
+      // Get background information if available
+      const backgroundInfo = contextState.backgroundInfo || JSON.parse(localStorage.getItem('cover-letter-background') || '{}')
+      
+      // Build background description using available information
+      let backgroundDescription = ''
+      if (backgroundInfo && !backgroundInfo.skipped) {
+        const parts = []
+        
+        if (backgroundInfo.currentRole) {
+          parts.push(backgroundInfo.currentRole)
+        }
+        
+        if (backgroundInfo.yearsOfExperience) {
+          parts.push(`with ${backgroundInfo.yearsOfExperience} years of experience`)
+        }
+        
+        if (backgroundInfo.keySkills) {
+          parts.push(`skilled in ${backgroundInfo.keySkills}`)
+        }
+        
+        backgroundDescription = parts.length > 0 ? parts.join(' ') : ''
+      }
+      
+      // Use background info for name if available
+      const applicantName = backgroundInfo.fullName || `${firstName} ${lastName}`
       
       const requestBody = {
         template: getValidTemplate(data.templateData?.selectedTemplate),
@@ -229,13 +254,13 @@ export default function ResultsPage() {
         company: data.jobInfo?.targetCompany || 'Your Target Company',
         position: data.jobInfo?.jobTitle || 'Desired Position',
         jobSource: (data.jobInfo as any)?.jobSource || '',
-        applicantName: `${firstName} ${lastName}`,
-        background: strengths.length > 0 
+        applicantName: applicantName,
+        background: backgroundDescription || (strengths.length > 0 
           ? `A dedicated professional with ${strengths.length === 1 ? `strength in ${strengths[0]}` : `strengths in ${strengths.slice(0, -1).join(', ')} and ${strengths[strengths.length - 1]}`}`
-          : 'A dedicated professional',
-        achievements: strengths,
+          : 'A dedicated professional'),
+        achievements: backgroundInfo.achievements ? backgroundInfo.achievements.split(',').map((a: string) => a.trim()) : strengths,
         jobDescription: data.jobDescription || '',
-        customInstructions: `Working style: ${workStyle}`,
+        customInstructions: `Working style: ${workStyle}${backgroundInfo.careerGoals ? `. Career goals: ${backgroundInfo.careerGoals}` : ''}${backgroundInfo.education ? `. Education: ${backgroundInfo.education}` : ''}`,
         includeAddress: true,
         userAddress: contextState.resumeData?.personalInfo?.location || 'Dublin, Ireland',
         userPhone: contextState.resumeData?.personalInfo?.phone || '+353 (0) 1 234 5678',
