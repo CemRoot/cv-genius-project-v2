@@ -248,7 +248,13 @@ export async function middleware(request: NextRequest) {
     
     if (!isIPAllowed) {
       if (pathname === '/admin') {
-        // Return custom 403 HTML with beautiful CSS and GIF
+        // Get IP info for debugging
+        const xForwardedFor = request.headers.get('x-forwarded-for')
+        const xRealIp = request.headers.get('x-real-ip')
+        const cfConnectingIp = request.headers.get('cf-connecting-ip')
+        const debugIP = xForwardedFor?.split(',')[0]?.trim() || 'unknown'
+        
+        // Return custom 403 HTML with beautiful CSS and GIF + debug info
         const accessDeniedHTML = `
 <!DOCTYPE html>
 <html lang="en-IE" class="scroll-smooth h-full">
@@ -328,6 +334,7 @@ export async function middleware(request: NextRequest) {
         <h3>🛡️ Access Denied</h3>
         <p>You don't have permission to access this area!</p>
         <p style="font-size: 14px; color: #999;">Only authorized users can access the admin panel.</p>
+        <p style="font-size: 12px; color: #ccc; margin-top: 20px;">Debug: IP ${debugIP} | XFF: ${xForwardedFor} | Real: ${xRealIp} | CF: ${cfConnectingIp}</p>
         <a href="/" class="link_404">🏠 Go to Home</a>
       </div>
     </div>
