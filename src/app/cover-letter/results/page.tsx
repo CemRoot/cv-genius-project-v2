@@ -421,7 +421,17 @@ ${name}`
         width: pageWidth,
         height: Math.max(actualContentHeight, pageHeight),
         windowWidth: pageWidth,
-        windowHeight: Math.max(actualContentHeight, pageHeight)
+        windowHeight: Math.max(actualContentHeight, pageHeight),
+        onclone: (clonedDoc) => {
+          // Set willReadFrequently on cloned canvas elements to avoid performance warning
+          const canvasElements = clonedDoc.querySelectorAll('canvas')
+          canvasElements.forEach((canvas) => {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true })
+            if (ctx) {
+              // Context is now optimized for frequent reads
+            }
+          })
+        }
       })
       
       // Clean up React and DOM
