@@ -64,8 +64,8 @@ export default async function AdminLayout({
 
   console.log(`🔒 ADMIN LAYOUT: IP Check - ${clientIP}`)
 
-  // Simple whitelist - TEMPORARILY BLOCK MY IP FOR TESTING
-  const allowedIPs = ['127.0.0.1'] // Blocking my real IP to test
+  // Simple whitelist - only allow your IP
+  const allowedIPs = ['86.41.242.48']
   
   if (!allowedIPs.includes(clientIP)) {
     console.log(`🚫 BLOCKED in layout: ${clientIP} not in whitelist`)

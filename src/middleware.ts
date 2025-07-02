@@ -6,42 +6,24 @@ export async function middleware(request: NextRequest) {
   
   console.log(`🔧 MIDDLEWARE CHECK: ${pathname}`)
   
-  // Only check admin routes - be very specific
-  if (pathname === '/admin' || pathname.startsWith('/api/admin/')) {
+  // Admin routes are now protected by layout.tsx
+  // Only handle admin API routes if needed
+  if (pathname.startsWith('/api/admin/')) {
     // Get client IP
     const xForwardedFor = request.headers.get('x-forwarded-for')
     const clientIP = xForwardedFor?.split(',')[0]?.trim() || 'unknown'
     
-    console.log(`🔒 ADMIN ROUTE: ${pathname} | IP: ${clientIP}`)
+    console.log(`🔒 ADMIN API: ${pathname} | IP: ${clientIP}`)
     
-    // Simple whitelist - TEMPORARILY BLOCK MY IP FOR TESTING
-    const allowedIPs = ['127.0.0.1'] // Blocking my real IP to test
+    // Simple whitelist - only allow your IP
+    const allowedIPs = ['86.41.242.48']
     
     if (!allowedIPs.includes(clientIP)) {
-      console.log(`🚫 BLOCKED: ${clientIP} not in whitelist`)
-      
-      if (pathname === '/admin') {
-        return new NextResponse(`
-<!DOCTYPE html>
-<html>
-<head><title>Access Denied</title></head>
-<body>
-  <h1>🛡️ Access Denied</h1>
-  <p>Your IP: ${clientIP}</p>
-  <p>Only authorized IPs can access this area.</p>
-  <a href="/">Go Home</a>
-</body>
-</html>`, {
-          status: 403,
-          headers: { 'Content-Type': 'text/html' }
-        })
-      }
-      
-      // For API routes
+      console.log(`🚫 BLOCKED API: ${clientIP} not in whitelist`)
       return NextResponse.json({ error: 'Access Denied' }, { status: 403 })
     }
     
-    console.log(`✅ ALLOWED: ${clientIP}`)
+    console.log(`✅ ALLOWED API: ${clientIP}`)
   }
   
   // Always return next for all other routes
@@ -50,7 +32,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/admin',
     '/api/admin/:path*'
   ]
 } 
