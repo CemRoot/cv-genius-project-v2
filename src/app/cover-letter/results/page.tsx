@@ -262,18 +262,20 @@ export default function ResultsPage() {
         jobDescription: data.jobDescription || '',
         customInstructions: `Working style: ${workStyle}${backgroundInfo.careerGoals ? `. Career goals: ${backgroundInfo.careerGoals}` : ''}${backgroundInfo.education ? `. Education: ${backgroundInfo.education}` : ''}`,
         includeAddress: true,
-        userAddress: contextState.resumeData?.personalInfo?.location || 'Dublin, Ireland',
-        userPhone: contextState.resumeData?.personalInfo?.phone || '+353 (0) 1 234 5678',
-        userEmail: contextState.resumeData?.personalInfo?.email || '',
+        userAddress: backgroundInfo.userAddress || contextState.resumeData?.personalInfo?.location || 'Dublin, Ireland',
+        userPhone: backgroundInfo.userPhone || contextState.resumeData?.personalInfo?.phone || '+353 (0) 1 234 5678',
+        userEmail: backgroundInfo.userEmail || contextState.resumeData?.personalInfo?.email || '',
         currentDate: currentDate,
         // Include experience and education data
-        experienceLevel: data.experienceLevel,
-        studentStatus: data.studentStatus,
-        schoolType: data.schoolType,
-        educationDetails: data.educationDetails,
-        collegeGrad: data.collegeGrad,
+        experienceLevel: data.experienceLevel || contextState.experienceLevel,
+        studentStatus: data.studentStatus || contextState.studentStatus,
+        schoolType: data.schoolType || contextState.schoolType,
+        educationDetails: data.educationDetails || contextState.educationDetails,
+        collegeGrad: data.collegeGrad !== undefined ? data.collegeGrad : contextState.collegeGrad,
         // Include resume data if available
-        resumeData: contextState.resumeData
+        resumeData: contextState.resumeData,
+        // Include background info
+        backgroundInfo: backgroundInfo
       }
       
       

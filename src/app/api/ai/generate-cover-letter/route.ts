@@ -90,7 +90,8 @@ export async function POST(request: NextRequest) {
       studentStatus,
       schoolType,
       educationDetails,
-      collegeGrad
+      collegeGrad,
+      backgroundInfo
     }: {
       template: CoverLetterTemplate
       tone: CoverLetterTone
@@ -114,6 +115,16 @@ export async function POST(request: NextRequest) {
       schoolType?: string
       educationDetails?: { degreeType: string; fieldOfStudy: string }
       collegeGrad?: boolean
+      backgroundInfo?: {
+        fullName?: string
+        currentRole?: string
+        yearsOfExperience?: string
+        education?: string
+        keySkills?: string
+        careerGoals?: string
+        achievements?: string
+        skipped?: boolean
+      }
     } = body
 
     // Validation
@@ -189,7 +200,7 @@ export async function POST(request: NextRequest) {
 
     // Build experience context for AI
     let experienceContext = ''
-    if (experienceLevel === 'no') {
+    if (experienceLevel === 'no-experience') {
       experienceContext = `
 APPLICANT PROFILE: Entry-level candidate with no prior work experience.
 `
@@ -206,24 +217,24 @@ APPLICANT PROFILE: Entry-level candidate with no prior work experience.
 `
       }
       experienceContext += `TONE GUIDANCE: Focus on enthusiasm, willingness to learn, academic achievements, relevant coursework, internships, volunteer work, or transferable skills from school projects.\n`
-    } else if (experienceLevel === 'entry') {
+    } else if (experienceLevel === 'less-than-3') {
       experienceContext = `
-APPLICANT PROFILE: Entry-level professional with 1-2 years of experience.
+APPLICANT PROFILE: Entry-level professional with less than 3 years of experience.
 TONE GUIDANCE: Balance enthusiasm with emerging professionalism. Highlight early career achievements and growth potential.
 `
-    } else if (experienceLevel === 'mid') {
+    } else if (experienceLevel === '3-5-years') {
       experienceContext = `
-APPLICANT PROFILE: Mid-level professional with 3-7 years of experience.
+APPLICANT PROFILE: Mid-level professional with 3-5 years of experience.
 TONE GUIDANCE: Professional and confident tone. Focus on proven track record and specific achievements.
 `
-    } else if (experienceLevel === 'senior') {
+    } else if (experienceLevel === '5-10-years') {
       experienceContext = `
-APPLICANT PROFILE: Senior professional with 8+ years of experience.
+APPLICANT PROFILE: Senior professional with 5-10 years of experience.
 TONE GUIDANCE: Executive and authoritative tone. Emphasize leadership, strategic thinking, and impact on business outcomes.
 `
-    } else if (experienceLevel === 'executive') {
+    } else if (experienceLevel === '10-plus-years') {
       experienceContext = `
-APPLICANT PROFILE: Executive-level leader with extensive experience.
+APPLICANT PROFILE: Executive-level leader with 10+ years of extensive experience.
 TONE GUIDANCE: Strategic and visionary tone. Focus on organizational transformation, leadership philosophy, and business growth.
 `
     }
@@ -294,6 +305,23 @@ Applicant Name: ${applicantName}
 Background: ${background}
 Key Achievements: ${achievements?.join(', ') || 'None provided'}
 Job Requirements: ${jobRequirements || 'Not specified'}
+
+${backgroundInfo && !backgroundInfo.skipped ? `
+DETAILED APPLICANT BACKGROUND:
+- Current Role: ${backgroundInfo.currentRole || 'Not specified'}
+- Years of Experience: ${backgroundInfo.yearsOfExperience || 'Not specified'}
+- Education: ${backgroundInfo.education || 'Not specified'}
+- Key Skills: ${backgroundInfo.keySkills || 'Not specified'}
+- Career Goals: ${backgroundInfo.careerGoals || 'Not specified'}
+- Notable Achievements: ${backgroundInfo.achievements || 'Not specified'}
+
+USE THIS BACKGROUND INFORMATION to create a personalized cover letter that:
+1. References the applicant's actual experience and skills
+2. Aligns their background with the job requirements
+3. Shows how their career goals match this opportunity
+4. Incorporates their specific achievements naturally
+` : ''}
+
 ${experienceContext}${jobAnalysisSection}Template Style: ${template}
 Template Guidance: ${templatePrompt}
 

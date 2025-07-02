@@ -240,33 +240,23 @@ export async function middleware(request: NextRequest) {
   })
   
   if (isAdminRoute) {
-    // 1. IP Whitelist Check for admin panel AND admin API routes
-    console.log('🔒 ADMIN ROUTE ACCESS CHECK:', {
-      path: pathname,
-      isAdminRoute,
-      isDisabled: process.env.DISABLE_IP_WHITELIST === 'true',
-      clientIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-    })
+    // IP Whitelist Check for admin panel AND admin API routes
     
-    // IP Whitelist Check
-    const ipAllowed = await isAdminIPAllowed(request)
-    console.log('🔍 IP CHECK RESULT:', {
-      pathname,
-      ipAllowed,
-      clientIP: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-    })
-    
-    if ((pathname === '/admin' || pathname.startsWith('/api/admin/')) && !ipAllowed) {
-      console.log('🚫 IP ACCESS DENIED for', pathname)
-      // Redirect to 404 page instead of returning plain text
-      if (pathname === '/admin') {
-        return NextResponse.rewrite(new URL('/404', request.url))
-      }
-      // For API routes, return 404 status
-      return new NextResponse('Not Found', { status: 404 })
+    // Simple IP Whitelist Check for admin routes
+    if (pathname === '/admin' || pathname.startsWith('/api/admin/')) {
+      const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      
+      // Simplified whitelist - your specific IP
+      const allowedIPs = ['86.41.242.48', '127.0.0.1', '::1', 'localhost']
+      
+             if (!allowedIPs.includes(clientIP)) {
+         if (pathname === '/admin') {
+           return NextResponse.rewrite(new URL('/404', request.url))
+         }
+         return new NextResponse('Not Found', { status: 404 })
+       }
     }
-    
-    console.log('✅ IP ACCESS ALLOWED for', pathname)
+
 
     // 2. Rate Limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
