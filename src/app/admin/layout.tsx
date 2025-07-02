@@ -1,7 +1,7 @@
 import { headers } from 'next/headers'
-import { notFound } from 'next/navigation'
+import IPWhitelistManager from '@/lib/ip-whitelist'
 
-function AccessDeniedPage({ clientIP }: { clientIP: string }) {
+function AccessDeniedPage({ clientIP, allowedIPs }: { clientIP: string; allowedIPs: string[] }) {
   return (
     <html>
       <head>
@@ -27,7 +27,7 @@ function AccessDeniedPage({ clientIP }: { clientIP: string }) {
           .emoji { font-size: 4rem; margin-bottom: 1rem; }
           h1 { margin: 0 0 1rem 0; }
           p { margin: 0.5rem 0; opacity: 0.9; }
-          .debug { font-size: 0.8rem; margin-top: 1rem; opacity: 0.7; }
+          .debug { font-size: 0.8rem; margin-top: 1rem; opacity: 0.7; font-family: monospace; }
           a { color: white; text-decoration: none; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 5px; }
         `}</style>
       </head>
@@ -37,7 +37,10 @@ function AccessDeniedPage({ clientIP }: { clientIP: string }) {
           <h1>Access Denied</h1>
           <p>You don't have permission to access this area.</p>
           <p>Only authorized IPs can access the admin panel.</p>
-          <div className="debug">Your IP: {clientIP}</div>
+          <div className="debug">
+            Your IP: {clientIP}<br/>
+            Allowed IPs: {allowedIPs.length > 0 ? allowedIPs.join(', ') : 'None configured'}
+          </div>
           <br />
           <a href="/">🏠 Go to Home</a>
         </div>
@@ -64,14 +67,15 @@ export default async function AdminLayout({
 
   console.log(`🔒 ADMIN LAYOUT: IP Check - ${clientIP}`)
 
-  // Simple whitelist - only allow your IP
-  const allowedIPs = ['86.41.242.48']
+  // Use the proper IP whitelist manager
+  const isAllowed = IPWhitelistManager.isIPAllowed(clientIP)
+  const allowedIPs = IPWhitelistManager.getActiveIPs()
   
-  if (!allowedIPs.includes(clientIP)) {
-    console.log(`🚫 BLOCKED in layout: ${clientIP} not in whitelist`)
-    return <AccessDeniedPage clientIP={clientIP} />
+  if (!isAllowed) {
+    console.log(`🚫 BLOCKED in layout: ${clientIP} not in whitelist (Active IPs: ${allowedIPs.join(', ')})`)
+    return <AccessDeniedPage clientIP={clientIP} allowedIPs={allowedIPs} />
   }
 
-  console.log(`✅ ALLOWED in layout: ${clientIP}`)
+  console.log(`✅ ALLOWED in layout: ${clientIP} (Active IPs: ${allowedIPs.join(', ')})`)
   return <>{children}</>
 } 

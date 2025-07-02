@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import IPWhitelistManager from '@/lib/ip-whitelist'
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -11,19 +12,30 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/admin/')) {
     // Get client IP
     const xForwardedFor = request.headers.get('x-forwarded-for')
-    const clientIP = xForwardedFor?.split(',')[0]?.trim() || 'unknown'
+    const xRealIP = request.headers.get('x-real-ip')
+    const cfConnectingIP = request.headers.get('cf-connecting-ip')
+    
+    const clientIP = xForwardedFor?.split(',')[0]?.trim() || 
+                     xRealIP || 
+                     cfConnectingIP || 
+                     'unknown'
     
     console.log(`🔒 ADMIN API: ${pathname} | IP: ${clientIP}`)
     
-    // Simple whitelist - only allow your IP
-    const allowedIPs = ['86.41.242.48']
+    // Use the proper IP whitelist manager
+    const isAllowed = IPWhitelistManager.isIPAllowed(clientIP)
+    const allowedIPs = IPWhitelistManager.getActiveIPs()
     
-    if (!allowedIPs.includes(clientIP)) {
-      console.log(`🚫 BLOCKED API: ${clientIP} not in whitelist`)
-      return NextResponse.json({ error: 'Access Denied' }, { status: 403 })
+    if (!isAllowed) {
+      console.log(`🚫 BLOCKED API: ${clientIP} not in whitelist (Active IPs: ${allowedIPs.join(', ')})`)
+      return NextResponse.json({ 
+        error: 'Access Denied',
+        ip: clientIP,
+        allowedIPs: allowedIPs.length
+      }, { status: 403 })
     }
     
-    console.log(`✅ ALLOWED API: ${clientIP}`)
+    console.log(`✅ ALLOWED API: ${clientIP} (Active IPs: ${allowedIPs.join(', ')})`)
   }
   
   // Always return next for all other routes
