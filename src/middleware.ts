@@ -91,6 +91,8 @@ const getIPWhitelist = async (): Promise<string[]> => {
 
 // Admin panel IP protection
 const isAdminIPAllowed = async (request: NextRequest): Promise<boolean> => {
+  console.log(`🚀 isAdminIPAllowed CALLED - NODE_ENV: ${process.env.NODE_ENV}`)
+  
   // Development mode bypass
   if (process.env.NODE_ENV === 'development') {
     console.log('🔧 Development mode: Bypassing IP whitelist check')
@@ -202,6 +204,9 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
   const pathname = request.nextUrl.pathname
   
+  // DEBUG: Log middleware execution
+  console.log(`🔧 MIDDLEWARE: ${pathname} | IP: ${request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'}`)
+  
   // Environment variables have been added to production - deployment trigger
 
   // Silent handling of Chrome DevTools requests
@@ -237,7 +242,9 @@ export async function middleware(request: NextRequest) {
   
   if (isAdminRoute) {
     // IP Whitelist Check for admin panel AND admin API routes
+    console.log(`🔒 ADMIN ROUTE DETECTED: ${pathname}`)
     const isIPAllowed = await isAdminIPAllowed(request)
+    console.log(`🔍 IP CHECK RESULT: ${isIPAllowed}`)
     
     if (!isIPAllowed) {
       if (pathname === '/admin') {
