@@ -433,8 +433,12 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
               value={cvText}
               onChange={(e) => setCvText(e.target.value)}
               rows={6}
-              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
-              style={{ minHeight: '140px' }}
+              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation bg-background text-foreground border-input placeholder:text-muted-foreground"
+              style={{ 
+                minHeight: '140px',
+                fontSize: '16px', // Prevents iOS zoom
+                WebkitAppearance: 'none' // Removes default iOS styling
+              }}
               aria-describedby="cv-content-help"
             />
             <div id="cv-content-help" className="flex justify-between items-center text-sm text-muted-foreground">
@@ -472,8 +476,12 @@ export function MobileATSAnalyzer({ isMobile = true }: MobileATSAnalyzerProps) {
               }}
               required
               rows={4}
-              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation"
-              style={{ minHeight: '120px' }}
+              className="w-full p-4 text-base border-2 rounded-lg resize-none focus:ring-2 focus:ring-cvgenius-primary focus:border-cvgenius-primary touch-manipulation bg-background text-foreground border-input placeholder:text-muted-foreground"
+              style={{ 
+                minHeight: '120px',
+                fontSize: '16px', // Prevents iOS zoom
+                WebkitAppearance: 'none' // Removes default iOS styling
+              }}
               aria-describedby="job-description-help"
               aria-required="true"
             />

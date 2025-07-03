@@ -343,7 +343,7 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
             {currentStep === visibleSteps.length - 1 ? (
               <>
                 Complete
-                <Check className="w-4 w-4 ml-2" />
+                <Check className="w-4 h-4 ml-2" />
               </>
             ) : (
               <>
