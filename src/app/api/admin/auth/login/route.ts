@@ -56,16 +56,25 @@ export async function POST(request: NextRequest) {
     if (!JWT_SECRET) {
       console.error('JWT_SECRET not configured')
       return NextResponse.json(
-        { error: 'Server configuration error' },
+        { 
+          error: 'Server configuration error',
+          details: 'JWT_SECRET environment variable is not set. Please configure it in Vercel.'
+        },
         { status: 500 }
       )
     }
     
     const ADMIN_CREDENTIALS = getAdminCredentials()
     if (!ADMIN_CREDENTIALS) {
-      console.error('Admin credentials not configured')
+      console.error('Admin credentials not configured', {
+        hasUsername: !!process.env.ADMIN_USERNAME,
+        hasPasswordHash: !!process.env.ADMIN_PWD_HASH_B64
+      })
       return NextResponse.json(
-        { error: 'Server configuration error' },
+        { 
+          error: 'Server configuration error',
+          details: 'Admin credentials are not properly configured. Check ADMIN_USERNAME and ADMIN_PWD_HASH_B64 in Vercel.'
+        },
         { status: 500 }
       )
     }
@@ -99,9 +108,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify credentials using bcrypt
-    const isPasswordValid = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash)
-    
-    // Debug information removed for security
+    let isPasswordValid = false
+    try {
+      isPasswordValid = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash)
+      console.log('Password verification:', {
+        usernameMatch: username === ADMIN_CREDENTIALS.username,
+        passwordValid: isPasswordValid,
+        providedUsername: username,
+        expectedUsername: ADMIN_CREDENTIALS.username
+      })
+    } catch (bcryptError) {
+      console.error('Bcrypt comparison error:', bcryptError)
+      return NextResponse.json(
+        { 
+          error: 'Authentication error',
+          details: 'Password verification failed'
+        },
+        { status: 500 }
+      )
+    }
     
     if (username !== ADMIN_CREDENTIALS.username || !isPasswordValid) {
       // Track failed attempt
