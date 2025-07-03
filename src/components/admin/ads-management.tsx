@@ -37,9 +37,9 @@ import {
   Code,
   ExternalLink
 } from 'lucide-react'
-import ClientAdminAuth from '@/lib/admin-auth'
+import { ClientAdminAuth } from '@/lib/admin-auth'
 import { AdConfig } from '@/lib/ad-config'
-import { useToast } from '@/components/ui/toast'
+import { useToast, createToastUtils } from '@/components/ui/toast'
 import { formatRevenue, formatNumber, calculateCTR } from '@/lib/ad-performance'
 
 interface AdminAdSettings {
@@ -79,7 +79,8 @@ const AD_POSITIONS = {
 }
 
 export default function AdsManagement() {
-  const { toast } = useToast()
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
@@ -117,11 +118,7 @@ export default function AdsManagement() {
         }
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load ad settings",
-        variant: "destructive"
-      })
+      toast.error("Error", "Failed to load ad settings")
     } finally {
       setLoading(false)
     }
@@ -186,10 +183,7 @@ export default function AdsManagement() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          toast({
-            title: "Success",
-            description: `${key} ${value ? 'enabled' : 'disabled'}`
-          })
+          toast.success("Success", `${key} ${value ? 'enabled' : 'disabled'}`)
         } else {
           setAdSettings(prev => ({ ...prev, [key]: previousValue }))
           throw new Error(data.error)
@@ -199,11 +193,7 @@ export default function AdsManagement() {
         throw new Error('Failed to update setting')
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update setting",
-        variant: "destructive"
-      })
+      toast.error("Error", "Failed to update setting")
     } finally {
       setSaving(false)
     }
@@ -225,20 +215,13 @@ export default function AdsManagement() {
           setAdSlots(prev => prev.map(slot => 
             slot.id === slotId ? { ...slot, ...updates } : slot
           ))
-          toast({
-            title: "Success",
-            description: "Ad slot updated successfully"
-          })
+          toast.success("Success", "Ad slot updated successfully")
           return true
         }
       }
       throw new Error('Failed to update ad slot')
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update ad slot",
-        variant: "destructive"
-      })
+      toast.error("Error", "Failed to update ad slot")
       return false
     } finally {
       setSaving(false)
@@ -449,7 +432,7 @@ export default function AdsManagement() {
                 className="w-full justify-between"
                 onClick={() => {
                   adSlots.forEach(slot => toggleAdSlot(slot.id, false))
-                  toast({ title: "All ads disabled" })
+                  toast.info("All ads disabled")
                 }}
               >
                 <span className="flex items-center gap-2">
@@ -468,7 +451,7 @@ export default function AdsManagement() {
                       toggleAdSlot(slot.id, false)
                     }
                   })
-                  toast({ title: "Mobile ads disabled" })
+                  toast.info("Mobile ads disabled")
                 }}
               >
                 <span className="flex items-center gap-2">
@@ -1094,18 +1077,11 @@ export default function AdsManagement() {
                             { method: 'DELETE' }
                           )
                           if (response.ok) {
-                            toast({
-                              title: "Success",
-                              description: "Performance data has been reset"
-                            })
+                            toast.success("Success", "Performance data has been reset")
                             loadPerformanceData()
                           }
                         } catch (error) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to reset performance data",
-                            variant: "destructive"
-                          })
+                          toast.error("Error", "Failed to reset performance data")
                         }
                       }
                     }}

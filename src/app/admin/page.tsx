@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 // Custom imports
-import ClientAdminAuth from '@/lib/admin-auth'
+import { ClientAdminAuth } from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { SecurityHeader } from '@/components/admin/security-header'
 import AdsManagement from '@/components/admin/ads-management'
@@ -197,9 +197,14 @@ export default function AdminPanel() {
     setLoginLoading(true)
 
     try {
+      // Use direct fetch for login (no auth required yet)
       const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include', // Include cookies for CSRF
         body: JSON.stringify({ 
           username: 'admin', // Always use 'admin' as username
           password,
@@ -207,7 +212,19 @@ export default function AdminPanel() {
         })
       })
 
+      // Debug network response
+      console.log('🔍 Login response status:', response.status, response.statusText)
+      
+      if (!response.ok) {
+        console.error('🚨 Login response not OK:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url
+        })
+      }
+
       const data = await response.json()
+      console.log('🔍 Login response data:', data)
 
       if (response.ok && data.success) {
         ClientAdminAuth.setToken(data.token)
@@ -219,10 +236,12 @@ export default function AdminPanel() {
         setRequire2FA(true)
         toast.info('Please enter your 2FA code')
       } else {
+        console.error('🚨 Login failed:', data)
         toast.error(data.error || 'Login failed')
       }
     } catch (error) {
-      toast.error('Network error. Please try again.')
+      console.error('🚨 Network error during login:', error)
+      toast.error(`Network error: ${error instanceof Error ? error.message : 'Please try again.'}`)
     } finally {
       setLoginLoading(false)
     }
