@@ -21,7 +21,6 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     value,
     ...props 
   }, ref) => {
-    const [inputValue, setInputValue] = useState(value as string || '')
     const [detectedMobile, setDetectedMobile] = useState(false)
 
     // Detect mobile on client side
@@ -34,39 +33,40 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
       return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    // Update local state when external value changes
-    useEffect(() => {
-      setInputValue(value as string || '')
-    }, [value])
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value
+      onValueChange?.(newValue)
+      onChange?.(e)
+    }
 
-    const handleChange = (newValue: string) => {
-      setInputValue(newValue)
+    const handleAutocompleteChange = (newValue: string) => {
       onValueChange?.(newValue)
       
-      // Call original onChange if provided
+      // React-hook-form can handle both events and direct values
+      // Try to call onChange with just the value first
       if (onChange) {
-        // Create a more complete synthetic event
-        const syntheticEvent = {
-          target: { 
-            value: newValue,
-            name: props.name || '',
-            id: props.id || '',
-            type: 'text'
-          },
-          currentTarget: { 
-            value: newValue,
-            name: props.name || '',
-            id: props.id || '',
-            type: 'text'
-          },
-          preventDefault: () => {},
-          stopPropagation: () => {},
-          type: 'change',
-          bubbles: true,
-          cancelable: true,
-          timeStamp: Date.now()
-        } as React.ChangeEvent<HTMLInputElement>
-        onChange(syntheticEvent)
+        try {
+          // @ts-ignore - react-hook-form's onChange can accept a value directly
+          onChange(newValue)
+        } catch (error) {
+          // If that fails, create a synthetic event
+          const event = {
+            target: { 
+              value: newValue,
+              name: props.name,
+              id: props.id,
+            },
+            currentTarget: { 
+              value: newValue,
+              name: props.name,
+              id: props.id,
+            },
+            type: 'change',
+            preventDefault: () => {},
+            stopPropagation: () => {}
+          } as React.ChangeEvent<HTMLInputElement>
+          onChange(event)
+        }
       }
     }
 
@@ -76,8 +76,8 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
       return (
         <MobileAutocomplete
           ref={ref}
-          value={inputValue}
-          onChange={handleChange}
+          value={value as string || ''}
+          onChange={handleAutocompleteChange}
           type={autocompleteType}
           options={[]}
           {...props}
@@ -88,8 +88,8 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     return (
       <Input
         ref={ref}
-        value={inputValue}
-        onChange={(e) => handleChange(e.target.value)}
+        value={value}
+        onChange={handleChange}
         {...props}
       />
     )
