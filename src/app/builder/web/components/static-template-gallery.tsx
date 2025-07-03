@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -67,10 +68,40 @@ interface StaticTemplateGalleryProps {
 }
 
 export function StaticTemplateGallery({ onSelectTemplate }: StaticTemplateGalleryProps) {
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+
+      // Only hide on mobile devices (width < 768px)
+      if (window.innerWidth < 768) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // Scrolling down & passed 100px
+          setHeaderVisible(false)
+        } else if (currentScrollY < lastScrollY) {
+          // Scrolling up
+          setHeaderVisible(true)
+        }
+      } else {
+        // Always show on desktop
+        setHeaderVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 shadow-sm">
+      <div className={`bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 shadow-sm transition-transform duration-300 ${
+        headerVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
         <div className="container mx-auto px-4 py-6">
           {/* Top Navigation */}
           <div className="flex items-center justify-between mb-6">
