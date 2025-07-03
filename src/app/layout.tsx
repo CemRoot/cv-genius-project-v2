@@ -9,6 +9,7 @@ import { OfflineIndicator } from "@/components/ui/offline-indicator"
 import ClientViewportScript from "@/components/client-viewport-script"
 import HydrationFix from "@/components/hydration-fix"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import { DynamicAdManager } from "@/components/ads/dynamic-ad-manager"
 import AccessibilityWidget, { AccessibilityCSS } from "@/components/accessibility/accessibility-widget"
 import { PWAProvider } from "@/components/pwa-provider"
@@ -320,6 +321,9 @@ export default function RootLayout({
         
         {/* Vercel Speed Insights */}
         <SpeedInsights />
+        
+        {/* Vercel Web Analytics */}
+        <Analytics />
         
 
 

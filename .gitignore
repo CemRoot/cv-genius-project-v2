@@ -126,3 +126,8 @@ test-*.js
 setup-*.js
 *-test.js
 *-setup.js
+
+# Temporary scripts and debug files
+*.tmp.js
+*.debug.js
+*.test.json

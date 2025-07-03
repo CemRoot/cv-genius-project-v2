@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 
 🚀 **Production-Ready** | 🔒 **Secure Admin Panel** | 🤖 **AI-Powered** | 📱 **Mobile-First**
 
@@ -210,6 +210,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **💡 Feature Requests**: Open GitHub Issues with enhancement label
 - **🔒 Security Issues**: Email security concerns privately
 - **📚 Documentation**: Check `/docs` folder for detailed guides
+
+## 📚 Documentation
+
+All project documentation is organized in the `/docs` directory:
+
+- **[Setup & Configuration](docs/setup/)** - Gemini AI, 2FA, and environment setup
+- **[Deployment Guides](docs/deployment/)** - Vercel deployment and production setup
+- **[Security Documentation](docs/security/)** - Security policies and audit reports
+- **[Development Guides](docs/)** - Contributing, testing, and workflow guides
+- **[Feature Documentation](docs/features/)** - Detailed feature documentation
+- **[Technical Specs](docs/technical/)** - Technical specifications and architecture
+- **[Scripts Documentation](scripts/README.md)** - Utility scripts and tools
 
 ## ⚠️ Important Security Notes
 
