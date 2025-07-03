@@ -215,11 +215,30 @@ export async function POST(request: NextRequest) {
           )
         }
 
+        // Debug: Log token info (remove in production)
+        console.log('🔐 2FA Debug:', {
+          tokenProvided: twoFactorToken,
+          secretFirstChars: secret.substring(0, 8) + '...',
+          timestamp: new Date().toISOString()
+        })
+
         const verified = speakeasy.totp.verify({
           secret: secret,
           encoding: 'base32',
           token: twoFactorToken,
-          window: 2 // Allow 2 time steps before/after for clock drift
+          window: 6 // Allow 6 time steps before/after for clock drift (3 minutes)
+        })
+
+        // Generate expected token for debugging
+        const expectedToken = speakeasy.totp({
+          secret: secret,
+          encoding: 'base32'
+        })
+        
+        console.log('🔐 2FA Verification:', {
+          verified,
+          expectedToken,
+          providedToken: twoFactorToken
         })
 
         if (!verified) {
