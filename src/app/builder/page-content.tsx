@@ -21,12 +21,16 @@ interface CVBuilderPageContentProps {
 }
 
 export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentProps) {
+  const { currentCV, saveCV, autoSaveEnabled = true, autoSaveInterval = 30000, sessionState, updateSessionState, activeSection, setActiveSection } = useCVStore()
+  
   const [showPreview, setShowPreview] = useState(true)
   const [isPreviewOnly, setIsPreviewOnly] = useState(false)
-  const [mobileActiveTab, setMobileActiveTab] = useState('edit')
+  
+  // Initialize from sessionState or default to 'edit'
+  const [mobileActiveTab, setMobileActiveTab] = useState(sessionState.mobileActiveTab || 'edit')
+  
   const [isMobile, setIsMobile] = useState(initialIsMobile)
   const [showWizard, setShowWizard] = useState(false)
-  const { currentCV, saveCV, autoSaveEnabled = true, autoSaveInterval = 30000 } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
@@ -96,11 +100,29 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
                        (!currentCV.experience || currentCV.experience.length === 0) &&
                        (!currentCV.education || currentCV.education.length === 0)
       
-      if (isEmptyCV) {
+      // Only show wizard if CV is truly empty AND user hasn't been working in editor mode
+      if (isEmptyCV && sessionState.builderMode !== 'editor') {
         setShowWizard(true)
+      } else {
+        setShowWizard(false)
       }
     }
-  }, [isMobile, currentCV])
+  }, [isMobile, currentCV, sessionState.builderMode])
+  
+  // Update session state when mobileActiveTab changes
+  useEffect(() => {
+    updateSessionState({ 
+      mobileActiveTab,
+      builderMode: 'editor'
+    })
+  }, [mobileActiveTab, updateSessionState])
+  
+  // Restore mobileActiveTab from session state on mount
+  useEffect(() => {
+    if (sessionState.mobileActiveTab && isMobile) {
+      setMobileActiveTab(sessionState.mobileActiveTab)
+    }
+  }, [isMobile])
   
   if (!currentCV) {
     return (
@@ -177,6 +199,11 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
     } else {
       setIsPreviewOnly(false)
       setShowPreview(tabId !== 'edit')
+    }
+    
+    // When switching to edit mode, restore the last active section
+    if (tabId === 'edit' && sessionState.lastActiveSection) {
+      setActiveSection(sessionState.lastActiveSection)
     }
   }
 

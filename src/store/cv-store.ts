@@ -7,10 +7,19 @@ interface CVStore {
   // Current CV data
   currentCV: CVData
   
-  // UI state
+  // UI state - these should persist across refreshes
   isLoading: boolean
   activeSection: string
   previewMode: boolean
+  
+  // Session state - these should persist during the current session
+  sessionState: {
+    selectedTemplateId?: string
+    currentStep?: number
+    mobileActiveTab?: string
+    lastActiveSection?: string
+    builderMode?: 'wizard' | 'form' | 'editor'
+  }
   
   // Auto-save state
   autoSaveEnabled: boolean
@@ -70,6 +79,10 @@ interface CVStore {
   setActiveSection: (section: string) => void
   setPreviewMode: (preview: boolean) => void
   updateDesignSettings: (settings: DesignSettings) => void
+  
+  // Session state management
+  updateSessionState: (updates: Partial<CVStore['sessionState']>) => void
+  clearSessionState: () => void
   
   // CV management
   setCurrentCV: (cv: CVData) => void
@@ -152,6 +165,13 @@ export const useCVStore = create<CVStore>()(
       isLoading: false,
       activeSection: 'personal',
       previewMode: false,
+      sessionState: {
+        selectedTemplateId: undefined,
+        currentStep: 0,
+        mobileActiveTab: 'edit',
+        lastActiveSection: 'personal',
+        builderMode: 'editor'
+      },
       autoSaveEnabled: true,
       autoSaveInterval: 30000, // 30 seconds default
       lastAutoSave: null,
@@ -527,7 +547,10 @@ export const useCVStore = create<CVStore>()(
         }
       })),
       
-      setActiveSection: (section) => set({ activeSection: section }),
+      setActiveSection: (section) => set((state) => ({ 
+        activeSection: section,
+        sessionState: { ...state.sessionState, lastActiveSection: section }
+      })),
       
       setPreviewMode: (preview) => set({ previewMode: preview }),
       
@@ -632,12 +655,25 @@ export const useCVStore = create<CVStore>()(
         historyIndex: -1,
         canUndo: false,
         canRedo: false
+      }),
+
+      updateSessionState: (updates) => set((state) => ({
+        sessionState: { ...state.sessionState, ...updates }
+      })),
+
+      clearSessionState: () => set({
+        sessionState: {}
       })
     }),
-    {
-      name: 'cvgenius-storage',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ currentCV: state.currentCV })
-    }
+          {
+        name: 'cvgenius-storage',
+        storage: createJSONStorage(() => localStorage),
+        partialize: (state) => ({ 
+          currentCV: state.currentCV, 
+          activeSection: state.activeSection,
+          previewMode: state.previewMode,
+          sessionState: state.sessionState 
+        })
+      }
   )
 )

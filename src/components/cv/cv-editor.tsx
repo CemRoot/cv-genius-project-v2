@@ -26,7 +26,7 @@ interface CVEditorProps {
 }
 
 export function CVEditor({ isMobile = false }: CVEditorProps) {
-  const { currentCV, activeSection, setActiveSection, performAutoSave, autoSaveEnabled, autoSaveInterval, lastAutoSave, updateSection } = useCVStore()
+  const { currentCV, activeSection, setActiveSection, performAutoSave, autoSaveEnabled, autoSaveInterval, lastAutoSave, updateSection, sessionState } = useCVStore()
   const [expandedSections, setExpandedSections] = useState<string[]>(['personal', 'experience', 'references'])
   const [showSectionManager, setShowSectionManager] = useState(false)
   const sectionManagerRef = useRef<HTMLDivElement>(null)
@@ -62,9 +62,23 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
     // Reset expanded sections when CV changes (e.g., from examples)
     const hasValidSections = currentCV.sections && currentCV.sections.length > 0
     if (hasValidSections) {
-      setExpandedSections(['personal', 'experience'])
+      // Always expand the active section
+      setExpandedSections(prev => {
+        const newExpanded = ['personal', 'experience']
+        if (activeSection && !newExpanded.includes(activeSection)) {
+          newExpanded.push(activeSection)
+        }
+        return newExpanded
+      })
     }
-  }, [currentCV.id])
+  }, [currentCV.id, activeSection])
+  
+  // Auto-expand the active section when it changes
+  useEffect(() => {
+    if (activeSection && !expandedSections.includes(activeSection)) {
+      setExpandedSections(prev => [...prev, activeSection])
+    }
+  }, [activeSection, expandedSections])
   
   const { isSaving, lastSaved, saveCount, scheduleAutoSave } = useAutoSave({
     onSave: performAutoSave,
@@ -95,6 +109,11 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
         ? prev.filter(id => id !== sectionId)
         : [...prev, sectionId]
     )
+    
+    // When expanding a section, make it the active section
+    if (!expandedSections.includes(sectionId)) {
+      setActiveSection(sectionId)
+    }
   }
 
   const toggleSectionVisibility = (sectionId: string, visible: boolean) => {
@@ -353,8 +372,12 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
                     animate={{ rotate: isExpanded ? 90 : 0 }}
                     transition={{ duration: 0.2 }}
                     className={`${isMobile ? 'p-1' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleSection(section.id)
+                    }}
                   >
-                    <ChevronRight className={`${isMobile ? 'h-6 w-6 text-gray-400' : 'h-4 w-4 text-muted-foreground'}`} />
+                    <ChevronRight className={`${isMobile ? 'h-6 w-6 text-gray-400' : 'h-4 w-4 text-muted-foreground'} cursor-pointer`} />
                   </motion.div>
                 </div>
               </div>

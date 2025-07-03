@@ -13,30 +13,73 @@ import { ExportButton } from '@/components/cv/export-button'
 import SectionReorderPanel from '@/components/cv/section-reorder-panel'
 
 export function WebBuilderFlow() {
-  // Force template selection first - always start with null template
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [currentStep, setCurrentStep] = useState<'template' | 'form'>('template')
+  const { currentCV, sessionState, updateSessionState } = useCVStore()
+  
+  // Initialize from sessionState or check if user has existing CV data
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(sessionState.selectedTemplateId || null)
+  const [currentStep, setCurrentStep] = useState<'template' | 'form'>(() => {
+    // If user has sessionState template OR existing CV data, skip template selection
+    if (sessionState.selectedTemplateId || 
+        (currentCV && currentCV.template && (
+          currentCV.personal.fullName || 
+          currentCV.experience.length > 0 || 
+          currentCV.education.length > 0
+        ))) {
+      return 'form'
+    }
+    return 'template'
+  })
+  
   const [previewHtml, setPreviewHtml] = useState<string>('')
   const [previewCss, setPreviewCss] = useState<string>('')
   const [showSectionReorder, setShowSectionReorder] = useState<boolean>(false)
-  const { currentCV } = useCVStore()
   
   // Create template manager instance
   const templateManager = useMemo(() => new IrishCVTemplateManager(), [])
   
-  // Initialize - clear any saved state and force template selection
+  // Initialize - restore session state or determine from CV data
   useEffect(() => {
-    // Always start fresh - clear any saved state
-    sessionStorage.removeItem('selectedTemplate')
-    setSelectedTemplate(null)
-    setCurrentStep('template')
-  }, [])
+    // Priority 1: Use sessionState if available
+    if (sessionState.selectedTemplateId) {
+      setSelectedTemplate(sessionState.selectedTemplateId)
+      setCurrentStep('form')
+    } 
+    // Priority 2: Use template from existing CV data
+    else if (currentCV && currentCV.template && (
+      currentCV.personal.fullName || 
+      currentCV.experience.length > 0 || 
+      currentCV.education.length > 0
+    )) {
+      setSelectedTemplate(currentCV.template)
+      setCurrentStep('form')
+      // Update session state to reflect this
+      updateSessionState({ selectedTemplateId: currentCV.template })
+    } 
+    // Priority 3: Force template selection only if no data exists
+    else {
+      sessionStorage.removeItem('selectedTemplate')
+      setSelectedTemplate(null)
+      setCurrentStep('template')
+    }
+  }, [currentCV, sessionState.selectedTemplateId, updateSessionState])
+  
+  // Update session state when template selection changes
+  useEffect(() => {
+    if (selectedTemplate) {
+      updateSessionState({ 
+        selectedTemplateId: selectedTemplate,
+        builderMode: 'form'
+      })
+    }
+  }, [selectedTemplate, updateSessionState])
   
   // Debug: Her render'da state'i logla
   console.log('🟡 WebBuilderFlow RENDER:', { 
     selectedTemplate, 
     currentStep,
-    willShowGallery: !selectedTemplate 
+    willShowGallery: !selectedTemplate,
+    sessionState: sessionState.selectedTemplateId,
+    hasExistingData: !!(currentCV && (currentCV.personal.fullName || currentCV.experience.length > 0))
   })
   
   // Update preview when CV data changes

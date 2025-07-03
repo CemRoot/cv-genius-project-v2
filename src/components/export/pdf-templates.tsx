@@ -243,7 +243,7 @@ export function ModernTemplate({ data }: { data: CVData }) {
         </View>
 
         {/* Professional Summary */}
-        {data.personal.summary && (
+        {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={modernStyles.section}>
             <Text style={modernStyles.sectionTitle}>Professional Summary</Text>
             <Text style={modernStyles.description}>{data.personal.summary}</Text>
@@ -289,7 +289,7 @@ export function ModernTemplate({ data }: { data: CVData }) {
         )}
 
         {/* Skills */}
-        {data.skills.length > 0 && (
+        {data.skills.length > 0 && isSectionVisible(data.sections, 'skills') && (
           <View style={modernStyles.section}>
             <Text style={modernStyles.sectionTitle}>Skills</Text>
             <View style={modernStyles.skillsContainer}>
@@ -299,6 +299,60 @@ export function ModernTemplate({ data }: { data: CVData }) {
                 </Text>
               ))}
             </View>
+          </View>
+        )}
+
+        {/* References */}
+        {(() => {
+          const isReferencesVisible = isSectionVisible(data.sections, 'references')
+          const referencesDisplay = data.referencesDisplay || 'available-on-request'
+          const hasReferences = data.references && data.references.length > 0
+          
+          const shouldShowReferencesSection = isReferencesVisible && (
+            (referencesDisplay === 'detailed' && hasReferences) ||
+            (referencesDisplay === 'available-on-request')
+          )
+          
+          return shouldShowReferencesSection
+        })() && (
+          <View style={modernStyles.section}>
+            <Text style={modernStyles.sectionTitle}>References</Text>
+            {data.referencesDisplay === 'detailed' && data.references && data.references.length > 0 ? (
+              <View>
+                {data.references.map((reference, index) => (
+                  <View key={index} style={{ marginBottom: 8 }}>
+                    <Text style={modernStyles.jobTitle}>{reference.name}</Text>
+                    <Text style={modernStyles.company}>{reference.position}</Text>
+                    {reference.company && (
+                      <Text style={modernStyles.company}>{reference.company}</Text>
+                    )}
+                    <Text style={modernStyles.dates}>{reference.email}{reference.phone ? ` • ${formatIrishPhone(reference.phone)}` : ''}</Text>
+                    {reference.relationship && (
+                      <Text style={{ fontSize: 9, color: '#888888', fontStyle: 'italic' }}>
+                        ({reference.relationship})
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={modernStyles.description}>References available upon request</Text>
+            )}
+          </View>
+        )}
+
+        {/* Footer - Only show if references section is not visible or user hasn't explicitly set preference */}
+        {(!isSectionVisible(data.sections, 'references') || !data.referencesDisplay) && (
+          <View style={{
+            textAlign: 'center',
+            marginTop: 20,
+            paddingTop: 10,
+            borderTop: '1pt solid #cccccc'
+          }}>
+            <Text style={{
+              fontSize: 8,
+              color: '#666666'
+            }}>References available upon request</Text>
           </View>
         )}
       </Page>
@@ -329,7 +383,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
         </View>
 
         {/* Professional Summary */}
-        {data.personal.summary && (
+        {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>PROFESSIONAL SUMMARY</Text>
             <Text style={classicStyles.description}>{data.personal.summary}</Text>
@@ -337,7 +391,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
         )}
 
         {/* Experience */}
-        {data.experience.length > 0 && (
+        {data.experience.length > 0 && isSectionVisible(data.sections, 'experience') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>PROFESSIONAL EXPERIENCE</Text>
             {data.experience.map((exp, index) => (
@@ -357,7 +411,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
         )}
 
         {/* Education */}
-        {data.education.length > 0 && (
+        {data.education.length > 0 && isSectionVisible(data.sections, 'education') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>EDUCATION</Text>
             {data.education.map((edu, index) => (
@@ -415,7 +469,7 @@ export function CreativeTemplate({ data }: { data: CVData }) {
         </View>
 
         {/* Professional Summary */}
-        {data.personal.summary && (
+        {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={creativeStyles.section}>
             <Text style={creativeStyles.sectionTitle}>About Me</Text>
             <Text style={creativeStyles.description}>{data.personal.summary}</Text>
@@ -602,7 +656,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         </View>
 
         {/* Professional Summary */}
-        {personal.summary && (
+        {personal.summary && isSectionVisible(sections, 'summary') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
               fontSize: 11,      // 12 -> 11 (smaller title)
@@ -622,7 +676,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         )}
 
         {/* Experience */}
-        {experience.length > 0 && (
+        {experience.length > 0 && isSectionVisible(sections, 'experience') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
               fontSize: 11,      // 12 -> 11 (smaller)
@@ -674,7 +728,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         )}
 
         {/* Education */}
-        {education.length > 0 && (
+        {education.length > 0 && isSectionVisible(sections, 'education') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
               fontSize: 11,      // 12 -> 11 (smaller)
@@ -712,7 +766,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         )}
 
         {/* Skills - Compact Irish CV Format */}
-        {skills.length > 0 && (
+        {skills.length > 0 && isSectionVisible(sections, 'skills') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
               fontSize: 11,      
@@ -749,6 +803,210 @@ export function HarvardTemplate({ data }: { data: CVData }) {
                 )
               })}
             </View>
+          </View>
+        )}
+
+        {/* Languages */}
+        {data.languages && data.languages.length > 0 && isSectionVisible(sections, 'languages') && (
+          <View style={{ marginBottom: sectionSpacing }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: 2
+            }}>LANGUAGES</Text>
+            <View style={{ lineHeight: 1.0 }}>
+              {data.languages.map((language, index) => (
+                <View key={index} style={{ 
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 1
+                }}>
+                  <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{language.name}</Text>
+                  <Text style={{ fontSize: 9 }}>{language.level}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Projects */}
+        {data.projects && data.projects.length > 0 && isSectionVisible(sections, 'projects') && (
+          <View style={{ marginBottom: sectionSpacing }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: 2
+            }}>PROJECTS</Text>
+            {data.projects.map((project, index) => (
+              <View key={index} style={{ marginBottom: 6 }}>
+                <View style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 1
+                }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{project.name}</Text>
+                  <Text style={{ fontSize: 8, textAlign: 'right' }}>
+                    {project.startDate} - {project.current ? "Present" : project.endDate}
+                  </Text>
+                </View>
+                {project.description && (
+                  <Text style={{
+                    fontSize: settings.fontSize,
+                    lineHeight: 1.2,
+                    textAlign: 'justify',
+                    marginBottom: 2,
+                    fontFamily: 'Helvetica'
+                  }}>{project.description}</Text>
+                )}
+                {project.technologies && project.technologies.length > 0 && (
+                  <Text style={{
+                    fontSize: 9,
+                    color: '#666666',
+                    fontFamily: 'Helvetica'
+                  }}>Technologies: {project.technologies.join(', ')}</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Certifications */}
+        {data.certifications && data.certifications.length > 0 && isSectionVisible(sections, 'certifications') && (
+          <View style={{ marginBottom: sectionSpacing }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: 2
+            }}>CERTIFICATIONS</Text>
+            {data.certifications.map((cert, index) => (
+              <View key={index} style={{ marginBottom: 4 }}>
+                <View style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 1
+                }}>
+                  <View>
+                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{cert.name}</Text>
+                    <Text style={{ fontStyle: 'italic', fontSize: 9 }}>{cert.issuer}</Text>
+                  </View>
+                  <Text style={{ fontSize: 8, textAlign: 'right' }}>
+                    {cert.issueDate}
+                    {cert.expiryDate && ` - ${cert.expiryDate}`}
+                  </Text>
+                </View>
+                {cert.description && (
+                  <Text style={{
+                    fontSize: settings.fontSize,
+                    lineHeight: 1.2,
+                    textAlign: 'justify',
+                    fontFamily: 'Helvetica'
+                  }}>{cert.description}</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Interests */}
+        {data.interests && data.interests.length > 0 && isSectionVisible(sections, 'interests') && (
+          <View style={{ marginBottom: sectionSpacing }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: 2
+            }}>INTERESTS</Text>
+            <View style={{ 
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: 4
+            }}>
+                             {data.interests?.map((interest, index) => (
+                 <Text key={index} style={{
+                   fontSize: 9,
+                   fontFamily: 'Helvetica'
+                 }}>{interest.name}{index < (data.interests?.length || 0) - 1 ? ' • ' : ''}</Text>
+               ))}
+            </View>
+          </View>
+        )}
+
+        {/* References */}
+        {(() => {
+          const isReferencesVisible = isSectionVisible(sections, 'references')
+          const referencesDisplay = data.referencesDisplay || 'available-on-request'
+          const hasReferences = data.references && data.references.length > 0
+          
+          // Show references section if it's visible AND either:
+          // 1. User wants detailed view AND has references, OR 
+          // 2. User wants available-on-request view
+          const shouldShowReferencesSection = isReferencesVisible && (
+            (referencesDisplay === 'detailed' && hasReferences) ||
+            (referencesDisplay === 'available-on-request')
+          )
+          
+          return shouldShowReferencesSection
+        })() && (
+          <View style={{ marginBottom: sectionSpacing }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: 2
+            }}>REFERENCES</Text>
+            {data.referencesDisplay === 'detailed' && data.references && data.references.length > 0 ? (
+              <View>
+                {data.references.map((reference, index) => (
+                  <View key={index} style={{ marginBottom: 4 }}>
+                    <View style={{ marginBottom: 1 }}>
+                      <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{reference.name}</Text>
+                      <Text style={{ fontSize: 9, color: '#666666' }}>{reference.position}</Text>
+                      {reference.company && (
+                        <Text style={{ fontSize: 9, color: '#666666' }}>{reference.company}</Text>
+                      )}
+                    </View>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <Text style={{ fontSize: 8, color: '#666666' }}>{reference.email}</Text>
+                      {reference.phone && (
+                        <Text style={{ fontSize: 8, color: '#666666' }}>{formatIrishPhone(reference.phone)}</Text>
+                      )}
+                    </View>
+                    {reference.relationship && (
+                      <Text style={{ fontSize: 8, color: '#888888', fontStyle: 'italic' }}>
+                        ({reference.relationship})
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={{
+                fontSize: 10,
+                textAlign: 'center',
+                fontStyle: 'italic',
+                color: '#666666',
+                fontFamily: 'Helvetica'
+              }}>References available upon request</Text>
+            )}
+          </View>
+        )}
+
+        {/* Footer - Only show if references section is not visible or user hasn't explicitly set preference */}
+        {(!isSectionVisible(sections, 'references') || !data.referencesDisplay) && (
+          <View style={{
+            textAlign: 'center',
+            marginTop: 8,
+            paddingTop: 6,
+            borderTop: '1pt solid #cccccc'
+          }}>
+            <Text style={{
+              fontSize: 8,
+              color: '#666666',
+              fontFamily: 'Helvetica'
+            }}>References available upon request</Text>
           </View>
         )}
       </Page>

@@ -71,6 +71,7 @@ const exportFormats = [
 
 export function ExportManager({ isMobile = false }: ExportManagerProps) {
   const { currentCV } = useCVStore()
+  const { currentCV: cvStore, updateSessionState } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const [selectedFormats, setSelectedFormats] = useState<ExportFormat[]>(['pdf'])
@@ -79,9 +80,26 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   const [downloadCount, setDownloadCount] = useState(0)
   const [showRedirectMessage, setShowRedirectMessage] = useState(false)
   const [showInterstitial, setShowInterstitial] = useState(false)
-  const [pendingDownload, setPendingDownload] = useState<{ blob: Blob; filename: string; format: ExportFormat } | null>(null)
+  const [pendingDownload, setPendingDownload] = useState<{
+    blob: Blob
+    filename: string
+    format: ExportFormat
+  } | null>(null)
   const router = useRouter()
   const { handleDownload } = useDownloadWithRedirect()
+
+  // Smart navigation to CV builder
+  const navigateToBuilder = () => {
+    // Ensure user goes to form/editor, not template selection
+    if (currentCV) {
+      updateSessionState({
+        selectedTemplateId: currentCV.template || 'harvard',
+        builderMode: 'editor',
+        mobileActiveTab: 'edit'
+      })
+    }
+    router.push('/builder')
+  }
 
   const handleFormatToggle = (format: ExportFormat) => {
     setSelectedFormats(prev => 
@@ -122,57 +140,209 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         const ReactDOM = await import('react-dom/client')
         const { HarvardTemplate } = await import('./pdf-templates')
         
-        // We'll use a simpler approach - create HTML directly
+        // Generate HTML using the same logic as the React templates
+        const isSectionVisible = (sectionType: string) => {
+          const section = currentCV.sections.find(s => s.type === sectionType)
+          return section?.visible ?? false
+        }
+
         const cvHTML = `
           <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.4;">
+            <!-- Header -->
             <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-              <h1 style="margin: 0; font-size: 24px; font-weight: bold;">${currentCV.personal.fullName}</h1>
-              <div style="font-size: 12px; margin-top: 8px;">
-                ${currentCV.personal.phone} • ${currentCV.personal.email} • ${currentCV.personal.address}
+              <h1 style="margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase;">${currentCV.personal.fullName}</h1>
+              ${currentCV.personal.title ? `<div style="font-size: 14px; color: #666; margin-top: 5px;">${currentCV.personal.title}</div>` : ''}
+              <div style="font-size: 10px; margin-top: 8px;">
+                ${currentCV.personal.phone ? currentCV.personal.phone : ''} ${currentCV.personal.phone && currentCV.personal.email ? '• ' : ''}${currentCV.personal.email ? currentCV.personal.email : ''}${(currentCV.personal.phone || currentCV.personal.email) && currentCV.personal.address ? ' • ' : ''}${currentCV.personal.address ? currentCV.personal.address : ''}
               </div>
             </div>
             
-            ${currentCV.personal.summary ? `
+            <!-- Professional Summary -->
+            ${currentCV.personal.summary && isSectionVisible('summary') ? `
               <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">PROFESSIONAL SUMMARY</h2>
-                <p style="margin: 0;">${currentCV.personal.summary}</p>
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">PROFESSIONAL SUMMARY</h2>
+                <p style="margin: 0; text-align: justify;">${currentCV.personal.summary}</p>
               </div>
             ` : ''}
             
-            ${currentCV.experience.length > 0 ? `
+            <!-- Experience -->
+            ${currentCV.experience.length > 0 && isSectionVisible('experience') ? `
               <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">EXPERIENCE</h2>
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">PROFESSIONAL EXPERIENCE</h2>
                 ${currentCV.experience.map(exp => `
                   <div style="margin-bottom: 15px;">
-                    <div style="font-weight: bold;">${exp.position}</div>
-                    <div style="font-weight: bold; color: #666;">${exp.company}</div>
-                    <div style="font-size: 11px; color: #666; margin-bottom: 5px;">
-                      ${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                      <div>
+                        <div style="font-weight: bold; font-size: 12px;">${exp.position}</div>
+                        <div style="font-style: italic; font-size: 11px; color: #666;">${exp.company}, ${exp.location}</div>
+                      </div>
+                      <div style="font-size: 10px; text-align: right; color: #666;">
+                        ${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}
+                      </div>
                     </div>
-                    <p style="margin: 0;">${exp.description}</p>
+                    ${exp.description ? `<p style="margin: 5px 0; text-align: justify; font-size: 11px;">${exp.description}</p>` : ''}
+                    ${(exp.achievements || []).length > 0 ? `
+                      <ul style="margin: 5px 0 0 15px; padding: 0;">
+                        ${(exp.achievements || []).map(achievement => `<li style="font-size: 11px; margin-bottom: 2px;">${achievement}</li>`).join('')}
+                      </ul>
+                    ` : ''}
                   </div>
                 `).join('')}
               </div>
             ` : ''}
             
-            ${currentCV.education.length > 0 ? `
+            <!-- Education -->
+            ${currentCV.education.length > 0 && isSectionVisible('education') ? `
               <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">EDUCATION</h2>
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">EDUCATION</h2>
                 ${currentCV.education.map(edu => `
                   <div style="margin-bottom: 15px;">
-                    <div style="font-weight: bold;">${edu.degree}</div>
-                    <div style="color: #666;">${edu.institution}</div>
-                    <div style="font-size: 11px; color: #666;">
-                      ${edu.startDate} - ${edu.endDate}${edu.grade ? ` • ${edu.grade}` : ''}
+                    <div style="display: flex; justify-content: space-between;">
+                      <div>
+                        <div style="font-weight: bold; font-size: 12px;">${edu.degree}${edu.field ? ` in ${edu.field}` : ''}</div>
+                        <div style="font-style: italic; font-size: 11px; color: #666;">${edu.institution}, ${edu.location}</div>
+                        ${edu.grade ? `<div style="font-size: 10px; color: #666;">Grade: ${edu.grade}</div>` : ''}
+                      </div>
+                      <div style="font-size: 10px; text-align: right; color: #666;">
+                        ${edu.startDate} - ${edu.current ? 'Present' : edu.endDate}
+                      </div>
                     </div>
+                    ${edu.description ? `<p style="margin: 5px 0 0 0; text-align: justify; font-size: 11px;">${edu.description}</p>` : ''}
                   </div>
                 `).join('')}
               </div>
             ` : ''}
-            
-            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 10px; color: #666;">
-              References available upon request
-            </div>
+
+            <!-- Skills -->
+            ${currentCV.skills.length > 0 && isSectionVisible('skills') ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">SKILLS</h2>
+                <div>
+                  ${['Technical', 'Software', 'Soft', 'Other'].map(category => {
+                    const categorySkills = currentCV.skills.filter(skill => skill.category === category)
+                    if (categorySkills.length === 0) return ''
+                    const topSkills = categorySkills.slice(0, 6)
+                    const skillNames = topSkills.map(skill => skill.name).join(' • ')
+                    return `
+                      <div style="font-size: 11px; margin-bottom: 3px;">
+                        <span style="font-weight: bold;">${category}:</span> ${skillNames}
+                      </div>
+                    `
+                  }).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Languages -->
+            ${(currentCV.languages || []).length > 0 && isSectionVisible('languages') ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">LANGUAGES</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  ${(currentCV.languages || []).map(language => `
+                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                      <span style="font-weight: bold;">${language.name}</span>
+                      <span>${language.level}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Projects -->
+            ${(currentCV.projects || []).length > 0 && isSectionVisible('projects') ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">PROJECTS</h2>
+                ${(currentCV.projects || []).map(project => `
+                  <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                      <div style="font-weight: bold; font-size: 12px;">${project.name}</div>
+                      <div style="font-size: 10px; text-align: right; color: #666;">
+                        ${project.startDate} - ${project.current ? 'Present' : project.endDate}
+                      </div>
+                    </div>
+                    ${project.description ? `<p style="margin: 5px 0; text-align: justify; font-size: 11px;">${project.description}</p>` : ''}
+                    ${(project.technologies || []).length > 0 ? `<div style="font-size: 10px; color: #666;">Technologies: ${(project.technologies || []).join(', ')}</div>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Certifications -->
+            ${(currentCV.certifications || []).length > 0 && isSectionVisible('certifications') ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">CERTIFICATIONS</h2>
+                ${(currentCV.certifications || []).map(cert => `
+                  <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                      <div>
+                        <div style="font-weight: bold; font-size: 12px;">${cert.name}</div>
+                        <div style="font-style: italic; font-size: 11px; color: #666;">${cert.issuer}</div>
+                      </div>
+                      <div style="font-size: 10px; text-align: right; color: #666;">
+                        ${cert.issueDate}${cert.expiryDate ? ` - ${cert.expiryDate}` : ''}
+                      </div>
+                    </div>
+                    ${cert.description ? `<p style="margin: 5px 0 0 0; text-align: justify; font-size: 11px;">${cert.description}</p>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Interests -->
+            ${(currentCV.interests || []).length > 0 && isSectionVisible('interests') ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">INTERESTS</h2>
+                <div style="font-size: 11px;">
+                  ${(currentCV.interests || []).map(interest => interest.name).join(' • ')}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- References -->
+            ${(() => {
+              const isReferencesVisible = isSectionVisible('references')
+              const referencesDisplay = currentCV.referencesDisplay || 'available-on-request'
+              const hasReferences = (currentCV.references || []).length > 0
+              
+              const shouldShowReferencesSection = isReferencesVisible && (
+                (referencesDisplay === 'detailed' && hasReferences) ||
+                (referencesDisplay === 'available-on-request')
+              )
+              
+              if (!shouldShowReferencesSection) return ''
+              
+              return `
+                <div style="margin-bottom: 20px;">
+                  <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">REFERENCES</h2>
+                  ${referencesDisplay === 'detailed' && hasReferences ? `
+                    <div>
+                      ${(currentCV.references || []).map(reference => `
+                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
+                          <div style="font-weight: bold; font-size: 12px;">${reference.name}</div>
+                          <div style="font-size: 11px; color: #666;">${reference.position}</div>
+                          ${reference.company ? `<div style="font-size: 11px; color: #666;">${reference.company}</div>` : ''}
+                          <div style="font-size: 10px; color: #666; margin-top: 5px;">
+                            ${reference.email}${reference.phone ? ` • ${reference.phone}` : ''}
+                          </div>
+                          ${reference.relationship ? `<div style="font-size: 10px; color: #888; font-style: italic;">(${reference.relationship})</div>` : ''}
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `
+                    <div style="text-align: center; font-style: italic; font-size: 12px; color: #666;">
+                      References available upon request
+                    </div>
+                  `}
+                </div>
+              `
+            })()}
+
+            <!-- Footer (only if references section is not shown) -->
+            ${!isSectionVisible('references') || !currentCV.referencesDisplay ? `
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 10px; color: #666;">
+                References available upon request
+              </div>
+            ` : ''}
           </div>
         `
         
@@ -387,7 +557,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       toast.warning('Missing Information', 'Please fill in at least your name and email to export your CV.')
       const shouldRedirect = confirm('Would you like to go to CV Builder to complete your information?')
       if (shouldRedirect) {
-        router.push('/builder')
+        navigateToBuilder()
       }
       return
     }
@@ -537,7 +707,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
             Please create or load a CV to enable export functionality.
           </p>
           <Button 
-            onClick={() => router.push('/builder')}
+            onClick={navigateToBuilder}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />

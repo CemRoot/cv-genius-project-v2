@@ -115,11 +115,13 @@ interface SimpleMultiStepFormProps {
 }
 
 export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormProps) {
-  const [currentStep, setCurrentStep] = useState<number>(0)
+  const { currentCV, saveCV, sessionState, updateSessionState, setActiveSection } = useCVStore()
+  
+  // Initialize currentStep from sessionState or default to 0
+  const [currentStep, setCurrentStep] = useState<number>(sessionState.currentStep || 0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set<number>())
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   
-  const { currentCV, saveCV } = useCVStore()
   const router = useRouter()
   
   // Filter steps based on section visibility
@@ -133,6 +135,27 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
     // If section exists, check its visibility, otherwise default to showing it
     return section ? section.visible : true
   })
+  
+  // Update session state when currentStep changes
+  useEffect(() => {
+    updateSessionState({ 
+      currentStep, 
+      builderMode: 'form',
+      selectedTemplateId: templateId 
+    })
+    
+    // Also update the active section to match current step
+    if (visibleSteps[currentStep]) {
+      setActiveSection(visibleSteps[currentStep].id)
+    }
+  }, [currentStep, templateId, updateSessionState, setActiveSection, visibleSteps])
+  
+  // Restore state on component mount
+  useEffect(() => {
+    if (sessionState.currentStep !== undefined && sessionState.builderMode === 'form') {
+      setCurrentStep(sessionState.currentStep)
+    }
+  }, [])
   
   const progress = ((currentStep + 1) / visibleSteps.length) * 100
   

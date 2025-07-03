@@ -78,10 +78,12 @@ interface MobileWizardProps {
 }
 
 export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
-  const [currentStep, setCurrentStep] = useState(0)
+  const { currentCV, saveCV, sessionState, updateSessionState, setActiveSection } = useCVStore()
+  
+  // Initialize currentStep from sessionState or default to 0
+  const [currentStep, setCurrentStep] = useState(sessionState.currentStep || 0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
   const [showSectionManager, setShowSectionManager] = useState(false)
-  const { currentCV, saveCV } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const router = useRouter()
@@ -97,6 +99,27 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
     // If section exists, check its visibility, otherwise default to showing it
     return section ? section.visible : true
   })
+  
+  // Update session state when currentStep changes
+  useEffect(() => {
+    updateSessionState({ 
+      currentStep, 
+      builderMode: 'wizard',
+      selectedTemplateId: templateId 
+    })
+    
+    // Also update the active section to match current step
+    if (visibleSteps[currentStep]) {
+      setActiveSection(visibleSteps[currentStep].id)
+    }
+  }, [currentStep, templateId, updateSessionState, setActiveSection, visibleSteps])
+  
+  // Restore state on component mount
+  useEffect(() => {
+    if (sessionState.currentStep !== undefined && sessionState.builderMode === 'wizard') {
+      setCurrentStep(sessionState.currentStep)
+    }
+  }, [])
   
   const progress = ((currentStep + 1) / visibleSteps.length) * 100
   const CurrentStepComponent = visibleSteps[currentStep]?.component || PersonalInfoForm
