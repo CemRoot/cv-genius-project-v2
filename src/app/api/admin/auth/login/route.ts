@@ -169,16 +169,21 @@ export async function POST(request: NextRequest) {
       
       loginAttempts.set(clientIP, current)
       
-      // Log failed login attempt
-      await auditLogger.logLoginAttempt({
-        ip: clientIP,
-        timestamp: new Date().toISOString(),
-        success: false,
-        username,
-        failureReason: username !== ADMIN_CREDENTIALS.username ? 'Invalid username' : 'Invalid password',
-        userAgent,
-        location: await auditLogger.getIPLocation(clientIP)
-      })
+      // Log failed login attempt (with error handling)
+      try {
+        await auditLogger.logLoginAttempt({
+          ip: clientIP,
+          timestamp: new Date().toISOString(),
+          success: false,
+          username,
+          failureReason: username !== ADMIN_CREDENTIALS.username ? 'Invalid username' : 'Invalid password',
+          userAgent,
+          location: await auditLogger.getIPLocation(clientIP)
+        })
+      } catch (auditError) {
+        console.error('Audit logging error (non-fatal):', auditError)
+        // Continue with error response even if audit logging fails
+      }
       
       return NextResponse.json(
         { 
@@ -258,15 +263,20 @@ export async function POST(request: NextRequest) {
     // Clear failed attempts on successful login
     loginAttempts.delete(clientIP)
     
-    // Log successful login attempt
-    await auditLogger.logLoginAttempt({
-      ip: clientIP,
-      timestamp: new Date().toISOString(),
-      success: true,
-      username,
-      userAgent,
-      location: await auditLogger.getIPLocation(clientIP)
-    })
+    // Log successful login attempt (with error handling)
+    try {
+      await auditLogger.logLoginAttempt({
+        ip: clientIP,
+        timestamp: new Date().toISOString(),
+        success: true,
+        username,
+        userAgent,
+        location: await auditLogger.getIPLocation(clientIP)
+      })
+    } catch (auditError) {
+      console.error('Audit logging error (non-fatal):', auditError)
+      // Continue with login even if audit logging fails
+    }
 
     // Generate JWT token
     const token = await new jose.SignJWT({

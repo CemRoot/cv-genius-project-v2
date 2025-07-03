@@ -220,14 +220,41 @@ class SecurityAuditLogger {
 
   // Get IP location (basic implementation)
   async getIPLocation(ip: string): Promise<string> {
+    // Temporarily disable IP location lookup to fix network errors
+    return 'Location lookup disabled'
+    
+    /* Commented out to prevent network errors during login
     try {
-      // Use a free IP geolocation service
-      const response = await fetch(`http://ip-api.com/json/${ip}`)
+      // Skip IP location lookup in production to avoid network errors
+      // In production, use a proper HTTPS service or remove this feature
+      if (process.env.NODE_ENV === 'production') {
+        return 'Location lookup disabled'
+      }
+      
+      // Use HTTPS endpoint for IP geolocation with timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 second timeout
+      
+      const response = await fetch(`https://ipapi.co/${ip}/json/`, {
+        headers: {
+          'User-Agent': 'cvgenius/1.0'
+        },
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        return 'Unknown'
+      }
+      
       const data = await response.json()
-      return `${data.city}, ${data.country}`
-    } catch {
+      return data.city && data.country_name ? `${data.city}, ${data.country_name}` : 'Unknown'
+    } catch (error) {
+      console.error('IP location lookup failed:', error)
       return 'Unknown'
     }
+    */
   }
 
   // Get security statistics
