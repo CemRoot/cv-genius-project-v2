@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -125,16 +125,18 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   const router = useRouter()
   
   // Filter steps based on section visibility
-  const visibleSteps = steps.filter(step => {
-    // Personal info is always visible
-    if (step.id === 'personal') return true
-    
-    // Find the corresponding section in currentCV.sections
-    const section = currentCV.sections.find(s => s.type === step.id)
-    
-    // If section exists, check its visibility, otherwise default to showing it
-    return section ? section.visible : true
-  })
+  const visibleSteps = useMemo(() => {
+    return steps.filter(step => {
+      // Personal info is always visible
+      if (step.id === 'personal') return true
+      
+      // Find the corresponding section in currentCV.sections
+      const section = currentCV.sections.find(s => s.type === step.id)
+      
+      // If section exists, check its visibility, otherwise default to showing it
+      return section ? section.visible : true
+    })
+  }, [currentCV.sections])
   
   // Update session state when currentStep changes
   useEffect(() => {
@@ -148,8 +150,7 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
     if (visibleSteps[currentStep]) {
       setActiveSection(visibleSteps[currentStep].id)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, templateId, visibleSteps])
+  }, [currentStep, templateId, visibleSteps, setActiveSection, updateSessionState])
   
   // Restore state on component mount
   useEffect(() => {
