@@ -15,7 +15,8 @@ import {
   FileText,
   Check,
   Home,
-  Save
+  Save,
+  Settings2
 } from 'lucide-react'
 import { PersonalInfoForm } from '@/components/forms/personal-info-form'
 import { ProfessionalSummaryForm } from '@/components/forms/professional-summary-form'
@@ -28,6 +29,7 @@ import { useSwipeNavigation } from '@/hooks/use-swipe-navigation'
 import { useGestureNavigation } from '@/hooks/use-gesture-navigation'
 import { ResponsiveHeading, ResponsiveText } from '@/components/responsive/responsive-text'
 import { SafeAreaWrapper } from '@/components/responsive/adaptive-layout'
+import { MobileSectionReorder } from '@/components/mobile/mobile-section-reorder'
 
 const steps = [
   {
@@ -77,18 +79,31 @@ interface MobileWizardProps {
 export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
-  const { saveCV } = useCVStore()
+  const [showSectionManager, setShowSectionManager] = useState(false)
+  const { currentCV, saveCV } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   
-  const progress = ((currentStep + 1) / steps.length) * 100
-  const CurrentStepComponent = steps[currentStep].component
+  // Filter steps based on section visibility
+  const visibleSteps = steps.filter(step => {
+    // Personal info is always visible
+    if (step.id === 'personal') return true
+    
+    // Find the corresponding section in currentCV.sections
+    const section = currentCV.sections.find(s => s.type === step.id)
+    
+    // If section exists, check its visibility, otherwise default to showing it
+    return section ? section.visible : true
+  })
+  
+  const progress = ((currentStep + 1) / visibleSteps.length) * 100
+  const CurrentStepComponent = visibleSteps[currentStep]?.component || PersonalInfoForm
 
   // Swipe navigation
   const swipeNavigation = useSwipeNavigation({
     enabledDirections: { left: true, right: true, up: false, down: false },
     onSwipeComplete: (direction) => {
-      if (direction === 'left' && currentStep < steps.length - 1) {
+      if (direction === 'left' && currentStep < visibleSteps.length - 1) {
         handleNext()
       } else if (direction === 'right' && currentStep > 0) {
         handleBack()
@@ -100,7 +115,7 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
 
   const handleNext = () => {
     setCompletedSteps(prev => new Set([...prev, currentStep]))
-    if (currentStep < steps.length - 1) {
+    if (currentStep < visibleSteps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
       handleComplete()
@@ -159,14 +174,24 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
                 <p className="text-xs text-gray-500">Template: {templateId}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSave}
-              className="p-2"
-            >
-              <Save className="h-5 w-5" />
-            </Button>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSectionManager(true)}
+                className="p-2"
+              >
+                <Settings2 className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSave}
+                className="p-2"
+              >
+                <Save className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -175,7 +200,7 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
       {/* Step Indicators */}
       <div className="px-4 py-6">
         <div className="flex justify-between mb-8">
-          {steps.map((step, index) => {
+          {visibleSteps.map((step, index) => {
             const Icon = step.icon
             const isActive = index === currentStep
             const isCompleted = completedSteps.has(index)
@@ -184,11 +209,11 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
               <div
                 key={step.id}
                 className={`flex flex-col items-center flex-1 ${
-                  index !== steps.length - 1 ? 'relative' : ''
+                  index !== visibleSteps.length - 1 ? 'relative' : ''
                 }`}
               >
                 {/* Connection Line */}
-                {index !== steps.length - 1 && (
+                {index !== visibleSteps.length - 1 && (
                   <div
                     className={`absolute top-5 left-1/2 w-full h-0.5 ${
                       isCompleted ? 'bg-blue-600' : 'bg-gray-300'
@@ -233,12 +258,12 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
         {/* Current Step Info */}
         <Card className="p-6 mb-6 mt-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {steps[currentStep].title}
+            {visibleSteps[currentStep]?.title}
           </h2>
           <p className="text-gray-600">
-            {steps[currentStep].description}
+            {visibleSteps[currentStep]?.description}
           </p>
-          {steps[currentStep].optional && (
+          {visibleSteps[currentStep]?.optional && (
             <span className="inline-block mt-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
               Optional - You can skip this
             </span>
@@ -275,7 +300,7 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
             Back
           </Button>
           
-          {steps[currentStep].optional && currentStep < steps.length - 1 && (
+          {visibleSteps[currentStep]?.optional && currentStep < visibleSteps.length - 1 && (
             <Button
               variant="ghost"
               onClick={handleNext}
@@ -308,6 +333,13 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
           Swipe left or right to navigate
         </p>
       </div>
+      
+      {/* Mobile Section Manager Modal */}
+      {showSectionManager && (
+        <MobileSectionReorder 
+          onClose={() => setShowSectionManager(false)}
+        />
+      )}
     </div>
   )
 }

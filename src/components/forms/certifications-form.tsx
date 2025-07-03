@@ -127,7 +127,7 @@ export function CertificationsForm() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Certification Name *</Label>
+                          <Label>Certification Name <span className="text-red-500">*</span></Label>
                           <Input
                             {...register("name")}
                             placeholder="AWS Certified Developer"
@@ -139,7 +139,7 @@ export function CertificationsForm() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Issuer *</Label>
+                          <Label>Issuing Organization <span className="text-red-500">*</span></Label>
                           <Input
                             {...register("issuer")}
                             placeholder="Amazon Web Services"
@@ -151,12 +151,67 @@ export function CertificationsForm() {
                         </div>
                       </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Issue Date <span className="text-red-500">*</span></Label>
+                          <Input
+                            {...register("issueDate")}
+                            type="month"
+                            className={errors.issueDate ? "border-red-500" : ""}
+                          />
+                          {errors.issueDate && (
+                            <p className="text-sm text-red-500">{errors.issueDate.message}</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Expiry Date (if applicable)</Label>
+                          <Input
+                            {...register("expiryDate")}
+                            type="month"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Credential ID</Label>
+                          <Input
+                            {...register("credentialId")}
+                            placeholder="ABC123XYZ"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Verification URL</Label>
+                          <Input
+                            {...register("url")}
+                            placeholder="https://verify.example.com"
+                            className={errors.url ? "border-red-500" : ""}
+                          />
+                          {errors.url && (
+                            <p className="text-sm text-red-500">{errors.url.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description (optional)</Label>
+                        <Textarea
+                          {...register("description")}
+                          placeholder="Brief description of what this certification covers..."
+                          rows={2}
+                        />
+                      </div>
+
                       <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
-                          <X className="h-3 w-3" />
+                        <Button type="button" variant="outline" onClick={handleCancel}>
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
                         </Button>
-                        <Button type="submit" size="sm">
-                          <Save className="h-3 w-3" />
+                        <Button type="submit">
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Changes
                         </Button>
                       </div>
                     </form>

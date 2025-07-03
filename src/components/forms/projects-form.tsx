@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
 import { useCVStore } from "@/store/cv-store"
 import { useState } from "react"
 import { PlusCircle, Trash2, Edit2, Save, X, ExternalLink, Github, Code2, Briefcase } from "lucide-react"
@@ -153,7 +154,7 @@ export function ProjectsForm() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Project Name *</Label>
+                          <Label>Project Name <span className="text-red-500">*</span></Label>
                           <Input
                             {...register("name")}
                             placeholder="My Awesome Project"
@@ -165,24 +166,163 @@ export function ProjectsForm() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Start Date *</Label>
+                          <Label>Project URL</Label>
+                          <Input
+                            {...register("url")}
+                            placeholder="https://myproject.com"
+                            className={errors.url ? "border-red-500" : ""}
+                          />
+                          {errors.url && (
+                            <p className="text-sm text-red-500">{errors.url.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description <span className="text-red-500">*</span></Label>
+                        <Textarea
+                          {...register("description")}
+                          placeholder="Brief description of your project..."
+                          rows={3}
+                          className={errors.description ? "border-red-500" : ""}
+                        />
+                        {errors.description && (
+                          <p className="text-sm text-red-500">{errors.description.message}</p>
+                        )}
+                      </div>
+
+                      {/* Technologies Section */}
+                      <div className="space-y-2">
+                        <Label>
+                          Technologies <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={techInput}
+                            onChange={(e) => setTechInput(e.target.value)}
+                            placeholder="e.g., React, Node.js"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addTechnology()
+                              }
+                            }}
+                          />
+                          <Button type="button" onClick={addTechnology} variant="outline" size="sm">
+                            Add
+                          </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {(watchTechnologies || []).map((tech, index) => (
+                            <Badge key={index} variant="secondary" className="gap-1">
+                              {tech}
+                              <button
+                                type="button"
+                                onClick={() => removeTechnology(index)}
+                                className="ml-1 hover:text-red-600"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        {errors.technologies && (
+                          <p className="text-sm text-red-500">{errors.technologies.message}</p>
+                        )}
+                      </div>
+
+                      {/* Date Fields */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Start Date <span className="text-red-500">*</span></Label>
                           <Input
                             {...register("startDate")}
-                            type="month"
+                            type="date"
                             className={errors.startDate ? "border-red-500" : ""}
                           />
                           {errors.startDate && (
                             <p className="text-sm text-red-500">{errors.startDate.message}</p>
                           )}
                         </div>
+
+                        <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input
+                            {...register("endDate")}
+                            type="date"
+                            disabled={watchCurrent}
+                            className={errors.endDate ? "border-red-500" : ""}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="current-edit"
+                          {...register("current")}
+                          className="rounded border-gray-300"
+                        />
+                        <Label htmlFor="current-edit" className="font-normal">
+                          Currently working on this project
+                        </Label>
+                      </div>
+
+                      {/* GitHub URL */}
+                      <div className="space-y-2">
+                        <Label>GitHub Repository</Label>
+                        <Input
+                          {...register("github")}
+                          placeholder="https://github.com/username/project"
+                          className={errors.github ? "border-red-500" : ""}
+                        />
+                        {errors.github && (
+                          <p className="text-sm text-red-500">{errors.github.message}</p>
+                        )}
+                      </div>
+
+                      {/* Achievements Section */}
+                      <div className="space-y-2">
+                        <Label>Key Achievements</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={achievementInput}
+                            onChange={(e) => setAchievementInput(e.target.value)}
+                            placeholder="e.g., Improved performance by 50%"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addAchievement()
+                              }
+                            }}
+                          />
+                          <Button type="button" onClick={addAchievement} variant="outline" size="sm">
+                            Add
+                          </Button>
+                        </div>
+                        <ul className="space-y-1">
+                          {(watchAchievements || []).map((achievement, index) => (
+                            <li key={index} className="flex items-start gap-2 text-sm">
+                              <span className="text-gray-400 mt-0.5">•</span>
+                              <span className="flex-1">{achievement}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeAchievement(index)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
-                          <X className="h-3 w-3" />
+                          Cancel
                         </Button>
                         <Button type="submit" size="sm">
-                          <Save className="h-3 w-3" />
+                          Save Changes
                         </Button>
                       </div>
                     </form>
@@ -339,6 +479,137 @@ export function ProjectsForm() {
               {errors.description && (
                 <p className="text-sm text-red-500">{errors.description.message}</p>
               )}
+            </div>
+
+            {/* Technologies Section */}
+            <div className="space-y-2">
+              <Label>
+                Technologies <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  value={techInput}
+                  onChange={(e) => setTechInput(e.target.value)}
+                  placeholder="e.g., React, Node.js"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addTechnology()
+                    }
+                  }}
+                />
+                <Button type="button" onClick={addTechnology} variant="outline">
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(watchTechnologies || []).map((tech, index) => (
+                  <Badge key={index} variant="secondary" className="gap-1">
+                    {tech}
+                    <button
+                      type="button"
+                      onClick={() => removeTechnology(index)}
+                      className="ml-1 hover:text-red-600"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              {errors.technologies && (
+                <p className="text-sm text-red-500">{errors.technologies.message}</p>
+              )}
+            </div>
+
+            {/* Date Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">
+                  Start Date <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  {...register("startDate")}
+                  className={errors.startDate ? "border-red-500" : ""}
+                />
+                {errors.startDate && (
+                  <p className="text-sm text-red-500">{errors.startDate.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  {...register("endDate")}
+                  disabled={watchCurrent}
+                  className={errors.endDate ? "border-red-500" : ""}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="current"
+                {...register("current")}
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="current" className="font-normal">
+                Currently working on this project
+              </Label>
+            </div>
+
+            {/* GitHub URL */}
+            <div className="space-y-2">
+              <Label htmlFor="github">GitHub Repository</Label>
+              <Input
+                id="github"
+                {...register("github")}
+                placeholder="https://github.com/username/project"
+                className={errors.github ? "border-red-500" : ""}
+              />
+              {errors.github && (
+                <p className="text-sm text-red-500">{errors.github.message}</p>
+              )}
+            </div>
+
+            {/* Achievements Section */}
+            <div className="space-y-2">
+              <Label>Key Achievements</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={achievementInput}
+                  onChange={(e) => setAchievementInput(e.target.value)}
+                  placeholder="e.g., Improved performance by 50%"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addAchievement()
+                    }
+                  }}
+                />
+                <Button type="button" onClick={addAchievement} variant="outline">
+                  Add
+                </Button>
+              </div>
+              <ul className="space-y-1">
+                {(watchAchievements || []).map((achievement, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <span className="text-gray-400 mt-0.5">•</span>
+                    <span className="flex-1">{achievement}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAchievement(index)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="flex justify-end gap-2">

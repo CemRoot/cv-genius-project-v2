@@ -128,7 +128,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       </header>
 
       {/* Summary */}
-      {personal.summary && (
+      {personal.summary && isSectionVisible('summary') && (
         <section className="mb-6">
           <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
             Summary
@@ -140,7 +140,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       )}
 
       {/* Skills */}
-      {skills.length > 0 && (
+      {skills.length > 0 && isSectionVisible('skills') && (
         <section className="mb-6">
           <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
             Skills
@@ -161,12 +161,13 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       )}
 
       {/* Experience */}
-      <section className="mb-6">
-        <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
-          Experience
-        </h2>
-        <div className="space-y-6">
-          {experience.map((exp) => (
+      {experience.length > 0 && isSectionVisible('experience') && (
+        <section className="mb-6">
+          <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
+            Experience
+          </h2>
+          <div className="space-y-6">
+            {experience.map((exp) => (
             <div key={exp.id} className="break-inside-avoid">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
@@ -204,9 +205,10 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
           ))}
         </div>
       </section>
+      )}
 
       {/* Education */}
-      {education.length > 0 && (
+      {education.length > 0 && isSectionVisible('education') && (
         <section className="mb-6">
           <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
             Education

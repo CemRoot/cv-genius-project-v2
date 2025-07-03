@@ -120,10 +120,22 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   
   const { currentCV, saveCV } = useCVStore()
   
-  const progress = ((currentStep + 1) / steps.length) * 100
+  // Filter steps based on section visibility
+  const visibleSteps = steps.filter(step => {
+    // Personal info is always visible
+    if (step.id === 'personal') return true
+    
+    // Find the corresponding section in currentCV.sections
+    const section = currentCV.sections.find(s => s.type === step.id)
+    
+    // If section exists, check its visibility, otherwise default to showing it
+    return section ? section.visible : true
+  })
+  
+  const progress = ((currentStep + 1) / visibleSteps.length) * 100
   
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
+    if (currentStep < visibleSteps.length - 1) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -146,7 +158,7 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
     setCompletedSteps(newCompleted)
   }
   
-  const CurrentStepComponent = steps[currentStep].component
+  const CurrentStepComponent = visibleSteps[currentStep]?.component || PersonalInfoForm
   
   return (
     <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
@@ -200,7 +212,7 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
           <div className="p-4 flex-1 overflow-y-auto">
             <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 sticky top-0 bg-white pb-2">Progress Steps</h2>
             <div className="space-y-1">
-              {steps.map((step, index) => {
+              {visibleSteps.map((step, index) => {
                 const isActive = index === currentStep
                 const isCompleted = completedSteps.has(index)
                 
@@ -277,11 +289,11 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                   <div className="bg-white rounded-lg shadow-sm p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-blue-100 rounded text-blue-600">
-                        {steps[currentStep].icon}
+                        {visibleSteps[currentStep]?.icon}
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Step {currentStep + 1} of {steps.length}</p>
-                        <h3 className="text-sm font-medium text-gray-900">{steps[currentStep].title}</h3>
+                        <p className="text-xs text-gray-500">Step {currentStep + 1} of {visibleSteps.length}</p>
+                        <h3 className="text-sm font-medium text-gray-900">{visibleSteps[currentStep]?.title}</h3>
                       </div>
                     </div>
                     <button
@@ -299,13 +311,13 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                 <div className="hidden lg:block mb-8">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                      {steps[currentStep].icon}
+                      {visibleSteps[currentStep]?.icon}
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">
-                      {steps[currentStep].title}
+                      {visibleSteps[currentStep]?.title}
                     </h2>
                   </div>
-                  <p className="text-gray-600">{steps[currentStep].description}</p>
+                  <p className="text-gray-600">{visibleSteps[currentStep]?.description}</p>
                 </div>
                 
                 {/* Error Messages */}
@@ -344,7 +356,7 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                 </Button>
                 
                 <div className="flex items-center gap-4">
-                  {steps[currentStep].optional && currentStep < steps.length - 1 && (
+                  {visibleSteps[currentStep]?.optional && currentStep < visibleSteps.length - 1 && (
                     <Button
                       variant="ghost"
                       onClick={handleNext}
