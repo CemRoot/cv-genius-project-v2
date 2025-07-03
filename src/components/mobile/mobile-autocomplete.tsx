@@ -15,7 +15,7 @@ interface AutocompleteOption {
 
 interface MobileAutocompleteProps {
   value: string
-  onChange: (value: string) => void
+  onChange: (value: string | React.ChangeEvent<HTMLInputElement>) => void
   placeholder?: string
   options: AutocompleteOption[]
   disabled?: boolean
@@ -23,8 +23,8 @@ interface MobileAutocompleteProps {
   id?: string
   name?: string
   type?: 'job-title' | 'company' | 'location' | 'university' | 'skill' | 'default'
-  onBlur?: () => void
-  onFocus?: () => void
+  onBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void
+  onFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void
 }
 
 // Predefined suggestions for different field types
@@ -228,15 +228,17 @@ export const MobileAutocomplete = forwardRef<HTMLInputElement, MobileAutocomplet
       }
     }
 
-    const handleInputFocus = () => {
+    const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
       setIsOpen(true)
-      onFocus?.()
+      onFocus?.(e)
     }
 
-    const handleInputBlur = () => {
+    const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       // Delay blur to allow option selection
       setTimeout(() => {
-        onBlur?.()
+        if (onBlur && e && e.target) {
+          onBlur(e)
+        }
       }, 150)
     }
 

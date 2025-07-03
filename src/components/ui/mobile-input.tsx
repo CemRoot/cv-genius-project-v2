@@ -18,10 +18,15 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     isMobile = false,
     onValueChange,
     onChange,
+    onBlur,
     value,
+    name,
     ...props 
   }, ref) => {
     const [detectedMobile, setDetectedMobile] = useState(false)
+    
+    // Ensure we have a name prop (required by react-hook-form)
+    const fieldName = name
 
     // Detect mobile on client side
     useEffect(() => {
@@ -36,36 +41,49 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value
       onValueChange?.(newValue)
-      onChange?.(e)
+      
+      // Call the onChange from react-hook-form if present
+      if (onChange && typeof onChange === 'function') {
+        onChange(e)
+      }
     }
 
     const handleAutocompleteChange = (newValue: string) => {
       onValueChange?.(newValue)
       
-      // React-hook-form can handle both events and direct values
-      // Try to call onChange with just the value first
-      if (onChange) {
+      // React-hook-form's onChange needs an event
+      if (onChange && typeof onChange === 'function') {
+        // Debug: Check if we have a name
+        const effectiveName = fieldName || ''
+        
+        if (!effectiveName) {
+          console.warn('MobileInput: name prop is missing. This is required when using with react-hook-form.')
+        }
+        
         try {
-          // @ts-ignore - react-hook-form's onChange can accept a value directly
-          onChange(newValue)
-        } catch (error) {
-          // If that fails, create a synthetic event
+          // Create a minimal but complete event
           const event = {
             target: { 
               value: newValue,
-              name: props.name,
-              id: props.id,
+              name: effectiveName,
+              type: 'text',
             },
             currentTarget: { 
               value: newValue,
-              name: props.name,
-              id: props.id,
+              name: effectiveName,
+              type: 'text',
             },
             type: 'change',
             preventDefault: () => {},
-            stopPropagation: () => {}
+            stopPropagation: () => {},
+            persist: () => {}
           } as React.ChangeEvent<HTMLInputElement>
+          
           onChange(event)
+        } catch (error) {
+          console.error('MobileInput handleAutocompleteChange error:', error)
+          console.error('Field name:', effectiveName)
+          console.error('Value:', newValue)
         }
       }
     }
@@ -76,8 +94,10 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
       return (
         <MobileAutocomplete
           ref={ref}
+          name={fieldName}
           value={value as string || ''}
           onChange={handleAutocompleteChange}
+          onBlur={onBlur}
           type={autocompleteType}
           options={[]}
           {...props}
@@ -88,8 +108,10 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     return (
       <Input
         ref={ref}
+        name={fieldName}
         value={value}
         onChange={handleChange}
+        onBlur={onBlur}
         {...props}
       />
     )
