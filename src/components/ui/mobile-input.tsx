@@ -45,9 +45,26 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
       
       // Call original onChange if provided
       if (onChange) {
+        // Create a more complete synthetic event
         const syntheticEvent = {
-          target: { value: newValue },
-          currentTarget: { value: newValue }
+          target: { 
+            value: newValue,
+            name: props.name || '',
+            id: props.id || '',
+            type: 'text'
+          },
+          currentTarget: { 
+            value: newValue,
+            name: props.name || '',
+            id: props.id || '',
+            type: 'text'
+          },
+          preventDefault: () => {},
+          stopPropagation: () => {},
+          type: 'change',
+          bubbles: true,
+          cancelable: true,
+          timeStamp: Date.now()
         } as React.ChangeEvent<HTMLInputElement>
         onChange(syntheticEvent)
       }
