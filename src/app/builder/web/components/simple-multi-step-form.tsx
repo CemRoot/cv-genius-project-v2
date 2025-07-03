@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -119,6 +120,7 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   
   const { currentCV, saveCV } = useCVStore()
+  const router = useRouter()
   
   // Filter steps based on section visibility
   const visibleSteps = steps.filter(step => {
@@ -137,6 +139,8 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   const handleNext = () => {
     if (currentStep < visibleSteps.length - 1) {
       setCurrentStep(currentStep + 1)
+    } else {
+      handleComplete()
     }
   }
   
@@ -156,6 +160,16 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
     completedSteps.forEach(step => newCompleted.add(step))
     newCompleted.add(currentStep)
     setCompletedSteps(newCompleted)
+  }
+  
+  const handleComplete = async () => {
+    try {
+      await saveCV()
+      // Navigate to export page
+      router.push('/export')
+    } catch (error) {
+      console.error('Failed to save CV:', error)
+    }
   }
   
   const CurrentStepComponent = visibleSteps[currentStep]?.component || PersonalInfoForm
@@ -368,10 +382,9 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                   
                   <Button
                     onClick={handleNext}
-                    disabled={currentStep === steps.length - 1}
                     className="gap-2 px-6 bg-blue-600 hover:bg-blue-700"
                   >
-                    {currentStep === steps.length - 1 ? 'Complete' : 'Next'}
+                    {currentStep === visibleSteps.length - 1 ? 'Complete' : 'Next'}
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>

@@ -89,6 +89,8 @@ interface CVStore {
   undo: () => void
   redo: () => void
   clearHistory: () => void
+
+  setReferencesDisplay: (display: 'available-on-request' | 'detailed') => void
 }
 
 const createDefaultCV = (): CVData => ({
@@ -408,6 +410,14 @@ export const useCVStore = create<CVStore>()(
         currentCV: {
           ...state.currentCV,
           references: (state.currentCV.references || []).filter(reference => reference.id !== id),
+          lastModified: new Date().toISOString()
+        }
+      })),
+      
+      setReferencesDisplay: (display: 'available-on-request' | 'detailed') => set((state) => ({
+        currentCV: {
+          ...state.currentCV,
+          referencesDisplay: display,
           lastModified: new Date().toISOString()
         }
       })),

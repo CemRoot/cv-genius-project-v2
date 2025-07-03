@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -83,6 +84,7 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
   const { currentCV, saveCV } = useCVStore()
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
+  const router = useRouter()
   
   // Filter steps based on section visibility
   const visibleSteps = steps.filter(step => {
@@ -132,7 +134,8 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
     try {
       await saveCV()
       toast.success('CV Created!', 'Your CV has been saved successfully')
-      // Navigate to preview or home
+      // Navigate to export page
+      router.push('/export')
     } catch (error) {
       toast.error('Save Failed', 'Failed to save your CV. Please try again.')
     }
@@ -314,10 +317,10 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
             onClick={handleNext}
             className="flex-1 h-12"
           >
-            {currentStep === steps.length - 1 ? (
+            {currentStep === visibleSteps.length - 1 ? (
               <>
                 Complete
-                <Check className="w-4 h-4 ml-2" />
+                <Check className="w-4 w-4 ml-2" />
               </>
             ) : (
               <>
@@ -337,7 +340,12 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
       {/* Mobile Section Manager Modal */}
       {showSectionManager && (
         <MobileSectionReorder 
+          isOpen={showSectionManager}
           onClose={() => setShowSectionManager(false)}
+          onSectionToggle={(sectionId: string) => {
+            // Handle section toggle if needed
+          }}
+          expandedSections={[]}
         />
       )}
     </div>

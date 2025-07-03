@@ -342,12 +342,22 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         {/* References */}
         {(() => {
           const isReferencesVisible = isSectionVisible('references')
+          const referencesDisplay = cvData?.referencesDisplay || 'available-on-request'
           const hasReferences = references && references.length > 0
-          return isReferencesVisible
+          
+          // Show references section if it's visible AND either:
+          // 1. User wants detailed view AND has references, OR 
+          // 2. User wants available-on-request view
+          const shouldShowReferencesSection = isReferencesVisible && (
+            (referencesDisplay === 'detailed' && hasReferences) ||
+            (referencesDisplay === 'available-on-request')
+          )
+          
+          return shouldShowReferencesSection
         })() && (
           <div>
             <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold mb-1 text-center`}>REFERENCES</h2>
-            {references && references.length > 0 ? (
+            {cvData?.referencesDisplay === 'detailed' && references && references.length > 0 ? (
               <div className="space-y-2">
                 {references.map((reference) => (
                   <div key={reference.id} className="text-sm border-b border-gray-200 pb-2 last:border-b-0 last:pb-0">
@@ -388,8 +398,8 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         )}
       </div>
 
-      {/* Footer - Only show if references section is not visible */}
-      {!isSectionVisible('references') && (
+      {/* Footer - Only show if references section is not visible or user hasn't explicitly set preference */}
+      {(!isSectionVisible('references') || !cvData?.referencesDisplay) && (
         <div className="text-center text-xs text-gray-600 mt-8 pt-4 border-t border-gray-300">
           <p>References available upon request</p>
         </div>

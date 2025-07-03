@@ -11,9 +11,8 @@ import { useCVStore } from "@/store/cv-store"
 import { Reference } from "@/types/cv"
 
 export function ReferencesForm() {
-  const { currentCV, addReference, updateReference, removeReference } = useCVStore()
+  const { currentCV, addReference, updateReference, removeReference, setReferencesDisplay } = useCVStore()
   const [isAdding, setIsAdding] = useState(false)
-  const [showAvailableUponRequest, setShowAvailableUponRequest] = useState(true)
   const [newReference, setNewReference] = useState<Omit<Reference, 'id'>>({
     name: '',
     position: '',
@@ -22,6 +21,8 @@ export function ReferencesForm() {
     phone: '',
     relationship: ''
   })
+
+  const referencesDisplay = currentCV.referencesDisplay || 'available-on-request'
 
   const handleAddReference = () => {
     if (newReference.name.trim() && newReference.email.trim()) {
@@ -35,7 +36,7 @@ export function ReferencesForm() {
         relationship: ''
       })
       setIsAdding(false)
-      setShowAvailableUponRequest(false)
+      setReferencesDisplay('detailed')
     }
   }
 
@@ -43,7 +44,7 @@ export function ReferencesForm() {
     removeReference(id)
     const currentReferences = currentCV.references || []
     if (currentReferences.length === 1) {
-      setShowAvailableUponRequest(true)
+      setReferencesDisplay('available-on-request')
     }
   }
 
@@ -67,8 +68,8 @@ export function ReferencesForm() {
               <input
                 type="radio"
                 id="available-upon-request"
-                checked={showAvailableUponRequest}
-                onChange={() => setShowAvailableUponRequest(true)}
+                checked={referencesDisplay === 'available-on-request'}
+                onChange={() => setReferencesDisplay('available-on-request')}
                 className="h-4 w-4 text-cvgenius-primary"
               />
               <Label htmlFor="available-upon-request" className="text-sm">
@@ -80,8 +81,8 @@ export function ReferencesForm() {
               <input
                 type="radio"
                 id="detailed-references"
-                checked={!showAvailableUponRequest}
-                onChange={() => setShowAvailableUponRequest(false)}
+                checked={referencesDisplay === 'detailed'}
+                onChange={() => setReferencesDisplay('detailed')}
                 className="h-4 w-4 text-cvgenius-primary"
               />
               <Label htmlFor="detailed-references" className="text-sm">
@@ -93,7 +94,7 @@ export function ReferencesForm() {
       </Card>
 
       {/* Detailed References List */}
-      {!showAvailableUponRequest && (
+      {referencesDisplay === 'detailed' && (
         <>
           {(currentCV.references || []).length > 0 && (
             <div className="space-y-4">

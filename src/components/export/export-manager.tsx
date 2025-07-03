@@ -26,6 +26,7 @@ import { useDownloadWithRedirect } from '@/components/ads/download-redirect-hand
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { DownloadInterstitial } from '@/components/ads/download-interstitial'
 import { getAdConfig } from '@/lib/ad-config'
+import { exportMobilePDF } from '@/lib/mobile-pdf-utils'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -95,6 +96,118 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     
     try {
       console.log('Starting PDF generation with CV data:', currentCV.id)
+      
+      // Check if we're on mobile
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
+      
+      if (isMobileDevice) {
+        // Use mobile-specific PDF generation
+        console.log('Using mobile PDF generation with html2canvas + jsPDF')
+        
+        // Create a temporary container for the CV
+        const tempContainer = document.createElement('div')
+        tempContainer.id = 'temp-cv-export'
+        tempContainer.style.position = 'fixed'
+        tempContainer.style.left = '-9999px'
+        tempContainer.style.top = '0'
+        tempContainer.style.width = '794px' // A4 width
+        tempContainer.style.backgroundColor = '#ffffff'
+        tempContainer.style.padding = '40px'
+        tempContainer.style.fontFamily = 'Arial, sans-serif'
+        tempContainer.style.fontSize = '12px'
+        tempContainer.style.lineHeight = '1.4'
+        
+        // Render CV content to the temporary container
+        const React = await import('react')
+        const ReactDOM = await import('react-dom/client')
+        const { HarvardTemplate } = await import('./pdf-templates')
+        
+        // We'll use a simpler approach - create HTML directly
+        const cvHTML = `
+          <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.4;">
+            <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+              <h1 style="margin: 0; font-size: 24px; font-weight: bold;">${currentCV.personal.fullName}</h1>
+              <div style="font-size: 12px; margin-top: 8px;">
+                ${currentCV.personal.phone} • ${currentCV.personal.email} • ${currentCV.personal.address}
+              </div>
+            </div>
+            
+            ${currentCV.personal.summary ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">PROFESSIONAL SUMMARY</h2>
+                <p style="margin: 0;">${currentCV.personal.summary}</p>
+              </div>
+            ` : ''}
+            
+            ${currentCV.experience.length > 0 ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">EXPERIENCE</h2>
+                ${currentCV.experience.map(exp => `
+                  <div style="margin-bottom: 15px;">
+                    <div style="font-weight: bold;">${exp.position}</div>
+                    <div style="font-weight: bold; color: #666;">${exp.company}</div>
+                    <div style="font-size: 11px; color: #666; margin-bottom: 5px;">
+                      ${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}
+                    </div>
+                    <p style="margin: 0;">${exp.description}</p>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            
+            ${currentCV.education.length > 0 ? `
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">EDUCATION</h2>
+                ${currentCV.education.map(edu => `
+                  <div style="margin-bottom: 15px;">
+                    <div style="font-weight: bold;">${edu.degree}</div>
+                    <div style="color: #666;">${edu.institution}</div>
+                    <div style="font-size: 11px; color: #666;">
+                      ${edu.startDate} - ${edu.endDate}${edu.grade ? ` • ${edu.grade}` : ''}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 10px; color: #666;">
+              References available upon request
+            </div>
+          </div>
+        `
+        
+        tempContainer.innerHTML = cvHTML
+        document.body.appendChild(tempContainer)
+        
+        try {
+          // Use the mobile PDF export utility
+          const result = await exportMobilePDF(
+            'temp-cv-export',
+            `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`,
+            {
+              scale: Math.min(window.devicePixelRatio * 1.5, 3),
+              quality: 0.9,
+              timeout: 20000
+            },
+            (progress, stage) => {
+              console.log(`Mobile PDF progress: ${progress}% - ${stage}`)
+            }
+          )
+          
+          if (result.success && result.blob) {
+            console.log('Mobile PDF generated successfully, size:', result.blob.size)
+            return result.blob
+          } else {
+            throw new Error(result.error || 'Mobile PDF generation failed')
+          }
+        } finally {
+          // Clean up temporary container
+          document.body.removeChild(tempContainer)
+        }
+      }
+      
+      // Use react-pdf renderer (original approach for desktop and fallback)
+      console.log('Using react-pdf renderer')
       const doc = <HarvardTemplate data={currentCV} />
       console.log('PDF document created, generating blob...')
       const blob = await pdf(doc).toBlob()

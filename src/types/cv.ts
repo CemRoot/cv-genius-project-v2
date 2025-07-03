@@ -112,7 +112,6 @@ export interface DesignSettings {
 export interface CVData {
   id: string
   personal: PersonalInfo
-  sections: CVSection[]
   experience: Experience[]
   education: Education[]
   skills: Skill[]
@@ -121,10 +120,12 @@ export interface CVData {
   certifications?: Certification[]
   interests?: Interest[]
   references?: Reference[]
+  referencesDisplay?: 'available-on-request' | 'detailed'
+  designSettings?: DesignSettings
+  sections: CVSection[]
   template: string
   lastModified: string
   version: number
-  designSettings?: DesignSettings
 }
 
 // Type alias for compatibility
