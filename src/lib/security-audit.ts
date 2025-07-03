@@ -1,4 +1,4 @@
-import crypto from 'crypto'
+// Edge Runtime compatible - no Node.js crypto module
 
 /**
  * Security Audit Logger - In-Memory Implementation
@@ -9,6 +9,28 @@ import crypto from 'crypto'
  * For production use, audit logs are sent to Vercel environment variables for persistence.
  * Memory limits are enforced to prevent excessive memory usage.
  */
+
+// Edge Runtime compatible UUID generator
+function generateUUID(): string {
+  // Use crypto.getRandomValues() which is available in Edge Runtime
+  const array = new Uint8Array(16)
+  crypto.getRandomValues(array)
+  
+  // Set version (4) and variant bits
+  array[6] = (array[6] & 0x0f) | 0x40
+  array[8] = (array[8] & 0x3f) | 0x80
+  
+  // Convert to hex string with hyphens
+  const hex = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
+}
+
+// Edge Runtime compatible random hex string generator
+function generateRandomHex(bytes: number): string {
+  const array = new Uint8Array(bytes)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
 
 // Types for audit logging
 export interface AuditEvent {
@@ -50,7 +72,7 @@ class SecurityAuditLogger {
   private encryptionKey: string
 
   constructor() {
-    this.encryptionKey = process.env.AUDIT_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex')
+    this.encryptionKey = process.env.AUDIT_ENCRYPTION_KEY || generateRandomHex(32)
     
     // In production, audit logs should be stored in a database or external service
     // For now, we use in-memory storage which resets on deployment
@@ -82,31 +104,51 @@ class SecurityAuditLogger {
     }
   }
 
-  // Encrypt sensitive data
+  // Simple obfuscation for sensitive data (not true encryption in Edge Runtime)
+  // For production, consider using Web Crypto API's subtle crypto or server-side encryption
   private encrypt(data: string): string {
-    const iv = crypto.randomBytes(16)
-    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32)
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-    let encrypted = cipher.update(data, 'utf8', 'hex')
-    encrypted += cipher.final('hex')
-    return iv.toString('hex') + ':' + encrypted
+    // Simple XOR-based obfuscation with the encryption key
+    const keyBytes = new TextEncoder().encode(this.encryptionKey)
+    const dataBytes = new TextEncoder().encode(data)
+    const result = new Uint8Array(dataBytes.length)
+    
+    for (let i = 0; i < dataBytes.length; i++) {
+      result[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length]
+    }
+    
+    // Convert to base64 for storage
+    return btoa(String.fromCharCode(...result))
   }
 
-  // Decrypt sensitive data
+  // Decrypt obfuscated data
   private decrypt(encryptedData: string): string {
-    const [ivHex, encrypted] = encryptedData.split(':')
-    const iv = Buffer.from(ivHex, 'hex')
-    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32)
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8')
-    decrypted += decipher.final('utf8')
-    return decrypted
+    try {
+      // Decode from base64
+      const encrypted = atob(encryptedData)
+      const encryptedBytes = new Uint8Array(encrypted.length)
+      for (let i = 0; i < encrypted.length; i++) {
+        encryptedBytes[i] = encrypted.charCodeAt(i)
+      }
+      
+      // XOR with key to decrypt
+      const keyBytes = new TextEncoder().encode(this.encryptionKey)
+      const result = new Uint8Array(encryptedBytes.length)
+      
+      for (let i = 0; i < encryptedBytes.length; i++) {
+        result[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length]
+      }
+      
+      return new TextDecoder().decode(result)
+    } catch (error) {
+      console.error('Decryption failed:', error)
+      return encryptedData
+    }
   }
 
   // Log audit event
   async logEvent(event: Omit<AuditEvent, 'id' | 'timestamp' | 'encrypted'>): Promise<void> {
     const auditEvent: AuditEvent = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       timestamp: new Date().toISOString(),
       encrypted: true,
       ...event,

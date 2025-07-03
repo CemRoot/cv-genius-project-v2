@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as jose from 'jose'
-import crypto from 'crypto'
 import { cookies } from 'next/headers'
 import speakeasy from 'speakeasy'
 import bcrypt from 'bcryptjs'
 import Admin2FAState from '@/lib/admin-2fa-state'
 import SecurityAuditLogger from '@/lib/security-audit'
+
+// Force Edge Runtime
+export const runtime = 'edge'
 
 // JWT secret must be set via environment variable
 let JWT_SECRET: Uint8Array | null = null
@@ -217,8 +219,12 @@ export async function POST(request: NextRequest) {
       .setExpirationTime('7d') // Refresh token expires in 7 days
       .sign(JWT_SECRET)
 
-    // Generate CSRF token
-    const csrfToken = crypto.randomBytes(32).toString('hex')
+    // Generate CSRF token using Web Crypto API (Edge Runtime compatible)
+    const randomBytes = new Uint8Array(32)
+    crypto.getRandomValues(randomBytes)
+    const csrfToken = Array.from(randomBytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
 
     // Set secure cookies
     const cookieStore = await cookies()
@@ -257,7 +263,13 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Login error:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('Login error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      hasJWT: !!process.env.JWT_SECRET,
+      hasUsername: !!process.env.ADMIN_USERNAME,
+      hasPassword: !!process.env.ADMIN_PWD_HASH_B64
+    })
     
     if (error instanceof SyntaxError) {
       return NextResponse.json(
@@ -266,12 +278,20 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Provide more detailed error in development
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
     return NextResponse.json(
       { 
         error: 'Authentication failed',
-        message: process.env.NODE_ENV === 'development' 
-          ? (error instanceof Error ? error.message : 'Unknown error')
-          : 'Internal server error'
+        message: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
+        debug: process.env.NODE_ENV === 'development' ? {
+          hasRequiredEnvVars: {
+            JWT_SECRET: !!process.env.JWT_SECRET,
+            ADMIN_USERNAME: !!process.env.ADMIN_USERNAME,
+            ADMIN_PWD_HASH_B64: !!process.env.ADMIN_PWD_HASH_B64
+          }
+        } : undefined
       },
       { status: 500 }
     )
