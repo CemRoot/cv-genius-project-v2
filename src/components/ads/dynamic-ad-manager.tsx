@@ -28,11 +28,19 @@ export function DynamicAdManager({ children }: DynamicAdManagerProps) {
     monetagNative: false
   })
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const pathname = usePathname()
 
   useEffect(() => {
     loadAdConfigs()
     loadAdminSettings()
+
+    // Periodic refresh to sync with admin changes
+    const refreshInterval = setInterval(() => {
+      loadAdminSettings()
+    }, 5000) // Check every 5 seconds
+
+    return () => clearInterval(refreshInterval)
   }, [])
 
   const loadAdConfigs = async () => {
@@ -52,7 +60,13 @@ export function DynamicAdManager({ children }: DynamicAdManagerProps) {
       const response = await fetch('/api/ads/status')
       if (response.ok) {
         const settings = await response.json()
-        setAdminSettings(settings)
+        
+        // Only update if settings actually changed
+        if (settings.lastUpdated !== lastUpdated) {
+          console.log('🔄 Ad settings updated:', settings)
+          setAdminSettings(settings)
+          setLastUpdated(settings.lastUpdated)
+        }
       }
     } catch (error) {
       console.error('Failed to load admin ad settings:', error)
