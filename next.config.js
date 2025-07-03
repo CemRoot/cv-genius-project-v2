@@ -13,6 +13,9 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'framer-motion'],
+    isrMemoryCacheSize: 0,
+    serverComponentsExternalPackages: ['bcryptjs'],
+    missingSuspenseWithCSRBailout: false,
   },
   
   // Performance optimizations
@@ -32,6 +35,16 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+    domains: [
+      'ui-avatars.com',
+      'images.unsplash.com',
+      'via.placeholder.com',
+      'picsum.photos',
+      'assets.aceternity.com',
+      'aceternity.com'
+    ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;"
   },
   // Webpack configuration to handle Node.js modules
   webpack: (config, { isServer }) => {
@@ -121,7 +134,22 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/api/admin/:path*',
+        headers: [
+          {
+            key: 'X-Admin-Route',
+            value: 'true',
+          },
+        ],
+      },
     ]
+  },
+  // Disable static exports to ensure dynamic rendering
+  trailingSlash: false,
+  // Ensure all API routes are handled dynamically
+  async rewrites() {
+    return []
   },
 }
 
