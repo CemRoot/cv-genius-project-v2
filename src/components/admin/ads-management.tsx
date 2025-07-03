@@ -40,6 +40,7 @@ import {
 import ClientAdminAuth from '@/lib/client-admin-auth'
 import { AdConfig } from '@/lib/ad-config'
 import { useToast } from '@/hooks/use-toast'
+import { formatRevenue, formatNumber, calculateCTR } from '@/lib/ad-performance'
 
 interface AdminAdSettings {
   enableAds: boolean
@@ -96,9 +97,13 @@ export default function AdsManagement() {
   const [showConfigDialog, setShowConfigDialog] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop')
+  const [performanceData, setPerformanceData] = useState<any>(null)
+  const [performancePeriod, setPerformancePeriod] = useState<'today' | 'week' | 'month'>('week')
+  const [loadingPerformance, setLoadingPerformance] = useState(false)
 
   useEffect(() => {
     loadAdSettings()
+    loadPerformanceData()
   }, [])
 
   const loadAdSettings = async () => {
@@ -119,6 +124,44 @@ export default function AdsManagement() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadPerformanceData = async () => {
+    setLoadingPerformance(true)
+    try {
+      const response = await ClientAdminAuth.makeAuthenticatedRequest(
+        `/api/admin/ads/performance?view=overview&period=${performancePeriod}`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setPerformanceData(data.overview)
+          
+          // Merge performance data with ad slots
+          if (data.overview.topPerformingAds) {
+            setAdSlots(prev => prev.map(slot => {
+              const perf = data.overview.topPerformingAds.find((p: any) => p.adSlotId === slot.id)
+              if (perf) {
+                return {
+                  ...slot,
+                  performance: {
+                    impressions: 0, // Will be loaded separately
+                    clicks: 0,
+                    revenue: perf.revenue,
+                    ctr: perf.ctr
+                  }
+                }
+              }
+              return slot
+            }))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load performance data:', error)
+    } finally {
+      setLoadingPerformance(false)
     }
   }
 
