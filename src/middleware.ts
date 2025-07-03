@@ -1,6 +1,33 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import IPWhitelistManager from '@/lib/ip-whitelist'
+
+// Simple IP whitelist check for edge runtime (no file system access)
+function isIPAllowedSimple(ip: string): boolean {
+  // Check if IP whitelist is disabled
+  if (process.env.DISABLE_IP_WHITELIST === 'true') {
+    console.log('🔓 IP whitelist is disabled - allowing all IPs')
+    return true
+  }
+
+  // Get IPs from environment variable
+  const envWhitelist = process.env.ADMIN_IP_WHITELIST
+  if (envWhitelist) {
+    const allowedIPs = envWhitelist.split(',').map(ip => ip.trim()).filter(Boolean)
+    const isAllowed = allowedIPs.some(allowedIP => allowedIP === ip || ip.includes(allowedIP))
+    console.log(`🔍 IP Check: ${ip} | Allowed IPs: ${allowedIPs.join(', ')} | Result: ${isAllowed}`)
+    return isAllowed
+  }
+
+  // Always allow localhost in development
+  if (process.env.NODE_ENV === 'development' && 
+      (ip === '127.0.0.1' || ip === '::1' || ip.includes('127.0.0.1') || ip.includes('::1'))) {
+    return true
+  }
+
+  // No whitelist configured - deny for security
+  console.log(`🚫 No IP whitelist configured, denying ${ip}`)
+  return false
+}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -22,20 +49,18 @@ export async function middleware(request: NextRequest) {
     
     console.log(`🔒 ADMIN API: ${pathname} | IP: ${clientIP}`)
     
-    // Use the proper IP whitelist manager
-    const isAllowed = IPWhitelistManager.isIPAllowed(clientIP)
-    const allowedIPs = IPWhitelistManager.getActiveIPs()
+    // Use simple IP check that works in edge runtime
+    const isAllowed = isIPAllowedSimple(clientIP)
     
     if (!isAllowed) {
-      console.log(`🚫 BLOCKED API: ${clientIP} not in whitelist (Active IPs: ${allowedIPs.join(', ')})`)
+      console.log(`🚫 BLOCKED API: ${clientIP} not in whitelist`)
       return NextResponse.json({ 
         error: 'Access Denied',
-        ip: clientIP,
-        allowedIPs: allowedIPs.length
+        ip: clientIP
       }, { status: 403 })
     }
     
-    console.log(`✅ ALLOWED API: ${clientIP} (Active IPs: ${allowedIPs.join(', ')})`)
+    console.log(`✅ ALLOWED API: ${clientIP}`)
   }
   
   // Always return next for all other routes
