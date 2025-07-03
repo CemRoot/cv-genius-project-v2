@@ -61,7 +61,8 @@ export function WebBuilderFlow() {
       setSelectedTemplate(null)
       setCurrentStep('template')
     }
-  }, [currentCV, sessionState.selectedTemplateId, updateSessionState])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCV, sessionState.selectedTemplateId])
   
   // Update session state when template selection changes
   useEffect(() => {
@@ -71,7 +72,8 @@ export function WebBuilderFlow() {
         builderMode: 'form'
       })
     }
-  }, [selectedTemplate, updateSessionState])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplate])
   
   // Debug: Her render'da state'i logla
   console.log('🟡 WebBuilderFlow RENDER:', { 

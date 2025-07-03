@@ -115,7 +115,8 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
       mobileActiveTab,
       builderMode: 'editor'
     })
-  }, [mobileActiveTab, updateSessionState])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobileActiveTab])
   
   // Restore mobileActiveTab from session state on mount
   useEffect(() => {

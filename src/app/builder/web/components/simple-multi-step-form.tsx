@@ -148,7 +148,8 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
     if (visibleSteps[currentStep]) {
       setActiveSection(visibleSteps[currentStep].id)
     }
-  }, [currentStep, templateId, updateSessionState, setActiveSection, visibleSteps])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, templateId, visibleSteps])
   
   // Restore state on component mount
   useEffect(() => {
