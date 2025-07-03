@@ -3,6 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { CVData, PersonalInfo, Experience, Education, Skill, Language, Project, Certification, Interest, Reference, CVSection, DesignSettings } from '@/types/cv'
 import { offlineStorage, syncManager } from '@/lib/offline-storage'
 
+// Fallback UUID generator for environments where crypto.randomUUID is not available
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback to timestamp + random
+  return Date.now().toString(36) + Math.random().toString(36).substr(2)
+}
+
 interface CVStore {
   // Current CV data
   currentCV: CVData
@@ -107,7 +116,7 @@ interface CVStore {
 }
 
 const createDefaultCV = (): CVData => ({
-  id: crypto.randomUUID(),
+  id: generateId(),
   personal: {
     fullName: '',
     email: '',
@@ -137,6 +146,7 @@ const createDefaultCV = (): CVData => ({
   certifications: [],
   interests: [],
   references: [],
+  referencesDisplay: 'available-on-request',
   template: 'harvard',
   designSettings: {
     margins: 0.5,
@@ -208,7 +218,7 @@ export const useCVStore = create<CVStore>()(
       addExperience: (experience) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          experience: [...state.currentCV.experience, { ...experience, id: crypto.randomUUID() }],
+          experience: [...state.currentCV.experience, { ...experience, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -247,7 +257,7 @@ export const useCVStore = create<CVStore>()(
       addEducation: (education) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          education: [...state.currentCV.education, { ...education, id: crypto.randomUUID() }],
+          education: [...state.currentCV.education, { ...education, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -273,7 +283,7 @@ export const useCVStore = create<CVStore>()(
       addSkill: (skill) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          skills: [...state.currentCV.skills, { ...skill, id: crypto.randomUUID() }],
+          skills: [...state.currentCV.skills, { ...skill, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -307,7 +317,7 @@ export const useCVStore = create<CVStore>()(
       addLanguage: (language) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          languages: [...(state.currentCV.languages || []), { ...language, id: crypto.randomUUID() }],
+          languages: [...(state.currentCV.languages || []), { ...language, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -333,7 +343,7 @@ export const useCVStore = create<CVStore>()(
       addProject: (project) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          projects: [...(state.currentCV.projects || []), { ...project, id: crypto.randomUUID() }],
+          projects: [...(state.currentCV.projects || []), { ...project, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -359,7 +369,7 @@ export const useCVStore = create<CVStore>()(
       addCertification: (certification) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          certifications: [...(state.currentCV.certifications || []), { ...certification, id: crypto.randomUUID() }],
+          certifications: [...(state.currentCV.certifications || []), { ...certification, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -385,7 +395,7 @@ export const useCVStore = create<CVStore>()(
       addInterest: (interest) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          interests: [...(state.currentCV.interests || []), { ...interest, id: crypto.randomUUID() }],
+          interests: [...(state.currentCV.interests || []), { ...interest, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -411,7 +421,7 @@ export const useCVStore = create<CVStore>()(
       addReference: (reference) => set((state) => ({
         currentCV: {
           ...state.currentCV,
-          references: [...(state.currentCV.references || []), { ...reference, id: crypto.randomUUID() }],
+          references: [...(state.currentCV.references || []), { ...reference, id: generateId() }],
           lastModified: new Date().toISOString()
         }
       })),
@@ -525,15 +535,15 @@ export const useCVStore = create<CVStore>()(
         currentCV: {
           ...state.currentCV,
           sections: [
-            { id: crypto.randomUUID(), type: 'summary', title: 'Summary', visible: true, order: 1 },
-            { id: crypto.randomUUID(), type: 'skills', title: 'Skills', visible: true, order: 2 },
-            { id: crypto.randomUUID(), type: 'experience', title: 'Experience', visible: true, order: 3 },
-            { id: crypto.randomUUID(), type: 'education', title: 'Education', visible: true, order: 4 },
-            { id: crypto.randomUUID(), type: 'projects', title: 'Projects', visible: true, order: 5 },
-            { id: crypto.randomUUID(), type: 'certifications', title: 'Certifications', visible: true, order: 6 },
-            { id: crypto.randomUUID(), type: 'languages', title: 'Languages', visible: true, order: 7 },
-            { id: crypto.randomUUID(), type: 'interests', title: 'Interests', visible: true, order: 8 },
-            { id: crypto.randomUUID(), type: 'references', title: 'References', visible: true, order: 9 }
+            { id: generateId(), type: 'summary', title: 'Summary', visible: true, order: 1 },
+            { id: generateId(), type: 'skills', title: 'Skills', visible: true, order: 2 },
+            { id: generateId(), type: 'experience', title: 'Experience', visible: true, order: 3 },
+            { id: generateId(), type: 'education', title: 'Education', visible: true, order: 4 },
+            { id: generateId(), type: 'projects', title: 'Projects', visible: true, order: 5 },
+            { id: generateId(), type: 'certifications', title: 'Certifications', visible: true, order: 6 },
+            { id: generateId(), type: 'languages', title: 'Languages', visible: true, order: 7 },
+            { id: generateId(), type: 'interests', title: 'Interests', visible: true, order: 8 },
+            { id: generateId(), type: 'references', title: 'References', visible: true, order: 9 }
           ],
           lastModified: new Date().toISOString()
         }
@@ -665,15 +675,15 @@ export const useCVStore = create<CVStore>()(
         sessionState: {}
       })
     }),
-          {
-        name: 'cvgenius-storage',
-        storage: createJSONStorage(() => localStorage),
-        partialize: (state) => ({ 
-          currentCV: state.currentCV, 
-          activeSection: state.activeSection,
-          previewMode: state.previewMode,
-          sessionState: state.sessionState 
-        })
-      }
+    {
+      name: 'cvgenius-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ 
+        currentCV: state.currentCV, 
+        activeSection: state.activeSection,
+        previewMode: state.previewMode,
+        sessionState: state.sessionState 
+      })
+    }
   )
 )
