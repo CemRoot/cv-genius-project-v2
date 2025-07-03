@@ -45,9 +45,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 // Custom imports
-import { ClientAdminAuth } from '@/lib/admin-auth'
+import ClientAdminAuth from '@/lib/client-admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { SecurityHeader } from '@/components/admin/security-header'
+import AdsManagement from '@/components/admin/ads-management'
 
 // Types
 interface AdminStats {
@@ -526,7 +527,7 @@ export default function AdminPanel() {
             {activeSection === 'security' && <SecuritySection />}
             {activeSection === 'users' && <UsersSection />}
             {activeSection === 'content' && <ContentSection prompts={prompts} setPrompts={setPrompts} />}
-            {activeSection === 'ads' && <AdsSection />}
+            {activeSection === 'ads' && <AdsManagement />}
             {activeSection === 'system' && <SystemSection systemHealth={systemHealth} />}
             {activeSection === 'settings' && <SettingsSection />}
           </div>
@@ -1561,7 +1562,8 @@ function UsersSection() {
   )
 }
 
-function AdsSection() {
+// Replaced by AdsManagement component
+/* function AdsSection() {
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const [activeTab, setActiveTab] = useState('overview')
@@ -1886,7 +1888,7 @@ function AdsSection() {
       </Tabs>
     </div>
   )
-}
+} */
 
 function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
   const { addToast } = useToast()
