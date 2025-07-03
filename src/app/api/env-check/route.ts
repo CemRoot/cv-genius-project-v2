@@ -40,4 +40,4 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString() 
     }, { status: 500 })
   }
-} 
+} // Environment variables updated Thu Jul  3 11:59:54 IST 2025

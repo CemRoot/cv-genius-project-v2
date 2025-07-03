@@ -365,11 +365,12 @@ export default function AdsManagement() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="slots">Ad Slots</TabsTrigger>
           <TabsTrigger value="platforms">Platforms</TabsTrigger>
           <TabsTrigger value="mobile">Mobile</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -817,6 +818,300 @@ export default function AdsManagement() {
                 <div className="flex justify-between">
                   <span>Test Mode:</span>
                   <span>{adSettings.testMode ? 'ON' : 'OFF'}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Performance Tab */}
+        <TabsContent value="performance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Ad Performance Analytics</CardTitle>
+                  <CardDescription>Track impressions, clicks, revenue, and CTR</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select value={performancePeriod} onValueChange={(value: any) => {
+                    setPerformancePeriod(value)
+                    loadPerformanceData()
+                  }}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="week">This Week</SelectItem>
+                      <SelectItem value="month">This Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={loadPerformanceData}
+                    disabled={loadingPerformance}
+                  >
+                    {loadingPerformance ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingPerformance ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                </div>
+              ) : performanceData ? (
+                <div className="space-y-6">
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Total Revenue</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {performanceData.total?.formattedRevenue || '$0.00'}
+                        </div>
+                        {performanceData.period?.growth && (
+                          <p className={`text-xs mt-1 ${
+                            parseFloat(performanceData.period.growth.revenue) >= 0 
+                              ? 'text-green-600' 
+                              : 'text-red-600'
+                          }`}>
+                            {performanceData.period.growth.revenue} vs previous
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Impressions</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {performanceData.total?.formattedImpressions || '0'}
+                        </div>
+                        {performanceData.period?.growth && (
+                          <p className={`text-xs mt-1 ${
+                            parseFloat(performanceData.period.growth.impressions) >= 0 
+                              ? 'text-green-600' 
+                              : 'text-red-600'
+                          }`}>
+                            {performanceData.period.growth.impressions} vs previous
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Clicks</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {performanceData.total?.formattedClicks || '0'}
+                        </div>
+                        {performanceData.period?.growth && (
+                          <p className={`text-xs mt-1 ${
+                            parseFloat(performanceData.period.growth.clicks) >= 0 
+                              ? 'text-green-600' 
+                              : 'text-red-600'
+                          }`}>
+                            {performanceData.period.growth.clicks} vs previous
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Average CTR</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {performanceData.total?.ctr?.toFixed(2) || '0.00'}%
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Click-through rate
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Top Performing Ads */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Top Performing Ad Slots</CardTitle>
+                      <CardDescription>Based on revenue generation</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {performanceData.topPerformingAds && performanceData.topPerformingAds.length > 0 ? (
+                        <div className="space-y-3">
+                          {performanceData.topPerformingAds.map((ad: any, index: number) => {
+                            const slot = adSlots.find(s => s.id === ad.adSlotId)
+                            return (
+                              <div key={ad.adSlotId} className="flex items-center justify-between p-3 border rounded">
+                                <div className="flex items-center gap-3">
+                                  <div className="text-lg font-bold text-muted-foreground">
+                                    #{index + 1}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{slot?.name || ad.adSlotId}</p>
+                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                      <span>CTR: {ad.formattedCTR}</span>
+                                      <span>Revenue: {ad.formattedRevenue}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="secondary">
+                                  {slot?.settings?.platform || 'Unknown'}
+                                </Badge>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                          <p>No performance data available yet</p>
+                          <p className="text-xs mt-1">Ad metrics will appear here once ads start generating impressions</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Period Comparison */}
+                  {performanceData.period && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Period Comparison</CardTitle>
+                        <CardDescription>Current vs Previous {performancePeriod}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm font-medium text-muted-foreground">Current Period</p>
+                              <div className="mt-2 space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm">Revenue</span>
+                                  <span className="font-medium">{performanceData.period.current?.formattedRevenue || '$0.00'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm">CTR</span>
+                                  <span className="font-medium">{performanceData.period.current?.ctr?.toFixed(2) || '0.00'}%</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-muted-foreground">Previous Period</p>
+                              <div className="mt-2 space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm">Revenue</span>
+                                  <span className="font-medium">{performanceData.period.previous?.formattedRevenue || '$0.00'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm">CTR</span>
+                                  <span className="font-medium">{performanceData.period.previous?.ctr?.toFixed(2) || '0.00'}%</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              ) : (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>No Data Available</AlertTitle>
+                  <AlertDescription>
+                    Performance tracking will begin once ads start receiving impressions
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Tracking</CardTitle>
+              <CardDescription>How ad performance is measured</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Ad performance is automatically tracked when users view and interact with ads. 
+                    Metrics are updated in real-time and stored locally.
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Impressions</Badge>
+                    <span className="text-sm text-muted-foreground">Counted when an ad is displayed to a user</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Clicks</Badge>
+                    <span className="text-sm text-muted-foreground">Tracked when a user clicks on an ad</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Revenue</Badge>
+                    <span className="text-sm text-muted-foreground">Estimated based on ad network rates</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">CTR</Badge>
+                    <span className="text-sm text-muted-foreground">Click-through rate (clicks ÷ impressions × 100)</span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Reset Performance Data</p>
+                    <p className="text-sm text-muted-foreground">Clear all historical performance metrics</p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={async () => {
+                      if (confirm('Are you sure you want to reset all performance data? This action cannot be undone.')) {
+                        try {
+                          const response = await ClientAdminAuth.makeAuthenticatedRequest(
+                            '/api/admin/ads/performance',
+                            { method: 'DELETE' }
+                          )
+                          if (response.ok) {
+                            toast({
+                              title: "Success",
+                              description: "Performance data has been reset"
+                            })
+                            loadPerformanceData()
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to reset performance data",
+                            variant: "destructive"
+                          })
+                        }
+                      }
+                    }}
+                  >
+                    Reset All Data
+                  </Button>
                 </div>
               </div>
             </CardContent>
