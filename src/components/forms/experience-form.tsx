@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useCVStore } from "@/store/cv-store"
 import { useState, useEffect } from "react"
-import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, ChevronDown, ChevronUp } from "lucide-react"
+import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, ChevronDown, ChevronUp, Sparkles } from "lucide-react"
 import { Experience } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
 import {

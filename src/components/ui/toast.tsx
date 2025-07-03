@@ -64,8 +64,8 @@ function ToastContainer() {
 
   return (
     <>
-      {/* Desktop Toast Container */}
-      <div className="fixed top-4 right-4 z-50 w-full max-w-sm space-y-3 pointer-events-none hidden md:block">
+      {/* Desktop Toast Container - Centered */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm space-y-3 pointer-events-none hidden md:block">
         <AnimatePresence>
           {toasts.map((toast) => (
             <ToastComponent key={toast.id} toast={toast} onRemove={removeToast} />
@@ -73,8 +73,8 @@ function ToastContainer() {
         </AnimatePresence>
       </div>
       
-      {/* Mobile Toast Container */}
-      <div className="fixed top-4 left-4 right-4 z-50 space-y-3 pointer-events-none md:hidden">
+      {/* Mobile Toast Container - Centered */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-sm space-y-3 pointer-events-none md:hidden">
         <AnimatePresence>
           {toasts.map((toast) => (
             <ToastComponent key={toast.id} toast={toast} onRemove={removeToast} isMobile />
