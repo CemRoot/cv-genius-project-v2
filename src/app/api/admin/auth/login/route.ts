@@ -52,13 +52,28 @@ const loginAttempts = new Map<string, { count: number; lockoutUntil: number }>()
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔐 Admin login attempt started')
+    
+    // Debug environment variables (without exposing secrets)
+    console.log('Environment check:', {
+      hasJWT: !!process.env.JWT_SECRET,
+      hasUsername: !!process.env.ADMIN_USERNAME,
+      hasPasswordHash: !!process.env.ADMIN_PWD_HASH_B64,
+      nodeEnv: process.env.NODE_ENV,
+      runtime: 'edge'
+    })
+    
     // Check if environment is properly configured
     if (!JWT_SECRET) {
-      console.error('JWT_SECRET not configured')
+      console.error('❌ JWT_SECRET not configured')
       return NextResponse.json(
         { 
           error: 'Server configuration error',
-          details: 'JWT_SECRET environment variable is not set. Please configure it in Vercel.'
+          details: 'JWT_SECRET environment variable is not set. Please configure it in Vercel.',
+          debug: {
+            hasJWT: !!process.env.JWT_SECRET,
+            jwtLength: process.env.JWT_SECRET?.length || 0
+          }
         },
         { status: 500 }
       )
@@ -66,18 +81,26 @@ export async function POST(request: NextRequest) {
     
     const ADMIN_CREDENTIALS = getAdminCredentials()
     if (!ADMIN_CREDENTIALS) {
-      console.error('Admin credentials not configured', {
+      console.error('❌ Admin credentials not configured', {
         hasUsername: !!process.env.ADMIN_USERNAME,
-        hasPasswordHash: !!process.env.ADMIN_PWD_HASH_B64
+        hasPasswordHash: !!process.env.ADMIN_PWD_HASH_B64,
+        usernameLength: process.env.ADMIN_USERNAME?.length || 0,
+        hashLength: process.env.ADMIN_PWD_HASH_B64?.length || 0
       })
       return NextResponse.json(
         { 
           error: 'Server configuration error',
-          details: 'Admin credentials are not properly configured. Check ADMIN_USERNAME and ADMIN_PWD_HASH_B64 in Vercel.'
+          details: 'Admin credentials are not properly configured. Check ADMIN_USERNAME and ADMIN_PWD_HASH_B64 in Vercel.',
+          debug: {
+            hasUsername: !!process.env.ADMIN_USERNAME,
+            hasPasswordHash: !!process.env.ADMIN_PWD_HASH_B64
+          }
         },
         { status: 500 }
       )
     }
+
+    console.log('✅ Environment configuration OK')
 
     const body = await request.json()
     const { username, password, twoFactorToken } = body
@@ -89,6 +112,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('📝 Login attempt:', {
+      username: username,
+      hasPassword: !!password,
+      passwordLength: password?.length || 0
+    })
+
     // Get client IP for rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
@@ -98,6 +127,7 @@ export async function POST(request: NextRequest) {
     const attemptData = loginAttempts.get(clientIP)
     if (attemptData && attemptData.lockoutUntil > Date.now()) {
       const remainingTime = Math.ceil((attemptData.lockoutUntil - Date.now()) / 1000)
+      console.log('🚫 IP locked out:', clientIP)
       return NextResponse.json(
         { 
           error: `Too many failed attempts. Try again in ${remainingTime} seconds`,
@@ -110,15 +140,14 @@ export async function POST(request: NextRequest) {
     // Verify credentials using bcrypt
     let isPasswordValid = false
     try {
+      console.log('🔍 Verifying password...')
       isPasswordValid = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash)
-      console.log('Password verification:', {
+      console.log('Password verification result:', {
         usernameMatch: username === ADMIN_CREDENTIALS.username,
-        passwordValid: isPasswordValid,
-        providedUsername: username,
-        expectedUsername: ADMIN_CREDENTIALS.username
+        passwordValid: isPasswordValid
       })
     } catch (bcryptError) {
-      console.error('Bcrypt comparison error:', bcryptError)
+      console.error('❌ Bcrypt comparison error:', bcryptError)
       return NextResponse.json(
         { 
           error: 'Authentication error',
