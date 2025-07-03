@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 // Custom imports
-import ClientAdminAuth from '@/lib/client-admin-auth'
+import ClientAdminAuth from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { SecurityHeader } from '@/components/admin/security-header'
 import AdsManagement from '@/components/admin/ads-management'

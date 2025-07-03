@@ -343,3 +343,7 @@ export class ClientAdminAuth {
     }
   }
 }
+
+// Export singleton instance as default
+const clientAdminAuth = new ClientAdminAuth()
+export default clientAdminAuth

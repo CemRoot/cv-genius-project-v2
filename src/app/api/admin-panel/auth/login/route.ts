@@ -6,8 +6,8 @@ import bcrypt from 'bcryptjs'
 import Admin2FAState from '@/lib/admin-2fa-state'
 import SecurityAuditLogger from '@/lib/security-audit'
 
-// Force Edge Runtime
-export const runtime = 'edge'
+// Use Node.js runtime for speakeasy compatibility
+// export const runtime = 'edge'
 
 // JWT secret must be set via environment variable
 let JWT_SECRET: Uint8Array | null = null

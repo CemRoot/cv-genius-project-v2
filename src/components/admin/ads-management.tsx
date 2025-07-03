@@ -37,9 +37,9 @@ import {
   Code,
   ExternalLink
 } from 'lucide-react'
-import ClientAdminAuth from '@/lib/client-admin-auth'
+import ClientAdminAuth from '@/lib/admin-auth'
 import { AdConfig } from '@/lib/ad-config'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/components/ui/toast'
 import { formatRevenue, formatNumber, calculateCTR } from '@/lib/ad-performance'
 
 interface AdminAdSettings {
