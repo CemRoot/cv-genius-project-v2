@@ -25,30 +25,66 @@ const defaultAdSettings: AdminAdSettings = {
   lastUpdated: new Date().toISOString()
 }
 
+// In-memory storage for edge runtime
+let inMemoryAdSettings: AdminAdSettings | null = null
+
 async function loadAdSettings(): Promise<AdminAdSettings> {
-  try {
-    const settingsPath = path.join(process.cwd(), 'data', 'admin-ad-settings.json')
-    const data = await fs.readFile(settingsPath, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    return defaultAdSettings
+  // Try environment variable first (Vercel compatible)
+  const envSettings = process.env.ADMIN_AD_SETTINGS
+  if (envSettings) {
+    try {
+      return JSON.parse(envSettings)
+    } catch (e) {
+      console.error('Failed to parse ADMIN_AD_SETTINGS from env:', e)
+    }
   }
+
+  // Use in-memory cache
+  if (inMemoryAdSettings) {
+    return inMemoryAdSettings
+  }
+
+  // Try file system only in development
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const settingsPath = path.join(process.cwd(), 'data', 'admin-ad-settings.json')
+      const data = await fs.readFile(settingsPath, 'utf-8')
+      inMemoryAdSettings = JSON.parse(data)
+      return inMemoryAdSettings
+    } catch (error) {
+      // File doesn't exist, use defaults
+    }
+  }
+
+  // Return defaults
+  inMemoryAdSettings = defaultAdSettings
+  return defaultAdSettings
 }
 
 async function saveAdSettings(settings: AdminAdSettings): Promise<void> {
-  try {
-    const dataDir = path.join(process.cwd(), 'data')
+  // Update in-memory cache
+  inMemoryAdSettings = settings
+
+  // Save to file only in development
+  if (process.env.NODE_ENV === 'development') {
     try {
-      await fs.access(dataDir)
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true })
+      const dataDir = path.join(process.cwd(), 'data')
+      try {
+        await fs.access(dataDir)
+      } catch {
+        await fs.mkdir(dataDir, { recursive: true })
+      }
+      
+      const settingsPath = path.join(dataDir, 'admin-ad-settings.json')
+      await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2))
+    } catch (error) {
+      console.error('Failed to save ad settings to file:', error)
     }
-    
-    const settingsPath = path.join(dataDir, 'admin-ad-settings.json')
-    await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2))
-  } catch (error) {
-    console.error('Failed to save ad settings:', error)
   }
+
+  // Log for production deployment
+  console.log('💾 Ad settings updated (in-memory):', settings)
+  console.log('⚠️  For production persistence, set ADMIN_AD_SETTINGS env var to:', JSON.stringify(settings))
 }
 
 export async function GET(request: NextRequest) {

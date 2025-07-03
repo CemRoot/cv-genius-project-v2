@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Shield, Lock, Settings, BarChart3, FileText, DollarSign,
   LogOut, User, Key, AlertCircle, CheckCircle, Info,
   Eye, EyeOff, Save, RefreshCw, Plus, Trash2, Edit,
   ChevronRight, Home, Menu, X, Bell, Search, Filter,
-  Users, Activity, Server, Database, Globe, Zap, Wand2
+  Users, Activity, Server, Database, Globe, Zap, Wand2,
+  Loader2
 } from 'lucide-react'
 import './admin-login.css'
 
@@ -1606,6 +1607,12 @@ function AdsSection() {
     setSaving(true)
     console.log('🔧 Admin Panel - Saving ad setting:', { key, value, currentSettings: adSettings })
     
+    // Store the previous value for rollback
+    const previousValue = adSettings[key]
+    
+    // Optimistic update - immediately update the UI
+    setAdSettings(prev => ({ ...prev, [key]: value }))
+    
     try {
       const requestBody = { 
         setting: key, 
@@ -1627,7 +1634,7 @@ function AdsSection() {
         console.log('📥 API Response data:', data)
         
         if (data.success) {
-          setAdSettings(prev => ({ ...prev, [key]: value }))
+          // State already updated optimistically, just show success message
           toast.success(data.message || `${key} ${value ? 'enabled' : 'disabled'}`)
           console.log('✅ Settings updated successfully, new state:', { ...adSettings, [key]: value })
           
@@ -1635,13 +1642,20 @@ function AdsSection() {
           // No need for Vercel API calls - admin panel controls ads directly
         } else {
           console.error('❌ API returned success: false', data)
+          // Revert the optimistic update
+          setAdSettings(prev => ({ ...prev, [key]: previousValue }))
           toast.error(data.error || 'Failed to update ad setting')
         }
       } else {
         console.error('❌ Response not OK:', response.status, response.statusText)
+        // Revert the optimistic update
+        setAdSettings(prev => ({ ...prev, [key]: previousValue }))
         toast.error('Failed to update ad setting')
       }
     } catch (error) {
+      console.error('❌ Network error:', error)
+      // Revert the optimistic update
+      setAdSettings(prev => ({ ...prev, [key]: previousValue }))
       toast.error('Network error')
     } finally {
       setSaving(false)
@@ -1893,17 +1907,54 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
   const [configLoading, setConfigLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  
+  // Polling state with exponential backoff
+  const [pollingState, setPollingState] = useState({
+    consecutiveFailures: 0,
+    retryDelay: 30000, // Initial delay: 30 seconds
+    maxRetries: 5,
+    hasShownError: false,
+    intervalId: null as NodeJS.Timeout | null,
+    isPaused: false
+  })
+
+  // Use ref to track interval ID for cleanup
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     fetchApiConfig()
     fetchSystemData()
     
-    // Auto-refresh system data every 30 seconds
-    const interval = setInterval(fetchSystemData, 30000)
-    return () => clearInterval(interval)
+    // Start polling with exponential backoff
+    startPolling()
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
   }, [])
 
+  const startPolling = (delay?: number) => {
+    // Clear existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+    
+    const currentDelay = delay || pollingState.retryDelay
+    
+    // Set new interval
+    intervalRef.current = setInterval(() => {
+      fetchSystemData()
+    }, currentDelay)
+  }
+
   const fetchSystemData = async () => {
+    // Don't fetch if paused and we've reached max retries
+    if (pollingState.isPaused && pollingState.consecutiveFailures >= pollingState.maxRetries) {
+      return
+    }
+    
     setRefreshing(true)
     try {
       const response = await ClientAdminAuth.makeAuthenticatedRequest('/api/admin/system-health')
@@ -1911,13 +1962,92 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
         const data = await response.json()
         if (data.success) {
           setSystemData(data.systemData)
+          
+          // Reset failure count on success
+          const wasFailingOrPaused = pollingState.consecutiveFailures > 0 || pollingState.isPaused
+          setPollingState(prev => ({
+            ...prev,
+            consecutiveFailures: 0,
+            retryDelay: 30000, // Reset to initial delay
+            hasShownError: false,
+            isPaused: false
+          }))
+          
+          // Restart polling with normal interval if it was failing or paused
+          if (wasFailingOrPaused) {
+            startPolling(30000)
+          }
+        } else {
+          handlePollingFailure()
         }
+      } else {
+        handlePollingFailure()
       }
     } catch (error) {
       console.error('Failed to fetch system data:', error)
+      handlePollingFailure()
     } finally {
       setRefreshing(false)
     }
+  }
+
+  const handlePollingFailure = () => {
+    setPollingState(prev => {
+      const newFailureCount = prev.consecutiveFailures + 1
+      const newDelay = Math.min(prev.retryDelay * 2, 300000) // Max 5 minutes
+      
+      // Show error toast only on first failure
+      if (!prev.hasShownError) {
+        toast.error('Failed to fetch system data. Retrying with exponential backoff.')
+      }
+      
+      // Stop polling after max retries
+      if (newFailureCount >= prev.maxRetries) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+        toast.error(`System monitoring stopped after ${prev.maxRetries} failed attempts. Click refresh to retry.`)
+        return { ...prev, consecutiveFailures: newFailureCount, isPaused: true }
+      }
+      
+      // Update state with new failure count and delay
+      const newState = {
+        ...prev,
+        consecutiveFailures: newFailureCount,
+        retryDelay: newDelay,
+        hasShownError: true
+      }
+      
+      // Restart polling with exponential backoff delay
+      startPolling(newDelay)
+      
+      return newState
+    })
+  }
+
+  const manualRefresh = async () => {
+    // Reset polling state
+    setPollingState({
+      consecutiveFailures: 0,
+      retryDelay: 30000,
+      maxRetries: 5,
+      hasShownError: false,
+      intervalId: null,
+      isPaused: false
+    })
+    
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    
+    // Fetch data immediately
+    await fetchSystemData()
+    
+    // Restart polling with normal interval
+    startPolling(30000)
   }
 
   const fetchApiConfig = async () => {
@@ -1987,6 +2117,34 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
           <p className="text-gray-600">Monitor system health and API services</p>
         </div>
         <div className="flex items-center gap-2">
+          {pollingState.isPaused && (
+            <Badge variant="destructive">
+              Monitoring Paused
+            </Badge>
+          )}
+          {pollingState.consecutiveFailures > 0 && !pollingState.isPaused && (
+            <Badge variant="secondary">
+              Retry {pollingState.consecutiveFailures}/{pollingState.maxRetries}
+            </Badge>
+          )}
+          <Button
+            onClick={manualRefresh}
+            disabled={refreshing}
+            variant={pollingState.isPaused ? "default" : "outline"}
+            size="sm"
+          >
+            {refreshing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {pollingState.isPaused ? 'Resume Monitoring' : 'Refresh'}
+              </>
+            )}
+          </Button>
           <Badge variant={systemHealth.api === 'healthy' ? 'default' : 'destructive'}>
             API {systemHealth.api}
           </Badge>

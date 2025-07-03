@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs/promises'
-import path from 'path'
 
-const PROMPTS_FILE = path.join(process.cwd(), 'data', 'cv-builder-prompts.json')
+// In-memory storage for Edge Runtime
+let inMemoryPrompts: any = null
 
 // Authentication helper
 function checkAuth(request: NextRequest) {
@@ -167,14 +166,32 @@ Return JSON:
   }
 }
 
-// Ensure data directory exists
-async function ensureDataDir() {
-  const dataDir = path.dirname(PROMPTS_FILE)
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
+// Load prompts from memory or environment
+function loadPrompts() {
+  // Try environment variable first (Vercel compatible)
+  const envPrompts = process.env.CV_BUILDER_PROMPTS
+  if (envPrompts) {
+    try {
+      return JSON.parse(envPrompts)
+    } catch (e) {
+      console.error('Failed to parse CV_BUILDER_PROMPTS from env:', e)
+    }
   }
+  
+  // Use in-memory cache
+  if (inMemoryPrompts) {
+    return inMemoryPrompts
+  }
+  
+  // Return defaults
+  return DEFAULT_CV_PROMPTS
+}
+
+// Save prompts to memory
+function savePrompts(prompts: any) {
+  inMemoryPrompts = prompts
+  console.log('💾 CV Builder prompts saved (in-memory)')
+  console.log('⚠️  For production persistence, set CV_BUILDER_PROMPTS env var to:', JSON.stringify(prompts))
 }
 
 // GET - Retrieve current CV Builder prompts
@@ -184,23 +201,12 @@ export async function GET(request: NextRequest) {
   if (authError) return authError
 
   try {
-    await ensureDataDir()
+    const prompts = loadPrompts()
     
-    try {
-      const data = await fs.readFile(PROMPTS_FILE, 'utf-8')
-      const prompts = JSON.parse(data)
-      
-      return NextResponse.json({
-        success: true,
-        prompts
-      })
-    } catch (fileError) {
-      // If file doesn't exist, return defaults
-      return NextResponse.json({
-        success: true,
-        prompts: DEFAULT_CV_PROMPTS
-      })
-    }
+    return NextResponse.json({
+      success: true,
+      prompts
+    })
   } catch (error) {
     console.error('Error loading CV Builder prompts:', error)
     return NextResponse.json(
@@ -258,10 +264,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await ensureDataDir()
-    
-    // Save prompts to file
-    await fs.writeFile(PROMPTS_FILE, JSON.stringify(prompts, null, 2))
+    // Save prompts to memory
+    savePrompts(prompts)
     
     return NextResponse.json({
       success: true,
@@ -284,8 +288,8 @@ export async function PUT(request: NextRequest) {
   if (authError) return authError
 
   try {
-    await ensureDataDir()
-    await fs.writeFile(PROMPTS_FILE, JSON.stringify(DEFAULT_CV_PROMPTS, null, 2))
+    // Reset to defaults
+    savePrompts(DEFAULT_CV_PROMPTS)
     
     return NextResponse.json({
       success: true,

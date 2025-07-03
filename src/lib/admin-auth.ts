@@ -267,33 +267,47 @@ export class ClientAdminAuth {
       headers
     })
 
-    // If token is expired, try to refresh
-    if (response.status === 401 && token) {
-      const refreshResponse = await fetch('/api/admin/auth/refresh', {
-        method: 'POST',
-        credentials: 'include'
-      })
-
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json()
-        this.setToken(refreshData.token)
-
-        // Retry original request with new token
-        headers.set('Authorization', `Bearer ${refreshData.token}`)
-        if (refreshData.csrfToken && ['POST', 'PUT', 'DELETE'].includes(options.method?.toUpperCase() || 'GET')) {
-          headers.set('X-CSRF-Token', refreshData.csrfToken)
-        }
-
-        return fetch(url, {
-          ...options,
-          headers
+    // Handle different error scenarios
+    if (!response.ok) {
+      // Only handle 401 (Unauthorized) for authentication issues
+      if (response.status === 401 && token) {
+        const refreshResponse = await fetch('/api/admin/auth/refresh', {
+          method: 'POST',
+          credentials: 'include'
         })
-      } else {
-        // Refresh failed, redirect to login
-        this.removeToken()
-        if (typeof window !== 'undefined') {
-          window.location.href = '/admin'
+
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json()
+          this.setToken(refreshData.token)
+
+          // Retry original request with new token
+          headers.set('Authorization', `Bearer ${refreshData.token}`)
+          if (refreshData.csrfToken && ['POST', 'PUT', 'DELETE'].includes(options.method?.toUpperCase() || 'GET')) {
+            headers.set('X-CSRF-Token', refreshData.csrfToken)
+          }
+
+          return fetch(url, {
+            ...options,
+            headers
+          })
+        } else {
+          // Refresh failed, redirect to login
+          this.removeToken()
+          if (typeof window !== 'undefined') {
+            window.location.href = '/admin'
+          }
         }
+      }
+      // For 403 (Forbidden), redirect to access denied
+      else if (response.status === 403) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/access-denied'
+        }
+      }
+      // For 500 errors, log but don't logout
+      else if (response.status >= 500) {
+        console.error(`Server error (${response.status}) for ${url}`)
+        // Let the calling code handle the error
       }
     }
 

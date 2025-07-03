@@ -3,14 +3,22 @@ import * as jose from 'jose'
 import SecurityAuditLogger from '@/lib/security-audit'
 
 // JWT secret must be set via environment variable
-const JWT_SECRET = process.env.JWT_SECRET 
-  ? new TextEncoder().encode(process.env.JWT_SECRET)
-  : (() => {
-      throw new Error('JWT_SECRET environment variable is required')
-    })()
+let JWT_SECRET: Uint8Array | null = null
+try {
+  if (process.env.JWT_SECRET) {
+    JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET)
+  }
+} catch (e) {
+  console.error('Failed to initialize JWT_SECRET:', e)
+}
 
 // Auth check function
 async function checkAuth(request: NextRequest) {
+  if (!JWT_SECRET) {
+    console.error('JWT_SECRET not configured')
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+  }
+  
   const authHeader = request.headers.get('authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

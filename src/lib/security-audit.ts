@@ -1,6 +1,14 @@
 import crypto from 'crypto'
-import fs from 'fs/promises'
-import path from 'path'
+
+/**
+ * Security Audit Logger - In-Memory Implementation
+ * 
+ * This class provides security audit logging functionality using only in-memory storage.
+ * No file system operations are performed - all data is stored in memory.
+ * 
+ * For production use, audit logs are sent to Vercel environment variables for persistence.
+ * Memory limits are enforced to prevent excessive memory usage.
+ */
 
 // Types for audit logging
 export interface AuditEvent {
@@ -40,18 +48,13 @@ class SecurityAuditLogger {
   private auditLog: AuditEvent[] = []
   private loginAttempts: LoginAttempt[] = []
   private encryptionKey: string
-  private dataPath: string
-  private auditLogPath: string
-  private loginAttemptsPath: string
 
   constructor() {
     this.encryptionKey = process.env.AUDIT_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex')
-    this.dataPath = path.join(process.cwd(), 'data')
-    this.auditLogPath = path.join(this.dataPath, 'audit-log.json')
-    this.loginAttemptsPath = path.join(this.dataPath, 'login-attempts.json')
     
-    // Load existing data on initialization
-    this.loadPersistedData()
+    // In production, audit logs should be stored in a database or external service
+    // For now, we use in-memory storage which resets on deployment
+    console.log('🔒 Security Audit Logger initialized (in-memory mode)')
   }
 
   static getInstance(): SecurityAuditLogger {
@@ -61,46 +64,21 @@ class SecurityAuditLogger {
     return SecurityAuditLogger.instance
   }
 
-  // Load persisted data from files
-  private async loadPersistedData(): Promise<void> {
-    try {
-      // Ensure data directory exists
-      try {
-        await fs.access(this.dataPath)
-      } catch {
-        await fs.mkdir(this.dataPath, { recursive: true })
-      }
-
-      // Load audit log
-      try {
-        const auditData = await fs.readFile(this.auditLogPath, 'utf-8')
-        this.auditLog = JSON.parse(auditData)
-      } catch {
-        this.auditLog = []
-      }
-
-      // Load login attempts
-      try {
-        const loginData = await fs.readFile(this.loginAttemptsPath, 'utf-8')
-        this.loginAttempts = JSON.parse(loginData)
-      } catch {
-        this.loginAttempts = []
-      }
-    } catch (error) {
-      console.error('Failed to load persisted audit data:', error)
+  // In-memory storage operations (no file system access)
+  private saveToMemory(): void {
+    // Keep only last 1000 audit events
+    if (this.auditLog.length > 1000) {
+      this.auditLog = this.auditLog.slice(-1000)
     }
-  }
-
-  // Save data to files
-  private async savePersistedData(): Promise<void> {
-    try {
-      // Save audit log
-      await fs.writeFile(this.auditLogPath, JSON.stringify(this.auditLog, null, 2))
-      
-      // Save login attempts
-      await fs.writeFile(this.loginAttemptsPath, JSON.stringify(this.loginAttempts, null, 2))
-    } catch (error) {
-      console.error('Failed to save audit data:', error)
+    
+    // Keep only last 500 login attempts
+    if (this.loginAttempts.length > 500) {
+      this.loginAttempts = this.loginAttempts.slice(-500)
+    }
+    
+    // Log memory usage for monitoring
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`🔒 Audit log size: ${this.auditLog.length} events, ${this.loginAttempts.length} login attempts`)
     }
   }
 
@@ -137,15 +115,10 @@ class SecurityAuditLogger {
 
     this.auditLog.push(auditEvent)
     
-    // Keep only last 1000 events in memory
-    if (this.auditLog.length > 1000) {
-      this.auditLog = this.auditLog.slice(-1000)
-    }
+    // Save to memory only (handles size limits)
+    this.saveToMemory()
     
-    // Save to persistent storage
-    await this.savePersistedData()
-    
-    // Send to Vercel if configured
+    // Send to Vercel if configured (for persistent storage)
     await this.sendToVercel(auditEvent)
   }
 
@@ -153,13 +126,8 @@ class SecurityAuditLogger {
   async logLoginAttempt(attempt: LoginAttempt): Promise<void> {
     this.loginAttempts.push(attempt)
     
-    // Keep only last 500 attempts
-    if (this.loginAttempts.length > 500) {
-      this.loginAttempts = this.loginAttempts.slice(-500)
-    }
-    
-    // Save to persistent storage
-    await this.savePersistedData()
+    // Save to memory only (handles size limits)
+    this.saveToMemory()
     
     // Log as audit event
     await this.logEvent({

@@ -8,29 +8,41 @@ import Admin2FAState from '@/lib/admin-2fa-state'
 import SecurityAuditLogger from '@/lib/security-audit'
 
 // JWT secret must be set via environment variable
-const JWT_SECRET = process.env.JWT_SECRET 
-  ? new TextEncoder().encode(process.env.JWT_SECRET)
-  : (() => {
-      throw new Error('JWT_SECRET environment variable is required')
-    })()
+let JWT_SECRET: Uint8Array | null = null
+try {
+  if (process.env.JWT_SECRET) {
+    JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET)
+  }
+} catch (e) {
+  console.error('Failed to initialize JWT_SECRET:', e)
+}
 
 // Admin credentials must be stored in environment variables
 const getPasswordHash = () => {
   const base64Hash = process.env.ADMIN_PWD_HASH_B64
-  // Environment variables check removed for production security
   
   if (!base64Hash) {
-    // Error logging removed for security
-    throw new Error('ADMIN_PWD_HASH_B64 environment variable is required')
+    console.error('ADMIN_PWD_HASH_B64 environment variable is not set')
+    return null
   }
-  return Buffer.from(base64Hash, 'base64').toString()
+  
+  try {
+    return Buffer.from(base64Hash, 'base64').toString()
+  } catch (e) {
+    console.error('Failed to decode password hash:', e)
+    return null
+  }
 }
 
-const ADMIN_CREDENTIALS = {
-  username: process.env.ADMIN_USERNAME || (() => {
-    throw new Error('ADMIN_USERNAME environment variable is required')
-  })(),
-  passwordHash: getPasswordHash()
+const getAdminCredentials = () => {
+  const username = process.env.ADMIN_USERNAME
+  const passwordHash = getPasswordHash()
+  
+  if (!username || !passwordHash) {
+    return null
+  }
+  
+  return { username, passwordHash }
 }
 
 // Failed login attempts tracking
@@ -38,15 +50,28 @@ const loginAttempts = new Map<string, { count: number; lockoutUntil: number }>()
 
 export async function POST(request: NextRequest) {
   try {
-    // Debug logging removed for production security
+    // Check if environment is properly configured
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+    
+    const ADMIN_CREDENTIALS = getAdminCredentials()
+    if (!ADMIN_CREDENTIALS) {
+      console.error('Admin credentials not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
 
     const body = await request.json()
     const { username, password, twoFactorToken } = body
 
-    // Request logging removed for security
-
     if (!username || !password) {
-      // Credential validation
       return NextResponse.json(
         { error: 'Username and password are required' },
         { status: 400 }
@@ -232,9 +257,22 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    // Error handling without logging sensitive details
+    console.error('Login error:', error instanceof Error ? error.message : 'Unknown error')
+    
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: 'Invalid request format' },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { 
+        error: 'Authentication failed',
+        message: process.env.NODE_ENV === 'development' 
+          ? (error instanceof Error ? error.message : 'Unknown error')
+          : 'Internal server error'
+      },
       { status: 500 }
     )
   }

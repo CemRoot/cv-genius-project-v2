@@ -99,6 +99,12 @@ export class IPWhitelistManager {
 
   // Check if IP is whitelisted
   static isIPAllowed(ip: string): boolean {
+    // Check if IP whitelist is disabled
+    if (process.env.DISABLE_IP_WHITELIST === 'true') {
+      console.log('🔓 IP whitelist is disabled - allowing all IPs')
+      return true
+    }
+
     const whitelist = this.loadWhitelist()
     
     // Always allow localhost in development
@@ -175,6 +181,11 @@ export class IPWhitelistManager {
     return whitelist.entries.filter(entry => 
       entry.isActive && !entry.ip.includes('127.0.0.1') && entry.ip !== '::1'
     ).length === 0
+  }
+
+  // Check if IP whitelist is enabled
+  static isEnabled(): boolean {
+    return process.env.DISABLE_IP_WHITELIST !== 'true'
   }
 }
 
