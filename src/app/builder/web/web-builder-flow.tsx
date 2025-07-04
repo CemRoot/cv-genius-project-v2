@@ -44,18 +44,14 @@ export function WebBuilderFlow() {
       setSelectedTemplate(sessionState.selectedTemplateId)
       setCurrentStep('form')
     } 
-    // Priority 2: Use template from existing CV data
-    else if (currentCV && currentCV.template && (
-      currentCV.personal.fullName || 
-      currentCV.experience.length > 0 || 
-      currentCV.education.length > 0
-    )) {
+    // Priority 2: Use template from existing CV data (even if CV is empty)
+    else if (currentCV && currentCV.template) {
       setSelectedTemplate(currentCV.template)
       setCurrentStep('form')
       // Update session state to reflect this
       updateSessionState({ selectedTemplateId: currentCV.template })
     } 
-    // Priority 3: Force template selection only if no data exists
+    // Priority 3: Force template selection only if no template exists
     else {
       sessionStorage.removeItem('selectedTemplate')
       setSelectedTemplate(null)
