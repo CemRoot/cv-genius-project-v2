@@ -77,8 +77,11 @@ export function MaintenanceToggleManagement() {
           type: 'success',
           title: 'Maintenance settings saved successfully'
         })
+        // Refresh settings to ensure we have the latest
+        await fetchMaintenanceSettings()
       } else {
-        throw new Error('Failed to save settings')
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.error || 'Failed to save settings')
       }
     } catch (error) {
       console.error('Error saving maintenance settings:', error)
