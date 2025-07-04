@@ -2,16 +2,17 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Minimal middleware - don't handle admin routes at all
-  console.log(`🔧 MINIMAL MIDDLEWARE: ${request.nextUrl.pathname}`)
+  const pathname = request.nextUrl.pathname
+  console.log(`🔧 MINIMAL MIDDLEWARE: ${pathname}`)
   
   // Just pass through all requests
+  // Maintenance mode will be handled client-side
   return NextResponse.next()
 }
 
 export const config = {
-  // Don't match admin routes at all
+  // Don't match API routes, admin routes, maintenance page, or static files
   matcher: [
-    '/((?!api/admin|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|admin|maintenance|_next/static|_next/image|favicon.ico|.*\\..*$).*)',
   ]
 } 

@@ -32,15 +32,15 @@ export default function Error({
                 
                 <p>We encountered an error while processing your request.</p>
                 
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="mt-4 mb-4 text-left bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
-                    <p className="text-sm text-gray-600">
+                {error?.message && (
+                  <div className="error-details">
+                    <p>
                       <strong>Error:</strong> {error.message}
                     </p>
                   </div>
                 )}
                 
-                <div className="flex gap-4 justify-center">
+                <div className="button-group">
                   <button onClick={reset} className="link_404">
                     Try Again
                   </button>

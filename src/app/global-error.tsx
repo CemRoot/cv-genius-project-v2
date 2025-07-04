@@ -28,19 +28,20 @@ export default function GlobalError({
                     
                     <p>An unexpected error has occurred. Don't worry, your data is safe!</p>
                     
-                    {process.env.NODE_ENV === 'development' && (
-                      <details className="mt-4 mb-4 text-left bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
-                        <summary className="cursor-pointer font-medium mb-2">
-                          Technical Details
-                        </summary>
-                        <pre className="text-xs overflow-auto whitespace-pre-wrap">
-                          {error.message}
-                          {error.digest && `\nDigest: ${error.digest}`}
-                        </pre>
-                      </details>
+                    {error?.message && (
+                      <div className="error-details">
+                        <p>
+                          <strong>Error:</strong> {error.message}
+                        </p>
+                        {error.digest && (
+                          <p style={{ marginTop: '10px' }}>
+                            <strong>Digest:</strong> {error.digest}
+                          </p>
+                        )}
+                      </div>
                     )}
                     
-                    <div className="flex gap-4 justify-center">
+                    <div className="button-group">
                       <button onClick={reset} className="link_404">
                         Try Again
                       </button>

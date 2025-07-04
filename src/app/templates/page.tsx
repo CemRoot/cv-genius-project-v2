@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Star, Eye, Download, Sparkles, Briefcase, Palette, Crown, GraduationCap, RefreshCw, Users, CheckCircle, AlertTriangle, ExternalLink } from "lucide-react"
+import { Star, Eye, Download, Sparkles, Briefcase, Palette, Crown, GraduationCap, RefreshCw, Users, CheckCircle, AlertTriangle, ExternalLink, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card } from "@/components/ui/card"
+import { useMaintenance } from "@/hooks/use-maintenance"
 
 interface Template {
   id: string
@@ -99,6 +100,7 @@ const staggerChildren = {
 }
 
 export default function TemplatesPage() {
+  useMaintenance() // Just run the hook, don't show loading
   const [hasSeenAd, setHasSeenAd] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [showRedirectModal, setShowRedirectModal] = useState(false)

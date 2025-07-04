@@ -48,6 +48,7 @@ import {
 import { ClientAdminAuth } from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { SecurityHeader } from '@/components/admin/security-header'
+import { MaintenanceToggleManagement } from '@/components/admin/maintenance-toggle-management'
 import AdsManagement from '@/components/admin/ads-management'
 
 // Types
@@ -2595,6 +2596,9 @@ function SystemSection({ systemHealth }: { systemHealth: SystemHealth }) {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Section-specific Maintenance Controls */}
+          <MaintenanceToggleManagement />
         </TabsContent>
       </Tabs>
     </div>

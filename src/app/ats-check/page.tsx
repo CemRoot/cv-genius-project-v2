@@ -2,6 +2,7 @@
 
 import { MainLayout } from '@/components/layout/main-layout'
 import { useMobileKeyboard } from '@/hooks/use-mobile-keyboard'
+import { useMaintenance } from '@/hooks/use-maintenance'
 import { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 
@@ -17,6 +18,7 @@ const MobileATSAnalyzer = dynamic(() => import('@/components/ats/mobile-ats-anal
 })
 
 export default function ATSCheckPage() {
+  useMaintenance()
   const [isMobile, setIsMobile] = useState(false)
   const { isVisible: isKeyboardOpen, adjustedViewHeight } = useMobileKeyboard()
 

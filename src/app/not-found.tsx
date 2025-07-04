@@ -1,8 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Home } from "lucide-react"
 import "@/styles/404.css"
 
 export default function NotFound() {
@@ -23,9 +21,11 @@ export default function NotFound() {
                 
                 <p>The page you are looking for is not available!</p>
                 
-                <Link href="/" className="link_404">
-                  Go to Home
-                </Link>
+                <div className="button-group">
+                  <Link href="/" className="link_404">
+                    Go to Home
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

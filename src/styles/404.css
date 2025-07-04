@@ -3,7 +3,11 @@
 =======================*/
 
 .page_404 {
-  padding: 40px 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
   background: #fff;
   font-family: "Arvo", serif;
 }
@@ -18,12 +22,17 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
 .four_zero_four_bg h1 {
   font-size: 80px;
   margin: 0;
   padding: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .four_zero_four_bg h3 {
@@ -32,53 +41,109 @@
 
 .link_404 {
   color: #fff !important;
-  padding: 10px 20px;
+  padding: 12px 24px;
   background: #39ac31;
-  margin: 20px 0;
+  margin: 10px 8px;
   display: inline-block;
   text-decoration: none;
-  border-radius: 5px;
+  border-radius: 8px;
   transition: all 0.3s ease;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  min-width: 120px;
 }
 
 .link_404:hover {
   background: #2d8f26;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .contant_box_404 {
-  margin-top: -50px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .contant_box_404 h3 {
-  font-size: 32px;
-  margin-bottom: 15px;
+  font-size: 36px;
+  margin-bottom: 20px;
   font-weight: bold;
+  color: #333;
 }
 
 .contant_box_404 p {
   font-size: 18px;
   color: #666;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.error-details {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.error-details p {
+  margin: 0;
+  font-size: 14px;
+  color: #495057;
+  word-break: break-word;
+}
+
+.error-details strong {
+  color: #dc3545;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 30px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .page_404 {
+    padding: 15px;
+  }
+  
   .four_zero_four_bg {
-    height: 300px;
+    height: 250px;
   }
   
   .four_zero_four_bg h1 {
-    font-size: 60px;
+    font-size: 50px;
   }
   
   .contant_box_404 h3 {
-    font-size: 24px;
+    font-size: 28px;
   }
   
   .contant_box_404 p {
     font-size: 16px;
+  }
+  
+  .link_404 {
+    padding: 10px 20px;
+    font-size: 14px;
+    min-width: 100px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    align-items: center;
   }
 }
 
@@ -91,8 +156,21 @@
     font-size: 40px;
   }
   
-  .page_404 {
-    padding: 20px 0;
+  .contant_box_404 h3 {
+    font-size: 24px;
+  }
+  
+  .contant_box_404 p {
+    font-size: 14px;
+  }
+  
+  .contant_box_404 {
+    padding: 15px;
+  }
+  
+  .error-details {
+    padding: 15px;
+    font-size: 12px;
   }
 }
 
@@ -118,36 +196,34 @@
   text-align: center !important;
 }
 
-/* Bootstrap-like grid system for the 404 page */
+/* Modern container system */
 .container {
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
-  margin-right: auto;
-  margin-left: auto;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 .row {
   display: flex;
   flex-wrap: wrap;
-  margin-right: -15px;
-  margin-left: -15px;
+  margin: 0 -15px;
 }
 
 .col-sm-12 {
-  position: relative;
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
+  padding: 0 15px;
 }
 
 .col-sm-10 {
-  flex: 0 0 83.333333%;
-  max-width: 83.333333%;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 .col-sm-offset-1 {
-  margin-left: 8.333333%;
+  margin-left: 0;
 }
 
 @media (min-width: 576px) {
@@ -172,4 +248,63 @@
   .container {
     max-width: 1140px;
   }
+}
+
+/* Additional utilities for better spacing */
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.p-4 {
+  padding: 1.5rem;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.max-w-md {
+  max-width: 28rem;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-gray-600 {
+  color: #6b7280;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.flex {
+  display: flex;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
 }

@@ -1,8 +1,7 @@
 "use client"
 
 import React from 'react'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import '@/styles/404.css'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -43,44 +42,53 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="max-w-md mx-auto text-center p-6">
-            <div className="flex justify-center mb-4">
-              <AlertTriangle className="h-16 w-16 text-orange-500" />
+        <section className="page_404">
+          <div className="container">
+            <div className="row">
+              <div className="col-sm-12">
+                <div className="col-sm-10 col-sm-offset-1 text-center">
+                  <div className="four_zero_four_bg">
+                    <h1 className="text-center">ERROR</h1>
+                  </div>
+                  
+                  <div className="contant_box_404">
+                    <h3 className="h2">
+                      Oops! Something went wrong
+                    </h3>
+                    
+                    <p>Don't worry, your CV data is safe in your browser. This is just a temporary hiccup.</p>
+                    
+                    {this.state.error && (
+                      <div className="error-details">
+                        <p>
+                          <strong>Error:</strong> {this.state.error.message}
+                        </p>
+                        {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+                          <p style={{ marginTop: '10px', fontSize: '12px' }}>
+                            <strong>Component Stack:</strong> {this.state.errorInfo.componentStack}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="button-group">
+                      <button onClick={this.retry} className="link_404">
+                        Try Again
+                      </button>
+                      <a href="/" className="link_404">
+                        Go Home
+                      </a>
+                    </div>
+                    
+                    <p style={{ fontSize: '14px', color: '#666', marginTop: '20px' }}>
+                      If this problem persists, please let us know in our WhatsApp or Slack community.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <h1 className="text-2xl font-bold mb-4">Oops! Something went wrong</h1>
-            
-            <p className="text-muted-foreground mb-6">
-              Don't worry, your CV data is safe in your browser. This is just a temporary hiccup.
-            </p>
-
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mb-6 text-left bg-muted/30 p-4 rounded-lg">
-                <summary className="cursor-pointer font-medium mb-2">Error Details</summary>
-                <pre className="text-xs overflow-auto">
-                  {this.state.error.toString()}
-                  {this.state.errorInfo?.componentStack}
-                </pre>
-              </details>
-            )}
-
-            <div className="space-y-4">
-              <Button onClick={this.retry} className="w-full">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Try Again
-              </Button>
-              
-              <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full">
-                Go Home
-              </Button>
-            </div>
-
-            <p className="text-xs text-muted-foreground mt-6">
-              If this problem persists, please let us know in our WhatsApp or Slack community.
-            </p>
           </div>
-        </div>
+        </section>
       )
     }
 
