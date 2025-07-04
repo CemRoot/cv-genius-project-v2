@@ -18,10 +18,10 @@ async function loadCVBuilderPrompts() {
 // Default prompts extracted to separate function
 function getDefaultPrompts() {
   return {
-      textImprovement: {
-        systemPrompt: 'You are a professional text improvement specialist.',
-        prompts: {
-          general: `Improve this CV text while preserving its original meaning and language.
+    textImprovement: {
+      systemPrompt: 'You are a professional text improvement specialist.',
+      prompts: {
+        general: `Improve this CV text while preserving its original meaning and language.
 
 Original text: "{text}"
 Text type: {type}
@@ -38,18 +38,17 @@ Instructions:
 - If it's in English, keep it in English
 
 Return only the improved text, nothing else.`,
-          professionalSummary: 'Improve this professional summary text.',
-          experience: 'Improve this work experience text.',
-          skills: 'Improve this skills text.',
-          education: 'Improve this education text.'
-        }
-      },
-      settings: {
-        temperature: 0.3,
-        topK: 20,
-        topP: 0.8,
-        maxTokens: 1500
+        professionalSummary: 'Improve this professional summary text.',
+        experience: 'Improve this work experience text.',
+        skills: 'Improve this skills text.',
+        education: 'Improve this education text.'
       }
+    },
+    settings: {
+      temperature: 0.3,
+      topK: 20,
+      topP: 0.8,
+      maxTokens: 1500
     }
   }
 }

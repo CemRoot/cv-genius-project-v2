@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCVStore } from "@/store/cv-store"
 import { useState, useEffect } from "react"
-import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, Star, StarOff, Code, Briefcase, Globe, Users, Wrench } from "lucide-react"
+import { PlusCircle, Trash2, Edit2, Save, X, Star, StarOff, Code, Briefcase, Users, Wrench } from "lucide-react"
 import { Skill } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -46,7 +46,6 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
   const { currentCV, addSkill, updateSkill, removeSkill } = useCVStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<string>('Technical')
   const [isMobileDevice, setIsMobileDevice] = useState(false)
 
   // Detect mobile device
@@ -77,7 +76,6 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
     }
   })
 
-  const watchCategory = watch("category")
   const watchLevel = watch("level")
 
   const onSubmit = (data: SkillFormData) => {
@@ -215,7 +213,7 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                               <Label className="text-xs text-gray-600">Category</Label>
                               <select
                                 {...register("category")}
-                                className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                className="w-full text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-900 dark:bg-white dark:text-gray-900"
                               >
                                 {skillCategories.map((cat) => (
                                   <option key={cat.value} value={cat.value}>
@@ -324,7 +322,7 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                 <select
                   id="skillCategory"
                   {...register("category")}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cvgenius-primary focus:border-transparent ${errors.category ? "border-red-500" : ""}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-white dark:text-gray-900 focus:outline-none focus:ring-2 focus:ring-cvgenius-primary focus:border-transparent ${errors.category ? "border-red-500" : ""}`}
                 >
                   {skillCategories.map((category) => (
                     <option key={category.value} value={category.value}>
