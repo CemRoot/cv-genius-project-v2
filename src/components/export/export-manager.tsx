@@ -486,26 +486,52 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   }
 
   const performDownload = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    // Download tamamlandı
-    setDownloadCount(prev => prev + 1)
-    toast.success('CV downloaded successfully!')
+    try {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      
+      // For mobile devices, use a different approach
+      if (isMobile) {
+        // Mobile download handling
+        a.click()
+        
+        // Give mobile browsers time to process the download
+        setTimeout(() => {
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        }, 1000)
+      } else {
+        // Desktop download
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+      
+      // Download completed
+      setDownloadCount(prev => prev + 1)
+      toast.success('CV downloaded successfully!')
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error(
+        'Download Failed',
+        'Unable to download the file. Please try again or use a different browser.'
+      )
+    }
   }
 
   const handleInterstitialComplete = () => {
     setShowInterstitial(false)
     
     if (pendingDownload) {
-      performDownload(pendingDownload.blob, pendingDownload.filename)
-      setPendingDownload(null)
+      // Small delay to ensure modal is closed before download
+      setTimeout(() => {
+        performDownload(pendingDownload.blob, pendingDownload.filename)
+        setPendingDownload(null)
+      }, 100)
     }
   }
 
@@ -677,19 +703,48 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       const doc = <HarvardTemplate data={currentCV} />
       const blob = await pdf(doc).toBlob()
       
-      // Create object URL and open in new tab
+      // Create object URL
       const url = URL.createObjectURL(blob)
+      
+      // Try to open in new window/tab
       const newWindow = window.open(url, '_blank')
       
-      // Clean up object URL after window opens
       if (newWindow) {
+        // Window opened successfully
         newWindow.onload = () => {
           setTimeout(() => URL.revokeObjectURL(url), 1000)
         }
+        toast.success('Preview Opened', 'PDF preview opened in new tab.')
+      } else {
+        // Popup blocked or mobile browser - create download link
+        const link = document.createElement('a')
+        link.href = url
+        link.target = '_blank'
+        link.download = `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV_Preview.pdf`
+        
+        // For mobile devices, download instead of preview
+        if (isMobile) {
+          link.click()
+          toast.info('Preview Downloaded', 'PDF preview downloaded to your device.')
+        } else {
+          // Desktop: show a prompt to allow popups
+          toast.error(
+            'Popup Blocked', 
+            'Please allow popups for this site to preview your CV. Alternatively, you can download it instead.'
+          )
+          
+          // Offer download as fallback
+          setTimeout(() => {
+            if (confirm('Would you like to download the preview instead?')) {
+              link.click()
+            }
+          }, 500)
+        }
+        
+        setTimeout(() => URL.revokeObjectURL(url), 5000)
       }
       
       setTimeout(() => setShowPreview(false), 1000)
-      toast.success('Preview Opened', 'PDF preview opened in new tab.')
     } catch (error) {
       console.error('Preview error:', error)
       toast.error('Preview Error', 'PDF preview could not be generated. Please try again.')
@@ -879,7 +934,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
           ) : (
             <Eye className="h-4 w-4 mr-2" />
           )}
-          Preview
+          {isMobile ? 'Preview (Download)' : 'Preview'}
         </Button>
       </div>
 
