@@ -19,7 +19,7 @@ async function loadCVBuilderPrompts() {
 function getDefaultPrompts() {
   return {
     textImprovement: {
-      systemPrompt: 'You are a professional text improvement specialist.',
+      systemPrompt: 'You are a CV text improvement bot. Your ONLY job is to take the provided text and return an improved version. DO NOT ask questions. DO NOT provide explanations. DO NOT give advice. DO NOT request more information. ONLY return the improved text. If you cannot improve the text, return it unchanged.',
       prompts: {
         general: `Improve this CV text while preserving its original meaning and language.
 
@@ -38,10 +38,67 @@ Instructions:
 - If it's in English, keep it in English
 
 Return only the improved text, nothing else.`,
-        professionalSummary: 'Improve this professional summary text.',
-        experience: 'Improve this work experience text.',
-        skills: 'Improve this skills text.',
-        education: 'Improve this education text.'
+        professionalSummary: `Improve this professional summary text.
+
+Original text: "{text}"
+
+Instructions:
+- Fix grammar and spelling errors
+- Make it more impactful and professional
+- Keep it concise (2-3 sentences)
+- DO NOT change the language
+- DO NOT add new information
+- Focus on highlighting key strengths
+- If it's in Turkish, keep it in Turkish
+- If it's in English, keep it in English
+
+Return only the improved text, nothing else.`,
+        experience: `Improve this work experience text.
+
+Original text: "{text}"
+
+Instructions:
+- Fix grammar and spelling errors
+- Use strong action verbs
+- Make achievements more quantifiable where possible
+- Keep it professional and clear
+- DO NOT change the language
+- DO NOT add fake information
+- Preserve the original meaning
+- If it's in Turkish, keep it in Turkish
+- If it's in English, keep it in English
+
+Return only the improved text, nothing else.`,
+        skills: `Improve this skills text.
+
+Original text: "{text}"
+
+Instructions:
+- Fix grammar and spelling errors
+- Make it concise and clear
+- Use industry-standard terminology
+- DO NOT change the language
+- DO NOT add new skills
+- Keep the original skills mentioned
+- If it's in Turkish, keep it in Turkish
+- If it's in English, keep it in English
+
+Return only the improved text, nothing else.`,
+        education: `Improve this education text.
+
+Original text: "{text}"
+
+Instructions:
+- Fix grammar and spelling errors
+- Format consistently
+- Make it clear and professional
+- DO NOT change the language
+- DO NOT add fake information
+- Keep all original details
+- If it's in Turkish, keep it in Turkish
+- If it's in English, keep it in English
+
+Return only the improved text, nothing else.`
       }
     },
     settings: {
@@ -103,15 +160,18 @@ export async function POST(request: NextRequest) {
     
     switch (type) {
       case 'professionalSummary':
+      case 'professional_summary':
       case 'summary':
         selectedPrompt = cvPrompts.textImprovement.prompts.professionalSummary
         break
       case 'experience':
       case 'workExperience':
+      case 'work_experience':
         selectedPrompt = cvPrompts.textImprovement.prompts.experience
         break
       case 'skills':
       case 'technicalSkills':
+      case 'technical_skills':
         selectedPrompt = cvPrompts.textImprovement.prompts.skills
         break
       case 'education':
@@ -123,9 +183,25 @@ export async function POST(request: NextRequest) {
 
     // Build the complete prompt with system prompt and specific instructions
     const systemPrompt = cvPrompts.textImprovement.systemPrompt
+    
+    // Replace placeholders in the selected prompt
+    const filledPrompt = selectedPrompt
+      .replace('{text}', text)
+      .replace('{type}', type)
+    
     const prompt = `${systemPrompt}
 
-${selectedPrompt.replace('{text}', text).replace('{type}', type)}`
+${filledPrompt}`
+
+    // Debug log for troubleshooting
+    console.log('AI Text Improvement Request:', {
+      type,
+      textLength: text.length,
+      promptType: type === 'experience' ? 'experience' : 
+                  type === 'professional_summary' ? 'professionalSummary' : 
+                  type === 'skills' ? 'skills' : 
+                  type === 'education' ? 'education' : 'general'
+    })
 
     // Generate AI response using admin-configured settings
     const result = await generateContent(prompt, {
