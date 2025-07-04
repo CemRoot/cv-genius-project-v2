@@ -598,10 +598,12 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         padding: `${settings.margins * 72}pt`, // Convert inches to points
         backgroundColor: '#ffffff'
       }}>
-        {/* Header - Center aligned like Harvard template */}
+        {/* Header - Left aligned professional format */}
         <View style={{
-          textAlign: 'center',
-          marginBottom: headerSpacing
+          textAlign: 'left',
+          marginBottom: headerSpacing,
+          borderBottom: '2px solid #000000',
+          paddingBottom: 8
         }}>
           <Text style={{
             fontSize: 20,        // 22 -> 20 (even more compact)
@@ -609,7 +611,8 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             textTransform: 'uppercase',
             letterSpacing: 1,    // 1.5 -> 1 (tighter)
             marginBottom: 2,     // 3 -> 2 (less space)
-            lineHeight: 1.0      // Tighter line height
+            lineHeight: 1.0,      // Tighter line height
+            textAlign: 'left'
           }}>
             {personal.fullName || "Your Name"}
           </Text>
@@ -619,19 +622,20 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             fontWeight: 'normal',
             color: '#666666',
             marginBottom: 2,     // 4 -> 2 (less space)
-            lineHeight: 1.0      // Tighter line height
+            lineHeight: 1.0,      // Tighter line height
+            textAlign: 'left'
           }}>
             {personal.title || "Python Developer"}
           </Text>
           
           <View style={{
             fontSize: 8,         // Keep at 8
-            textAlign: 'center',
+            textAlign: 'left',
             marginBottom: 2,     // A bit more space for better separation
             lineHeight: 1.2      // Slightly more readable
           }}>
             {/* First line: Phone, Email */}
-            <Text style={{ marginBottom: 1 }}>
+            <Text style={{ marginBottom: 1, textAlign: 'left' }}>
               {personal.phone && formatIrishPhone(personal.phone)}
               {personal.phone && personal.email && ' • '}
               {personal.email}
@@ -639,7 +643,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             
             {/* Second line: LinkedIn, Website */}
             {(personal.linkedin || personal.website) && (
-              <Text style={{ marginBottom: 1 }}>
+              <Text style={{ marginBottom: 1, textAlign: 'left' }}>
                 {personal.linkedin && personal.linkedin.replace('https://www.linkedin.com/in/', 'https://www.linkedin.com/in/')}
                 {personal.linkedin && personal.website && ' • '}
                 {personal.website && personal.website.replace('https://', '')}
@@ -647,7 +651,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             )}
             
             {/* Third line: Address, Status */}
-            <Text>
+            <Text style={{ textAlign: 'left' }}>
               {personal.address}
               {personal.address && (personal.nationality || "STAMP2 | Master Student") && ' • '}
               {personal.nationality || "STAMP2 | Master Student"}
@@ -661,10 +665,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,      // 12 -> 11 (smaller title)
               fontWeight: 'bold',
-              textAlign: 'center',
-              borderBottom: '1pt solid #9ca3af',
+              textAlign: 'left',
+              borderBottom: '1pt solid #333333',
               paddingBottom: 1,  // 2 -> 1 (less padding)
-              marginBottom: 2    // 4 -> 2 (less margin)
+              marginBottom: 2,    // 4 -> 2 (less margin)
+              textTransform: 'uppercase'
             }}>Summary</Text>
             <Text style={{
               fontSize: settings.fontSize,
@@ -681,8 +686,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,      // 12 -> 11 (smaller)
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 3    // 6 -> 3 (much less)
+              textAlign: 'left',
+              marginBottom: 3,    // 6 -> 3 (much less)
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>PROFESSIONAL EXPERIENCE</Text>
             {experience.map((exp, index) => (
               <View key={index} style={{ marginBottom: 8 }}> {/* 24 -> 8 (huge reduction) */}
@@ -733,8 +741,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,      // 12 -> 11 (smaller)
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 3    // 12 -> 3 (much less)
+              textAlign: 'left',
+              marginBottom: 3,    // 12 -> 3 (much less)
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>EDUCATION</Text>
             {education.map((edu, index) => (
               <View key={index} style={{ marginBottom: 6 }}> {/* 20 -> 6 (much less) */}
@@ -771,8 +782,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,      
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 2    // Even less space
+              textAlign: 'left',
+              marginBottom: 2,    // Even less space
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>SKILLS</Text>
             <View style={{ lineHeight: 1.0 }}>
               {/* Get unique categories from actual skills data */}
@@ -812,8 +826,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 2
+              textAlign: 'left',
+              marginBottom: 2,
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>LANGUAGES</Text>
             <View style={{ lineHeight: 1.0 }}>
               {data.languages.map((language, index) => (
@@ -836,8 +853,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 2
+              textAlign: 'left',
+              marginBottom: 2,
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>PROJECTS</Text>
             {data.projects.map((project, index) => (
               <View key={index} style={{ marginBottom: 6 }}>
@@ -878,8 +898,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 2
+              textAlign: 'left',
+              marginBottom: 2,
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>CERTIFICATIONS</Text>
             {data.certifications.map((cert, index) => (
               <View key={index} style={{ marginBottom: 4 }}>
@@ -916,8 +939,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 2
+              textAlign: 'left',
+              marginBottom: 2,
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>INTERESTS</Text>
             <View style={{ 
               flexDirection: 'row',
@@ -954,8 +980,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 11,
               fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 2
+              textAlign: 'left',
+              marginBottom: 2,
+              textTransform: 'uppercase',
+              borderBottom: '1px solid #333333',
+              paddingBottom: 2
             }}>REFERENCES</Text>
             {data.referencesDisplay === 'detailed' && data.references && data.references.length > 0 ? (
               <View>
@@ -985,7 +1014,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             ) : (
               <Text style={{
                 fontSize: 10,
-                textAlign: 'center',
+                textAlign: 'left',
                 fontStyle: 'italic',
                 color: '#666666',
                 fontFamily: 'Helvetica'
@@ -997,7 +1026,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {/* Footer - Only show if references section is not visible or user hasn't explicitly set preference */}
         {(!isSectionVisible(sections, 'references') || !data.referencesDisplay) && (
           <View style={{
-            textAlign: 'center',
+            textAlign: 'left',
             marginTop: 8,
             paddingTop: 6,
             borderTop: '1pt solid #cccccc'
@@ -1005,7 +1034,8 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={{
               fontSize: 8,
               color: '#666666',
-              fontFamily: 'Helvetica'
+              fontFamily: 'Helvetica',
+              textAlign: 'left'
             }}>References available upon request</Text>
           </View>
         )}

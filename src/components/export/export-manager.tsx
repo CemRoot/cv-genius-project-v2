@@ -475,8 +475,16 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     // Check if download interstitial is enabled
     const downloadAdConfig = getAdConfig('download-interstitial')
     
-    if (downloadAdConfig?.enabled) {
+    console.log('Download Ad Config:', downloadAdConfig)
+    console.log('Download Ad Enabled:', downloadAdConfig?.enabled)
+    
+    // Always show interstitial for PDF and DOCX downloads
+    if (format === 'pdf' || format === 'docx') {
       // Show interstitial before download
+      setPendingDownload({ blob, filename, format })
+      setShowInterstitial(true)
+    } else if (downloadAdConfig?.enabled) {
+      // Show interstitial for other formats if enabled
       setPendingDownload({ blob, filename, format })
       setShowInterstitial(true)
     } else {
