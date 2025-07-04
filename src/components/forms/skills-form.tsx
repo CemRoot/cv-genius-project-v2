@@ -215,7 +215,7 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                               <Label className="text-xs text-gray-600">Category</Label>
                               <select
                                 {...register("category")}
-                                className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                className="w-full text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-900 dark:bg-white dark:text-gray-900"
                               >
                                 {skillCategories.map((cat) => (
                                   <option key={cat.value} value={cat.value}>
@@ -324,7 +324,7 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                 <select
                   id="skillCategory"
                   {...register("category")}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cvgenius-primary focus:border-transparent ${errors.category ? "border-red-500" : ""}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-white dark:text-gray-900 focus:outline-none focus:ring-2 focus:ring-cvgenius-primary focus:border-transparent ${errors.category ? "border-red-500" : ""}`}
                 >
                   {skillCategories.map((category) => (
                     <option key={category.value} value={category.value}>
