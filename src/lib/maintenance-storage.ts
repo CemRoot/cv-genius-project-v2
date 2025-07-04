@@ -1,8 +1,17 @@
 // Shared maintenance storage for production and development
-import fs from 'fs/promises'
-import path from 'path'
 
-const MAINTENANCE_FILE = path.join(process.cwd(), 'data', 'maintenance-settings.json')
+// Only define the maintenance file path (will be set dynamically when needed)
+let MAINTENANCE_FILE = ''
+
+// Set the path only if not in production
+if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  try {
+    const path = require('path')
+    MAINTENANCE_FILE = path.join(process.cwd(), 'data', 'maintenance-settings.json')
+  } catch (e) {
+    // Ignore errors in environments where require is not available
+  }
+}
 
 export interface MaintenanceSettings {
   globalMaintenance: boolean
@@ -86,6 +95,8 @@ export async function loadSettings(): Promise<MaintenanceSettings> {
   
   // In development, use file system
   try {
+    // Dynamically import fs only in development
+    const fs = await import('fs/promises')
     const data = await fs.readFile(MAINTENANCE_FILE, 'utf-8')
     return JSON.parse(data)
   } catch (error) {
@@ -104,6 +115,9 @@ export async function saveSettings(settings: MaintenanceSettings): Promise<void>
   
   // In development, save to file system
   try {
+    // Dynamically import fs and path only in development
+    const fs = await import('fs/promises')
+    const path = await import('path')
     const dir = path.dirname(MAINTENANCE_FILE)
     await fs.mkdir(dir, { recursive: true })
     await fs.writeFile(MAINTENANCE_FILE, JSON.stringify(settings, null, 2))
