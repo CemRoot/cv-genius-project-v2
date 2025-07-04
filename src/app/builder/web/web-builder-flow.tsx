@@ -11,49 +11,130 @@ import { Badge } from '@/components/ui/badge'
 import { Eye, Settings } from 'lucide-react'
 import { ExportButton } from '@/components/cv/export-button'
 import SectionReorderPanel from '@/components/cv/section-reorder-panel'
+import { ErrorStateWithFallback } from '@/components/ui/error-state-with-fallback'
 
 export function WebBuilderFlow() {
-  const { currentCV, sessionState, updateSessionState } = useCVStore()
+  const { currentCV, sessionState, updateSessionState, setTemplate } = useCVStore()
   
   // Initialize from sessionState or check if user has existing CV data
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(sessionState.selectedTemplateId || null)
-  const [currentStep, setCurrentStep] = useState<'template' | 'form'>(() => {
-    // If user has sessionState template OR existing CV data, skip template selection
-    if (sessionState.selectedTemplateId || 
-        (currentCV && currentCV.template && (
-          currentCV.personal.fullName || 
-          currentCV.experience.length > 0 || 
-          currentCV.education.length > 0
-        ))) {
-      return 'form'
-    }
-    return 'template'
-  })
+  // Always start with template selection step - let useEffect handle the logic
+  const [currentStep, setCurrentStep] = useState<'template' | 'form'>('template')
   
   const [previewHtml, setPreviewHtml] = useState<string>('')
   const [previewCss, setPreviewCss] = useState<string>('')
   const [showSectionReorder, setShowSectionReorder] = useState<boolean>(false)
+  const [templateError, setTemplateError] = useState<{
+    hasError: boolean
+    title?: string
+    message?: string
+    canRetry?: boolean
+  }>({ hasError: false })
   
   // Create template manager instance
   const templateManager = useMemo(() => new IrishCVTemplateManager(), [])
   
   // Initialize - restore session state or determine from CV data
   useEffect(() => {
+    console.log('🔧 Template initialization useEffect:', {
+      sessionStateId: sessionState.selectedTemplateId,
+      currentCV: currentCV,
+      cvTemplate: currentCV?.template,
+      currentSelectedTemplate: selectedTemplate,
+      currentStep
+    })
+    
+    // Helper function to validate template exists and handle fallbacks
+    const validateAndSetTemplate = (templateId: string, source: string) => {
+      console.log(`🔄 Attempting to use ${source} template:`, templateId)
+      
+      // Get available templates for debugging
+      const availableTemplates = templateManager.getAllTemplates().map(t => t.id)
+      console.log('📋 Available templates:', availableTemplates)
+      
+      const success = templateManager.selectTemplate(templateId)
+      if (success) {
+        console.log('✅ Successfully selected template:', templateId)
+        setSelectedTemplate(templateId)
+        setCurrentStep('form')
+        return templateId
+      } else {
+        console.log('❌ Template not found:', templateId)
+        // Try fallback mapping for legacy templates
+        const fallbackMap: { [key: string]: string } = {
+          'harvard': 'classic',
+          'modern': 'dublin-tech',
+          'professional': 'irish-finance'
+        }
+        
+        const fallbackId = fallbackMap[templateId] || 'classic'
+        console.log('🔄 Using fallback template:', fallbackId)
+        
+        const fallbackSuccess = templateManager.selectTemplate(fallbackId)
+        if (fallbackSuccess) {
+          console.log('✅ Fallback template selected:', fallbackId)
+          setSelectedTemplate(fallbackId)
+          setCurrentStep('form')
+          return fallbackId
+        } else {
+          console.error('❌ Even fallback template failed:', fallbackId)
+          // Set error state for UI display
+          setTemplateError({
+            hasError: true,
+            title: 'Template Not Available',
+            message: `The template "${templateId}" is not available, and we couldn't load a fallback template. Please select a new template to continue.`,
+            canRetry: false
+          })
+          return null
+        }
+      }
+    }
+    
     // Priority 1: Use sessionState if available
     if (sessionState.selectedTemplateId) {
-      setSelectedTemplate(sessionState.selectedTemplateId)
-      setCurrentStep('form')
+      const resolvedTemplate = validateAndSetTemplate(sessionState.selectedTemplateId, 'session state')
+      if (resolvedTemplate) {
+        // Update session state if template was mapped to fallback
+        if (resolvedTemplate !== sessionState.selectedTemplateId) {
+          updateSessionState({ selectedTemplateId: resolvedTemplate })
+        }
+        return // Exit early - template is valid and set
+      } else {
+        // Template validation failed completely - force template selection
+        console.log('❌ Session template validation failed completely, forcing template selection')
+        sessionStorage.removeItem('selectedTemplate')
+        updateSessionState({ selectedTemplateId: undefined })
+        setSelectedTemplate(null)
+        setCurrentStep('template')
+        return
+      }
     } 
-    // Priority 2: Use template from existing CV data (even if CV is empty)
-    else if (currentCV && currentCV.template) {
-      setSelectedTemplate(currentCV.template)
-      setCurrentStep('form')
-      // Update session state to reflect this
-      updateSessionState({ selectedTemplateId: currentCV.template })
+    // Priority 2: Use template from existing CV data (only if template exists and is valid)
+    else if (currentCV && currentCV.template && currentCV.template.trim()) {
+      const resolvedTemplate = validateAndSetTemplate(currentCV.template, 'CV data')
+      if (resolvedTemplate) {
+        // Update session state and CV with resolved template
+        updateSessionState({ selectedTemplateId: resolvedTemplate })
+        if (resolvedTemplate !== currentCV.template) {
+          setTemplate(resolvedTemplate)
+        }
+        return // Exit early - template is valid and set
+      } else {
+        // CV template validation failed - force template selection
+        console.log('❌ CV template validation failed completely, forcing template selection')
+        // Clear invalid template from CV to force fresh selection
+        setTemplate('')
+        setSelectedTemplate(null)
+        setCurrentStep('template')
+        return
+      }
     } 
-    // Priority 3: Force template selection only if no template exists
+    // Priority 3: Force template selection for new users or empty templates
     else {
+      console.log('❌ No valid template found, forcing template selection')
+      // Clear all template-related storage and state
       sessionStorage.removeItem('selectedTemplate')
+      updateSessionState({ selectedTemplateId: undefined })
       setSelectedTemplate(null)
       setCurrentStep('template')
     }
@@ -82,9 +163,34 @@ export function WebBuilderFlow() {
   
   // Update preview when CV data changes
   useEffect(() => {
-    if (selectedTemplate) {
+    // Only render if we have a valid template selected
+    if (selectedTemplate && typeof selectedTemplate === 'string' && selectedTemplate.trim()) {
       try {
-        templateManager.selectTemplate(selectedTemplate)
+        // Validate template exists before trying to select it
+        const availableTemplates = templateManager.getAllTemplates().map(t => t.id)
+        
+        if (!availableTemplates.includes(selectedTemplate)) {
+          console.warn('🚨 Preview: Template not available:', selectedTemplate, 'Available:', availableTemplates)
+          // Don't render preview for invalid template - let the initialization useEffect handle fallback
+          setPreviewHtml('')
+          setPreviewCss('')
+          return
+        }
+        
+        const success = templateManager.selectTemplate(selectedTemplate)
+        if (!success) {
+          console.error('🚨 Preview: Failed to select template:', selectedTemplate)
+          setTemplateError({
+            hasError: true,
+            title: 'Template Loading Error',
+            message: `There was an error loading the "${selectedTemplate}" template. Please try selecting a different template.`,
+            canRetry: true
+          })
+          setPreviewHtml('')
+          setPreviewCss('')
+          return
+        }
+        
         const html = templateManager.renderCV(currentCV || {
           personal: {
             fullName: '',
@@ -104,8 +210,17 @@ export function WebBuilderFlow() {
         const css = templateManager.getTemplateCSS()
         setPreviewHtml(html)
         setPreviewCss(css)
+        console.log('✅ Preview updated successfully for template:', selectedTemplate)
+        // Clear any previous error state on successful render
+        setTemplateError({ hasError: false })
       } catch (error) {
         console.error('Preview update error:', error)
+        setTemplateError({
+          hasError: true,
+          title: 'Template Rendering Error',
+          message: 'There was an error rendering your CV preview. Your data is safe - please try selecting a different template.',
+          canRetry: true
+        })
         // Clear preview on error
         setPreviewHtml('')
         setPreviewCss('')
@@ -117,14 +232,104 @@ export function WebBuilderFlow() {
     }
   }, [currentCV, selectedTemplate, templateManager])
 
+  // Show error state when there's a template error
+  if (templateError.hasError) {
+    console.log('🚨 Rendering error state:', templateError)
+    return (
+      <ErrorStateWithFallback
+        title={templateError.title}
+        message={templateError.message}
+        onReturnToTemplates={() => {
+          console.log('🔄 User clicked return to templates from error state')
+          // Clear error state and return to template selection
+          setTemplateError({ hasError: false })
+          setSelectedTemplate(null)
+          setCurrentStep('template')
+          sessionStorage.removeItem('selectedTemplate')
+          updateSessionState({ selectedTemplateId: undefined })
+          // Clear invalid template from CV if exists
+          if (currentCV?.template && currentCV.template.trim()) {
+            setTemplate('')
+          }
+        }}
+        onRetry={templateError.canRetry ? () => {
+          console.log('🔄 User clicked retry from error state')
+          // Clear error and try to re-render with current template
+          setTemplateError({ hasError: false })
+          // Force re-initialization by temporarily clearing and restoring template
+          const currentTemplate = selectedTemplate
+          setSelectedTemplate(null)
+          setTimeout(() => setSelectedTemplate(currentTemplate), 100)
+        } : undefined}
+        className="mx-auto max-w-2xl mt-8"
+      />
+    )
+  }
+
   // Show template gallery when no template is selected
   if (!selectedTemplate) {
+    console.log('🎨 Rendering template gallery because selectedTemplate is:', selectedTemplate)
     return (
       <StaticTemplateGallery 
         onSelectTemplate={(templateId) => {
-          setSelectedTemplate(templateId)
-          setCurrentStep('form')
-          sessionStorage.setItem('selectedTemplate', templateId)
+          console.log('🎯 Template selected from gallery:', templateId)
+          
+          // Validate the selected template before applying it
+          const success = templateManager.selectTemplate(templateId)
+          if (success) {
+            setSelectedTemplate(templateId)
+            setCurrentStep('form')
+            sessionStorage.setItem('selectedTemplate', templateId)
+            // Update CV template to match selection
+            setTemplate(templateId)
+            // Update session state
+            updateSessionState({ selectedTemplateId: templateId })
+            // Clear any error state on successful selection
+            setTemplateError({ hasError: false })
+            console.log('✅ Template gallery selection applied successfully:', templateId)
+          } else {
+            console.error('❌ Template gallery selection failed:', templateId)
+            setTemplateError({
+              hasError: true,
+              title: 'Template Selection Failed',
+              message: `Unable to load the "${templateId}" template. Please try a different template.`,
+              canRetry: false
+            })
+          }
+        }}
+      />
+    )
+  }
+
+  console.log('🏗️ Rendering main builder with template:', selectedTemplate)
+
+  // Final safety check - ensure we have a valid template before rendering main builder
+  if (!selectedTemplate || !selectedTemplate.trim()) {
+    console.log('🚨 Safety check: No valid template, redirecting to gallery')
+    return (
+      <StaticTemplateGallery 
+        onSelectTemplate={(templateId) => {
+          console.log('🎯 Template selected from safety gallery:', templateId)
+          
+          const success = templateManager.selectTemplate(templateId)
+          if (success) {
+            setSelectedTemplate(templateId)
+            setCurrentStep('form')
+            sessionStorage.setItem('selectedTemplate', templateId)
+            setTemplate(templateId)
+            updateSessionState({ selectedTemplateId: templateId })
+            // Clear any error state on successful selection
+            setTemplateError({ hasError: false })
+            console.log('✅ Safety template selection applied:', templateId)
+          } else {
+            console.error('❌ Safety template selection failed:', templateId)
+            setTemplateError({
+              hasError: true,
+              title: 'Template Selection Failed',
+              message: `Unable to load the "${templateId}" template. Please try a different template.`,
+              canRetry: false
+            })
+          }
         }}
       />
     )

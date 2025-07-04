@@ -147,7 +147,7 @@ const createDefaultCV = (): CVData => ({
   interests: [],
   references: [],
   referencesDisplay: 'available-on-request',
-  template: 'harvard',
+  template: '', // Empty template forces template selection
   designSettings: {
     margins: 0.5,
     sectionSpacing: 'normal',

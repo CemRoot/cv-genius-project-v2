@@ -1523,3 +1523,59 @@
     padding-right: 40px !important;
   }
 }
+
+/* ===== ERROR STATE ATTENTION-GRABBING ANIMATIONS ===== */
+
+/* Subtle pulse animation - accessibility friendly */
+@keyframes pulse-subtle {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+  }
+  50% { 
+    transform: scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.1; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-subtle,
+  .animate-pulse-glow {
+    animation: none;
+  }
+  
+  /* Provide alternative visual emphasis without animation */
+  .animate-pulse-subtle {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    border: 2px solid #3b82f6;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .animate-pulse-subtle {
+    animation-duration: 2.5s; /* Slower on mobile for better UX */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .animate-pulse-subtle {
+    border: 3px solid currentColor;
+    animation: none;
+  }
+}

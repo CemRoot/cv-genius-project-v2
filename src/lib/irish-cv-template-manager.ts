@@ -143,6 +143,39 @@ export class IrishCVTemplateManager {
       getCSS: this.getClassicCSS.bind(this)
     })
     
+    // Dublin Pharma Template
+    this.registerTemplate({
+      id: 'dublin-pharma',
+      name: 'Dublin Pharma Professional',
+      description: 'Perfect for Ireland\'s pharmaceutical and medical device industry',
+      isPremium: false,
+      popularity: 92,
+      categories: ['technical', 'pharma', 'dublin'],
+      structure: {
+        sections: ['header', 'profile', 'experience', 'technical', 'education', 'certifications'],
+        layout: 'single-column',
+        colorScheme: {
+          primary: '#0d9488',
+          secondary: '#f0fdfa',
+          accent: '#14b8a6',
+          text: '#111827',
+          background: '#ffffff'
+        },
+        fonts: {
+          heading: 'Roboto, sans-serif',
+          body: 'Roboto, sans-serif'
+        },
+        spacing: {
+          section: '1.5rem',
+          item: '1rem',
+          line: '1.5'
+        }
+      },
+      validate: this.validateDublinPharma.bind(this),
+      render: this.renderDublinPharma.bind(this),
+      getCSS: this.getDublinPharmaCSS.bind(this)
+    })
+    
     // Add more templates...
   }
   
@@ -254,6 +287,35 @@ export class IrishCVTemplateManager {
      
      return errors
    }
+  
+  private validateDublinPharma(data: Partial<CVData>): string[] {
+    const errors: string[] = []
+    
+    // Pharma-specific validations
+    if (!data.certifications || data.certifications.length === 0) {
+      errors.push('Pharmaceutical roles typically require certifications (e.g., GMP, GDP, regulatory compliance)')
+    }
+    
+    // Check for technical/scientific skills
+    if (data.skills && !data.skills.some(s => s.category === 'Technical' || s.category === 'Software')) {
+      errors.push('Pharma CVs should include technical or scientific skills')
+    }
+    
+    // Check for industry-specific keywords
+    if (data.experience) {
+      const hasIndustryTerms = data.experience.some(exp => 
+        exp.description.toLowerCase().includes('gmp') || 
+        exp.description.toLowerCase().includes('validation') ||
+        exp.description.toLowerCase().includes('compliance') ||
+        exp.description.toLowerCase().includes('regulatory')
+      )
+      if (!hasIndustryTerms) {
+        errors.push('Consider including pharmaceutical industry terms (GMP, validation, compliance)')
+      }
+    }
+    
+    return errors
+  }
   
   // Template rendering functions
   private renderDublinTech(data: CVData): string {
@@ -1190,6 +1252,215 @@ export class IrishCVTemplateManager {
     `
   }
   
+  private renderDublinPharma(data: CVData): string {
+    return `
+      <div class="cv-container dublin-pharma">
+        <header class="cv-header">
+          <h1 class="name">${data.personal.fullName}</h1>
+          <p class="title">${data.personal.title || 'Pharmaceutical Professional'}</p>
+          <div class="contact-info">
+            <span>${data.personal.email}</span>
+            <span>${data.personal.phone}</span>
+            <span>${data.personal.address}</span>
+          </div>
+        </header>
+        
+        ${data.personal.summary ? `
+          <section class="profile">
+            <h2>Professional Profile</h2>
+            <p>${data.personal.summary}</p>
+          </section>
+        ` : ''}
+        
+        <section class="experience">
+          <h2>Professional Experience</h2>
+          ${data.experience.map(exp => `
+            <div class="experience-item">
+              <div class="exp-header">
+                <h3>${exp.position}</h3>
+                <span class="date">${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
+              </div>
+              <div class="exp-company">${exp.company} | ${exp.location}</div>
+              <p class="exp-description">${exp.description}</p>
+              ${exp.achievements.length > 0 ? `
+                <ul class="achievements">
+                  ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
+                </ul>
+              ` : ''}
+            </div>
+          `).join('')}
+        </section>
+        
+        ${data.skills && data.skills.length > 0 ? `
+          <section class="technical-skills">
+            <h2>Technical Competencies</h2>
+            <div class="skills-grid">
+              ${this.groupSkillsByCategory(data.skills).map(group => `
+                <div class="skill-category">
+                  <h3>${group.category}</h3>
+                  <p>${group.skills.join(' • ')}</p>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        ` : ''}
+        
+        <section class="education">
+          <h2>Education</h2>
+          ${data.education.map(edu => `
+            <div class="education-item">
+              <div class="edu-header">
+                <h3>${edu.degree} in ${edu.field}</h3>
+                <span class="date">${this.formatDate(edu.startDate)} - ${this.formatDate(edu.endDate)}</span>
+              </div>
+              <div class="edu-institution">${edu.institution} | ${edu.location}</div>
+              ${edu.grade ? `<p class="grade">Grade: ${edu.grade}</p>` : ''}
+            </div>
+          `).join('')}
+        </section>
+        
+        ${data.certifications && data.certifications.length > 0 ? `
+          <section class="certifications">
+            <h2>Certifications & Training</h2>
+            ${data.certifications.map(cert => `
+              <div class="certification-item">
+                <h3>${cert.name}</h3>
+                <p>${cert.issuer} • ${this.formatDate(cert.issueDate)}</p>
+              </div>
+            `).join('')}
+          </section>
+        ` : ''}
+      </div>
+    `
+  }
+  
+  private getDublinPharmaCSS(): string {
+    return `
+      /* Dublin Pharma Template Styles */
+      .cv-container.dublin-pharma {
+        font-family: 'Roboto', 'Arial', sans-serif;
+        max-width: 210mm;
+        margin: 0 auto;
+        padding: 20mm;
+        background: #ffffff;
+        color: #111827;
+      }
+      
+      .dublin-pharma .cv-header {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #0d9488;
+        margin-bottom: 2rem;
+      }
+      
+      .dublin-pharma .name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #0d9488;
+        margin-bottom: 0.5rem;
+      }
+      
+      .dublin-pharma .title {
+        font-size: 1.25rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+      }
+      
+      .dublin-pharma .contact-info {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+      
+      .dublin-pharma section {
+        margin-bottom: 2rem;
+      }
+      
+      .dublin-pharma h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #0d9488;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .dublin-pharma h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+      }
+      
+      .dublin-pharma .experience-item,
+      .dublin-pharma .education-item,
+      .dublin-pharma .certification-item {
+        margin-bottom: 1.5rem;
+      }
+      
+      .dublin-pharma .exp-header,
+      .dublin-pharma .edu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.5rem;
+      }
+      
+      .dublin-pharma .date {
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+      
+      .dublin-pharma .exp-company,
+      .dublin-pharma .edu-institution {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+      }
+      
+      .dublin-pharma .achievements {
+        margin-top: 0.5rem;
+        padding-left: 1.5rem;
+      }
+      
+      .dublin-pharma .achievements li {
+        margin-bottom: 0.25rem;
+      }
+      
+      .dublin-pharma .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+      }
+      
+      .dublin-pharma .skill-category h3 {
+        font-size: 1rem;
+        color: #14b8a6;
+        margin-bottom: 0.25rem;
+      }
+      
+      .dublin-pharma .skill-category p {
+        font-size: 0.875rem;
+        color: #4b5563;
+      }
+      
+      @media print {
+        .dublin-pharma {
+          padding: 15mm;
+        }
+        
+        .dublin-pharma .cv-header {
+          page-break-after: avoid;
+        }
+        
+        .dublin-pharma section {
+          page-break-inside: avoid;
+        }
+      }
+    `
+  }
+  
   // Individual Section Renderers
   private renderSummarySection(data: CVData): string {
     if (!data.personal.summary) return ''
@@ -1433,3 +1704,6 @@ export class IrishCVTemplateManager {
     }))
   }
 }
+
+// Export singleton instance
+export const templateManager = new IrishCVTemplateManager()
