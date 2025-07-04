@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import SecurityAuditLogger from '@/lib/security-audit'
-import fs from 'fs'
-import path from 'path'
 
 // In production, these would come from a database
 // For now, we'll use in-memory storage and calculate from available data
@@ -25,17 +23,26 @@ export async function GET(request: NextRequest) {
     const auditLogger = SecurityAuditLogger.getInstance()
     const securityStats = auditLogger.getSecurityStats()
     
-    // Get 2FA status from file
+    // Get 2FA status from environment or memory
     let twoFactorEnabled = false
-    try {
-      const twoFAStatePath = path.join(process.cwd(), '.2fa-state.json')
-      if (fs.existsSync(twoFAStatePath)) {
-        const twoFAState = JSON.parse(fs.readFileSync(twoFAStatePath, 'utf-8'))
-        twoFactorEnabled = twoFAState.enabled || false
-      }
-    } catch (error) {
-      // If we can't read 2FA state, check environment
+    
+    // In production, only check environment
+    if (process.env.NODE_ENV === 'production') {
       twoFactorEnabled = process.env.ADMIN_2FA_STATE === 'ENABLED'
+    } else {
+      // In development, try to read from file
+      try {
+        const fs = await import('fs')
+        const path = await import('path')
+        const twoFAStatePath = path.join(process.cwd(), '.2fa-state.json')
+        if (fs.existsSync(twoFAStatePath)) {
+          const twoFAState = JSON.parse(fs.readFileSync(twoFAStatePath, 'utf-8'))
+          twoFactorEnabled = twoFAState.enabled || false
+        }
+      } catch (error) {
+        // If we can't read 2FA state, check environment
+        twoFactorEnabled = process.env.ADMIN_2FA_STATE === 'ENABLED'
+      }
     }
 
     // Real stats - no fake data

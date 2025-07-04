@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, checkRateLimit } from '@/lib/gemini-client'
-import fs from 'fs/promises'
-import path from 'path'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
+import { safeReadJSON, getDataFilePath } from '@/lib/safe-file-ops'
 
 // Configuration for AI processing
 export const runtime = 'nodejs'
@@ -12,13 +11,13 @@ export const preferredRegion = 'auto'
 
 // Load CV Builder prompts from admin settings
 async function loadCVBuilderPrompts() {
-  try {
-    const promptsFile = path.join(process.cwd(), 'data', 'cv-builder-prompts.json')
-    const data = await fs.readFile(promptsFile, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    // Return default prompts if file doesn't exist
-    return {
+  const promptsPath = getDataFilePath('cv-builder-prompts.json')
+  return await safeReadJSON(promptsPath, getDefaultPrompts())
+}
+
+// Default prompts extracted to separate function
+function getDefaultPrompts() {
+  return {
       textImprovement: {
         systemPrompt: 'You are a professional text improvement specialist.',
         prompts: {
