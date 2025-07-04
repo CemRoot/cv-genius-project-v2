@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCVStore } from "@/store/cv-store"
 import { useState, useEffect } from "react"
-import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, Star, StarOff, Code, Briefcase, Globe, Users, Wrench } from "lucide-react"
+import { PlusCircle, Trash2, Edit2, Save, X, Star, StarOff, Code, Briefcase, Users, Wrench } from "lucide-react"
 import { Skill } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -46,7 +46,6 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
   const { currentCV, addSkill, updateSkill, removeSkill } = useCVStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<string>('Technical')
   const [isMobileDevice, setIsMobileDevice] = useState(false)
 
   // Detect mobile device
@@ -77,7 +76,6 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
     }
   })
 
-  const watchCategory = watch("category")
   const watchLevel = watch("level")
 
   const onSubmit = (data: SkillFormData) => {
