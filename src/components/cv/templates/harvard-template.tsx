@@ -10,10 +10,7 @@ interface HarvardTemplateProps {
 }
 
 export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplateProps) {
-  // Force refresh - ultra-tight spacing v2
-  console.log('🔥 Harvard Template rendered with ultra-tight spacing v2')
   const data = cv || cvData
-  console.log('📋 Personal data:', data?.personal)
   if (!data) {
     return <div className="p-8 text-center">Loading...</div>
   }

@@ -69,7 +69,8 @@ export function PersonalInfoForm({ isMobile = false }: PersonalInfoFormProps) {
       linkedin: '',
       website: '',
       summary: ''
-    }
+    },
+    mode: 'onChange' // Add this to trigger validation on every change
   })
 
   // Memoized update function to prevent recreating on every render
@@ -79,6 +80,12 @@ export function PersonalInfoForm({ isMobile = false }: PersonalInfoFormProps) {
 
   // Watch for changes and update store in real-time
   const watchedFields = watch()
+  const nationalityValue = watch('nationality')
+  
+  // Debug nationality field specifically
+  useEffect(() => {
+    console.log('🏳️ Nationality field value:', nationalityValue)
+  }, [nationalityValue])
   
   // Reset form when currentCV.personal changes from external updates
   useEffect(() => {
@@ -97,6 +104,8 @@ export function PersonalInfoForm({ isMobile = false }: PersonalInfoFormProps) {
   useEffect(() => {
     if (isDirty && !isInitialMount.current) {
       // Immediate update for better sync - no debouncing for critical fields
+      console.log('🔄 Form updating store with:', watchedFields)
+      console.log('🎯 Nationality value:', watchedFields.nationality)
       updateStoreData(watchedFields)
     }
   }, [watchedFields, isDirty, updateStoreData])
