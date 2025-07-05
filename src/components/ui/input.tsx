@@ -24,10 +24,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     focusRing = true,
     error = false,
     success = false,
-    value,
-    onChange,
-    ...props 
+    ...rest 
   }, ref) => {
+    // Extract onChange so we can call it in clear handler, but keep it inside rest too
+    const { onChange } = rest as { onChange?: React.ChangeEventHandler<HTMLInputElement> }
+    // Note: DO NOT remove `value` from rest – keeps the component uncontrolled unless a value prop is explicitly provided (e.g., by react-hook-form)
     const [showPassword, setShowPassword] = React.useState(false)
     const [isFocused, setIsFocused] = React.useState(false)
     const inputRef = React.useRef<HTMLInputElement>(null)
@@ -77,7 +78,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
 
     const isPasswordField = type === 'password'
-    const hasValue = value !== undefined ? String(value).length > 0 : false
+    const hasValue = rest.value !== undefined ? String(rest.value).length > 0 : false
 
     return (
       <div className="relative group">
@@ -85,8 +86,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={inputRef}
           type={getInputType()}
           inputMode={getInputMode()}
-          value={value}
-          onChange={onChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={cn(
@@ -108,13 +107,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           suppressHydrationWarning={true}
-          {...props}
+          {...rest}
         />
         
         {/* Action buttons container */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
           {/* Clear button */}
-          {showClearButton && hasValue && !props.disabled && (
+          {showClearButton && hasValue && !rest.disabled && (
             <button
               type="button"
               onClick={handleClear}
