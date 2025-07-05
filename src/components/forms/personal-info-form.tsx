@@ -87,6 +87,15 @@ export function PersonalInfoForm({ isMobile = false }: PersonalInfoFormProps) {
     console.log('🏳️ Nationality field value:', nationalityValue)
   }, [nationalityValue])
   
+  // 🔄 Sync nationality value to CV store in real-time
+  useEffect(() => {
+    // Update store immediately whenever nationality changes
+    if (nationalityValue !== undefined) {
+      updatePersonalInfo({ nationality: nationalityValue })
+      console.log('🚀 Synced nationality to store:', nationalityValue)
+    }
+  }, [nationalityValue, updatePersonalInfo])
+  
   // Reset form when currentCV.personal changes from external updates
   useEffect(() => {
     if (!isInitialMount.current && currentCV?.personal) {
