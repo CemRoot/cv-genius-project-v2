@@ -31,6 +31,7 @@ import { DublinTechTemplate } from '@/components/cv/templates/dublin-tech-templa
 import { IrishFinanceTemplate } from '@/components/cv/templates/irish-finance-template'
 import { DublinPharmaTemplate } from '@/components/cv/templates/dublin-pharma-template'
 import { IrishGraduateTemplate } from '@/components/cv/templates/irish-graduate-template'
+import { ClassicTemplate } from '@/components/cv/templates/classic-template'
 import { getAdConfig } from '@/lib/ad-config'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
@@ -124,251 +125,70 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
       
       if (isMobileDevice) {
-        // Use mobile-specific PDF generation
-        console.log('Using mobile PDF generation with html2canvas + jsPDF')
+        // Use mobile-specific PDF generation with proper React rendering
+        console.log('Using mobile PDF generation with React components')
         
         // Create a temporary container for the CV
         const tempContainer = document.createElement('div')
-        tempContainer.id = 'temp-cv-export'
-        tempContainer.style.position = 'absolute'
-        tempContainer.style.left = '0'
+        tempContainer.id = 'temp-cv-export-mobile'
+        tempContainer.style.position = 'fixed'
+        tempContainer.style.left = '-9999px'
         tempContainer.style.top = '0'
-        tempContainer.style.opacity = '0'
-        tempContainer.style.pointerEvents = 'none'
         tempContainer.style.width = '794px' // A4 width
         tempContainer.style.backgroundColor = '#ffffff'
-        tempContainer.style.padding = '40px'
-        tempContainer.style.fontFamily = 'Arial, sans-serif'
-        tempContainer.style.fontSize = '12px'
-        tempContainer.style.lineHeight = '1.4'
-        
-        // Render CV content to the temporary container
-        const React = await import('react')
-        const ReactDOM = await import('react-dom/client')
-        
-        // Generate HTML using the same logic as the React templates
-        const isSectionVisible = (sectionType: string) => {
-          const section = currentCV.sections.find(s => s.type === sectionType)
-          return section?.visible ?? false
-        }
-
-        const cvHTML = `
-          <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.4;">
-            <!-- Header -->
-            <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-              <h1 style="margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase;">${currentCV.personal.fullName}</h1>
-              ${currentCV.personal.title ? `<div style="font-size: 14px; color: #666; margin-top: 5px;">${currentCV.personal.title}</div>` : ''}
-              <div style="font-size: 10px; margin-top: 8px;">
-                ${currentCV.personal.phone ? currentCV.personal.phone : ''} ${currentCV.personal.phone && currentCV.personal.email ? '• ' : ''}${currentCV.personal.email ? currentCV.personal.email : ''}${(currentCV.personal.phone || currentCV.personal.email) && currentCV.personal.address ? ' • ' : ''}${currentCV.personal.address ? currentCV.personal.address : ''}
-              </div>
-            </div>
-            
-            <!-- Professional Summary -->
-            ${currentCV.personal.summary && isSectionVisible('summary') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">PROFESSIONAL SUMMARY</h2>
-                <p style="margin: 0; text-align: justify;">${currentCV.personal.summary}</p>
-              </div>
-            ` : ''}
-            
-            <!-- Experience -->
-            ${currentCV.experience.length > 0 && isSectionVisible('experience') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">PROFESSIONAL EXPERIENCE</h2>
-                ${currentCV.experience.map(exp => `
-                  <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                      <div>
-                        <div style="font-weight: bold; font-size: 12px;">${exp.position}</div>
-                        <div style="font-style: italic; font-size: 11px; color: #666;">${exp.company}, ${exp.location}</div>
-                      </div>
-                      <div style="font-size: 10px; text-align: right; color: #666;">
-                        ${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}
-                      </div>
-                    </div>
-                    ${exp.description ? `<p style="margin: 5px 0; text-align: justify; font-size: 11px;">${exp.description}</p>` : ''}
-                    ${(exp.achievements || []).length > 0 ? `
-                      <ul style="margin: 5px 0 0 15px; padding: 0;">
-                        ${(exp.achievements || []).map(achievement => `<li style="font-size: 11px; margin-bottom: 2px;">${achievement}</li>`).join('')}
-                      </ul>
-                    ` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-            
-            <!-- Education -->
-            ${currentCV.education.length > 0 && isSectionVisible('education') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">EDUCATION</h2>
-                ${currentCV.education.map(edu => `
-                  <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between;">
-                      <div>
-                        <div style="font-weight: bold; font-size: 12px;">${edu.degree}${edu.field ? ` in ${edu.field}` : ''}</div>
-                        <div style="font-style: italic; font-size: 11px; color: #666;">${edu.institution}, ${edu.location}</div>
-                        ${edu.grade ? `<div style="font-size: 10px; color: #666;">Grade: ${edu.grade}</div>` : ''}
-                      </div>
-                      <div style="font-size: 10px; text-align: right; color: #666;">
-                        ${edu.startDate} - ${edu.current ? 'Present' : edu.endDate}
-                      </div>
-                    </div>
-                    ${edu.description ? `<p style="margin: 5px 0 0 0; text-align: justify; font-size: 11px;">${edu.description}</p>` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-
-            <!-- Skills -->
-            ${currentCV.skills.length > 0 && isSectionVisible('skills') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">SKILLS</h2>
-                <div>
-                  ${['Technical', 'Software', 'Soft', 'Other'].map(category => {
-                    const categorySkills = currentCV.skills.filter(skill => skill.category === category)
-                    if (categorySkills.length === 0) return ''
-                    const topSkills = categorySkills.slice(0, 6)
-                    const skillNames = topSkills.map(skill => skill.name).join(' • ')
-                    return `
-                      <div style="font-size: 11px; margin-bottom: 3px;">
-                        <span style="font-weight: bold;">${category}:</span> ${skillNames}
-                      </div>
-                    `
-                  }).join('')}
-                </div>
-              </div>
-            ` : ''}
-
-            <!-- Languages -->
-            ${(currentCV.languages || []).length > 0 && isSectionVisible('languages') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">LANGUAGES</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  ${(currentCV.languages || []).map(language => `
-                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                      <span style="font-weight: bold;">${language.name}</span>
-                      <span>${language.level}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            ` : ''}
-
-            <!-- Projects -->
-            ${(currentCV.projects || []).length > 0 && isSectionVisible('projects') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">PROJECTS</h2>
-                ${(currentCV.projects || []).map(project => `
-                  <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                      <div style="font-weight: bold; font-size: 12px;">${project.name}</div>
-                      <div style="font-size: 10px; text-align: right; color: #666;">
-                        ${project.startDate} - ${project.current ? 'Present' : project.endDate}
-                      </div>
-                    </div>
-                    ${project.description ? `<p style="margin: 5px 0; text-align: justify; font-size: 11px;">${project.description}</p>` : ''}
-                    ${(project.technologies || []).length > 0 ? `<div style="font-size: 10px; color: #666;">Technologies: ${(project.technologies || []).join(', ')}</div>` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-
-            <!-- Certifications -->
-            ${(currentCV.certifications || []).length > 0 && isSectionVisible('certifications') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">CERTIFICATIONS</h2>
-                ${(currentCV.certifications || []).map(cert => `
-                  <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                      <div>
-                        <div style="font-weight: bold; font-size: 12px;">${cert.name}</div>
-                        <div style="font-style: italic; font-size: 11px; color: #666;">${cert.issuer}</div>
-                      </div>
-                      <div style="font-size: 10px; text-align: right; color: #666;">
-                        ${cert.issueDate}${cert.expiryDate ? ` - ${cert.expiryDate}` : ''}
-                      </div>
-                    </div>
-                    ${cert.description ? `<p style="margin: 5px 0 0 0; text-align: justify; font-size: 11px;">${cert.description}</p>` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-
-            <!-- Interests -->
-            ${(currentCV.interests || []).length > 0 && isSectionVisible('interests') ? `
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">INTERESTS</h2>
-                <div style="font-size: 11px;">
-                  ${(currentCV.interests || []).map(interest => interest.name).join(' • ')}
-                </div>
-              </div>
-            ` : ''}
-
-            <!-- References -->
-            ${(() => {
-              const isReferencesVisible = isSectionVisible('references')
-              const referencesDisplay = currentCV.referencesDisplay || 'available-on-request'
-              const hasReferences = (currentCV.references || []).length > 0
-              
-              const shouldShowReferencesSection = isReferencesVisible && (
-                (referencesDisplay === 'detailed' && hasReferences) ||
-                (referencesDisplay === 'available-on-request')
-              )
-              
-              if (!shouldShowReferencesSection) return ''
-              
-              return `
-                <div style="margin-bottom: 20px;">
-                  <h2 style="font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px;">REFERENCES</h2>
-                  ${referencesDisplay === 'detailed' && hasReferences ? `
-                    <div>
-                      ${(currentCV.references || []).map(reference => `
-                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                          <div style="font-weight: bold; font-size: 12px;">${reference.name}</div>
-                          <div style="font-size: 11px; color: #666;">${reference.position}</div>
-                          ${reference.company ? `<div style="font-size: 11px; color: #666;">${reference.company}</div>` : ''}
-                          <div style="font-size: 10px; color: #666; margin-top: 5px;">
-                            ${reference.email}${reference.phone ? ` • ${reference.phone}` : ''}
-                          </div>
-                          ${reference.relationship ? `<div style="font-size: 10px; color: #888; font-style: italic;">(${reference.relationship})</div>` : ''}
-                        </div>
-                      `).join('')}
-                    </div>
-                  ` : `
-                    <div style="text-align: center; font-style: italic; font-size: 12px; color: #666;">
-                      References available upon request
-                    </div>
-                  `}
-                </div>
-              `
-            })()}
-
-            <!-- Footer (only if references section is not shown) -->
-            ${!isSectionVisible('references') || !currentCV.referencesDisplay ? `
-              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 10px; color: #666;">
-                References available upon request
-              </div>
-            ` : ''}
-          </div>
-        `
-        
-        tempContainer.innerHTML = cvHTML
+        tempContainer.style.overflow = 'visible'
         document.body.appendChild(tempContainer)
         
         try {
-          // Use the mobile PDF export utility
+          // Dynamically import ReactDOM to avoid SSR issues
+          const ReactDOM = await import('react-dom/client')
+        
+          // Get the appropriate template component
+          const getTemplateElement = () => {
+            switch (currentCV.template) {
+              case 'harvard':
+                return <HarvardTemplate cv={currentCV} isMobile={false} />
+              case 'dublin-tech':
+              case 'dublin':
+                return <DublinTechTemplate cv={currentCV} isMobile={false} />
+              case 'irish-finance':
+                return <IrishFinanceTemplate cv={currentCV} isMobile={false} />
+              case 'dublin-pharma':
+                return <DublinPharmaTemplate cv={currentCV} isMobile={false} />
+              case 'irish-graduate':
+                return <IrishGraduateTemplate cv={currentCV} isMobile={false} />
+              case 'classic':
+                return <ClassicTemplate cv={currentCV} isMobile={false} />
+              default:
+                return <HarvardTemplate cv={currentCV} isMobile={false} />
+            }
+          }
+          
+          // Render the React component
+          const root = ReactDOM.createRoot(tempContainer)
+          root.render(getTemplateElement())
+          
+          // Wait for the component to render
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          // Use the mobile PDF export utility with the rendered React component
           const result = await exportMobilePDF(
-            'temp-cv-export',
+            'temp-cv-export-mobile',
             `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`,
             {
               scale: Math.min(window.devicePixelRatio * 1.5, 3),
-              quality: 0.9,
-              timeout: 20000
+              quality: 0.95,
+              timeout: 30000,
+              width: 794,
+              backgroundColor: '#ffffff'
             },
             (progress, stage) => {
               console.log(`Mobile PDF progress: ${progress}% - ${stage}`)
             }
           )
+          
+          // Clean up
+          root.unmount()
           
           if (result.success && result.blob) {
             console.log('Mobile PDF generated successfully, size:', result.blob.size)
@@ -376,9 +196,14 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
           } else {
             throw new Error(result.error || 'Mobile PDF generation failed')
           }
+        } catch (error) {
+          console.error('Mobile PDF generation error:', error)
+          throw error
         } finally {
           // Clean up temporary container
-          document.body.removeChild(tempContainer)
+          if (tempContainer && tempContainer.parentNode) {
+            document.body.removeChild(tempContainer)
+          }
         }
       }
       
