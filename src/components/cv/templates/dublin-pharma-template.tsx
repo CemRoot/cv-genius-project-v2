@@ -103,10 +103,12 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
             <span className="font-semibold">Location:</span>
             <span>{personal.address}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Work Status:</span>
-            <span>{personal.nationality || "EU Work Authorization"}</span>
-          </div>
+          {personal.nationality && (
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">Work Status:</span>
+              <span>{personal.nationality}</span>
+            </div>
+          )}
         </div>
         
         {/* Professional Links */}

@@ -132,7 +132,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
             </div>
           </div>
           <div>
-            • {personal.address} • {personal.nationality || "STAMP2 | Master Student"}
+            • {personal.address}{personal.nationality && ` • ${personal.nationality}`}
           </div>
         </div>
       </div>
