@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Swagger UI -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.0" />
+    <!-- SMTP / console e-mail -->
+    <PackageReference Include="MailKit" Version="4.2.0" />
+    <!-- In-memory EF Core database -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"
+                      Version="8.0.6" />
+  </ItemGroup>
+</Project>
