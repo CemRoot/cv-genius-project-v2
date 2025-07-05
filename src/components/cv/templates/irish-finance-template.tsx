@@ -1,5 +1,7 @@
 import { CVData, DesignSettings } from "@/types/cv"
 import { formatIrishPhone } from "@/lib/utils"
+import React from 'react'
+import { formatMonthYear } from '@/utils/format-date'
 
 interface IrishFinanceTemplateProps {
   cv?: CVData
@@ -164,7 +166,7 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
                       <span className="text-gray-600">, {exp.location}</span>
                     </div>
                     <div className="text-sm italic whitespace-nowrap">
-                      {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                      {formatMonthYear(exp.startDate)}{exp.current ? ' - Present' : exp.endDate ? ` - ${formatMonthYear(exp.endDate)}` : ''}
                     </div>
                   </div>
                   
@@ -205,7 +207,7 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
                       {edu.grade && <div className="text-sm italic">Result: {edu.grade}</div>}
                     </div>
                     <div className="text-sm italic">
-                      {edu.endDate || 'Present'}
+                      {edu.current ? 'Present' : formatMonthYear(edu.endDate)}
                     </div>
                   </div>
                 </div>

@@ -11,6 +11,10 @@ export function formatIrishDate(date: string | Date): string {
   
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date
+    if (isNaN(dateObj.getTime())) {
+      return typeof date === 'string' ? date : ''
+    }
+
     return dateObj.toLocaleDateString('en-IE', {
       day: '2-digit',
       month: '2-digit',

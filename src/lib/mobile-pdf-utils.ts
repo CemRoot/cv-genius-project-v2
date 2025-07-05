@@ -158,7 +158,7 @@ export const applyMobileStyles = (element: HTMLElement): (() => void) => {
     margin: element.style.margin,
     padding: element.style.padding,
     boxSizing: element.style.boxSizing,
-    fontSmooth: element.style.fontSmooth || '',
+    fontSmooth: (element.style as any).fontSmooth || '',
     webkitFontSmoothing: (element.style as any).webkitFontSmoothing || '',
     mozOsxFontSmoothing: (element.style as any).mozOsxFontSmoothing || '',
     textRendering: element.style.textRendering || ''
@@ -175,7 +175,7 @@ export const applyMobileStyles = (element: HTMLElement): (() => void) => {
   element.style.margin = '0 auto'
   element.style.padding = '40px'
   element.style.boxSizing = 'border-box'
-  element.style.fontSmooth = 'always'
+  ;(element.style as any).fontSmooth = 'always'
   ;(element.style as any).webkitFontSmoothing = 'antialiased'
   ;(element.style as any).mozOsxFontSmoothing = 'grayscale'
   element.style.textRendering = 'optimizeLegibility'
@@ -450,7 +450,8 @@ export const exportMobilePDF = async (
         backgroundColor: optimalOptions.backgroundColor,
         useCORS: optimalOptions.useCORS,
         allowTaint: optimalOptions.allowTaint,
-        letterRendering: optimalOptions.letterRendering,
+        // @ts-ignore – html2canvas exposes letterRendering though not yet in its TypeScript defs
+        letterRendering: (optimalOptions as any).letterRendering,
         foreignObjectRendering: optimalOptions.foreignObjectRendering,
         imageTimeout: optimalOptions.timeout,
         logging: false,
@@ -482,6 +483,10 @@ export const exportMobilePDF = async (
         pdfHeight
       )
       
+      // Fill background with white to prevent any transparency rendering as black in some PDF viewers
+      pdf.setFillColor(255, 255, 255)
+      pdf.rect(0, 0, pdfWidth, pdfHeight, 'F')
+
       const imgData = canvas.toDataURL('image/jpeg', optimalOptions.quality)
       pdf.addImage(imgData, 'JPEG', dimensions.x, dimensions.y, dimensions.width, dimensions.height)
       

@@ -147,13 +147,13 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
   }))
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 overflow-visible">
       {/* Skills by Category */}
-      <div className="space-y-6">
+      <div className="space-y-6 overflow-visible">
         {skillsByCategory.map((category) => (
-          <div key={category.value} className="space-y-3">
+          <div key={category.value} className="space-y-3 overflow-visible">
             {category.skills.length > 0 && (
-              <>
+              <div className="w-full">
                 <div className="flex items-center gap-2">
                   <category.icon className="h-5 w-5 text-cvgenius-primary" />
                   <h3 className="font-semibold text-gray-900">{category.label}</h3>
@@ -162,19 +162,22 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <AnimatePresence>
+                <div className="grid gap-4 auto-rows-fr" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                  <AnimatePresence mode="popLayout">
                     {category.skills.map((skill) => (
                       <motion.div
                         key={skill.id}
+                        layout
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className="border border-gray-200 rounded-lg p-3 bg-white hover:shadow-md transition-shadow"
+                        transition={{ duration: 0.2 }}
+                        className="border border-gray-200 rounded-lg bg-white hover:shadow-md transition-shadow flex flex-col relative"
+                        style={{ minHeight: '120px', minWidth: '160px', padding: '16px' }}
                       >
                         {editingId === skill.id ? (
                           /* Inline Edit Form */
-                          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 h-full flex flex-col">
                             <div className="space-y-2">
                               <Input
                                 {...register("name")}
@@ -188,13 +191,13 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                             
                             <div className="space-y-2">
                               <Label className="text-xs text-gray-600">Level</Label>
-                              <div className="flex gap-2">
+                              <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                 {skillLevels.map((level) => (
                                   <button
                                     key={level.value}
                                     type="button"
                                     onClick={() => setValue("level", level.value)}
-                                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
+                                    className={`text-xs px-2 py-1 rounded-full font-medium transition-colors flex-1 min-w-0 ${
                                       watchLevel === level.value
                                         ? level.value === 'Expert' ? 'bg-purple-600 text-white' :
                                           level.value === 'Advanced' ? 'bg-blue-600 text-white' :
@@ -223,40 +226,46 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                               </select>
                             </div>
 
-                            <div className="flex justify-end gap-2">
-                              <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
+                            <div className="flex justify-end gap-1 mt-auto">
+                              <Button type="button" variant="outline" size="sm" onClick={handleCancel} className="px-2 py-1">
                                 <X className="h-3 w-3" />
                               </Button>
-                              <Button type="submit" size="sm">
+                              <Button type="submit" size="sm" className="px-2 py-1">
                                 <Save className="h-3 w-3" />
                               </Button>
                             </div>
                           </form>
                         ) : (
                           /* View Mode */
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-900 text-sm">{skill.name}</h4>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => handleEdit(skill)}
-                                  className="text-blue-600 hover:text-blue-800 p-1"
-                                >
-                                  <Edit2 className="h-3 w-3" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemove(skill.id)}
-                                  className="text-red-600 hover:text-red-800 p-1"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
+                          <div className="flex flex-col justify-between h-full">
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <h4 className="font-medium text-gray-900 text-sm flex-1 break-words whitespace-normal pr-2">
+                                  {skill.name}
+                                </h4>
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEdit(skill)}
+                                    className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                                    title="Edit skill"
+                                  >
+                                    <Edit2 className="h-3 w-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemove(skill.id)}
+                                    className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                                    title="Delete skill"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                             
-                            <div className="flex items-center justify-between">
-                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            <div className="mt-3">
+                              <span className={`inline-flex items-center text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${
                                 skill.level === 'Expert' ? 'bg-purple-100 text-purple-800' :
                                 skill.level === 'Advanced' ? 'bg-blue-100 text-blue-800' :
                                 skill.level === 'Intermediate' ? 'bg-green-100 text-green-800' :
@@ -271,7 +280,7 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                     ))}
                   </AnimatePresence>
                 </div>
-              </>
+              </div>
             )}
           </div>
         ))}
@@ -291,15 +300,15 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-cvgenius-primary/20 rounded-lg p-4 bg-cvgenius-primary/5"
+          className="border border-cvgenius-primary/20 rounded-lg p-6 bg-cvgenius-primary/5"
         >
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Code className="h-5 w-5 text-cvgenius-primary" />
             Add New Skill
           </h3>
           
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
               <div className="space-y-2">
                 <Label htmlFor="skillName">
                   Skill Name <span className="text-red-500">*</span>
@@ -334,30 +343,30 @@ export function SkillsForm({ isMobile = false }: SkillsFormProps) {
                   <p className="text-sm text-red-500">{errors.category.message}</p>
                 )}
               </div>
-
-              <div className="space-y-2">
-                <Label>
-                  Skill Level <span className="text-red-500">*</span>
-                </Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {skillLevels.map((level) => (
-                    <button
-                      key={level.value}
-                      type="button"
-                      onClick={() => setValue("level", level.value)}
-                      className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors ${
-                        watchLevel === level.value
-                          ? level.value === 'Expert' ? 'bg-purple-600 text-white' :
-                            level.value === 'Advanced' ? 'bg-blue-600 text-white' :
-                            level.value === 'Intermediate' ? 'bg-green-600 text-white' :
-                            'bg-gray-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {level.label}
-                    </button>
-                  ))}
-                </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>
+                Skill Level <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
+                {skillLevels.map((level) => (
+                  <button
+                    key={level.value}
+                    type="button"
+                    onClick={() => setValue("level", level.value)}
+                    className={`text-sm px-3 py-2 rounded-lg font-medium transition-colors w-full ${
+                      watchLevel === level.value
+                        ? level.value === 'Expert' ? 'bg-purple-600 text-white' :
+                          level.value === 'Advanced' ? 'bg-blue-600 text-white' :
+                          level.value === 'Intermediate' ? 'bg-green-600 text-white' :
+                          'bg-gray-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {level.label}
+                  </button>
+                ))}
               </div>
             </div>
 

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useMobileKeyboard } from '@/components/mobile'
 import { useCVStore } from '@/store/cv-store'
 import { useState, useEffect } from 'react'
+import { CVPreview } from '@/components/cv/cv-preview'
 
 export default function ExportPage() {
   const [isMobile, setIsMobile] = useState(false)
@@ -44,6 +45,12 @@ export default function ExportPage() {
       className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
       style={{ height: isMobile && isKeyboardOpen ? adjustedViewHeight : 'auto' }}
     >
+      {/* Hidden off-screen preview for high-fidelity PDF capture */}
+      <div style={{ position: 'absolute', top: 0, left: 0, opacity: 0, pointerEvents: 'none', width: '794px' }}>
+        {/* Desktop sized preview so exported PDF matches on-screen design */}
+        <CVPreview isMobile={false} />
+      </div>
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">

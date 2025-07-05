@@ -76,8 +76,8 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
         await navigator.share(shareData)
         setShareStatus('success')
         setTimeout(() => setShareStatus('idle'), 2000)
-      } catch (error) {
-        if (error.name !== 'AbortError') {
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') {
           // User didn't cancel, try fallback
           handleFallbackShare(shareData.url)
         } else {
@@ -95,7 +95,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
       await navigator.clipboard.writeText(url)
       setShareStatus('copied')
       setTimeout(() => setShareStatus('idle'), 2000)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to copy to clipboard:', error)
       setShareStatus('idle')
     }
@@ -318,6 +318,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
               className="w-full h-full flex items-start justify-center py-4"
             >
               <div 
+                id="cv-export-content"
                 ref={contentRef}
                 className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-300 ease-out"
                 style={{ 
@@ -335,6 +336,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
             </TouchGestureWrapper>
           ) : (
             <div 
+              id="cv-export-content"
               ref={contentRef}
               className="min-h-[1123px] max-w-[794px] mx-auto bg-white transition-transform duration-200"
               style={{ 

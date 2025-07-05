@@ -77,17 +77,16 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
 
   // Format date for display (DD/MM/YYYY)
   const formatDateForDisplay = (dateString: string) => {
-    if (!dateString || dateString === "Present") return dateString
-    try {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit', 
-        year: 'numeric'
-      })
-    } catch {
-      return dateString
+    if (!dateString || dateString === 'Present') return dateString || ''
+    const d = new Date(dateString)
+    if (isNaN(d.getTime())) {
+      return ''
     }
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
   }
 
   // Format date for input (YYYY-MM-DD)
@@ -152,6 +151,13 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
     setExpandedId(expandedId === id ? null : id)
   }
 
+  // When 'Currently studying here' is checked, clear and disable endDate value to avoid NaN
+  useEffect(() => {
+    if (watchCurrent) {
+      setValue('endDate', '')
+    }
+  }, [watchCurrent, setValue])
+
   return (
     <div className="p-6 space-y-6">
       {/* Existing Education */}
@@ -184,7 +190,8 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
                           {education.institution} • {education.location}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {education.field} • {formatDateForDisplay(education.startDate)} - {education.current ? "Present" : formatDateForDisplay(education.endDate)}
+                          {education.field} • {formatDateForDisplay(education.startDate)}
+                          {education.current ? ' - Present' : (formatDateForDisplay(education.endDate) ? ` - ${formatDateForDisplay(education.endDate)}` : '')}
                         </p>
                       </div>
                     </div>
@@ -308,6 +315,8 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
                                 id={`startDate-${education.id}`}
                                 type="date"
                                 {...register("startDate")}
+                                min="1900-01-01"
+                                max="9999-12-31"
                                 className={errors.startDate ? "border-red-500" : ""}
                               />
                               {errors.startDate && (
@@ -324,6 +333,8 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
                                 type="date"
                                 {...register("endDate")}
                                 disabled={watchCurrent}
+                                min="1900-01-01"
+                                max="9999-12-31"
                                 className={errors.endDate ? "border-red-500" : ""}
                               />
                             </div>
@@ -484,13 +495,15 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
                   id="startDate"
                   type="date"
                   {...register("startDate")}
+                  min="1900-01-01"
+                  max="9999-12-31"
                   className={errors.startDate ? "border-red-500" : ""}
                 />
                 {errors.startDate && (
                   <p className="text-sm text-red-500">{errors.startDate.message}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Date will be displayed as DD/MM/YYYY
+                  Date will be displayed as Month Year (e.g., Jan 2024)
                 </p>
               </div>
 
@@ -503,6 +516,8 @@ export function EducationForm({ isMobile = false }: EducationFormProps) {
                   type="date"
                   {...register("endDate")}
                   disabled={watchCurrent}
+                  min="1900-01-01"
+                  max="9999-12-31"
                   className={errors.endDate ? "border-red-500" : ""}
                 />
               </div>

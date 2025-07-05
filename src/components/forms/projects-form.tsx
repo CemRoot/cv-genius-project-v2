@@ -238,6 +238,8 @@ export function ProjectsForm() {
                           <Input
                             {...register("startDate")}
                             type="date"
+                            min="1900-01-01"
+                            max="9999-12-31"
                             className={errors.startDate ? "border-red-500" : ""}
                           />
                           {errors.startDate && (
@@ -251,6 +253,8 @@ export function ProjectsForm() {
                             {...register("endDate")}
                             type="date"
                             disabled={watchCurrent}
+                            min="1900-01-01"
+                            max="9999-12-31"
                             className={errors.endDate ? "border-red-500" : ""}
                           />
                         </div>
@@ -531,6 +535,8 @@ export function ProjectsForm() {
                   id="startDate"
                   type="date"
                   {...register("startDate")}
+                  min="1900-01-01"
+                  max="9999-12-31"
                   className={errors.startDate ? "border-red-500" : ""}
                 />
                 {errors.startDate && (
@@ -545,6 +551,8 @@ export function ProjectsForm() {
                   type="date"
                   {...register("endDate")}
                   disabled={watchCurrent}
+                  min="1900-01-01"
+                  max="9999-12-31"
                   className={errors.endDate ? "border-red-500" : ""}
                 />
               </div>

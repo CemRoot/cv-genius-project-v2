@@ -19,14 +19,19 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCVStore } from '@/store/cv-store'
 import { pdf } from '@react-pdf/renderer'
-import { HarvardTemplate } from './pdf-templates'
+import { PDFTemplate } from './pdf-templates'
 import { useRouter } from 'next/navigation'
 import { AdSection } from '@/components/ads/ad-section'
 import { useDownloadWithRedirect } from '@/components/ads/download-redirect-handler'
 import { useToast, createToastUtils } from '@/components/ui/toast'
 import { DownloadInterstitial } from '@/components/ads/download-interstitial'
-import { getAdConfig } from '@/lib/ad-config'
 import { exportMobilePDF } from '@/lib/mobile-pdf-utils'
+import { HarvardTemplate } from '@/components/cv/templates/harvard-template'
+import { DublinTechTemplate } from '@/components/cv/templates/dublin-tech-template'
+import { IrishFinanceTemplate } from '@/components/cv/templates/irish-finance-template'
+import { DublinPharmaTemplate } from '@/components/cv/templates/dublin-pharma-template'
+import { IrishGraduateTemplate } from '@/components/cv/templates/irish-graduate-template'
+import { getAdConfig } from '@/lib/ad-config'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -125,9 +130,11 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         // Create a temporary container for the CV
         const tempContainer = document.createElement('div')
         tempContainer.id = 'temp-cv-export'
-        tempContainer.style.position = 'fixed'
-        tempContainer.style.left = '-9999px'
+        tempContainer.style.position = 'absolute'
+        tempContainer.style.left = '0'
         tempContainer.style.top = '0'
+        tempContainer.style.opacity = '0'
+        tempContainer.style.pointerEvents = 'none'
         tempContainer.style.width = '794px' // A4 width
         tempContainer.style.backgroundColor = '#ffffff'
         tempContainer.style.padding = '40px'
@@ -138,7 +145,6 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         // Render CV content to the temporary container
         const React = await import('react')
         const ReactDOM = await import('react-dom/client')
-        const { HarvardTemplate } = await import('./pdf-templates')
         
         // Generate HTML using the same logic as the React templates
         const isSectionVisible = (sectionType: string) => {
@@ -376,12 +382,93 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         }
       }
       
-      // Use react-pdf renderer (original approach for desktop and fallback)
-      console.log('Using react-pdf renderer')
-      const doc = <HarvardTemplate data={currentCV} />
-      console.log('PDF document created, generating blob...')
+      // Attempt DOM capture of existing preview element first
+      try {
+        const existingEl = document.getElementById('cv-export-content')
+        if (existingEl) {
+          console.log('Found existing cv-export-content element, exporting directly...')
+          const directResult = await exportMobilePDF('cv-export-content', `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`, {
+            scale: 2,
+            quality: 0.95,
+            timeout: 30000
+          })
+          if (directResult.success && directResult.blob) {
+            console.log('Direct DOM export succeeded')
+            return directResult.blob
+          }
+          console.warn('Direct DOM export failed:', directResult.error)
+        }
+
+      } catch (err) {
+        console.warn('Direct DOM export error, will try temp container:', err)
+      }
+
+      // Attempt DOM capture export via temporary container for perfect visual parity
+      try {
+        console.log('Attempting DOM-to-PDF export via temp container for desktop...')
+
+        const containerId = 'temp-cv-export'
+        const tempContainer = document.createElement('div')
+        tempContainer.id = containerId
+        tempContainer.style.position = 'absolute'
+        tempContainer.style.left = '0'
+        tempContainer.style.top = '0'
+        tempContainer.style.opacity = '0'
+        tempContainer.style.pointerEvents = 'none'
+        tempContainer.style.width = '794px'
+        tempContainer.style.background = '#ffffff'
+        document.body.appendChild(tempContainer)
+
+        // Dynamically import ReactDOM to avoid SSR issues
+        const ReactDOM = await import('react-dom/client')
+
+        const getTemplateElement = () => {
+          switch (currentCV.template) {
+            case 'harvard':
+              return <HarvardTemplate cv={currentCV} />
+            case 'dublin-tech':
+            case 'dublin':
+              return <DublinTechTemplate cv={currentCV} />
+            case 'irish-finance':
+              return <IrishFinanceTemplate cv={currentCV} />
+            case 'dublin-pharma':
+              return <DublinPharmaTemplate cv={currentCV} />
+            case 'irish-graduate':
+              return <IrishGraduateTemplate cv={currentCV} />
+            default:
+              return <HarvardTemplate cv={currentCV} />
+          }
+        }
+
+        const root = ReactDOM.createRoot(tempContainer)
+        root.render(getTemplateElement())
+
+        // Wait a tick for layout
+        await new Promise(res => setTimeout(res, 100))
+
+        const result = await exportMobilePDF(containerId, `${currentCV.personal.fullName.replace(/\\s+/g, '_')}_CV.pdf`, {
+          scale: 2,
+          quality: 0.95,
+          timeout: 30000
+        })
+
+        // Clean up
+        root.unmount()
+        document.body.removeChild(tempContainer)
+
+        if (result.success && result.blob) {
+          console.log('DOM export succeeded')
+          return result.blob
+        }
+        console.warn('DOM export failed, falling back to react-pdf:', result.error)
+      } catch (err) {
+        console.warn('DOM export threw error, falling back:', err)
+      }
+
+      // Fallback to react-pdf renderer
+      console.log('Using react-pdf fallback renderer')
+      const doc = <PDFTemplate data={currentCV} />
       const blob = await pdf(doc).toBlob()
-      console.log('PDF blob generated successfully, size:', blob.size)
       return blob
     } catch (error) {
       console.error('PDF generation error:', error)
@@ -708,7 +795,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       setShowPreview(true)
       
       // Generate PDF blob
-      const doc = <HarvardTemplate data={currentCV} />
+      const doc = <PDFTemplate data={currentCV} />
       const blob = await pdf(doc).toBlob()
       
       // Create object URL
@@ -760,212 +847,78 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     }
   }
 
-  if (!currentCV) {
-    return (
-      <Card>
-        <CardContent className="text-center py-12">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No CV Data</h3>
-          <p className="text-muted-foreground mb-6">
-            Please create or load a CV to enable export functionality.
-          </p>
-          <Button 
-            onClick={navigateToBuilder}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Go to CV Builder
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
+  // Component renders nothing; export UI handled in parent page
   return (
-    <div className="space-y-6">
-      {/* Redirect Message */}
-      <AnimatePresence>
-        {showRedirectMessage && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          >
-            <Card className="max-w-md mx-4">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <div className="text-4xl mb-4">📢</div>
-                  <h3 className="text-lg font-semibold mb-2">Preparing Your Download</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Please visit our sponsor page to support free CV services. 
-                    Your download will be ready when you return!
-                  </p>
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cvgenius-purple mx-auto"></div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Info Card - Harvard Template */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">📄</div>
-            <div>
-              <h4 className="font-medium text-blue-800 mb-1">Harvard Template</h4>
-              <p className="text-sm text-blue-700">
-                Your CV will be exported using the professional Harvard template format, 
-                exactly matching your preview. This ensures consistency between what you see and what you download.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="space-y-8">
       {/* Format Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Export Formats
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {exportFormats.map((format) => {
-              const Icon = format.icon
-              const isSelected = selectedFormats.includes(format.id)
-              
-              return (
-                <label
-                  key={format.id}
-                  className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                    isSelected ? 'border-cvgenius-primary bg-cvgenius-primary/5' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleFormatToggle(format.id)}
-                    className="sr-only"
-                  />
-                  <Icon className="h-5 w-5 text-muted-foreground" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{format.name}</span>
-                      {format.recommended && (
-                        <Badge variant="secondary" className="text-xs">Recommended</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{format.description}</p>
-                    <p className="text-xs text-green-600">{format.compatibility}</p>
-                  </div>
-                  {isSelected && (
-                    <CheckCircle className="h-5 w-5 text-cvgenius-primary" />
-                  )}
-                </label>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Export Progress */}
-      <AnimatePresence>
-        {exportProgress.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Export Progress</CardTitle>
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        {exportFormats.map((fmt) => {
+          const Icon = fmt.icon
+          const selected = selectedFormats.includes(fmt.id)
+          return (
+            <Card
+              key={fmt.id}
+              onClick={() => handleFormatToggle(fmt.id)}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                selected ? 'ring-2 ring-indigo-500' : ''
+              }`}
+            >
+              <CardHeader className="flex flex-row items-center space-x-2 pb-2">
+                <Icon className="w-5 h-5 text-indigo-600" />
+                <CardTitle>{fmt.name}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {exportProgress.map((progress) => (
-                  <div key={progress.format} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">
-                        {exportFormats.find(f => f.id === progress.format)?.name}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {progress.status === 'generating' && (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        )}
-                        {progress.status === 'complete' && (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        )}
-                        {progress.status === 'error' && (
-                          <AlertCircle className="h-4 w-4 text-red-600" />
-                        )}
-                        <span className="text-sm text-muted-foreground">
-                          {Math.round(progress.progress)}%
-                        </span>
-                      </div>
-                    </div>
-                    <Progress value={progress.progress} className="h-2" />
-                    {progress.error && (
-                      <p className="text-xs text-red-600">{progress.error}</p>
-                    )}
-                  </div>
-                ))}
+              <CardContent className="space-y-2 pt-0">
+                <p className="text-sm text-gray-600 leading-snug">
+                  {fmt.description}
+                </p>
+                <Badge variant={selected ? 'default' : 'outline'} size="sm">
+                  {selected ? 'Selected' : fmt.compatibility}
+                </Badge>
               </CardContent>
             </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )
+        })}
+      </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={handleExport}
-          disabled={selectedFormats.length === 0 || exportProgress.some(p => p.status === 'generating')}
-          className="flex-1"
-          size="lg"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export CV ({selectedFormats.length} format{selectedFormats.length !== 1 ? 's' : ''})
-        </Button>
-        
+      <div className="flex gap-4">
         <Button
           variant="outline"
           onClick={handlePreview}
-          disabled={showPreview}
-          size="lg"
+          className="flex items-center gap-2"
         >
-          {showPreview ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Eye className="h-4 w-4 mr-2" />
-          )}
-          {isMobile ? 'Preview (Download)' : 'Preview'}
+          <Eye className="w-4 h-4" />
+          Preview
+        </Button>
+        <Button
+          onClick={handleExport}
+          disabled={exportProgress.some((p) => p.status === 'generating')}
+          className="flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Download
         </Button>
       </div>
 
-      {/* Irish Format Notice */}
-      <Card className="bg-green-50 border-green-200">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">🇮🇪</div>
-            <div>
-              <h4 className="font-medium text-green-800 mb-1">Irish Format Optimized</h4>
-              <ul className="text-sm text-green-700 space-y-1">
-                <li>• A4 page size (standard in Ireland)</li>
-                <li>• DD/MM/YYYY date format</li>
-                <li>• Irish phone number formatting</li>
-                <li>• ATS-friendly fonts and layout</li>
-                <li>• Compatible with Irish recruitment systems</li>
-              </ul>
+      {/* Progress Indicators */}
+      {exportProgress.length > 0 && (
+        <div className="space-y-4">
+          {exportProgress.map((p) => (
+            <div key={p.format}>
+              <div className="flex justify-between mb-1 text-sm font-medium">
+                <span>{p.format.toUpperCase()}</span>
+                <span>{p.progress}%</span>
+              </div>
+              <Progress value={p.progress} />
+              {p.status === 'error' && (
+                <p className="text-xs text-red-600 mt-1">{p.error}</p>
+              )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      )}
 
-      {/* Download Interstitial Ad */}
+      {/* Interstitial Ad / Countdown */}
       {showInterstitial && pendingDownload && (
         <DownloadInterstitial
           onComplete={handleInterstitialComplete}

@@ -1,5 +1,6 @@
 import { CVData, DesignSettings } from "@/types/cv"
 import { formatIrishPhone } from "@/lib/utils"
+import { formatMonthYear } from "@/utils/format-date"
 import { Mail, Phone, MapPin, Linkedin } from "lucide-react"
 
 interface ClassicTemplateProps {
@@ -214,33 +215,38 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
             Education
           </h2>
           <div className="space-y-4">
-            {education.map((edu) => (
-              <div key={edu.id} className="break-inside-avoid">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold`}>
-                      {edu.degree} in {edu.field}
-                    </h3>
-                    <p className="font-medium">
-                      {edu.institution}
-                    </p>
+            {education.map((edu) => {
+              const start = formatMonthYear(edu.startDate)
+              const end = edu.current || edu.endDate === 'Present' ? 'Present' : edu.endDate ? formatMonthYear(edu.endDate) : ''
+
+              return (
+                <div key={edu.id} className="break-inside-avoid">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold`}>
+                        {edu.degree} in {edu.field}
+                      </h3>
+                      <p className="font-medium">
+                        {edu.institution}
+                      </p>
+                    </div>
+                    <div className="text-right min-w-[150px]">
+                      <p className="text-sm">
+                        {edu.location}
+                      </p>
+                      <p className="text-sm">
+                        {start}{end && end !== start ? ` - ${end}` : ''}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right min-w-[150px]">
-                    <p className="text-sm">
-                      {edu.location}
+                  {edu.grade && (
+                    <p className="text-sm mt-1">
+                      Grade: {edu.grade}
                     </p>
-                    <p className="text-sm">
-                      {new Date(edu.startDate).toLocaleDateString('en-IE', { month: '2-digit', year: 'numeric' })} - {new Date(edu.endDate).toLocaleDateString('en-IE', { month: '2-digit', year: 'numeric' })}
-                    </p>
-                  </div>
+                  )}
                 </div>
-                {edu.grade && (
-                  <p className="text-sm mt-1">
-                    Grade: {edu.grade}
-                  </p>
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}

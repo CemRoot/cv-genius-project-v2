@@ -211,13 +211,29 @@ ${filledPrompt}`
     })
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: 'Failed to improve text', details: result.error },
-        { status: 500 }
-      )
+      // Log the failure for debugging but avoid throwing 500 to the client
+      console.error('Gemini text-improvement failed:', result.error)
+
+      // Basic fallback: light cleanup (collapse multiple spaces) – keeps UX smooth
+      const fallbackImproved = text.replace(/\s+/g, ' ').trim()
+
+      return NextResponse.json({
+        success: false,
+        improvedText: fallbackImproved,
+        error: result.error,
+        usage: null,
+        promptUsed: type,
+        adminConfigured: true,
+        fallback: true
+      }, {
+        headers: {
+          'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+          'X-RateLimit-Reset': rateLimit.resetTime.toString()
+        }
+      })
     }
 
-    // Return the improved text
+    // Return the improved text on success
     return NextResponse.json({
       success: true,
       improvedText: result.content?.trim() || text,

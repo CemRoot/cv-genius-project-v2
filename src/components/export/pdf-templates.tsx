@@ -188,6 +188,9 @@ const creativeStyles = StyleSheet.create({
 const formatIrishDate = (dateString: string): string => {
   if (!dateString) return ''
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) {
+    return dateString || ''
+  }
   return date.toLocaleDateString('en-IE', {
     month: 'short',
     year: 'numeric'
@@ -1044,8 +1047,61 @@ export function HarvardTemplate({ data }: { data: CVData }) {
   )
 }
 
-// Main export component that selects the right template
-export const PDFTemplate: React.FC<PDFTemplateProps> = ({ data }) => {
-  // Always use Harvard template to match the preview
-  return <HarvardTemplate data={data} />
+// --- Thin wrappers for additional builder templates until dedicated designs are ready ---
+export const DublinTechTemplate: React.FC<{ data: CVData }> = ({ data }) => (
+  /* For now, reuse the Modern template styling */
+  <ModernTemplate data={data} />
+)
+
+export const IrishFinanceTemplate: React.FC<{ data: CVData }> = ({ data }) => (
+  /* Finance template is closest to Harvard (classic professional look) */
+  <HarvardTemplate data={data} />
+)
+
+export const DublinPharmaTemplate: React.FC<{ data: CVData }> = ({ data }) => (
+  /* Reuse Modern template but can later get pharma-specific accents */
+  <ModernTemplate data={data} />
+)
+
+// Update templateIdMap to map to new string keys (component switch below)
+const templateIdMap: Record<string, string> = {
+  // Core templates with dedicated PDF designs
+  'classic': 'classic',
+  'dublin-creative': 'creative',
+  // IDs that visually resemble the Modern template
+  'dublin-tech': 'dublin-tech',
+  'dublin-startup': 'modern',
+  'dublin-hospitality': 'modern',
+  'dublin-retail': 'modern',
+  'dublin-pharma': 'dublin-pharma',
+  'irish-construction': 'modern',
+  // IDs that are closer to the Harvard (academic/professional) layout
+  'irish-finance': 'irish-finance',
+  'irish-graduate': 'harvard',
+  'irish-education': 'harvard',
+  // Fallback for the remaining templates
+  'irish-healthcare': 'classic',
+  'irish-executive': 'classic'
+}
+
+export const PDFTemplate: React.FC<{ data: CVData }> = ({ data }) => {
+  const resolved = templateIdMap[data.template] || 'harvard'
+
+  switch (resolved) {
+    case 'classic':
+      return <ClassicTemplate data={data} />
+    case 'modern':
+      return <ModernTemplate data={data} />
+    case 'creative':
+      return <CreativeTemplate data={data} />
+    case 'dublin-tech':
+      return <DublinTechTemplate data={data} />
+    case 'dublin-pharma':
+      return <DublinPharmaTemplate data={data} />
+    case 'irish-finance':
+      return <IrishFinanceTemplate data={data} />
+    case 'harvard':
+    default:
+      return <HarvardTemplate data={data} />
+  }
 }

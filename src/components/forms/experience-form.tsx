@@ -241,13 +241,15 @@ function SortableExperienceItem({
                       id={`startDate-${experience.id}`}
                       type="date"
                       {...register("startDate")}
+                      min="1900-01-01"
+                      max="9999-12-31"
                       className={`h-12 ${errors.startDate ? "border-red-500" : ""}`}
                     />
                     {errors.startDate && (
                       <p className="text-sm text-red-500">{errors.startDate.message}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Date will be displayed as DD/MM/YYYY
+                      Date will be displayed as Month Year (e.g., Jan 2024)
                     </p>
                   </div>
 
@@ -260,6 +262,8 @@ function SortableExperienceItem({
                       type="date"
                       {...register("endDate")}
                       disabled={watchCurrent}
+                      min="1900-01-01"
+                      max="9999-12-31"
                       className={`h-12 ${errors.endDate ? "border-red-500" : ""} ${watchCurrent ? "opacity-50" : ""}`}
                     />
                     <p className="text-xs text-muted-foreground">
@@ -683,13 +687,15 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
                   id="startDate"
                   type="date"
                   {...register("startDate")}
+                  min="1900-01-01"
+                  max="9999-12-31"
                   className={errors.startDate ? "border-red-500" : ""}
                 />
                 {errors.startDate && (
                   <p className="text-sm text-red-500">{errors.startDate.message}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Date will be displayed as DD/MM/YYYY
+                  Date will be displayed as Month Year (e.g., Jan 2024)
                 </p>
               </div>
 
@@ -702,6 +708,8 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
                   type="date"
                   {...register("endDate")}
                   disabled={watchCurrent}
+                  min="1900-01-01"
+                  max="9999-12-31"
                   className={errors.endDate ? "border-red-500" : ""}
                 />
               </div>

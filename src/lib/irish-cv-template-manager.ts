@@ -409,7 +409,7 @@ export class IrishCVTemplateManager {
               <div class="education-item">
                 <div class="edu-header">
                   <h3>${edu.degree} in ${edu.field}</h3>
-                  <span class="date">${this.formatDate(edu.startDate)} - ${this.formatDate(edu.endDate)}</span>
+                  <span class="date">${this.formatDate(edu.startDate)} - ${edu.current || edu.endDate === 'Present' ? 'Present' : this.formatDate(edu.endDate)}</span>
                 </div>
                 <div class="edu-institution">${edu.institution} | ${edu.location}</div>
                 ${edu.grade ? `<p class="grade">Grade: ${edu.grade}</p>` : ''}
@@ -504,7 +504,7 @@ export class IrishCVTemplateManager {
           <h2>Education & Qualifications</h2>
           ${data.education.map(edu => `
             <div class="education-item">
-              <strong>${edu.degree} in ${edu.field}</strong> - ${edu.institution} (${this.formatDate(edu.endDate).split(' ')[1]})
+              <strong>${edu.degree} in ${edu.field}</strong> - ${edu.institution}${edu.current || edu.endDate === 'Present' ? ' (Present)' : edu.endDate ? ` (${this.formatDate(edu.endDate).split(' ')[1] || ''})` : ''}
               ${edu.grade ? ` - ${edu.grade}` : ''}
             </div>
           `).join('')}
@@ -1311,7 +1311,7 @@ export class IrishCVTemplateManager {
             <div class="education-item">
               <div class="edu-header">
                 <h3>${edu.degree} in ${edu.field}</h3>
-                <span class="date">${this.formatDate(edu.startDate)} - ${this.formatDate(edu.endDate)}</span>
+                <span class="date">${this.formatDate(edu.startDate)} - ${edu.current || edu.endDate === 'Present' ? 'Present' : this.formatDate(edu.endDate)}</span>
               </div>
               <div class="edu-institution">${edu.institution} | ${edu.location}</div>
               ${edu.grade ? `<p class="grade">Grade: ${edu.grade}</p>` : ''}
@@ -1536,7 +1536,7 @@ export class IrishCVTemplateManager {
               </div>
               <div class="edu-right">
                 <p class="location">${edu.location}</p>
-                <p class="date">${this.formatDate(edu.startDate)} - ${this.formatDate(edu.endDate)}</p>
+                <p class="date">${this.formatDate(edu.startDate)} - ${edu.current || edu.endDate === 'Present' ? 'Present' : this.formatDate(edu.endDate)}</p>
               </div>
             </div>
             ${edu.grade ? `<p class="grade">Grade: ${edu.grade}</p>` : ''}
@@ -1665,9 +1665,23 @@ export class IrishCVTemplateManager {
 
   // Helper functions
   private formatDate(dateStr: string): string {
+    if (!dateStr || dateStr === 'Present' || dateStr === '') {
+      return dateStr || ''
+    }
+    
     const date = new Date(dateStr)
+    if (isNaN(date.getTime())) {
+      return ''
+    }
+    
+    // Check if year is reasonable
+    const year = date.getFullYear()
+    if (year < 1900 || year > 9999) {
+      return ''
+    }
+    
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    return `${months[date.getMonth()]} ${date.getFullYear()}`
+    return `${months[date.getMonth()]} ${year}`
   }
   
   private getSkillWidth(level: string): string {

@@ -1,6 +1,8 @@
 import { CVData, DesignSettings } from "@/types/cv"
 import { formatIrishPhone } from "@/lib/utils"
 import { Github, Linkedin, Globe, Mail, Phone, MapPin } from "lucide-react"
+import React from 'react'
+import { formatMonthYear } from '@/utils/format-date'
 
 interface DublinTechTemplateProps {
   cv?: CVData
@@ -318,7 +320,7 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
                         {edu.grade && <div className="text-sm text-gray-600">Grade: {edu.grade}</div>}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {edu.startDate} - {edu.current ? "Present" : edu.endDate}
+                        {formatMonthYear(edu.startDate)}{edu.current || edu.endDate === 'Present' ? ' - Present' : edu.endDate ? ` - ${formatMonthYear(edu.endDate)}` : ''}
                       </div>
                     </div>
                   </div>
