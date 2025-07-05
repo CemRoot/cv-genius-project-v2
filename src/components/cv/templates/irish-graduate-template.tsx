@@ -39,11 +39,11 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
 
   // Fresh graduate-focused design settings
   const defaultSettings: DesignSettings = {
-    margins: 0.75,
+    margins: 0.3, // Reduced from 0.75 for more content space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Calibri, sans-serif',
-    fontSize: 11,
+    fontSize: 11, // Already at 11 for better readability
     lineHeight: 1.4
   }
 
@@ -69,9 +69,9 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
 
   // Dynamic styles based on settings and mobile detection
   const containerStyle = {
-    padding: isMobile ? '0.75rem' : `${settings.margins}in`,
+    padding: isMobile ? '1rem' : `${settings.margins}in`, // Increased mobile padding
     fontFamily: settings.fontFamily,
-    fontSize: isMobile ? '10px' : `${settings.fontSize}pt`,
+    fontSize: isMobile ? '11px' : `${settings.fontSize}pt`, // Increased mobile font size
     lineHeight: settings.lineHeight,
   }
 

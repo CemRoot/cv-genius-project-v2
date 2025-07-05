@@ -37,14 +37,14 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
     return section?.visible ?? false
   }
 
-  // Default design settings
+  // Default design settings - Optimized for better space utilization
   const defaultSettings: DesignSettings = {
-    margins: 0.5,
+    margins: 0.3, // Reduced from 0.5 for more content space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Times New Roman',
-    fontSize: 10,
-    lineHeight: 1.0  // 1.2 -> 1.0 for tighter spacing
+    fontSize: 11, // Increased from 10 for better readability
+    lineHeight: 1.15  // Slightly increased for readability
   }
 
   const settings = designSettings || defaultSettings
@@ -95,9 +95,9 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
 
   // Dynamic styles based on settings and mobile detection
   const containerStyle = {
-    padding: isMobile ? '0.3rem' : `${settings.margins}in`,
+    padding: isMobile ? '1rem' : `${settings.margins}in`, // Increased mobile padding
     fontFamily: `"${settings.fontFamily}", serif`,
-    fontSize: isMobile ? '8px' : `${settings.fontSize}pt`,
+    fontSize: isMobile ? '11px' : `${settings.fontSize}pt`, // Increased mobile font size
     lineHeight: settings.lineHeight,
   }
 
@@ -108,7 +108,7 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
         ...containerStyle,
         // Ensure proper dimensions
         maxWidth: '100%',
-        padding: isMobile ? '0.5rem' : `${settings.margins}in`,
+        padding: isMobile ? '1rem' : `${settings.margins}in`, // Consistent mobile padding
       }}
     >
       {/* Header */}

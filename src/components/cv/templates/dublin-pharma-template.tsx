@@ -39,11 +39,11 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
 
   // Clean pharma-focused design settings
   const defaultSettings: DesignSettings = {
-    margins: 0.75,
+    margins: 0.3, // Reduced from 0.75 for more content space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Arial, sans-serif',
-    fontSize: 10,
+    fontSize: 11, // Increased from 10 for better readability
     lineHeight: 1.3
   }
 
@@ -69,9 +69,9 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
 
   // Dynamic styles based on settings and mobile detection
   const containerStyle = {
-    padding: isMobile ? '0.75rem' : `${settings.margins}in`,
+    padding: isMobile ? '1rem' : `${settings.margins}in`, // Increased mobile padding
     fontFamily: settings.fontFamily,
-    fontSize: isMobile ? '9px' : `${settings.fontSize}pt`,
+    fontSize: isMobile ? '11px' : `${settings.fontSize}pt`, // Increased mobile font size
     lineHeight: settings.lineHeight,
   }
 

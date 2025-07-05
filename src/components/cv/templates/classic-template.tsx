@@ -38,11 +38,11 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
   // Classic design settings
   const defaultSettings: DesignSettings = {
-    margins: 1,
+    margins: 0.3, // Reduced from 1 for more content space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Arial, sans-serif',
-    fontSize: 11,
+    fontSize: 11, // Already at 11 for better readability
     lineHeight: 1.4
   }
 
@@ -50,9 +50,9 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
   // Dynamic styles based on settings
   const containerStyle = {
-    padding: isMobile ? '1rem' : `${settings.margins}in`,
+    padding: isMobile ? '1rem' : `${settings.margins}in`, // Already at 1rem for mobile
     fontFamily: settings.fontFamily,
-    fontSize: isMobile ? '10px' : `${settings.fontSize}pt`,
+    fontSize: isMobile ? '11px' : `${settings.fontSize}pt`, // Increased mobile font size
     lineHeight: settings.lineHeight,
   }
 

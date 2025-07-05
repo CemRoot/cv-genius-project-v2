@@ -59,7 +59,7 @@ export const getOptimalPDFOptions = (deviceInfo?: DeviceInfo): PDFExportOptions 
   if (device.isMobile) {
     return {
       scale: Math.min(device.devicePixelRatio * 1.5, 3),
-      width: 794, // A4 width at 96 DPI
+      width: 900, // Increased width for better content display
       quality: 0.9, // Slightly lower quality for faster processing
       timeout: 20000, // Longer timeout for mobile
       backgroundColor: '#ffffff',

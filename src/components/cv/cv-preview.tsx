@@ -325,7 +325,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
                   className="relative mx-auto"
                   style={{ 
                     width: '100%',
-                    maxWidth: '450px', // Slightly larger for better mobile viewing
+                    maxWidth: isMobile ? '90vw' : '600px', // Use more screen width on mobile
                     transform: `scale(${zoom / 100}) translate(${panOffset.x}px, ${panOffset.y}px)`,
                     transformOrigin: 'top center',
                     transition: 'transform 0.3s ease-out'
@@ -373,7 +373,8 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
                 ref={contentRef}
                 className="mx-auto transition-transform duration-200"
                 style={{ 
-                  width: '794px', // A4 width in pixels at 96 DPI
+                  width: '100%',
+                  maxWidth: '900px', // Increased from 794px for better content display
                   transform: `scale(${zoom / 100})`,
                   transformOrigin: 'top center'
                 }}
@@ -384,8 +385,10 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
                     key={pageIndex}
                     className="bg-white shadow-xl mb-8 relative overflow-hidden"
                     style={{ 
-                      width: '794px',
-                      height: '1123px', // A4 height
+                      width: '100%',
+                      maxWidth: '900px',
+                      minHeight: '1123px', // A4 height ratio maintained
+                      aspectRatio: '210/297',
                       pageBreakAfter: 'always',
                       position: 'relative'
                     }}
