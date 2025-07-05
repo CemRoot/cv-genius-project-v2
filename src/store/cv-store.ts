@@ -122,6 +122,7 @@ const createDefaultCV = (): CVData => ({
     email: '',
     phone: '',
     address: 'Dublin, Ireland',
+    nationality: '',
     linkedin: '',
     website: '',
     summary: ''

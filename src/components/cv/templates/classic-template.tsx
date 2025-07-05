@@ -17,7 +17,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
     experience = [], 
     education = [], 
     skills = [], 

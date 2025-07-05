@@ -18,7 +18,7 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
     experience = [], 
     education = [], 
     skills = [], 

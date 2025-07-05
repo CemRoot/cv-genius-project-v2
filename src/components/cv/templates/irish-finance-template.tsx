@@ -17,7 +17,7 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
     experience = [], 
     education = [], 
     skills = [], 

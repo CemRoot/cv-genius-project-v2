@@ -13,12 +13,13 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
   // Force refresh - ultra-tight spacing v2
   console.log('🔥 Harvard Template rendered with ultra-tight spacing v2')
   const data = cv || cvData
+  console.log('📋 Personal data:', data?.personal)
   if (!data) {
     return <div className="p-8 text-center">Loading...</div>
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
     experience = [], 
     education = [], 
     skills = [], 

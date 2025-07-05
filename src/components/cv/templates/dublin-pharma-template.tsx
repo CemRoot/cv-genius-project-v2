@@ -18,7 +18,7 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
     experience = [], 
     education = [], 
     skills = [], 

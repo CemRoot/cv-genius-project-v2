@@ -18,7 +18,7 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '' }, 
+    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
     experience = [], 
     education = [], 
     skills = [], 
