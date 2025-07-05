@@ -125,6 +125,11 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
               {personal.website.replace('https://', '').replace('http://', '')}
             </span>
           )}
+          {personal.nationality && (
+            <span className="flex items-center gap-1 text-green-700 font-medium">
+              {personal.nationality}
+            </span>
+          )}
         </div>
       </header>
 

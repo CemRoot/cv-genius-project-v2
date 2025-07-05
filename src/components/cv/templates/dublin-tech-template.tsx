@@ -142,6 +142,13 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
                 </a>
               </div>
             )}
+            {personal.nationality && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
+                  {personal.nationality}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Tech Skills - Categorized */}
