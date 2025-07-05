@@ -283,72 +283,143 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
       {/* CV Preview Container - Mobile Optimized */}
       <div 
         ref={containerRef}
-        className={`bg-white rounded-xl overflow-hidden ${
+        className={`bg-gray-100 rounded-xl overflow-hidden ${
           isMobile ? 'min-h-[70vh] shadow-md border border-gray-200' : 'max-h-[80vh] shadow-lg'
         } overflow-auto`}
+        style={{
+          // Ensure container is scrollable for multi-page content
+          position: 'relative',
+          maxHeight: isMobile ? '70vh' : '80vh'
+        }}
       >
-        <div className="relative">
-          {/* Page indicator */}
-          {!isMobile && (
-            <div className="absolute top-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded z-10">
-              Page {currentPage} of {pageCount}
-            </div>
-          )}
-          
-          {/* Page break indicators */}
-          <div className="absolute left-0 right-0 pointer-events-none z-10">
-            {Array.from({ length: pageCount - 1 }, (_, i) => (
-              <div
-                key={i}
-                className="absolute left-0 right-0 h-px bg-red-300 border-t-2 border-dashed border-red-400"
-                style={{ top: `${(i + 1) * 1123}px` }}
-              >
-                <div className="absolute -top-4 left-2 bg-red-500 text-white text-xs px-1 rounded">
-                  Page Break
+        <div className="relative" style={{ padding: isMobile ? '1rem' : '2rem' }}>
+          {/* Page indicator - Enhanced visibility */}
+          <div className="sticky top-2 right-2 z-20 flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+              {pageCount > 1 && (
+                <div className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-md">
+                  Page {currentPage} of {pageCount}
                 </div>
-              </div>
-            ))}
+              )}
+              {pageCount > 2 && (
+                <div className="bg-amber-500 text-white text-xs px-2 py-1 rounded-full">
+                  ⚠️ Long CV
+                </div>
+              )}
+            </div>
           </div>
           
-          {/* CV Content */}
-          {isMobile ? (
-            <TouchGestureWrapper
-              onPinch={handlePinch}
-              onPan={handlePan}
-              className="w-full h-full flex items-start justify-center py-4"
-            >
+          {/* Multi-page container with proper A4 pages */}
+          <div className="relative">
+          
+            {/* CV Content - Multi-page support */}
+            {isMobile ? (
+              <TouchGestureWrapper
+                onPinch={handlePinch}
+                onPan={handlePan}
+                className="w-full"
+              >
+                <div 
+                  id="cv-export-content"
+                  ref={contentRef}
+                  className="relative mx-auto"
+                  style={{ 
+                    width: '100%',
+                    maxWidth: '450px', // Slightly larger for better mobile viewing
+                    transform: `scale(${zoom / 100}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+                    transformOrigin: 'top center',
+                    transition: 'transform 0.3s ease-out'
+                  }}
+                >
+                  {/* Render pages */}
+                  {Array.from({ length: Math.max(1, pageCount) }, (_, pageIndex) => (
+                    <div
+                      key={pageIndex}
+                      className="bg-white shadow-lg mb-4 relative overflow-hidden"
+                      style={{ 
+                        aspectRatio: '210/297',
+                        pageBreakAfter: 'always',
+                        position: 'relative'
+                      }}
+                    >
+                      {/* Page number indicator */}
+                      {pageCount > 1 && (
+                        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-10">
+                          {pageIndex + 1}/{pageCount}
+                        </div>
+                      )}
+                      
+                      {/* Render template content */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div 
+                          style={{ 
+                            position: 'absolute',
+                            top: `-${pageIndex * 100}%`,
+                            left: 0,
+                            right: 0,
+                            height: `${pageCount * 100}%`
+                          }}
+                        >
+                          {renderTemplate()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </TouchGestureWrapper>
+            ) : (
               <div 
                 id="cv-export-content"
                 ref={contentRef}
-                className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-300 ease-out"
+                className="mx-auto transition-transform duration-200"
                 style={{ 
-                  width: '100%',
-                  maxWidth: '350px', // Mobile optimized width
-                  minHeight: 'auto',
-                  transform: `scale(${zoom / 100}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+                  width: '794px', // A4 width in pixels at 96 DPI
+                  transform: `scale(${zoom / 100})`,
                   transformOrigin: 'top center'
                 }}
               >
-                <div className="w-full" style={{ aspectRatio: '210/297' }}>
-                  {renderTemplate()}
-                </div>
+                {/* Render A4 pages */}
+                {Array.from({ length: Math.max(1, pageCount) }, (_, pageIndex) => (
+                  <div
+                    key={pageIndex}
+                    className="bg-white shadow-xl mb-8 relative overflow-hidden"
+                    style={{ 
+                      width: '794px',
+                      height: '1123px', // A4 height
+                      pageBreakAfter: 'always',
+                      position: 'relative'
+                    }}
+                  >
+                    {/* Page number badge */}
+                    {pageCount > 1 && (
+                      <div className="absolute top-4 right-4 bg-gray-800/90 text-white text-sm px-3 py-1 rounded-lg z-10 font-medium">
+                        Page {pageIndex + 1} of {pageCount}
+                      </div>
+                    )}
+                    
+                    {/* Page separator line for visual clarity */}
+                    {pageIndex < pageCount - 1 && (
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-400 to-transparent opacity-50" />
+                    )}
+                    
+                    {/* CV content clipped to page */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div 
+                        style={{ 
+                          position: 'absolute',
+                          top: `-${pageIndex * 1123}px`,
+                          left: 0,
+                          right: 0
+                        }}
+                      >
+                        {renderTemplate()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </TouchGestureWrapper>
-          ) : (
-            <div 
-              id="cv-export-content"
-              ref={contentRef}
-              className="min-h-[1123px] max-w-[794px] mx-auto bg-white transition-transform duration-200"
-              style={{ 
-                width: '794px', // A4 width in pixels at 96 DPI
-                minHeight: '1123px', // A4 height in pixels at 96 DPI
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: 'top center'
-              }}
-            >
-              {renderTemplate()}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

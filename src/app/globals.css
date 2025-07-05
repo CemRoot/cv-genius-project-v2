@@ -164,16 +164,53 @@
   background-clip: text;
 }
 
+/* A4 Document Styles */
+.a4-page {
+  width: 794px;
+  height: 1123px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.a4-page-content {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* CV Preview Enhancements */
+.cv-preview-container {
+  background-color: #f5f5f5;
+  padding: 2rem;
+}
+
+.cv-page-indicator {
+  position: sticky;
+  top: 1rem;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 /* Print styles for CV export */
 @media print {
   @page {
-    margin: 0.5in;
+    margin: 0;
     size: A4;
   }
   
   body {
     font-size: 11pt;
     line-height: 1.4;
+    margin: 0;
+    padding: 0;
   }
   
   .no-print {
@@ -190,6 +227,80 @@
   
   .print-avoid-break {
     page-break-inside: avoid;
+  }
+  
+  .a4-page {
+    box-shadow: none;
+    margin: 0;
+    page-break-after: always;
+  }
+  
+  .a4-page:last-child {
+    page-break-after: avoid;
+  }
+}
+
+/* Mobile CV Preview Enhancements */
+@media (max-width: 768px) {
+  .cv-preview-mobile {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .cv-page-mobile {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto 1rem;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .cv-page-mobile-content {
+    width: 100%;
+    aspect-ratio: 210/297;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Touch-friendly zoom controls */
+  .cv-zoom-controls-mobile {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Smooth transitions for mobile */
+  .cv-preview-transform {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Page indicators for mobile */
+  .cv-page-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .cv-page-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: all 0.3s ease;
+  }
+  
+  .cv-page-dot.active {
+    background: #3b82f6;
+    transform: scale(1.2);
   }
 }
 
