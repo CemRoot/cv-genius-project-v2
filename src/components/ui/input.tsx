@@ -48,6 +48,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       inputRef.current?.focus()
     }, [onChange])
 
+    // Debug wrapper for onChange – TEMP
+    const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+      console.log('🖋️ Input change', e.target.name, e.target.value)
+      if (onChange) onChange(e)
+    }
+
     // Map mobileKeyboard to inputMode
     const getInputMode = () => {
       if (inputMode) return inputMode
@@ -88,6 +94,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           inputMode={getInputMode()}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          onChange={handleChange}
           className={cn(
             "flex min-h-[48px] w-full rounded-md border bg-background px-4 py-3 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation transition-all duration-200",
             // Border colors
