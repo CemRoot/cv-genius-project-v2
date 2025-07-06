@@ -615,18 +615,6 @@ export class IrishCVTemplateManager {
         .cv-container {
           min-height: auto !important; /* Override min-height for proper pagination */
         }
-        
-        /* Languages section positioning for page 2 */
-        .languages {
-          margin-top: 50px; /* Extra spacing to push to new page */
-          padding-top: 40px;
-        }
-        
-        /* References section positioning */
-        .references {
-          margin-top: 50px; /* Extra spacing to ensure new page */
-          padding-top: 40px;
-        }
       }
       
       /* Page height markers for preview calculation */
@@ -641,13 +629,6 @@ export class IrishCVTemplateManager {
         .project-item, .certification-item, .reference-item {
           page-break-inside: avoid;
           break-inside: avoid;
-        }
-        
-        /* Force page breaks before certain sections */
-        .languages, .references, .sidebar-section.languages {
-          page-break-before: always;
-          break-before: always;
-          padding-top: 25.4mm; /* 1 inch top margin for new page */
         }
         
         /* Ensure sections don't start in the middle of a page */
@@ -895,18 +876,6 @@ export class IrishCVTemplateManager {
         .cv-container {
           min-height: auto !important; /* Override min-height for proper pagination */
         }
-        
-        /* Languages section positioning for page 2 */
-        .languages {
-          margin-top: 50px; /* Extra spacing to push to new page */
-          padding-top: 40px;
-        }
-        
-        /* References section positioning */
-        .references {
-          margin-top: 50px; /* Extra spacing to ensure new page */
-          padding-top: 40px;
-        }
       }
       
       /* Page height markers for preview calculation */
@@ -921,13 +890,6 @@ export class IrishCVTemplateManager {
         .project-item, .certification-item, .reference-item {
           page-break-inside: avoid;
           break-inside: avoid;
-        }
-        
-        /* Force page breaks before certain sections */
-        .languages, .references, .sidebar-section.languages {
-          page-break-before: always;
-          break-before: always;
-          padding-top: 25.4mm; /* 1 inch top margin for new page */
         }
         
         /* Ensure sections don't start in the middle of a page */
@@ -1200,18 +1162,6 @@ export class IrishCVTemplateManager {
         .cv-container {
           min-height: auto !important; /* Override min-height for proper pagination */
         }
-        
-        /* Languages section positioning for page 2 */
-        .languages {
-          margin-top: 50px; /* Extra spacing to push to new page */
-          padding-top: 40px;
-        }
-        
-        /* References section positioning */
-        .references {
-          margin-top: 50px; /* Extra spacing to ensure new page */
-          padding-top: 40px;
-        }
       }
       
       /* Page height markers for preview calculation */
@@ -1226,13 +1176,6 @@ export class IrishCVTemplateManager {
         .project-item, .certification-item, .reference-item {
           page-break-inside: avoid;
           break-inside: avoid;
-        }
-        
-        /* Force page breaks before certain sections */
-        .languages, .references, .sidebar-section.languages {
-          page-break-before: always;
-          break-before: always;
-          padding-top: 25.4mm; /* 1 inch top margin for new page */
         }
         
         /* Ensure sections don't start in the middle of a page */
@@ -1823,18 +1766,6 @@ export class IrishCVTemplateManager {
         .cv-container {
           min-height: auto !important; /* Override min-height for proper pagination */
         }
-        
-        /* Languages section positioning for page 2 */
-        .languages {
-          margin-top: 50px; /* Extra spacing to push to new page */
-          padding-top: 40px;
-        }
-        
-        /* References section positioning */
-        .references {
-          margin-top: 50px; /* Extra spacing to ensure new page */
-          padding-top: 40px;
-        }
       }
       
       /* Page height markers for preview calculation */
@@ -1849,13 +1780,6 @@ export class IrishCVTemplateManager {
         .project-item, .certification-item, .reference-item {
           page-break-inside: avoid;
           break-inside: avoid;
-        }
-        
-        /* Force page breaks before certain sections */
-        .languages, .references, .sidebar-section.languages {
-          page-break-before: always;
-          break-before: always;
-          padding-top: 25.4mm; /* 1 inch top margin for new page */
         }
         
         /* Ensure sections don't start in the middle of a page */

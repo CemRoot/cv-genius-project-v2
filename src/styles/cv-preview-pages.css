@@ -81,27 +81,21 @@
   position: relative;
 }
 
-/* Force languages and references to new page in preview */
+/* Natural flow for all sections - no forced page breaks */
 @media screen {
+  /* Ensure sections have consistent spacing */
+  section {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Visual consistency for all sections */
   .languages,
-  .references {
+  .references,
+  .skills,
+  .education,
+  .experience {
     position: relative;
-    /* Add visual separator before these sections */
-    &::before {
-      content: '';
-      position: absolute;
-      top: -30px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        #ef4444 20%,
-        #ef4444 80%,
-        transparent
-      );
-      opacity: 0.5;
-    }
+    /* Natural spacing, no forced breaks */
+    margin-top: 1.5rem;
   }
 }

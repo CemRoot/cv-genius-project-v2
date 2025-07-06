@@ -420,7 +420,7 @@ export function WebBuilderFlow() {
                               Not: CV'niz {estimatedPageCount} sayfa içermektedir.
                             </p>
                             <p className="text-xs text-amber-700 mt-1">
-                              'Languages' ve 'References' gibi bazı bölümler yeni sayfada yer almaktadır. 
+                              İçerik uzunluğuna bağlı olarak bazı bölümler ikinci sayfaya geçebilir. 
                               Lütfen PDF'nin tamamını kontrol ediniz.
                             </p>
                           </div>
@@ -452,14 +452,7 @@ export function WebBuilderFlow() {
                                   position: 'relative'
                                 }}
                               >
-                                {/* Content specific to each page */}
-                                {pageIndex === 1 && estimatedPageCount > 1 && (
-                                  <div className="absolute top-4 left-4 right-4 bg-blue-50 border border-blue-200 rounded-lg p-3 z-10">
-                                    <p className="text-sm text-blue-800 font-medium">
-                                      Bu sayfada: Languages & References bölümleri
-                                    </p>
-                                  </div>
-                                )}
+                                {/* Content specific to each page - removed fixed section indicator */}
                                 
                                 <div 
                                   className="cv-preview-page-content"

@@ -245,7 +245,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
                 Not: CV'niz {pageCount} sayfa içermektedir.
               </p>
               <p className="text-xs text-amber-700 mt-1">
-                'Languages' ve 'References' gibi bazı bölümler yeni sayfada yer almaktadır. 
+                İçerik uzunluğuna bağlı olarak bazı bölümler ikinci sayfaya geçebilir. 
                 Lütfen PDF'nin tamamını kontrol ediniz.
               </p>
             </div>

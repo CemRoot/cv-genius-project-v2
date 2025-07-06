@@ -45,7 +45,7 @@ export default function TestPageLayout() {
                     Not: CV'niz {pageCount} sayfa içermektedir.
                   </p>
                   <p className="text-xs text-amber-700 mt-1">
-                    'Languages' ve 'References' gibi bazı bölümler yeni sayfada yer almaktadır. 
+                    İçerik uzunluğuna bağlı olarak bazı bölümler ikinci sayfaya geçebilir. 
                     Lütfen PDF'nin tamamını kontrol ediniz.
                   </p>
                 </div>
@@ -101,16 +101,7 @@ export default function TestPageLayout() {
                     </div>
                   )}
 
-                  {/* Content labels for specific pages */}
-                  {i === 1 && pageCount > 1 && (
-                    <div className="absolute bottom-8 left-8 right-8">
-                      <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                        <p className="text-sm font-medium text-blue-800">
-                          Languages & References sections appear here
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                  {/* Content flows naturally based on length */}
                 </div>
               </Card>
             ))}
