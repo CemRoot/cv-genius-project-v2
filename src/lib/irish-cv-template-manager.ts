@@ -609,6 +609,31 @@ export class IrishCVTemplateManager {
         color: #000000; /* Pure black text */
       }
       
+      /* A4 Page Simulation for Web Preview */
+      @media screen {
+        /* Ensure proper height calculation for multi-page preview */
+        .cv-container {
+          min-height: auto !important; /* Override min-height for proper pagination */
+        }
+        
+        /* Languages section positioning for page 2 */
+        .languages {
+          margin-top: 50px; /* Extra spacing to push to new page */
+          padding-top: 40px;
+        }
+        
+        /* References section positioning */
+        .references {
+          margin-top: 50px; /* Extra spacing to ensure new page */
+          padding-top: 40px;
+        }
+      }
+      
+      /* Page height markers for preview calculation */
+      .cv-preview-container {
+        position: relative;
+      }
+      
       /* Page Break Rules for Print */
       @media print {
         /* Prevent page breaks inside sections */
@@ -862,6 +887,31 @@ export class IrishCVTemplateManager {
         line-height: 1.5;
         font-size: 12pt; /* Base 12pt for ATS */
         color: #000000;
+      }
+      
+      /* A4 Page Simulation for Web Preview */
+      @media screen {
+        /* Ensure proper height calculation for multi-page preview */
+        .cv-container {
+          min-height: auto !important; /* Override min-height for proper pagination */
+        }
+        
+        /* Languages section positioning for page 2 */
+        .languages {
+          margin-top: 50px; /* Extra spacing to push to new page */
+          padding-top: 40px;
+        }
+        
+        /* References section positioning */
+        .references {
+          margin-top: 50px; /* Extra spacing to ensure new page */
+          padding-top: 40px;
+        }
+      }
+      
+      /* Page height markers for preview calculation */
+      .cv-preview-container {
+        position: relative;
       }
       
       /* Page Break Rules for Print */
@@ -1141,6 +1191,31 @@ export class IrishCVTemplateManager {
         padding: 25.4mm; /* 1 inch margins for ATS */
         box-sizing: border-box;
         min-height: 297mm; /* A4 height */
+        position: relative;
+      }
+      
+      /* A4 Page Simulation for Web Preview */
+      @media screen {
+        /* Ensure proper height calculation for multi-page preview */
+        .cv-container {
+          min-height: auto !important; /* Override min-height for proper pagination */
+        }
+        
+        /* Languages section positioning for page 2 */
+        .languages {
+          margin-top: 50px; /* Extra spacing to push to new page */
+          padding-top: 40px;
+        }
+        
+        /* References section positioning */
+        .references {
+          margin-top: 50px; /* Extra spacing to ensure new page */
+          padding-top: 40px;
+        }
+      }
+      
+      /* Page height markers for preview calculation */
+      .cv-preview-container {
         position: relative;
       }
       
@@ -1740,6 +1815,31 @@ export class IrishCVTemplateManager {
         line-height: 1.5;
         background: #ffffff;
         color: #111827;
+      }
+      
+      /* A4 Page Simulation for Web Preview */
+      @media screen {
+        /* Ensure proper height calculation for multi-page preview */
+        .cv-container {
+          min-height: auto !important; /* Override min-height for proper pagination */
+        }
+        
+        /* Languages section positioning for page 2 */
+        .languages {
+          margin-top: 50px; /* Extra spacing to push to new page */
+          padding-top: 40px;
+        }
+        
+        /* References section positioning */
+        .references {
+          margin-top: 50px; /* Extra spacing to ensure new page */
+          padding-top: 40px;
+        }
+      }
+      
+      /* Page height markers for preview calculation */
+      .cv-preview-container {
+        position: relative;
       }
       
       /* Page Break Rules for Print */

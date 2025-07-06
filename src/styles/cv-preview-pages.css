@@ -1,0 +1,107 @@
+/* CV Preview Multi-Page Styles */
+
+/* Page break simulation for web preview */
+.cv-preview-container {
+  position: relative;
+  background: white;
+}
+
+/* Multi-page container */
+.cv-preview-pages {
+  position: relative;
+}
+
+/* Individual page styling */
+.cv-preview-page {
+  position: relative;
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  min-height: 1123px; /* A4 height at 96 DPI */
+  max-height: 1123px;
+}
+
+/* Page content wrapper */
+.cv-preview-page-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+/* Page number badge */
+.cv-preview-page-number {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+/* Page break indicator */
+.cv-page-break-indicator {
+  position: relative;
+  height: 2rem;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cv-page-break-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #e5e7eb,
+    #e5e7eb 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+.cv-page-break-text {
+  background: #f9fafb;
+  padding: 0 1rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 1;
+  position: relative;
+}
+
+/* Force languages and references to new page in preview */
+@media screen {
+  .languages,
+  .references {
+    position: relative;
+    /* Add visual separator before these sections */
+    &::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #ef4444 20%,
+        #ef4444 80%,
+        transparent
+      );
+      opacity: 0.5;
+    }
+  }
+}
