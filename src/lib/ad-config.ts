@@ -26,6 +26,8 @@ const getAdSenseClient = () => process.env.NEXT_PUBLIC_ADSENSE_CLIENT
 // Bu fonksiyon artık sadece fallback için kullanılacak
 const getAdSenseSlot = (type: string) => {
   switch (type) {
+    case 'header':
+      return process.env.NEXT_PUBLIC_ADSENSE_HEADER_SLOT
     case 'sidebar':
       return process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT
     case 'inline':
@@ -80,7 +82,7 @@ export const defaultAdConfigs: AdConfig[] = [
       size: 'large',
       delay: 2000,
       adSenseClient: getAdSenseClient() || 'ca-pub-1742989559393752',
-      adSenseSlot: '1006957692',
+      adSenseSlot: getAdSenseSlot('header') || '1006957692',
       platform: 'adsense'
     }
   },
