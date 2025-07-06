@@ -20,8 +20,6 @@ import { useCVStore } from '@/store/cv-store'
 import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
-import { PageLimitWarning } from '@/components/ui/page-limit-warning'
-import { useCVPageCount } from '@/hooks/use-cv-page-count'
 
 interface Step {
   id: string
@@ -126,8 +124,6 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   
   const router = useRouter()
   
-  // Get estimated page count
-  const estimatedPageCount = useCVPageCount(templateId)
   
   // Filter steps based on section visibility
   const visibleSteps = useMemo(() => {
@@ -351,12 +347,6 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                   </div>
                 </div>
 
-                {/* Page Limit Warning */}
-                <PageLimitWarning 
-                  currentPageCount={estimatedPageCount}
-                  maxPages={2}
-                  showOptimizationTips={true}
-                />
 
                 {/* Desktop Step Header */}
                 <div className="hidden lg:block mb-8">
@@ -371,12 +361,6 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                   <p className="text-gray-600">{visibleSteps[currentStep]?.description}</p>
                 </div>
 
-                {/* Page Limit Warning - Desktop */}
-                <PageLimitWarning 
-                  currentPageCount={estimatedPageCount}
-                  maxPages={2}
-                  showOptimizationTips={true}
-                />
                 
                 {/* Error Messages */}
                 {validationErrors.length > 0 && (
