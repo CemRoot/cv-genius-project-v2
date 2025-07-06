@@ -12,12 +12,15 @@ interface ClassicTemplateProps {
 export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplateProps) {
   console.log('🚀 Classic Template rendered')
   const data = cv || cvData
+  console.log('📊 Full CV data in template:', data)
+  console.log('👤 Personal data:', data?.personal)
+  console.log('🌍 Nationality value:', data?.personal?.nationality)
   if (!data) {
     return <div className="p-8 text-center">Loading...</div>
   }
   
   const { 
-    personal = { fullName: '', email: '', phone: '', address: '', nationality: '' }, 
+    personal, 
     experience = [], 
     education = [], 
     skills = [], 
@@ -29,6 +32,11 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
     designSettings, 
     sections = [] 
   } = data
+
+  // Ensure personal data exists with defaults
+  const personalInfo = personal || { fullName: '', email: '', phone: '', address: '', nationality: '' }
+  
+  console.log('🌍 Nationality prop in template:', personalInfo?.nationality)
 
   // Helper function to check if a section is visible
   const isSectionVisible = (sectionType: string) => {
@@ -89,58 +97,58 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       {/* Header */}
       <header className="text-center mb-8">
         <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-bold uppercase mb-2 text-black`}>
-          {personal.fullName || "YOUR NAME"}
+          {personalInfo.fullName || "YOUR NAME"}
         </h1>
         <p className={`${isMobile ? 'text-lg' : 'text-xl'} mb-4 text-gray-600`}>
-          {personal.title || "Python Developer"}
+          {personalInfo.title || "Python Developer"}
         </p>
         <div className="flex justify-center items-center flex-wrap gap-4 text-sm">
-          {personal.phone && (
+          {personalInfo.phone && (
             <span className="flex items-center gap-1">
               <Phone className="w-3 h-3" />
-              {formatIrishPhone(personal.phone)}
+              {formatIrishPhone(personalInfo.phone)}
             </span>
           )}
-          {personal.email && (
+          {personalInfo.email && (
             <span className="flex items-center gap-1">
               <Mail className="w-3 h-3" />
-              {personal.email}
+              {personalInfo.email}
             </span>
           )}
-          {personal.address && (
+          {personalInfo.address && (
             <span className="flex items-center gap-1">
               <MapPin className="w-3 h-3" />
-              {personal.address}
+              {personalInfo.address}
             </span>
           )}
-          {personal.linkedin && (
+          {personalInfo.linkedin && (
             <span className="flex items-center gap-1">
               <Linkedin className="w-3 h-3" />
               LinkedIn Profile
             </span>
           )}
-          {personal.website && (
+          {personalInfo.website && (
             <span className="flex items-center gap-1">
               <span className="text-xs">🌐</span>
-              {personal.website.replace('https://', '').replace('http://', '')}
+              {personalInfo.website.replace('https://', '').replace('http://', '')}
             </span>
           )}
-          {personal.nationality && (
+          {personalInfo.nationality && (
             <span className="flex items-center gap-1 text-green-700 font-medium">
-              {personal.nationality}
+              {personalInfo.nationality}
             </span>
           )}
         </div>
       </header>
 
       {/* Summary */}
-      {personal.summary && isSectionVisible('summary') && (
+      {personalInfo.summary && isSectionVisible('summary') && (
         <section className="mb-6">
           <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
             Summary
           </h2>
           <p className="text-justify leading-relaxed">
-            {personal.summary}
+            {personalInfo.summary}
           </p>
         </section>
       )}

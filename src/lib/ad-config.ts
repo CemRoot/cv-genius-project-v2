@@ -22,6 +22,8 @@ export interface AdConfig {
 
 // Get ad configuration from environment variables
 const getAdSenseClient = () => process.env.NEXT_PUBLIC_ADSENSE_CLIENT
+
+// Bu fonksiyon artık sadece fallback için kullanılacak
 const getAdSenseSlot = (type: string) => {
   switch (type) {
     case 'sidebar':

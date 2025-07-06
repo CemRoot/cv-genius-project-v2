@@ -50,6 +50,7 @@ import { useToast, createToastUtils } from '@/components/ui/toast'
 import { SecurityHeader } from '@/components/admin/security-header'
 import { MaintenanceToggleManagement } from '@/components/admin/maintenance-toggle-management'
 import AdsManagement from '@/components/admin/ads-management'
+import AdSenseConfiguration from '@/components/admin/adsense-config'
 
 // Types
 interface AdminStats {
@@ -547,7 +548,20 @@ export default function AdminPanel() {
             {activeSection === 'security' && <SecuritySection />}
             {activeSection === 'users' && <UsersSection />}
             {activeSection === 'content' && <ContentSection prompts={prompts} setPrompts={setPrompts} />}
-            {activeSection === 'ads' && <AdsManagement />}
+            {activeSection === 'ads' && (
+              <Tabs defaultValue="management" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="management">Ad Management</TabsTrigger>
+                  <TabsTrigger value="adsense">AdSense Config</TabsTrigger>
+                </TabsList>
+                <TabsContent value="management">
+                  <AdsManagement />
+                </TabsContent>
+                <TabsContent value="adsense">
+                  <AdSenseConfiguration />
+                </TabsContent>
+              </Tabs>
+            )}
             {activeSection === 'system' && <SystemSection systemHealth={systemHealth} />}
             {activeSection === 'settings' && <SettingsSection />}
           </div>

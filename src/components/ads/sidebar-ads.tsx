@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAdConfig } from './dynamic-ad-manager'
+import { useAdSenseConfig } from '@/hooks/use-adsense-config'
 
 interface SidebarAdsProps {
   className?: string
@@ -10,6 +11,7 @@ interface SidebarAdsProps {
 export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const [adLoaded, setAdLoaded] = useState(false)
   const [showPlaceholder, setShowPlaceholder] = useState(false)
+  const { slots: adSenseSlots } = useAdSenseConfig()
   
   let getAdsByType, adminSettings
   try {
@@ -75,7 +77,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
 
     adConfig = sidebarAds[0]
     adClient = adConfig.settings?.adSenseClient || 'ca-pub-1742989559393752'
-    adSlot = adConfig.settings?.adSenseSlot || '1234567890'
+    adSlot = adSenseSlots.sidebarSlot || adConfig.settings?.adSenseSlot || '1234567890'
   } catch (error) {
     return null
   }

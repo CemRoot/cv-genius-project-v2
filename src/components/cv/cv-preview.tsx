@@ -2,6 +2,7 @@
 
 import { useCVStore } from "@/store/cv-store"
 import { HarvardTemplate } from "@/components/cv/templates/harvard-template"
+import { ClassicTemplate } from "@/components/cv/templates/classic-template"
 import { DublinTechTemplate } from "@/components/cv/templates/dublin-tech-template"
 import { IrishFinanceTemplate } from "@/components/cv/templates/irish-finance-template"
 import { DublinPharmaTemplate } from "@/components/cv/templates/dublin-pharma-template"
@@ -11,13 +12,17 @@ import { useState, useRef, useCallback } from "react"
 import { TouchGestureWrapper } from "@/components/mobile"
 import { ZoomIn, ZoomOut, Maximize2, Share, Copy, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PageBreakIndicator, PageStatus, FloatingPageIndicator } from "@/components/ui/page-break-indicator"
 
 interface CVPreviewProps {
   isMobile?: boolean
 }
 
 export function CVPreview({ isMobile = false }: CVPreviewProps) {
-  const { currentCV } = useCVStore()
+  const currentCV = useCVStore((state) => state.currentCV)
+  console.log('🔍 CVPreview - currentCV:', currentCV)
+  console.log('🔍 CVPreview - personal data:', currentCV?.personal)
+  console.log('🔍 CVPreview - nationality:', currentCV?.personal?.nationality)
   const { pageCount, currentPage, containerRef, contentRef } = usePageDetection()
   const [zoom, setZoom] = useState(isMobile ? 100 : 100) // Start at full size on mobile
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
@@ -132,6 +137,8 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
     switch (currentCV.template) {
       case 'harvard':
         return <HarvardTemplate cv={currentCV} isMobile={isMobile} />
+      case 'classic':
+        return <ClassicTemplate cv={currentCV} isMobile={isMobile} />
       case 'dublin':
       case 'dublin-tech':
         return <DublinTechTemplate cv={currentCV} isMobile={isMobile} />
@@ -178,6 +185,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
   const getTemplateName = () => {
     switch (currentCV.template) {
       case 'harvard': return 'Harvard Classic'
+      case 'classic': return 'Classic'
       case 'dublin':
       case 'dublin-tech': return 'Dublin Tech Professional'
       case 'irish-finance': return 'Irish Finance Expert'
@@ -201,7 +209,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
     <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
       {/* Header - Enhanced for Mobile */}
       <div className={`${isMobile ? 'mb-4' : 'mb-4'} flex items-center justify-between`}>
-        <div>
+        <div className="flex-1">
           <h2 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold text-gray-900`}>
             {isMobile ? 'CV Preview' : 'CV Preview'}
           </h2>
@@ -211,8 +219,16 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
             </p>
           )}
         </div>
+        
+        {/* Page Status */}
+        <PageStatus 
+          currentPage={currentPage} 
+          totalPages={pageCount} 
+          showWarning={!isMobile}
+        />
+        
         {!isMobile && (
-          <div className="text-sm text-muted-foreground flex items-center gap-4">
+          <div className="text-sm text-muted-foreground flex items-center gap-4 ml-4">
             <span>Template: {getTemplateName()}</span>
             <span>Zoom: {zoom}%</span>
           </div>
@@ -349,6 +365,16 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
                         </div>
                       )}
                       
+                      {/* Page break indicator for mobile */}
+                      {pageIndex < pageCount - 1 && (
+                        <PageBreakIndicator 
+                          pageNumber={pageIndex + 1} 
+                          className="absolute bottom-0 left-0 right-0 z-20"
+                          variant="line"
+                          isVisible={true}
+                        />
+                      )}
+                      
                       {/* Render template content */}
                       <div className="absolute inset-0 overflow-hidden">
                         <div 
@@ -400,9 +426,16 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
                       </div>
                     )}
                     
-                    {/* Page separator line for visual clarity */}
+                    {/* Page separator with break indicator */}
                     {pageIndex < pageCount - 1 && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-400 to-transparent opacity-50" />
+                      <>
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-400 to-transparent opacity-50" />
+                        <PageBreakIndicator 
+                          pageNumber={pageIndex + 1} 
+                          className="absolute bottom-0 left-0 right-0"
+                          variant="both"
+                        />
+                      </>
                     )}
                     
                     {/* CV content clipped to page */}
@@ -468,6 +501,15 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Floating page indicator for mobile */}
+      {isMobile && pageCount > 1 && (
+        <FloatingPageIndicator 
+          currentPage={currentPage} 
+          totalPages={pageCount}
+          position="bottom-right"
+        />
       )}
     </div>
   )

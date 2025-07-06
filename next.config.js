@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 🚀 DEV SERVER OPTIMIZATIONS - Prevent hanging on startup
+  onDemandEntries: {
+    // Keep pages in buffer longer to reduce recompilation
+    maxInactiveAge: 15 * 60 * 1000, // 15 minutes
+    pagesBufferLength: 6, // Keep more pages in memory
+  },
+
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
@@ -13,6 +20,15 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'framer-motion'],
+    // Turbo optimizations for dev
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
   
   // Performance optimizations
@@ -35,6 +51,20 @@ const nextConfig = {
   },
   // Webpack configuration to handle Node.js modules
   webpack: (config, { isServer }) => {
+    // 🔧 DEV MODE OPTIMIZATIONS
+    if (process.env.NODE_ENV === 'development') {
+      // Disable source maps in dev to speed up compilation
+      config.devtool = false;
+      
+      // Reduce memory usage
+      config.optimization = {
+        ...config.optimization,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      };
+    }
+
     if (!isServer) {
       // Don't resolve 'fs' and 'zlib' modules on the client side
       config.resolve.fallback = {

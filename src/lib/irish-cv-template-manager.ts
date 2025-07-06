@@ -332,6 +332,7 @@ export class IrishCVTemplateManager {
             <p><i class="icon-email"></i> ${data.personal.email}</p>
             <p><i class="icon-phone"></i> ${data.personal.phone}</p>
             <p><i class="icon-location"></i> ${data.personal.address}</p>
+            ${data.personal.nationality ? `<p><i class="icon-visa"></i> ${data.personal.nationality}</p>` : ''}
             ${data.personal.github ? `<p><i class="icon-github"></i> ${data.personal.github}</p>` : ''}
             ${data.personal.portfolio ? `<p><i class="icon-web"></i> ${data.personal.portfolio}</p>` : ''}
           </div>
@@ -374,10 +375,9 @@ export class IrishCVTemplateManager {
             ${data.experience.map(exp => `
               <div class="experience-item">
                 <div class="exp-header">
-                  <h3>${exp.position}</h3>
-                  <span class="date">${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
+                  <h3>${exp.position} at ${exp.company}</h3>
+                  <span class="date">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
                 </div>
-                <div class="exp-company">${exp.company} | ${exp.location}</div>
                 <p class="exp-description">${exp.description}</p>
                 ${exp.achievements.length > 0 ? `
                   <ul class="achievements">
@@ -463,6 +463,7 @@ export class IrishCVTemplateManager {
             <span>${data.personal.email}</span> | 
             <span>${data.personal.phone}</span> | 
             <span>${data.personal.address}</span>
+            ${data.personal.nationality ? ` | <span>${data.personal.nationality}</span>` : ''}
             ${data.personal.linkedin ? ` | <span>${data.personal.linkedin}</span>` : ''}
           </div>
         </header>
@@ -486,10 +487,9 @@ export class IrishCVTemplateManager {
           ${data.experience.map(exp => `
             <div class="experience-item">
               <div class="exp-header">
-                <strong>${exp.position}</strong>
-                <span class="date">${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
+                <strong>${exp.position} at ${exp.company}</strong>
+                <span class="date">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
               </div>
-              <div class="exp-company">${exp.company}, ${exp.location}</div>
               <p class="exp-description">${exp.description}</p>
               ${exp.achievements.length > 0 ? `
                 <ul class="achievements">
@@ -555,6 +555,7 @@ export class IrishCVTemplateManager {
              ${data.personal.email ? `<span>${data.personal.email}</span>` : ''}
              ${data.personal.phone ? `<span>${data.personal.phone}</span>` : ''}
              ${data.personal.address ? `<span>${data.personal.address}</span>` : ''}
+             ${data.personal.nationality ? `<span class="nationality">${data.personal.nationality}</span>` : ''}
              ${data.personal.website ? `<span>${data.personal.website}</span>` : ''}
              ${data.personal.linkedin ? `<span>${data.personal.linkedin}</span>` : ''}
            </div>
@@ -571,36 +572,42 @@ export class IrishCVTemplateManager {
     return `
       .cv-container.dublin-tech {
         display: flex;
-        font-family: 'Inter', sans-serif;
+        font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */
         max-width: 210mm;
         min-height: 297mm;
         margin: 0 auto;
         background: white;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-size: 11pt; /* Base font size for ATS */
+        color: #000000; /* Pure black text */
       }
       
       .cv-sidebar {
         width: 35%;
-        background: #2563eb;
-        color: white;
+        background: #f8f9fa; /* Light gray instead of blue for ATS */
+        color: #000000; /* Black text for ATS */
         padding: 2rem;
+        border-right: 2px solid #000000;
       }
       
       .cv-sidebar h1, .cv-sidebar h2 {
-        color: white;
+        color: #000000; /* Black for ATS */
         margin-bottom: 1rem;
+        font-weight: bold;
       }
       
       .cv-sidebar .name {
-        font-size: 1.8rem;
+        font-size: 18pt; /* 18pt for name */
         font-weight: 700;
         margin-bottom: 0.5rem;
+        color: #000000;
       }
       
       .cv-sidebar .title {
-        font-size: 1.1rem;
-        opacity: 0.9;
+        font-size: 14pt; /* 14pt for title */
+        font-weight: 600;
         margin-bottom: 2rem;
+        color: #000000;
       }
       
       .sidebar-section {
@@ -608,15 +615,19 @@ export class IrishCVTemplateManager {
       }
       
       .sidebar-section h2 {
-        font-size: 1.2rem;
-        border-bottom: 2px solid rgba(255,255,255,0.3);
+        font-size: 14pt; /* 14pt section headers */
+        border-bottom: 2px solid #000000;
         padding-bottom: 0.5rem;
         margin-bottom: 1rem;
+        font-weight: bold;
+        text-transform: uppercase;
       }
       
       .contact p {
         margin: 0.5rem 0;
-        font-size: 0.9rem;
+        font-size: 11pt; /* 11pt for ATS */
+        color: #000000;
+        font-weight: 500;
       }
       
       .skill-item {
@@ -625,20 +636,23 @@ export class IrishCVTemplateManager {
       
       .skill-name {
         display: block;
-        font-size: 0.9rem;
+        font-size: 11pt; /* 11pt for ATS */
         margin-bottom: 0.3rem;
+        color: #000000;
+        font-weight: 600;
       }
       
       .skill-bar {
-        height: 4px;
-        background: rgba(255,255,255,0.3);
+        height: 6px;
+        background: #e5e7eb;
         border-radius: 2px;
         overflow: hidden;
+        border: 1px solid #000000;
       }
       
       .skill-progress {
         height: 100%;
-        background: white;
+        background: #000000; /* Black for ATS */
         border-radius: 2px;
       }
       
@@ -646,7 +660,9 @@ export class IrishCVTemplateManager {
         display: flex;
         justify-content: space-between;
         margin-bottom: 0.5rem;
-        font-size: 0.9rem;
+        font-size: 11pt; /* 11pt for ATS */
+        color: #000000;
+        font-weight: 500;
       }
       
       .cv-main {
@@ -655,11 +671,13 @@ export class IrishCVTemplateManager {
       }
       
       .cv-main h2 {
-        color: #2563eb;
-        font-size: 1.4rem;
+        color: #000000; /* Black for ATS */
+        font-size: 14pt; /* 14pt section headers */
         margin-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 2px solid #000000;
         padding-bottom: 0.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
       }
       
       .cv-main section {
@@ -673,25 +691,29 @@ export class IrishCVTemplateManager {
       .exp-header, .edu-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: baseline;
         margin-bottom: 0.5rem;
       }
       
       .exp-header h3, .edu-header h3 {
-        font-size: 1.1rem;
-        color: #111827;
+        font-size: 12pt; /* 12pt for titles */
+        color: #000000;
         margin: 0;
+        font-weight: bold;
       }
       
       .date {
-        font-size: 0.9rem;
-        color: #6b7280;
+        font-size: 11pt;
+        color: #000000; /* Black for ATS */
+        font-weight: 500;
+        white-space: nowrap;
       }
       
       .exp-company, .edu-institution {
-        color: #6b7280;
-        font-size: 0.95rem;
+        color: #000000; /* Black for ATS */
+        font-size: 11pt;
         margin-bottom: 0.5rem;
+        font-weight: 500;
       }
       
       .achievements {
@@ -701,7 +723,9 @@ export class IrishCVTemplateManager {
       
       .achievements li {
         margin-bottom: 0.3rem;
-        font-size: 0.95rem;
+        font-size: 12pt; /* 12pt for ATS */
+        color: #000000;
+        font-weight: 400;
       }
       
       .tech-stack {
@@ -710,13 +734,15 @@ export class IrishCVTemplateManager {
       
       .tech-tag {
         display: inline-block;
-        background: #e5e7eb;
-        color: #374151;
+        background: #f8f9fa; /* Light gray for ATS */
+        color: #000000;
         padding: 0.2rem 0.6rem;
         border-radius: 0.25rem;
-        font-size: 0.85rem;
+        font-size: 11pt;
         margin-right: 0.5rem;
         margin-bottom: 0.5rem;
+        font-weight: 500;
+        border: 1px solid #000000;
       }
       
       @media print {
@@ -730,52 +756,63 @@ export class IrishCVTemplateManager {
   private getIrishFinanceCSS(): string {
     return `
       .cv-container.irish-finance {
-        font-family: 'Georgia', serif;
+        font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */
         max-width: 210mm;
         min-height: 297mm;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 25.4mm; /* 1 inch margins */
         background: white;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        line-height: 1.6;
+        line-height: 1.5;
+        font-size: 12pt; /* Base 12pt for ATS */
+        color: #000000;
       }
       
       .cv-header {
         text-align: center;
         margin-bottom: 2rem;
-        border-bottom: 3px solid #166534;
+        border-bottom: 3px solid #000000; /* Black for ATS */
         padding-bottom: 1rem;
       }
       
       .cv-header .name {
-        font-size: 2rem;
-        color: #166534;
+        font-size: 20pt; /* 20pt for name */
+        color: #000000; /* Black for ATS */
         margin-bottom: 0.5rem;
+        font-weight: bold;
       }
       
       .cv-header .title {
-        font-size: 1.2rem;
-        color: #374151;
+        font-size: 14pt; /* 14pt for title */
+        color: #000000;
         margin-bottom: 0.5rem;
+        font-weight: 600;
       }
       
       .contact-info {
-        font-size: 0.95rem;
-        color: #6b7280;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 500;
       }
       
       .irish-finance h2 {
-        color: #166534;
-        font-size: 1.3rem;
+        color: #000000; /* Black for ATS */
+        font-size: 14pt; /* 14pt section headers */
         margin-top: 1.5rem;
         margin-bottom: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        font-weight: bold;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 0.5rem;
       }
       
       .professional-profile p {
-        text-align: justify;
-        color: #374151;
+        text-align: left; /* Left align for ATS */
+        color: #000000;
+        font-size: 12pt;
+        font-weight: 400;
+        line-height: 1.5;
       }
       
       .competencies-grid {
@@ -786,11 +823,13 @@ export class IrishCVTemplateManager {
       
       .competency {
         padding: 0.3rem 0.6rem;
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
+        background: #ffffff; /* White for ATS */
+        border: 1px solid #000000;
         border-radius: 0.25rem;
-        font-size: 0.9rem;
+        font-size: 11pt; /* 11pt for ATS */
         text-align: center;
+        color: #000000;
+        font-weight: 500;
       }
       
       .experience-item {
@@ -800,13 +839,22 @@ export class IrishCVTemplateManager {
       .exp-header {
         display: flex;
         justify-content: space-between;
+        align-items: baseline;
         margin-bottom: 0.3rem;
       }
       
-      .exp-company {
-        font-style: italic;
+      .exp-header .date {
+        font-size: 0.875rem;
         color: #6b7280;
+        font-style: italic;
+        white-space: nowrap;
+      }
+      
+      .exp-company {
+        font-weight: 500; /* Medium weight instead of italic */
+        color: #000000;
         margin-bottom: 0.5rem;
+        font-size: 11pt;
       }
       
       .achievements {
@@ -816,6 +864,9 @@ export class IrishCVTemplateManager {
       
       .achievements li {
         margin-bottom: 0.3rem;
+        font-size: 12pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       .education-item {
@@ -827,22 +878,27 @@ export class IrishCVTemplateManager {
       }
       
       .certifications h3 {
-        font-size: 1.1rem;
-        color: #374151;
+        font-size: 12pt; /* 12pt for ATS */
+        color: #000000;
         margin-bottom: 0.5rem;
+        font-weight: bold;
       }
       
       .cert-item {
         margin-bottom: 0.5rem;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       .cv-footer {
         margin-top: 2rem;
         padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid #000000;
         text-align: center;
-        font-size: 0.9rem;
-        color: #6b7280;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       @media print {
@@ -856,17 +912,17 @@ export class IrishCVTemplateManager {
   
   private getClassicCSS(): string {
     return `
-      /* Classic Template Styles */
+      /* Classic Template Styles - ATS Optimized */
       .cv-container.classic {
-        font-family: 'Times New Roman', Times, serif;
+        font-family: Arial, Calibri, Helvetica, sans-serif;
         max-width: 210mm; /* A4 width */
         width: 100%;
         margin: 0 auto;
         background: white;
-        color: #000;
-        line-height: 1.4;
-        font-size: 12px;
-        padding: 20mm; /* A4 margins */
+        color: #000000; /* Pure black for ATS */
+        line-height: 1.5; /* Better readability */
+        font-size: 12pt; /* 12pt for ATS compliance */
+        padding: 25.4mm; /* 1 inch margins for ATS */
         box-sizing: border-box;
         min-height: 297mm; /* A4 height */
         position: relative;
@@ -890,26 +946,26 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .name {
-        font-size: 28px;
+        font-size: 20pt; /* 20pt for name */
         font-weight: bold;
         margin: 0 0 8px 0;
-        color: #000;
+        color: #000000;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
       }
       
       .cv-container.classic .title {
-        font-size: 16px;
-        color: #333;
+        font-size: 14pt; /* 14pt for title */
+        color: #000000; /* Black instead of gray */
         margin: 0 0 15px 0;
-        font-style: italic;
-        font-weight: normal;
+        font-weight: 600; /* Semi-bold instead of italic */
       }
       
       .cv-container.classic .contact-info {
-        font-size: 12px;
-        color: #333;
-        line-height: 1.3;
+        font-size: 11pt; /* 11pt for ATS */
+        color: #000000; /* Pure black for ATS */
+        line-height: 1.5;
+        font-weight: 500; /* Medium weight for better scanning */
       }
       
       .cv-container.classic .contact-info span {
@@ -926,29 +982,28 @@ export class IrishCVTemplateManager {
       
       /* Section Headers */
       .cv-container.classic h2 {
-        font-size: 16px;
+        font-size: 14pt; /* 14pt for section headers */
         font-weight: bold;
         text-transform: uppercase;
-        color: #000;
+        color: #000000;
         margin: 25px 0 12px 0;
         padding-bottom: 5px;
-        border-bottom: 1px solid #000;
+        border-bottom: 2px solid #000000; /* Thicker for better visibility */
         letter-spacing: 0.5px;
       }
       
       /* Summary */
       .cv-container.classic .summary {
         margin-bottom: 25px;
-        text-align: center;
       }
       
       .cv-container.classic .summary p {
-        font-size: 12px;
-        line-height: 1.6;
-        text-align: justify;
-        color: #000;
+        font-size: 12pt; /* 12pt for ATS */
+        line-height: 1.5;
+        text-align: left; /* Left align for ATS */
+        color: #000000;
         margin: 0;
-        max-width: none;
+        font-weight: 400;
       }
       
       /* Skills */
@@ -964,19 +1019,20 @@ export class IrishCVTemplateManager {
         display: flex;
         margin-bottom: 8px;
         line-height: 1.5;
-        font-size: 12px;
+        font-size: 12pt; /* 12pt for ATS */
       }
       
       .cv-container.classic .skill-category strong {
         font-weight: bold;
         min-width: 140px;
         flex-shrink: 0;
-        color: #000;
+        color: #000000;
       }
       
       .cv-container.classic .skill-category span {
         flex: 1;
-        color: #000;
+        color: #000000;
+        font-weight: 400;
       }
       
       /* Experience */
@@ -1001,16 +1057,23 @@ export class IrishCVTemplateManager {
       
       .cv-container.classic .exp-right {
         text-align: right;
-        min-width: 120px;
+        min-width: 200px;
         font-size: 12px;
         color: #000;
       }
       
+      .cv-container.classic .exp-meta {
+        font-size: 11pt;
+        color: #000000; /* Black for ATS */
+        margin: 0;
+        font-weight: 500; /* Medium weight instead of italic */
+      }
+      
       .cv-container.classic .exp-header h3 {
-        font-size: 14px;
+        font-size: 12pt; /* 12pt for job titles */
         font-weight: bold;
         margin: 0 0 2px 0;
-        color: #000;
+        color: #000000;
       }
       
       .cv-container.classic .company {
@@ -1035,9 +1098,10 @@ export class IrishCVTemplateManager {
       
       .cv-container.classic .exp-description {
         margin: 8px 0 0 0;
-        font-size: 12px;
-        color: #000;
+        font-size: 12pt; /* 12pt for ATS */
+        color: #000000;
         line-height: 1.5;
+        font-weight: 400;
       }
       
       /* Achievements */
@@ -1050,8 +1114,9 @@ export class IrishCVTemplateManager {
       .cv-container.classic .achievements li {
         margin-bottom: 4px;
         line-height: 1.5;
-        font-size: 12px;
-        color: #000;
+        font-size: 12pt; /* 12pt for ATS */
+        color: #000000;
+        font-weight: 400;
       }
       
       /* Education */
@@ -1081,22 +1146,24 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .edu-header h3 {
-        font-size: 14px;
+        font-size: 12pt; /* 12pt for ATS */
         font-weight: bold;
         margin: 0;
-        color: #000;
+        color: #000000;
       }
       
       .cv-container.classic .institution {
-        font-size: 12px;
+        font-size: 12pt;
         margin: 2px 0;
-        color: #000;
+        color: #000000;
+        font-weight: 500;
       }
       
       .cv-container.classic .grade {
         margin: 3px 0 0 0;
-        font-size: 12px;
-        color: #000;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       .cv-container.classic .projects {
@@ -1108,16 +1175,18 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .project-item h3 {
-        font-size: 14px;
+        font-size: 12pt; /* 12pt for ATS */
         font-weight: bold;
         margin: 0 0 5px 0;
-        color: #000;
+        color: #000000;
       }
       
       .cv-container.classic .project-description {
-        font-size: 13px;
+        font-size: 12pt;
         margin-bottom: 5px;
         line-height: 1.5;
+        color: #000000;
+        font-weight: 400;
       }
       
       .cv-container.classic .project-tech {
@@ -1145,26 +1214,29 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .cert-header h3 {
-        font-size: 14px;
+        font-size: 12pt; /* 12pt for ATS */
         font-weight: bold;
         margin: 0;
-        color: #000;
+        color: #000000;
       }
       
       .cv-container.classic .cert-date {
-        font-size: 12px;
-        color: #333;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 500;
       }
       
       .cv-container.classic .cert-issuer {
-        font-size: 13px;
+        font-size: 12pt;
         margin: 2px 0;
+        color: #000000;
+        font-weight: 400;
       }
       
       .cv-container.classic .cert-id {
-        font-size: 12px;
-        color: #333;
-        font-style: italic;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       .cv-container.classic .languages {
@@ -1180,17 +1252,20 @@ export class IrishCVTemplateManager {
       .cv-container.classic .language-item {
         display: flex;
         justify-content: space-between;
-        font-size: 13px;
+        font-size: 12pt; /* 12pt for ATS */
         padding: 5px 0;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid #000000;
+        color: #000000;
       }
       
       .cv-container.classic .lang-name {
         font-weight: 600;
+        color: #000000;
       }
       
       .cv-container.classic .lang-level {
-        font-weight: normal;
+        font-weight: 500;
+        color: #000000;
       }
       
       .cv-container.classic .interests {
@@ -1198,8 +1273,10 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .interests p {
-        font-size: 13px;
+        font-size: 12pt; /* 12pt for ATS */
         line-height: 1.5;
+        color: #000000;
+        font-weight: 400;
       }
       
       .cv-container.classic .references {
@@ -1209,25 +1286,29 @@ export class IrishCVTemplateManager {
       .cv-container.classic .reference-item {
         margin-bottom: 15px;
         padding: 10px;
-        background: #f5f5f5;
-        border: 1px solid #ccc;
+        background: #ffffff; /* White background for ATS */
+        border: 1px solid #000000;
       }
       
       .cv-container.classic .reference-item h3 {
-        font-size: 14px;
+        font-size: 12pt; /* 12pt for ATS */
         font-weight: bold;
         margin: 0 0 5px 0;
-        color: #000;
+        color: #000000;
       }
       
       .cv-container.classic .ref-position {
-        font-size: 13px;
+        font-size: 11pt;
         margin: 2px 0;
+        color: #000000;
+        font-weight: 500;
       }
       
       .cv-container.classic .ref-contact {
-        font-size: 12px;
+        font-size: 11pt;
         margin: 2px 0;
+        color: #000000;
+        font-weight: 400;
       }
       
       @media print {
@@ -1262,6 +1343,7 @@ export class IrishCVTemplateManager {
             <span>${data.personal.email}</span>
             <span>${data.personal.phone}</span>
             <span>${data.personal.address}</span>
+            ${data.personal.nationality ? `<span>${data.personal.nationality}</span>` : ''}
           </div>
         </header>
         
@@ -1277,10 +1359,9 @@ export class IrishCVTemplateManager {
           ${data.experience.map(exp => `
             <div class="experience-item">
               <div class="exp-header">
-                <h3>${exp.position}</h3>
-                <span class="date">${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
+                <h3>${exp.position} at ${exp.company}</h3>
+                <span class="date">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
               </div>
-              <div class="exp-company">${exp.company} | ${exp.location}</div>
               <p class="exp-description">${exp.description}</p>
               ${exp.achievements.length > 0 ? `
                 <ul class="achievements">
@@ -1336,12 +1417,15 @@ export class IrishCVTemplateManager {
   
   private getDublinPharmaCSS(): string {
     return `
-      /* Dublin Pharma Template Styles */
+      /* Dublin Pharma Template Styles - ATS Optimized */
       .cv-container.dublin-pharma {
-        font-family: 'Roboto', 'Arial', sans-serif;
+        font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */
         max-width: 210mm;
         margin: 0 auto;
-        padding: 20mm;
+        padding: 25.4mm; /* 1 inch margins for ATS */
+        font-size: 12pt; /* Base 12pt for ATS */
+        color: #000000; /* Pure black text */
+        line-height: 1.5;
         background: #ffffff;
         color: #111827;
       }
@@ -1349,29 +1433,31 @@ export class IrishCVTemplateManager {
       .dublin-pharma .cv-header {
         text-align: center;
         padding-bottom: 1.5rem;
-        border-bottom: 2px solid #0d9488;
+        border-bottom: 2px solid #000000; /* Black for ATS */
         margin-bottom: 2rem;
       }
       
       .dublin-pharma .name {
-        font-size: 2.5rem;
+        font-size: 20pt; /* 20pt for name */
         font-weight: 700;
-        color: #0d9488;
+        color: #000000; /* Black for ATS */
         margin-bottom: 0.5rem;
       }
       
       .dublin-pharma .title {
-        font-size: 1.25rem;
-        color: #6b7280;
+        font-size: 14pt; /* 14pt for title */
+        color: #000000;
         margin-bottom: 1rem;
+        font-weight: 600;
       }
       
       .dublin-pharma .contact-info {
         display: flex;
         justify-content: center;
         gap: 1.5rem;
-        font-size: 0.875rem;
-        color: #6b7280;
+        font-size: 11pt; /* 11pt for ATS */
+        color: #000000;
+        font-weight: 500;
       }
       
       .dublin-pharma section {
@@ -1379,12 +1465,13 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #0d9488;
+        font-size: 14pt; /* 14pt section headers */
+        font-weight: bold;
+        color: #000000; /* Black for ATS */
         margin-bottom: 1rem;
         padding-bottom: 0.5rem;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 2px solid #000000;
+        text-transform: uppercase;
       }
       
       .dublin-pharma h3 {
@@ -1410,6 +1497,8 @@ export class IrishCVTemplateManager {
       .dublin-pharma .date {
         font-size: 0.875rem;
         color: #6b7280;
+        font-style: italic;
+        white-space: nowrap;
       }
       
       .dublin-pharma .exp-company,
@@ -1426,6 +1515,9 @@ export class IrishCVTemplateManager {
       
       .dublin-pharma .achievements li {
         margin-bottom: 0.25rem;
+        font-size: 12pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       .dublin-pharma .skills-grid {
@@ -1435,14 +1527,16 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .skill-category h3 {
-        font-size: 1rem;
-        color: #14b8a6;
+        font-size: 12pt;
+        color: #000000; /* Black for ATS */
         margin-bottom: 0.25rem;
+        font-weight: bold;
       }
       
       .dublin-pharma .skill-category p {
-        font-size: 0.875rem;
-        color: #4b5563;
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
       }
       
       @media print {
@@ -1501,12 +1595,10 @@ export class IrishCVTemplateManager {
           <div class="experience-item">
             <div class="exp-header">
               <div class="exp-left">
-                <h3>${exp.position}</h3>
-                <p class="company">${exp.company}</p>
+                <h3>${exp.position} at ${exp.company}</h3>
               </div>
               <div class="exp-right">
-                <p class="location">${exp.location}</p>
-                <p class="date">${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</p>
+                <p class="exp-meta">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</p>
               </div>
             </div>
             ${exp.description ? `<p class="exp-description">${exp.description}</p>` : ''}
