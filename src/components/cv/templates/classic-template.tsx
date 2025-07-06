@@ -296,6 +296,58 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
           </div>
         </section>
       )}
+
+      {/* References */}
+      {references && references.length > 0 && isSectionVisible('references') && (
+        <section className="mb-6">
+          <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
+            References
+          </h2>
+          <div className="space-y-4">
+            {references.map((ref) => (
+              <div key={ref.id} className="break-inside-avoid">
+                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-bold`}>
+                  {ref.name}
+                </h3>
+                <p className="font-medium">
+                  {ref.position} at {ref.company}
+                </p>
+                <div className="flex flex-wrap gap-4 text-sm mt-1">
+                  {ref.email && (
+                    <span className="flex items-center gap-1">
+                      <Mail className="w-3 h-3" />
+                      {ref.email}
+                    </span>
+                  )}
+                  {ref.phone && (
+                    <span className="flex items-center gap-1">
+                      <Phone className="w-3 h-3" />
+                      {formatIrishPhone(ref.phone)}
+                    </span>
+                  )}
+                </div>
+                {ref.relationship && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Relationship: {ref.relationship}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Alternative References Display */}
+      {(!references || references.length === 0) && isSectionVisible('references') && data.referencesDisplay === 'available-on-request' && (
+        <section className="mb-6">
+          <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
+            References
+          </h2>
+          <p className="text-center italic">
+            Available upon request
+          </p>
+        </section>
+      )}
     </div>
   )
 } 
