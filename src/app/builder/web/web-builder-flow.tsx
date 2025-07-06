@@ -446,10 +446,12 @@ export function WebBuilderFlow() {
                               <div 
                                 className="cv-preview-page"
                                 style={{
-                                  minHeight: '1123px', // A4 height in pixels
-                                  maxHeight: '1123px',
+                                  width: '100%',
+                                  aspectRatio: '210 / 297', // A4 aspect ratio
+                                  maxWidth: '210mm',
                                   overflow: 'hidden',
-                                  position: 'relative'
+                                  position: 'relative',
+                                  backgroundColor: 'white'
                                 }}
                               >
                                 {/* Content specific to each page - removed fixed section indicator */}
@@ -458,7 +460,8 @@ export function WebBuilderFlow() {
                                   className="cv-preview-page-content"
                                   style={{
                                     position: 'absolute',
-                                    top: `-${pageIndex * 1123}px`,
+                                    top: pageIndex === 0 ? '0' : '-100%',
+                                    transform: pageIndex > 0 ? `translateY(-${(pageIndex - 1) * 100}%)` : 'none',
                                     left: 0,
                                     right: 0
                                   }}

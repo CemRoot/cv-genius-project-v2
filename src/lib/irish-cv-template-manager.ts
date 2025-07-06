@@ -847,6 +847,14 @@ export class IrishCVTemplateManager {
         border: 1px solid #000000;
       }
       
+      .references-available {
+        text-align: center;
+        font-style: italic;
+        color: #000000;
+        font-size: 12pt;
+        margin-top: 1rem;
+      }
+      
       @media print {
         .cv-container.dublin-tech {
           box-shadow: none;
@@ -1127,6 +1135,14 @@ export class IrishCVTemplateManager {
         font-size: 11pt;
         color: #000000;
         font-weight: 400;
+      }
+      
+      .references-available {
+        text-align: center;
+        font-style: italic;
+        color: #000000;
+        font-size: 12pt;
+        margin-top: 1rem;
       }
       
       @media print {
@@ -1614,6 +1630,14 @@ export class IrishCVTemplateManager {
         font-weight: 400;
       }
       
+      .cv-container.classic .references-available {
+        text-align: center;
+        font-style: italic;
+        color: #000000;
+        font-size: 12pt;
+        margin-top: 1rem;
+      }
+      
       @media print {
         .cv-container.classic {
           box-shadow: none;
@@ -1996,6 +2020,14 @@ export class IrishCVTemplateManager {
         font-weight: 400;
       }
       
+      .dublin-pharma .references-available {
+        text-align: center;
+        font-style: italic;
+        color: #000000;
+        font-size: 12pt;
+        margin-top: 1rem;
+      }
+      
       @media print {
         .dublin-pharma {
           padding: 15mm;
@@ -2165,6 +2197,21 @@ export class IrishCVTemplateManager {
   }
 
   private renderReferencesSection(data: CVData): string {
+    // Check if section should be visible
+    const section = data.sections?.find(s => s.type === 'references')
+    if (!section?.visible) return ''
+    
+    // Check display mode
+    if (data.referencesDisplay === 'available-on-request') {
+      return `
+        <section class="references">
+          <h2>References</h2>
+          <p class="references-available">Available upon request</p>
+        </section>
+      `
+    }
+    
+    // Show detailed references if available
     if (!data.references || data.references.length === 0) return ''
     
     return `
@@ -2175,6 +2222,7 @@ export class IrishCVTemplateManager {
             <h3>${ref.name}</h3>
             <p class="ref-position">${ref.position} at ${ref.company}</p>
             <p class="ref-contact">${ref.email} • ${ref.phone}</p>
+            ${ref.relationship ? `<p class="ref-relationship">Relationship: ${ref.relationship}</p>` : ''}
           </div>
         `).join('')}
       </section>

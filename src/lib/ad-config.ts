@@ -78,7 +78,10 @@ export const defaultAdConfigs: AdConfig[] = [
     position: 'header',
     settings: {
       size: 'large',
-      delay: 2000
+      delay: 2000,
+      adSenseClient: getAdSenseClient() || 'ca-pub-1742989559393752',
+      adSenseSlot: '1006957692',
+      platform: 'adsense'
     }
   },
   {

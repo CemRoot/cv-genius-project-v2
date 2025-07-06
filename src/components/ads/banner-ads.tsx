@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAdConfig } from './dynamic-ad-manager'
+import { useAdSenseConfig } from '@/hooks/use-adsense-config'
 
 interface BannerAdsProps {
   className?: string
@@ -11,6 +12,7 @@ interface BannerAdsProps {
 
 export function BannerAds({ className = '', size = 'large', position = 'header' }: BannerAdsProps) {
   const [showCleanAd, setShowCleanAd] = useState(false)
+  const { slots: adSenseSlots } = useAdSenseConfig()
   
   let getAdsByType, adminSettings
   try {
@@ -73,8 +75,9 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     return null // Reklam gösterme
   }
 
-  // Development modunda test göster
+  // Environment helpers
   const isDevelopment = process.env.NODE_ENV === 'development'
+  const isProduction = process.env.NODE_ENV === 'production'
 
   const sizeConfig = {
     large: { height: '90px', format: 'leaderboard' },
@@ -84,6 +87,13 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
 
   const config = sizeConfig[size]
 
+  // Extract AdSense info from admin config (first matching banner)
+  const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
+  const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
+  const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.inlineSlot || '1006957692'
+
+  const hasValidSlot = adSlot && !adSlot.includes('your_')
+
   return (
     <div className={`w-full mx-auto relative z-20 ${className}`}>
       <div className="bg-gray-50 p-3 rounded-lg shadow-sm border">
@@ -92,8 +102,20 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
           className="bg-white rounded border-2 overflow-hidden flex items-center justify-center relative mx-auto shadow-md"
           style={{ height: config.height, maxWidth: '728px' }}
         >
-          {/* Clean AdSense Ready Banner */}
-          {(showCleanAd || isDevelopment) ? (
+          {/* Render real AdSense banner in production */}
+          {isProduction && hasValidSlot && showCleanAd && (
+            <ins 
+              className="adsbygoogle"
+              style={{ display: 'block', width: '100%', height: config.height }}
+              data-ad-client={adClient}
+              data-ad-slot={adSlot}
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            />
+          )}
+
+          {/* Placeholder / development view */}
+          {(!isProduction || !hasValidSlot || !showCleanAd) && (
             <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-green-50 flex items-center justify-center">
               <div className="text-center">
                 <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full">
@@ -104,19 +126,6 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
                     AdSense Banner ({config.format})
                   </div>
                   <div className="text-xs text-green-600 ml-2 font-medium">✅ Admin Controlled</div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-50 to-gray-100 flex items-center justify-center">
-              <div className="text-center">
-                <div className="inline-flex items-center px-4 py-2 bg-gray-200 rounded-full">
-                  <div className="w-8 h-8 bg-gray-300 rounded-full mr-2 flex items-center justify-center">
-                    <div className="text-gray-600 font-bold text-sm">⏳</div>
-                  </div>
-                  <div className="text-sm text-gray-600 font-medium">
-                    Loading Clean Ad...
-                  </div>
                 </div>
               </div>
             </div>
