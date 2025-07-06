@@ -521,6 +521,33 @@ export class IrishCVTemplateManager {
           ` : ''}
         </section>
         
+        ${data.languages && data.languages.length > 0 ? `
+          <section class="languages">
+            <h2>Languages</h2>
+            <div class="language-list">
+              ${data.languages.map(lang => `
+                <div class="language-item">
+                  <span class="language-name">${lang.name}</span>
+                  <span class="language-level">${lang.level}</span>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        ` : ''}
+
+        ${data.references && data.references.length > 0 ? `
+          <section class="references">
+            <h2>References</h2>
+            ${data.references.map(ref => `
+              <div class="reference-item">
+                <h3>${ref.name}</h3>
+                <p class="ref-position">${ref.position} at ${ref.company}</p>
+                <p class="ref-contact">${ref.email} • ${ref.phone}</p>
+              </div>
+            `).join('')}
+          </section>
+        ` : ''}
+        
         <footer class="cv-footer">
           <p>EU Work Authorization: Full rights to work in Ireland/EU</p>
         </footer>
@@ -580,6 +607,75 @@ export class IrishCVTemplateManager {
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         font-size: 11pt; /* Base font size for ATS */
         color: #000000; /* Pure black text */
+      }
+      
+      /* Page Break Rules for Print */
+      @media print {
+        /* Prevent page breaks inside sections */
+        section, .experience-item, .education-item, 
+        .project-item, .certification-item, .reference-item {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Force page breaks before certain sections */
+        .languages, .references, .sidebar-section.languages {
+          page-break-before: always;
+          break-before: always;
+          padding-top: 25.4mm; /* 1 inch top margin for new page */
+        }
+        
+        /* Ensure sections don't start in the middle of a page */
+        h2 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Keep headers with their content */
+        .exp-header, .edu-header {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Ensure list items stay together */
+        ul, ol {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Avoid orphaned list items */
+        li {
+          page-break-inside: avoid;
+          break-inside: avoid;
+          orphans: 3;
+          widows: 3;
+        }
+      }
+      
+      /* Page indicators for screen view */
+      @media screen {
+        .page-break-indicator {
+          display: block;
+          width: 100%;
+          text-align: center;
+          margin: 2rem 0;
+          padding: 1rem 0;
+          border-top: 2px dashed #ccc;
+          border-bottom: 2px dashed #ccc;
+          color: #666;
+          font-size: 12px;
+          position: relative;
+        }
+        
+        .page-break-indicator::before {
+          content: "Page Break";
+          background: white;
+          padding: 0 1rem;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
       }
       
       .cv-sidebar {
@@ -768,6 +864,75 @@ export class IrishCVTemplateManager {
         color: #000000;
       }
       
+      /* Page Break Rules for Print */
+      @media print {
+        /* Prevent page breaks inside sections */
+        section, .experience-item, .education-item, 
+        .project-item, .certification-item, .reference-item {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Force page breaks before certain sections */
+        .languages, .references, .sidebar-section.languages {
+          page-break-before: always;
+          break-before: always;
+          padding-top: 25.4mm; /* 1 inch top margin for new page */
+        }
+        
+        /* Ensure sections don't start in the middle of a page */
+        h2 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Keep headers with their content */
+        .exp-header, .edu-header {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Ensure list items stay together */
+        ul, ol {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Avoid orphaned list items */
+        li {
+          page-break-inside: avoid;
+          break-inside: avoid;
+          orphans: 3;
+          widows: 3;
+        }
+      }
+      
+      /* Page indicators for screen view */
+      @media screen {
+        .page-break-indicator {
+          display: block;
+          width: 100%;
+          text-align: center;
+          margin: 2rem 0;
+          padding: 1rem 0;
+          border-top: 2px dashed #ccc;
+          border-bottom: 2px dashed #ccc;
+          color: #666;
+          font-size: 12px;
+          position: relative;
+        }
+        
+        .page-break-indicator::before {
+          content: "Page Break";
+          background: white;
+          padding: 0 1rem;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+      }
+      
       .cv-header {
         text-align: center;
         margin-bottom: 2rem;
@@ -891,6 +1056,57 @@ export class IrishCVTemplateManager {
         font-weight: 400;
       }
       
+      .language-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+      
+      .language-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3rem 0;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 11pt;
+      }
+      
+      .language-name {
+        font-weight: 500;
+        color: #000000;
+      }
+      
+      .language-level {
+        color: #000000;
+        font-weight: 400;
+      }
+      
+      .reference-item {
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        background: #ffffff;
+        border: 1px solid #000000;
+      }
+      
+      .reference-item h3 {
+        font-size: 12pt;
+        color: #000000;
+        margin-bottom: 0.3rem;
+        font-weight: bold;
+      }
+      
+      .ref-position {
+        font-size: 11pt;
+        color: #000000;
+        margin-bottom: 0.2rem;
+        font-weight: 500;
+      }
+      
+      .ref-contact {
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
+      }
+      
       .cv-footer {
         margin-top: 2rem;
         padding-top: 1rem;
@@ -926,6 +1142,75 @@ export class IrishCVTemplateManager {
         box-sizing: border-box;
         min-height: 297mm; /* A4 height */
         position: relative;
+      }
+      
+      /* Page Break Rules for Print */
+      @media print {
+        /* Prevent page breaks inside sections */
+        section, .experience-item, .education-item, 
+        .project-item, .certification-item, .reference-item {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Force page breaks before certain sections */
+        .languages, .references, .sidebar-section.languages {
+          page-break-before: always;
+          break-before: always;
+          padding-top: 25.4mm; /* 1 inch top margin for new page */
+        }
+        
+        /* Ensure sections don't start in the middle of a page */
+        h2 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Keep headers with their content */
+        .exp-header, .edu-header {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Ensure list items stay together */
+        ul, ol {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Avoid orphaned list items */
+        li {
+          page-break-inside: avoid;
+          break-inside: avoid;
+          orphans: 3;
+          widows: 3;
+        }
+      }
+      
+      /* Page indicators for screen view */
+      @media screen {
+        .page-break-indicator {
+          display: block;
+          width: 100%;
+          text-align: center;
+          margin: 2rem 0;
+          padding: 1rem 0;
+          border-top: 2px dashed #ccc;
+          border-bottom: 2px dashed #ccc;
+          color: #666;
+          font-size: 12px;
+          position: relative;
+        }
+        
+        .page-break-indicator::before {
+          content: "Page Break";
+          background: white;
+          padding: 0 1rem;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
       }
       
       @media screen {
@@ -1411,6 +1696,33 @@ export class IrishCVTemplateManager {
             `).join('')}
           </section>
         ` : ''}
+        
+        ${data.languages && data.languages.length > 0 ? `
+          <section class="languages">
+            <h2>Languages</h2>
+            <div class="language-list">
+              ${data.languages.map(lang => `
+                <div class="language-item">
+                  <span class="language-name">${lang.name}</span>
+                  <span class="language-level">${lang.level}</span>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        ` : ''}
+
+        ${data.references && data.references.length > 0 ? `
+          <section class="references">
+            <h2>References</h2>
+            ${data.references.map(ref => `
+              <div class="reference-item">
+                <h3>${ref.name}</h3>
+                <p class="ref-position">${ref.position} at ${ref.company}</p>
+                <p class="ref-contact">${ref.email} • ${ref.phone}</p>
+              </div>
+            `).join('')}
+          </section>
+        ` : ''}
       </div>
     `
   }
@@ -1428,6 +1740,75 @@ export class IrishCVTemplateManager {
         line-height: 1.5;
         background: #ffffff;
         color: #111827;
+      }
+      
+      /* Page Break Rules for Print */
+      @media print {
+        /* Prevent page breaks inside sections */
+        section, .experience-item, .education-item, 
+        .project-item, .certification-item, .reference-item {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Force page breaks before certain sections */
+        .languages, .references, .sidebar-section.languages {
+          page-break-before: always;
+          break-before: always;
+          padding-top: 25.4mm; /* 1 inch top margin for new page */
+        }
+        
+        /* Ensure sections don't start in the middle of a page */
+        h2 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Keep headers with their content */
+        .exp-header, .edu-header {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+        
+        /* Ensure list items stay together */
+        ul, ol {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Avoid orphaned list items */
+        li {
+          page-break-inside: avoid;
+          break-inside: avoid;
+          orphans: 3;
+          widows: 3;
+        }
+      }
+      
+      /* Page indicators for screen view */
+      @media screen {
+        .page-break-indicator {
+          display: block;
+          width: 100%;
+          text-align: center;
+          margin: 2rem 0;
+          padding: 1rem 0;
+          border-top: 2px dashed #ccc;
+          border-bottom: 2px dashed #ccc;
+          color: #666;
+          font-size: 12px;
+          position: relative;
+        }
+        
+        .page-break-indicator::before {
+          content: "Page Break";
+          background: white;
+          padding: 0 1rem;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
       }
       
       .dublin-pharma .cv-header {
@@ -1534,6 +1915,58 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .skill-category p {
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
+      }
+      
+      .dublin-pharma .language-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+      
+      .dublin-pharma .language-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3rem 0;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 11pt;
+      }
+      
+      .dublin-pharma .language-name {
+        font-weight: 500;
+        color: #000000;
+      }
+      
+      .dublin-pharma .language-level {
+        color: #000000;
+        font-weight: 400;
+      }
+      
+      .dublin-pharma .reference-item {
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        background: #f0fdfa;
+        border: 1px solid #0d9488;
+        border-radius: 0.25rem;
+      }
+      
+      .dublin-pharma .reference-item h3 {
+        font-size: 12pt;
+        color: #000000;
+        margin-bottom: 0.3rem;
+        font-weight: bold;
+      }
+      
+      .dublin-pharma .ref-position {
+        font-size: 11pt;
+        color: #000000;
+        margin-bottom: 0.2rem;
+        font-weight: 500;
+      }
+      
+      .dublin-pharma .ref-contact {
         font-size: 11pt;
         color: #000000;
         font-weight: 400;

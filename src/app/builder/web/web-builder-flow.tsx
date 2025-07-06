@@ -8,10 +8,11 @@ import { useCVStore } from '@/store/cv-store'
 import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Eye, Settings } from 'lucide-react'
+import { Eye, Settings, AlertTriangle } from 'lucide-react'
 import { ExportButton } from '@/components/cv/export-button'
 import SectionReorderPanel from '@/components/cv/section-reorder-panel'
 import { ErrorStateWithFallback } from '@/components/ui/error-state-with-fallback'
+import { useCVPageCount } from '@/hooks/use-cv-page-count'
 
 export function WebBuilderFlow() {
   const { currentCV, sessionState, updateSessionState, setTemplate } = useCVStore()
@@ -33,6 +34,9 @@ export function WebBuilderFlow() {
   
   // Create template manager instance
   const templateManager = useMemo(() => new IrishCVTemplateManager(), [])
+  
+  // Get estimated page count
+  const estimatedPageCount = useCVPageCount(selectedTemplate || undefined)
   
   // Initialize - restore session state or determine from CV data
   useEffect(() => {
@@ -382,6 +386,15 @@ export function WebBuilderFlow() {
                 <Eye className="w-5 h-5 text-gray-600" />
                 <h2 className="text-lg font-semibold">Live Preview</h2>
                 <Badge variant="secondary">Auto-updates</Badge>
+                {estimatedPageCount > 1 && (
+                  <Badge 
+                    variant={estimatedPageCount > 2 ? "destructive" : "default"} 
+                    className="flex items-center gap-1"
+                  >
+                    {estimatedPageCount > 2 && <AlertTriangle className="w-3 h-3" />}
+                    {estimatedPageCount} pages
+                  </Badge>
+                )}
               </div>
               <div className="flex gap-2">
                 <ExportButton 
@@ -396,15 +409,34 @@ export function WebBuilderFlow() {
             <div className="flex-1 overflow-y-auto p-6 bg-gray-100">
               <div className="max-w-4xl mx-auto">
                 {previewHtml ? (
-                  <Card className="shadow-lg bg-white">
-                    {/* Inject CSS */}
-                    <style dangerouslySetInnerHTML={{ __html: previewCss }} />
-                    {/* Render CV */}
-                    <div 
-                      className="cv-preview-container"
-                      dangerouslySetInnerHTML={{ __html: previewHtml }}
-                    />
-                  </Card>
+                  <>
+                    {/* Multi-page warning */}
+                    {estimatedPageCount > 1 && (
+                      <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-amber-800">
+                              Not: CV'niz {estimatedPageCount} sayfa içermektedir.
+                            </p>
+                            <p className="text-xs text-amber-700 mt-1">
+                              'Languages' ve 'References' gibi bazı bölümler yeni sayfada yer almaktadır. 
+                              Lütfen PDF'nin tamamını kontrol ediniz.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <Card className="shadow-lg bg-white">
+                      {/* Inject CSS */}
+                      <style dangerouslySetInnerHTML={{ __html: previewCss }} />
+                      {/* Render CV */}
+                      <div 
+                        className="cv-preview-container"
+                        dangerouslySetInnerHTML={{ __html: previewHtml }}
+                      />
+                    </Card>
+                  </>
                 ) : (
                   <Card className="shadow-lg bg-white p-12">
                     <div className="text-center text-gray-500">

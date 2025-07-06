@@ -235,6 +235,24 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
         )}
       </div>
 
+      {/* Multi-page Warning Message */}
+      {pageCount > 1 && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <span className="text-amber-600 text-lg">⚠️</span>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-800">
+                Not: CV'niz {pageCount} sayfa içermektedir.
+              </p>
+              <p className="text-xs text-amber-700 mt-1">
+                'Languages' ve 'References' gibi bazı bölümler yeni sayfada yer almaktadır. 
+                Lütfen PDF'nin tamamını kontrol ediniz.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Controls - Compact */}
       {isMobile && (
         <div className="mb-3 p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200 shadow-sm">
