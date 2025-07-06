@@ -160,8 +160,9 @@ class SecurityAuditLogger {
     // Save to memory only (handles size limits)
     this.saveToMemory()
     
-    // Send to Vercel if configured (for persistent storage)
-    await this.sendToVercel(auditEvent)
+    // DISABLED: Don't create environment variables for each audit log
+    // This was creating too many AUDIT_LOG_* environment variables
+    // await this.sendToVercel(auditEvent)
   }
 
   // Log login attempt
@@ -185,8 +186,11 @@ class SecurityAuditLogger {
     })
   }
 
+  // DEPRECATED: This method creates too many environment variables
   // Send encrypted audit data to Vercel
   private async sendToVercel(event: AuditEvent): Promise<void> {
+    // This method is disabled to prevent creating too many AUDIT_LOG_* environment variables
+    return;
     try {
       const vercelToken = process.env.VERCEL_TOKEN
       const projectId = process.env.VERCEL_PROJECT_ID
