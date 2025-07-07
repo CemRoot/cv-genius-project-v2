@@ -319,6 +319,22 @@ export class IrishCVTemplateManager {
   
   // Template rendering functions
   private renderDublinTech(data: CVData): string {
+    // Use sections array if available, otherwise use default sections
+    const sections = data.sections && data.sections.length > 0 
+      ? data.sections 
+      : this.getDefaultSections()
+    
+    // Sort sections by order and filter visible ones (exclude sidebar sections)
+    const visibleSections = sections
+      .filter(section => section.visible && !['skills', 'languages'].includes(section.type))
+      .sort((a, b) => a.order - b.order)
+    
+    // Render dynamic sections for main content
+    const sectionHTML = visibleSections
+      .map(section => this.getSectionRenderer(section.type)(data))
+      .filter(html => html.trim() !== '') // Remove empty sections
+      .join('')
+
     return `
       <div class="cv-container dublin-tech">
         <div class="cv-sidebar">
@@ -337,117 +353,38 @@ export class IrishCVTemplateManager {
             ${data.personal.portfolio ? `<p><i class="icon-web"></i> ${data.personal.portfolio}</p>` : ''}
           </div>
           
-          <div class="sidebar-section skills">
-            <h2>Technical Skills</h2>
-            ${data.skills
-              .filter(s => s.category === 'Technical')
-              .map(skill => `
-                <div class="skill-item">
-                  <span class="skill-name">${skill.name}</span>
-                  <div class="skill-bar">
-                    <div class="skill-progress" style="width: ${this.getSkillWidth(skill.level)}"></div>
+          ${this.isSectionVisible(data.sections, 'skills') ? `
+            <div class="sidebar-section skills">
+              <h2>Technical Skills</h2>
+              ${data.skills
+                .filter(s => s.category === 'Technical')
+                .map(skill => `
+                  <div class="skill-item">
+                    <span class="skill-name">${skill.name}</span>
+                    <div class="skill-bar">
+                      <div class="skill-progress" style="width: ${this.getSkillWidth(skill.level)}"></div>
+                    </div>
                   </div>
+                `).join('')}
+            </div>
+          ` : ''}
+          
+          ${this.isSectionVisible(data.sections, 'languages') ? `
+            <div class="sidebar-section languages">
+              <h2>Languages</h2>
+              ${(data.languages || []).map(lang => `
+                <div class="language-item">
+                  <span class="lang-name">${lang.name}</span>
+                  <span class="lang-level">${lang.level}</span>
                 </div>
               `).join('')}
-          </div>
-          
-          <div class="sidebar-section languages">
-            <h2>Languages</h2>
-            ${(data.languages || []).map(lang => `
-              <div class="language-item">
-                <span class="lang-name">${lang.name}</span>
-                <span class="lang-level">${lang.level}</span>
-              </div>
-            `).join('')}
-          </div>
+            </div>
+          ` : ''}
         </div>
         
         <div class="cv-main">
-          ${data.personal.summary ? `
-            <section class="summary">
-              <h2>Professional Summary</h2>
-              <p>${data.personal.summary}</p>
-            </section>
-          ` : ''}
-          
-          <section class="experience">
-            <h2>Experience</h2>
-            ${data.experience.map(exp => `
-              <div class="experience-item">
-                <div class="exp-header">
-                  <h3>${exp.position} at ${exp.company}</h3>
-                  <span class="date">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
-                </div>
-                <p class="exp-description">${exp.description}</p>
-                ${exp.achievements.length > 0 ? `
-                  <ul class="achievements">
-                    ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
-                  </ul>
-                ` : ''}
-              </div>
-            `).join('')}
-          </section>
-          
-          ${data.projects && data.projects.length > 0 ? `
-            <section class="projects">
-              <h2>Projects</h2>
-              ${data.projects.map(project => `
-                <div class="project-item">
-                  <h3>${project.name}</h3>
-                  <p>${project.description}</p>
-                  <div class="tech-stack">
-                    ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
-                  </div>
-                </div>
-              `).join('')}
-            </section>
-          ` : ''}
-          
-          <section class="education">
-            <h2>Education</h2>
-            ${data.education.map(edu => `
-              <div class="education-item">
-                <div class="edu-header">
-                  <h3>${edu.degree} in ${edu.field}</h3>
-                  <span class="date">${this.formatDate(edu.startDate)} - ${edu.current || edu.endDate === 'Present' ? 'Present' : this.formatDate(edu.endDate)}</span>
-                </div>
-                <div class="edu-institution">${edu.institution} | ${edu.location}</div>
-                ${edu.grade ? `<p class="grade">Grade: ${edu.grade}</p>` : ''}
-              </div>
-            `).join('')}
-          </section>
-          
-          ${data.certifications && data.certifications.length > 0 ? `
-            <section class="certifications">
-              <h2>Certifications</h2>
-              ${data.certifications.map(cert => `
-                <div class="certification-item">
-                  <h3>${cert.name}</h3>
-                  <p>${cert.issuer} • ${this.formatDate(cert.issueDate)}</p>
-                </div>
-              `).join('')}
-            </section>
-          ` : ''}
-          
-          ${data.interests && data.interests.length > 0 ? `
-            <section class="interests">
-              <h2>Interests</h2>
-              <p>${data.interests.map(i => i.name).join(' • ')}</p>
-            </section>
-          ` : ''}
-          
-          ${data.references && data.references.length > 0 ? `
-            <section class="references">
-              <h2>References</h2>
-              ${data.references.map(ref => `
-                <div class="reference-item">
-                  <h3>${ref.name}</h3>
-                  <p>${ref.position} at ${ref.company}</p>
-                  <p>${ref.email} • ${ref.phone}</p>
-                </div>
-              `).join('')}
-            </section>
-          ` : ''}
+          <!-- Dynamic Sections -->
+          ${sectionHTML}
         </div>
       </div>
     `
@@ -872,11 +809,46 @@ export class IrishCVTemplateManager {
         font-weight: 400;
       }
       
-      .project-link {
+      .project-meta {
+        text-align: right;
+      }
+      
+      .project-date {
+        font-size: 10pt;
+        color: #4a5568;
+        margin-bottom: 0.2rem;
+        font-weight: 500;
+      }
+      
+      .project-link, .project-github {
         font-size: 10pt;
         color: #2563eb;
         text-decoration: underline;
         word-break: break-all;
+        display: block;
+        margin-bottom: 0.1rem;
+      }
+      
+      .project-achievements {
+        margin-top: 0.3rem;
+      }
+      
+      .project-achievements strong {
+        font-size: 10pt;
+        color: #000000;
+        font-weight: 600;
+      }
+      
+      .project-achievements ul {
+        margin: 0.2rem 0 0 1rem;
+        padding: 0;
+      }
+      
+      .project-achievements li {
+        font-size: 10pt;
+        color: #4a5568;
+        margin-bottom: 0.1rem;
+        line-height: 1.3;
       }
       
       .exp-header, .edu-header {
@@ -2621,9 +2593,23 @@ export class IrishCVTemplateManager {
                 ${project.technologies && project.technologies.length > 0 ? `
                   <p class="project-tech"><strong>Technologies:</strong> ${project.technologies.join(', ')}</p>
                 ` : ''}
+                ${project.achievements && project.achievements.length > 0 ? `
+                  <div class="project-achievements">
+                    <strong>Key Achievements:</strong>
+                    <ul>
+                      ${project.achievements.map(achievement => `<li>${achievement}</li>`).join('')}
+                    </ul>
+                  </div>
+                ` : ''}
               </div>
               <div class="project-right">
-                ${project.url ? `<a href="${project.url}" class="project-link">${project.url}</a>` : ''}
+                <div class="project-meta">
+                  ${project.startDate ? `
+                    <p class="project-date">${this.formatDate(project.startDate)} - ${project.current ? 'Present' : (project.endDate ? this.formatDate(project.endDate) : 'Present')}</p>
+                  ` : ''}
+                  ${project.url ? `<a href="${project.url}" class="project-link" title="Project URL">${project.url}</a>` : ''}
+                  ${project.github ? `<a href="${project.github}" class="project-github" title="GitHub Repository">${project.github}</a>` : ''}
+                </div>
               </div>
             </div>
           </div>
@@ -2767,6 +2753,12 @@ export class IrishCVTemplateManager {
     }
     
     return renderers[sectionType] || (() => '')
+  }
+  
+  private isSectionVisible(sections: CVSection[] | undefined, sectionType: string): boolean {
+    if (!sections || sections.length === 0) return true // Default to visible if no sections defined
+    const section = sections.find(s => s.type === sectionType)
+    return section ? section.visible : true
   }
 
   // Helper functions

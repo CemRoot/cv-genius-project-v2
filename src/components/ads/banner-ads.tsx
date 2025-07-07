@@ -28,6 +28,34 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     return null
   }
 
+  // Environment helpers - useEffect'ten önce tanımla
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  // Admin ayarlarından reklam durumunu kontrol et
+  const bannerAds = getAdsByType('banner').filter(ad => 
+    ad.position === position || !ad.position
+  )
+  
+  if (bannerAds.length === 0) {
+    return null // Reklam gösterme
+  }
+
+  const sizeConfig = {
+    large: { height: '90px', format: 'leaderboard' },
+    medium: { height: '60px', format: 'banner' },
+    small: { height: '50px', format: 'banner' }
+  }
+
+  const config = sizeConfig[size]
+
+  // Extract AdSense info from admin config (first matching banner)
+  const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
+  const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
+  const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.inlineSlot || '1006957692'
+
+  const hasValidSlot = adSlot && !adSlot.includes('your_')
+
   useEffect(() => {
     // Admin ayarlarından banner reklamları kontrol et
     try {
@@ -66,33 +94,25 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     }
   }, [size, position, getAdsByType])
 
-  // Admin ayarlarından reklam durumunu kontrol et
-  const bannerAds = getAdsByType('banner').filter(ad => 
-    ad.position === position || !ad.position
-  )
-  
-  if (bannerAds.length === 0) {
-    return null // Reklam gösterme
-  }
-
-  // Environment helpers
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isProduction = process.env.NODE_ENV === 'production'
-
-  const sizeConfig = {
-    large: { height: '90px', format: 'leaderboard' },
-    medium: { height: '60px', format: 'banner' },
-    small: { height: '50px', format: 'banner' }
-  }
-
-  const config = sizeConfig[size]
-
-  // Extract AdSense info from admin config (first matching banner)
-  const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
-  const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
-  const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.inlineSlot || '1006957692'
-
-  const hasValidSlot = adSlot && !adSlot.includes('your_')
+  // AdSense reklamlarını yüklemek için ek useEffect
+  useEffect(() => {
+    if (isProduction && hasValidSlot && showCleanAd && typeof window !== 'undefined') {
+      // AdSense script'inin yüklenmesini bekle
+      const loadAds = () => {
+        if ((window as any).adsbygoogle) {
+          try {
+            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+          } catch (e) {
+            console.error('AdSense error:', e);
+          }
+        }
+      };
+      
+      // Script biraz gecikmeyle yüklensin
+      const timer = setTimeout(loadAds, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isProduction, hasValidSlot, showCleanAd])
 
   return (
     <div className={`w-full mx-auto relative z-20 ${className}`}>
@@ -104,14 +124,23 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
         >
           {/* Render real AdSense banner in production */}
           {isProduction && hasValidSlot && showCleanAd && (
-            <ins 
-              className="adsbygoogle"
-              style={{ display: 'block', width: '100%', height: config.height }}
-              data-ad-client={adClient}
-              data-ad-slot={adSlot}
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
+            <>
+              <ins 
+                className="adsbygoogle"
+                style={{ display: 'block', width: '100%', height: config.height }}
+                data-ad-client={adClient}
+                data-ad-slot={adSlot}
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              />
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                  `
+                }}
+              />
+            </>
           )}
 
           {/* Placeholder / development view */}
