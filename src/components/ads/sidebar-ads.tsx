@@ -49,7 +49,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [adConfig.settings?.delay])
+  }, []) // dependency array boşaltıldı - sadece mount'ta çalışsın
 
   // Initialize AdSense when conditions are met
   useEffect(() => {
@@ -63,7 +63,7 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
 
       return () => clearTimeout(timer)
     }
-  }, [showAd, isLoaded, error, pushAdConfig])
+  }, [showAd, isLoaded, error]) // pushAdConfig kaldırıldı
 
   // Environment and validation checks
   const isProduction = process.env.NODE_ENV === 'production'

@@ -432,9 +432,9 @@ export function CertificationsForm() {
 
       {/* Quick Add Popular Certifications */}
       {!isAdding && certifications.length < 3 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h4 className="font-medium text-gray-900">Quick Add Popular Certifications</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
               { name: "AWS Certified Solutions Architect", issuer: "Amazon Web Services" },
               { name: "Google Cloud Professional", issuer: "Google Cloud" },
@@ -457,11 +457,15 @@ export function CertificationsForm() {
                   setValue("issuer", suggestion.issuer)
                   setIsAdding(true)
                 }}
-                className="text-xs text-left p-2 h-auto"
+                className="text-left justify-start p-3 h-auto min-h-[64px] hover:bg-gray-50 transition-colors"
               >
-                <div>
-                  <div className="font-medium">{suggestion.name}</div>
-                  <div className="text-gray-500">{suggestion.issuer}</div>
+                <div className="text-left w-full">
+                  <div className="font-medium text-sm text-gray-900 leading-tight mb-1 break-words">
+                    {suggestion.name}
+                  </div>
+                  <div className="text-xs text-gray-500 leading-tight break-words">
+                    {suggestion.issuer}
+                  </div>
                 </div>
               </Button>
             ))}

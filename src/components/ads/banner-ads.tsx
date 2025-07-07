@@ -66,7 +66,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [adConfig?.settings?.delay])
+  }, []) // dependency array'i boşaltıldı - sadece mount'ta çalışsın
 
   // AdSense ads initialization with error handling
   useEffect(() => {
@@ -81,7 +81,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
 
       return () => clearTimeout(timer)
     }
-  }, [showCleanAd, isLoaded, error, hasValidSlot, pushAdConfig])
+  }, [showCleanAd, isLoaded, error, hasValidSlot]) // pushAdConfig kaldırıldı
 
   return (
     <div className={`w-full mx-auto relative z-20 ${className}`}>

@@ -270,10 +270,52 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
           <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center uppercase border-b border-black pb-2 mb-4`}>
             Certifications
           </h2>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {certifications.map((cert) => (
-              <div key={cert.id}>
-                <strong>{cert.name}</strong> - {cert.issuer} ({new Date(cert.issueDate).getFullYear()})
+              <div key={cert.id} className="break-inside-avoid">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div className="space-y-2">
+                    <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-gray-900 leading-tight`}>
+                      {cert.name}
+                    </h3>
+                    <p className="font-medium text-gray-700">
+                      {cert.issuer}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                      <span>
+                        Issued: {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: '2-digit', year: 'numeric' })}
+                      </span>
+                      {cert.expiryDate && (
+                        <>
+                          <span>•</span>
+                          <span>
+                            Expires: {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: '2-digit', year: 'numeric' })}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {cert.credentialId && (
+                      <p className="text-xs text-gray-500">
+                        ID: {cert.credentialId}
+                      </p>
+                    )}
+                    {cert.description && (
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {cert.description}
+                      </p>
+                    )}
+                    {cert.url && (
+                      <a 
+                        href={cert.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        Verify Credential
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
