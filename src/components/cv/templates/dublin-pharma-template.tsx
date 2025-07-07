@@ -269,14 +269,18 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
                 <div key={cert.id} className="bg-green-50 p-3 rounded border border-green-200">
                   <h3 className="font-semibold text-green-900">{cert.name}</h3>
                   <div className="text-sm text-gray-700">{cert.issuer}</div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-xs text-gray-600">Issued: {cert.issueDate}</span>
+                  <div className="text-xs text-gray-600 mt-1 space-y-1">
+                    <div>
+                      {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                    </div>
                     {cert.expiryDate && (
-                      <span className="text-xs text-gray-600">Expires: {cert.expiryDate}</span>
+                      <div>
+                        Expires {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                      </div>
                     )}
                   </div>
                   {cert.credentialId && (
-                    <div className="text-xs text-gray-500 mt-1">ID: {cert.credentialId}</div>
+                    <div className="text-xs text-gray-500 mt-1">{cert.credentialId}</div>
                   )}
                 </div>
               ))}

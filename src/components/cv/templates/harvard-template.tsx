@@ -303,13 +303,17 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
                       <h3 className="font-bold">{cert.name}</h3>
                       <div className="italic">{cert.issuer}</div>
                       {cert.credentialId && (
-                        <div className="text-sm text-gray-600">ID: {cert.credentialId}</div>
+                        <div className="text-sm text-gray-600">{cert.credentialId}</div>
                       )}
                     </div>
-                    <div className="text-right text-sm">
-                      {cert.issueDate}
+                    <div className="text-right text-sm space-y-1">
+                      <div>
+                        {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                      </div>
                       {cert.expiryDate && (
-                        <div>Expires: {cert.expiryDate}</div>
+                        <div>
+                          Expires {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                        </div>
                       )}
                     </div>
                   </div>

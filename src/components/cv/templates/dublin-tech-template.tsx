@@ -348,15 +348,19 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
                   <div key={cert.id} className="bg-gray-50 p-3 rounded">
                     <h3 className="font-medium text-gray-900">{cert.name}</h3>
                     <div className="text-sm text-gray-600">{cert.issuer}</div>
-                    <div className="text-xs text-gray-500">
-                      {cert.issueDate}
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <div>
+                        {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                      </div>
                       {cert.expiryDate && (
-                        <span> • Expires: {cert.expiryDate}</span>
+                        <div>
+                          Expires {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                        </div>
                       )}
                     </div>
                     {cert.credentialId && (
                       <div className="text-xs text-gray-500">
-                        ID: {cert.credentialId}
+                        {cert.credentialId}
                       </div>
                     )}
                   </div>

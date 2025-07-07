@@ -319,13 +319,17 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
                       <span className="font-semibold">{cert.name}</span>
                       <span className="text-sm text-gray-600"> - {cert.issuer}</span>
                       {cert.credentialId && (
-                        <span className="text-xs text-gray-500"> (ID: {cert.credentialId})</span>
+                        <span className="text-xs text-gray-500"> ({cert.credentialId})</span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {cert.issueDate}
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <div>
+                        {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                      </div>
                       {cert.expiryDate && (
-                        <span> • Expires: {cert.expiryDate}</span>
+                        <div>
+                          Expires {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                        </div>
                       )}
                     </div>
                   </div>
