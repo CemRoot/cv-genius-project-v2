@@ -868,6 +868,67 @@ export class IrishCVTemplateManager {
         border: 1px solid #000000;
       }
       
+      .reference-item {
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .reference-item:last-child {
+        border-bottom: none;
+      }
+      
+      .ref-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .ref-left {
+        flex: 1;
+      }
+      
+      .ref-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
+      }
+      
+      .reference-item h3 {
+        font-size: 12pt;
+        color: #000000;
+        margin-bottom: 0.3rem;
+        font-weight: bold;
+        line-height: 1.3;
+      }
+      
+      .ref-position {
+        font-size: 11pt;
+        color: #000000;
+        margin-bottom: 0.2rem;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+      
+      .ref-contact, .ref-phone {
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 400;
+        margin-bottom: 0.1rem;
+        line-height: 1.3;
+      }
+      
+      .ref-relationship {
+        font-size: 10pt;
+        color: #6b7280;
+        font-weight: 400;
+        font-style: italic;
+        margin-top: 0.2rem;
+      }
+      
       .references-available {
         text-align: center;
         font-style: italic;
@@ -1138,10 +1199,32 @@ export class IrishCVTemplateManager {
       }
       
       .reference-item {
-        margin-bottom: 12px;
-        padding: 0;
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
         background: transparent;
         border: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .reference-item:last-child {
+        border-bottom: none;
+      }
+      
+      .ref-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .ref-left {
+        flex: 1;
+      }
+      
+      .ref-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
       }
       
       .reference-item h3 {
@@ -1149,6 +1232,7 @@ export class IrishCVTemplateManager {
         color: #000000;
         margin-bottom: 0.3rem;
         font-weight: bold;
+        line-height: 1.3;
       }
       
       .ref-position {
@@ -1156,12 +1240,23 @@ export class IrishCVTemplateManager {
         color: #000000;
         margin-bottom: 0.2rem;
         font-weight: 500;
+        line-height: 1.3;
       }
       
-      .ref-contact {
+      .ref-contact, .ref-phone {
         font-size: 11pt;
         color: #000000;
         font-weight: 400;
+        margin-bottom: 0.1rem;
+        line-height: 1.3;
+      }
+      
+      .ref-relationship {
+        font-size: 10pt;
+        color: #6b7280;
+        font-weight: 400;
+        font-style: italic;
+        margin-top: 0.2rem;
       }
       
       .cv-footer {
@@ -1661,31 +1756,64 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .reference-item {
-        margin-bottom: 12px;
-        padding: 0;
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
         background: transparent;
         border: none;
+        border-bottom: 1px solid #000000;
+      }
+      
+      .cv-container.classic .reference-item:last-child {
+        border-bottom: none;
+      }
+      
+      .cv-container.classic .ref-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .cv-container.classic .ref-left {
+        flex: 1;
+      }
+      
+      .cv-container.classic .ref-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
       }
       
       .cv-container.classic .reference-item h3 {
         font-size: 12pt; /* 12pt for ATS */
         font-weight: bold;
-        margin: 0 0 5px 0;
+        margin: 0 0 0.3rem 0;
         color: #000000;
+        line-height: 1.3;
       }
       
       .cv-container.classic .ref-position {
         font-size: 11pt;
-        margin: 2px 0;
+        margin: 0 0 0.2rem 0;
         color: #000000;
         font-weight: 500;
+        line-height: 1.3;
       }
       
-      .cv-container.classic .ref-contact {
+      .cv-container.classic .ref-contact, .cv-container.classic .ref-phone {
         font-size: 11pt;
-        margin: 2px 0;
+        margin: 0 0 0.1rem 0;
         color: #000000;
         font-weight: 400;
+        line-height: 1.3;
+      }
+      
+      .cv-container.classic .ref-relationship {
+        font-size: 10pt;
+        margin: 0.2rem 0 0 0;
+        color: #4a5568;
+        font-weight: 400;
+        font-style: italic;
       }
       
       .cv-container.classic .references-available {
@@ -2066,10 +2194,32 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .reference-item {
-        margin-bottom: 12px;
-        padding: 0;
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
         background: transparent;
         border: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .dublin-pharma .reference-item:last-child {
+        border-bottom: none;
+      }
+      
+      .dublin-pharma .ref-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .dublin-pharma .ref-left {
+        flex: 1;
+      }
+      
+      .dublin-pharma .ref-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
       }
       
       .dublin-pharma .reference-item h3 {
@@ -2077,6 +2227,7 @@ export class IrishCVTemplateManager {
         color: #000000;
         margin-bottom: 0.3rem;
         font-weight: bold;
+        line-height: 1.3;
       }
       
       .dublin-pharma .ref-position {
@@ -2084,12 +2235,23 @@ export class IrishCVTemplateManager {
         color: #000000;
         margin-bottom: 0.2rem;
         font-weight: 500;
+        line-height: 1.3;
       }
       
-      .dublin-pharma .ref-contact {
+      .dublin-pharma .ref-contact, .dublin-pharma .ref-phone {
         font-size: 11pt;
         color: #000000;
         font-weight: 400;
+        margin-bottom: 0.1rem;
+        line-height: 1.3;
+      }
+      
+      .dublin-pharma .ref-relationship {
+        font-size: 10pt;
+        color: #6b7280;
+        font-weight: 400;
+        font-style: italic;
+        margin-top: 0.2rem;
       }
       
       .dublin-pharma .references-available {
@@ -2308,10 +2470,17 @@ export class IrishCVTemplateManager {
         <h2>References</h2>
         ${data.references.map(ref => `
           <div class="reference-item">
-            <h3>${ref.name}</h3>
-            <p class="ref-position">${ref.position} at ${ref.company}</p>
-            <p class="ref-contact">${ref.email} • ${ref.phone}</p>
-            ${ref.relationship ? `<p class="ref-relationship">Relationship: ${ref.relationship}</p>` : ''}
+            <div class="ref-header">
+              <div class="ref-left">
+                <h3>${ref.name}</h3>
+                <p class="ref-position">${ref.position} at ${ref.company}</p>
+                ${ref.relationship ? `<p class="ref-relationship">Relationship: ${ref.relationship}</p>` : ''}
+              </div>
+              <div class="ref-right">
+                <p class="ref-contact">${ref.email}</p>
+                <p class="ref-phone">${ref.phone}</p>
+              </div>
+            </div>
           </div>
         `).join('')}
       </section>
