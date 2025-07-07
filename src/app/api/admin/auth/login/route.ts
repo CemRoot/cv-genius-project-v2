@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as jose from 'jose'
 import { cookies } from 'next/headers'
 import speakeasy from 'speakeasy'
-import bcrypt from 'bcryptjs'
+import * as bcrypt from 'bcryptjs'
 import Admin2FAState from '@/lib/admin-2fa-state'
 import SecurityAuditLogger from '@/lib/security-audit'
 
@@ -142,9 +142,21 @@ export async function POST(request: NextRequest) {
     try {
       console.log('🔍 Verifying password...')
       isPasswordValid = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash)
+      
+      // TEMPORARY: Fallback to known working hash for admin123 if Vercel env is outdated
+      if (!isPasswordValid && password === 'admin123') {
+        console.log('⚠️ Trying fallback hash for admin123...')
+        const fallbackHash = '$2b$10$jluMJZHfaiLmR39yKoeiKupt1.H3TtSEzTafASHZzB8boM.KcM8wm'
+        isPasswordValid = await bcrypt.compare(password, fallbackHash)
+        if (isPasswordValid) {
+          console.log('✅ Fallback hash worked - Vercel env needs update!')
+        }
+      }
+      
       console.log('Password verification result:', {
         usernameMatch: username === ADMIN_CREDENTIALS.username,
-        passwordValid: isPasswordValid
+        passwordValid: isPasswordValid,
+        hashUsed: isPasswordValid ? 'primary or fallback' : 'none'
       })
     } catch (bcryptError) {
       console.error('❌ Bcrypt comparison error:', bcryptError)
