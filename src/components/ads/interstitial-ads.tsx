@@ -14,10 +14,12 @@ export function InterstitialAds({ onClose, trigger = false }: InterstitialAdsPro
   const [countdown, setCountdown] = useState(5)
   const [canClose, setCanClose] = useState(false)
   
-  let getAdsByType
-  try {
-    ({ getAdsByType } = useAdConfig())
-  } catch (error) {
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.getAdsByType) {
     return null
   }
 

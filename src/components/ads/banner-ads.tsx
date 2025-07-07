@@ -19,11 +19,6 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const { slots: adSenseSlots } = useAdSenseConfig()
   const adConfigHook = useAdConfig() ?? {}
   
-  // Set context ready state
-  useEffect(() => {
-    setIsContextReady(true)
-  }, [])
-  
   // Safe destructuring with fallbacks
   const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
   const adminSettings = adConfigHook.adminSettings ?? { 
@@ -44,6 +39,11 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   
   // Use the new AdSense loader with proper error handling
   const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
+
+  // Set context ready state
+  useEffect(() => {
+    setIsContextReady(true)
+  }, [])
 
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {

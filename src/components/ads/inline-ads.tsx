@@ -11,10 +11,13 @@ interface InlineAdsProps {
 export function InlineAds({ position = 3, className = '' }: InlineAdsProps) {
   const [isVisible, setIsVisible] = useState(false)
   
-  let getAdsByType, adminSettings
-  try {
-    ({ getAdsByType, adminSettings } = useAdConfig())
-  } catch (error) {
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  const adminSettings = adConfigHook.adminSettings ?? { enableAds: false }
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.getAdsByType) {
     return null
   }
 

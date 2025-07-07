@@ -8,11 +8,12 @@ export function AdvancedMonetization() {
   const [isInitialized, setIsInitialized] = useState(false)
   const pathname = usePathname()
   
-  let getAdsByType
-  try {
-    ({ getAdsByType } = useAdConfig())
-  } catch (error) {
-    // Context henüz yüklenmemişse sessizce çık
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.getAdsByType) {
     return null
   }
 

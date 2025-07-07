@@ -11,11 +11,12 @@ interface MobileAdsProps {
 export function MobileAds({ position = 'bottom', className = '' }: MobileAdsProps) {
   const [isVisible, setIsVisible] = useState(false)
   
-  let adminSettings
-  try {
-    ({ adminSettings } = useAdConfig())
-  } catch (error) {
-    // Context henüz yüklenmemişse ads gösterme
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const adminSettings = adConfigHook.adminSettings ?? { enableAds: false, mobileAds: false }
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.adminSettings) {
     return null
   }
 

@@ -15,12 +15,16 @@ export function TrackedBannerAds({ className = '', size = 'large', position = 'h
   const [hasTrackedImpression, setHasTrackedImpression] = useState(false)
   const adRef = useRef<HTMLDivElement>(null)
   
-  let getAdsByType, adminSettings
-  try {
-    ({ getAdsByType, adminSettings } = useAdConfig())
-  } catch (error) {
-    getAdsByType = () => []
-    adminSettings = { enableAds: false, mobileAds: false, testMode: true, monetagPopup: false, monetagPush: false, monetagNative: false }
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  const adminSettings = adConfigHook.adminSettings ?? { 
+    enableAds: false, 
+    mobileAds: false, 
+    testMode: true, 
+    monetagPopup: false, 
+    monetagPush: false, 
+    monetagNative: false 
   }
 
   // Get the first banner ad for this position

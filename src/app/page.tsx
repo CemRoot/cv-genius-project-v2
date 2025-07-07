@@ -28,11 +28,12 @@ const staggerChildren = {
 
 // Sidebar Ad Section with admin controls
 function SidebarAdSection() {
-  let adminSettings
-  try {
-    ({ adminSettings } = useAdConfig())
-  } catch (error) {
-    // Context not ready or ads disabled
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const adminSettings = adConfigHook.adminSettings ?? { enableAds: false }
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.adminSettings) {
     return null
   }
 

@@ -10,10 +10,12 @@ interface FooterAdsProps {
 export function FooterAds({ className = '' }: FooterAdsProps) {
   const [isVisible, setIsVisible] = useState(false)
   
-  let getAdsByType
-  try {
-    ({ getAdsByType } = useAdConfig())
-  } catch (error) {
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.getAdsByType) {
     return null
   }
 

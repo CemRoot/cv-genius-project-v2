@@ -9,10 +9,12 @@ export function StickySideAds() {
   const [leftClosed, setLeftClosed] = useState(false)
   const [rightClosed, setRightClosed] = useState(false)
   
-  let getAdsByType
-  try {
-    ({ getAdsByType } = useAdConfig())
-  } catch (error) {
+  // Always call hooks unconditionally
+  const adConfigHook = useAdConfig() ?? {}
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  
+  // If context is not available, return null after hooks
+  if (!adConfigHook.getAdsByType) {
     return null
   }
 

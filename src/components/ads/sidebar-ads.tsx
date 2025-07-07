@@ -20,24 +20,23 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
   const adminSettings = adConfigHook.adminSettings ?? { enableAds: false }
 
+  // Get sidebar ads configuration
+  const sidebarAds = getAdsByType('sidebar')
+  const adConfig = sidebarAds[0]
+  const adClient = adConfig?.settings?.adSenseClient || 'ca-pub-1742989559393752'
+  const adSlot = adSenseSlots.sidebarSlot || adConfig?.settings?.adSenseSlot || '1234567890'
+  
+  // Use the new AdSense loader with proper error handling
+  const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
+
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {
     return null
   }
-
-  // Get sidebar ads configuration
-  const sidebarAds = getAdsByType('sidebar')
   
   if (sidebarAds.length === 0) {
     return null // No ads to show
   }
-
-  const adConfig = sidebarAds[0]
-  const adClient = adConfig.settings?.adSenseClient || 'ca-pub-1742989559393752'
-  const adSlot = adSenseSlots.sidebarSlot || adConfig.settings?.adSenseSlot || '1234567890'
-  
-  // Use the new AdSense loader with proper error handling
-  const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
 
   useEffect(() => {
     // Show ad after delay - fixed delay to prevent dependency issues
