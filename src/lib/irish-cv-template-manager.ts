@@ -597,6 +597,18 @@ export class IrishCVTemplateManager {
   // CSS generation functions
   private getDublinTechCSS(): string {
     return `
+      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
+      .cv-preview-container .cv-container,
+      .cv-container {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: auto !important;
+      }
+      
       .cv-container.dublin-tech {
         display: flex;
         font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */
@@ -947,6 +959,18 @@ export class IrishCVTemplateManager {
   
   private getIrishFinanceCSS(): string {
     return `
+      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
+      .cv-preview-container .cv-container,
+      .cv-container {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: auto !important;
+      }
+      
       .cv-container.irish-finance {
         font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */
         max-width: 210mm;
@@ -1288,6 +1312,18 @@ export class IrishCVTemplateManager {
   
   private getClassicCSS(): string {
     return `
+      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
+      .cv-preview-container .cv-container,
+      .cv-container {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: auto !important;
+      }
+      
       /* Classic Template Styles - ATS Optimized */
       .cv-container.classic {
         font-family: Arial, Calibri, Helvetica, sans-serif;
@@ -1957,6 +1993,18 @@ export class IrishCVTemplateManager {
   
   private getDublinPharmaCSS(): string {
     return `
+      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
+      .cv-preview-container .cv-container,
+      .cv-container {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: auto !important;
+      }
+      
       /* Dublin Pharma Template Styles - ATS Optimized */
       .cv-container.dublin-pharma {
         font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */

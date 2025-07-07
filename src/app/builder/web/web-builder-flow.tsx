@@ -461,10 +461,23 @@ export function WebBuilderFlow() {
                                   top: `-${pageIndex * 1000}px`, // Offset each page by container height
                                   left: 0,
                                   right: 0,
-                                  width: '100%'
+                                  width: '100%',
+                                  // Prevent wrapper interference with CV content
+                                  isolation: 'isolate'
                                 }}
-                                dangerouslySetInnerHTML={{ __html: previewHtml }}
-                              />
+                              >
+                                {/* Normalize wrapper effects on CV content */}
+                                <div 
+                                  style={{
+                                    position: 'static',
+                                    width: 'auto',
+                                    height: 'auto',
+                                    margin: 0,
+                                    padding: 0
+                                  }}
+                                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                                />
+                              </div>
                             </div>
                           </Card>
                           
