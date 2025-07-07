@@ -818,8 +818,65 @@ export class IrishCVTemplateManager {
         margin-bottom: 1rem;
       }
       
-      .experience-item, .education-item, .project-item {
+      .experience-item, .education-item {
         margin-bottom: 12px;
+      }
+      
+      .project-item {
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .project-item:last-child {
+        border-bottom: none;
+      }
+      
+      .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .project-left {
+        flex: 1;
+      }
+      
+      .project-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
+      }
+      
+      .project-item h3 {
+        font-size: 12pt;
+        color: #000000;
+        margin: 0 0 0.3rem 0;
+        font-weight: bold;
+        line-height: 1.3;
+      }
+      
+      .project-description {
+        font-size: 11pt;
+        margin-bottom: 0.2rem;
+        line-height: 1.3;
+        color: #000000;
+        font-weight: 400;
+      }
+      
+      .project-tech {
+        font-size: 10pt;
+        margin: 0;
+        color: #6b7280;
+        font-weight: 400;
+      }
+      
+      .project-link {
+        font-size: 10pt;
+        color: #2563eb;
+        text-decoration: underline;
+        word-break: break-all;
       }
       
       .exp-header, .edu-header {
@@ -1279,6 +1336,63 @@ export class IrishCVTemplateManager {
         margin-top: 0.2rem;
       }
       
+      .project-item {
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .project-item:last-child {
+        border-bottom: none;
+      }
+      
+      .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .project-left {
+        flex: 1;
+      }
+      
+      .project-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
+      }
+      
+      .project-item h3 {
+        font-size: 12pt;
+        color: #000000;
+        margin: 0 0 0.3rem 0;
+        font-weight: bold;
+        line-height: 1.3;
+      }
+      
+      .project-description {
+        font-size: 11pt;
+        margin-bottom: 0.2rem;
+        line-height: 1.3;
+        color: #000000;
+        font-weight: 400;
+      }
+      
+      .project-tech {
+        font-size: 10pt;
+        margin: 0;
+        color: #6b7280;
+        font-weight: 400;
+      }
+      
+      .project-link {
+        font-size: 10pt;
+        color: #166534;
+        text-decoration: underline;
+        word-break: break-all;
+      }
+      
       .cv-footer {
         margin-top: 1rem;
         padding-top: 0.5rem;
@@ -1648,32 +1762,60 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .project-item {
-        margin-bottom: 12px;
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #000000;
+      }
+      
+      .cv-container.classic .project-item:last-child {
+        border-bottom: none;
+      }
+      
+      .cv-container.classic .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .cv-container.classic .project-left {
+        flex: 1;
+      }
+      
+      .cv-container.classic .project-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
       }
       
       .cv-container.classic .project-item h3 {
         font-size: 12pt; /* 12pt for ATS */
         font-weight: bold;
-        margin: 0 0 5px 0;
+        margin: 0 0 0.3rem 0;
         color: #000000;
+        line-height: 1.3;
       }
       
       .cv-container.classic .project-description {
-        font-size: 12pt;
-        margin-bottom: 3px;
+        font-size: 11pt;
+        margin-bottom: 0.2rem;
         line-height: 1.3;
         color: #000000;
         font-weight: 400;
       }
       
       .cv-container.classic .project-tech {
-        font-size: 12px;
-        margin: 3px 0;
+        font-size: 10pt;
+        margin: 0;
+        color: #4a5568;
+        font-weight: 400;
       }
       
       .cv-container.classic .project-link {
-        font-size: 12px;
-        margin: 3px 0;
+        font-size: 10pt;
+        color: #2563eb;
+        text-decoration: underline;
+        word-break: break-all;
       }
       
       .cv-container.classic .certifications {
@@ -2308,6 +2450,63 @@ export class IrishCVTemplateManager {
         margin-top: 1rem;
       }
       
+      .dublin-pharma .project-item {
+        margin-bottom: 1rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .dublin-pharma .project-item:last-child {
+        border-bottom: none;
+      }
+      
+      .dublin-pharma .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .dublin-pharma .project-left {
+        flex: 1;
+      }
+      
+      .dublin-pharma .project-right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 200px;
+      }
+      
+      .dublin-pharma .project-item h3 {
+        font-size: 12pt;
+        color: #000000;
+        margin: 0 0 0.3rem 0;
+        font-weight: bold;
+        line-height: 1.3;
+      }
+      
+      .dublin-pharma .project-description {
+        font-size: 11pt;
+        margin-bottom: 0.2rem;
+        line-height: 1.3;
+        color: #000000;
+        font-weight: 400;
+      }
+      
+      .dublin-pharma .project-tech {
+        font-size: 10pt;
+        margin: 0;
+        color: #6b7280;
+        font-weight: 400;
+      }
+      
+      .dublin-pharma .project-link {
+        font-size: 10pt;
+        color: #059669;
+        text-decoration: underline;
+        word-break: break-all;
+      }
+      
       @media print {
         .dublin-pharma {
           padding: 15mm;
@@ -2415,12 +2614,18 @@ export class IrishCVTemplateManager {
         <h2>Projects</h2>
         ${data.projects.map(project => `
           <div class="project-item">
-            <h3>${project.name}</h3>
-            <p class="project-description">${project.description}</p>
-            ${project.technologies && project.technologies.length > 0 ? `
-              <p class="project-tech"><strong>Technologies:</strong> ${project.technologies.join(', ')}</p>
-            ` : ''}
-            ${project.url ? `<p class="project-link"><a href="${project.url}">${project.url}</a></p>` : ''}
+            <div class="project-header">
+              <div class="project-left">
+                <h3>${project.name}</h3>
+                <p class="project-description">${project.description}</p>
+                ${project.technologies && project.technologies.length > 0 ? `
+                  <p class="project-tech"><strong>Technologies:</strong> ${project.technologies.join(', ')}</p>
+                ` : ''}
+              </div>
+              <div class="project-right">
+                ${project.url ? `<a href="${project.url}" class="project-link">${project.url}</a>` : ''}
+              </div>
+            </div>
           </div>
         `).join('')}
       </section>
