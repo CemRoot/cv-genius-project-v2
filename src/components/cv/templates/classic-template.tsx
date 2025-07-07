@@ -281,22 +281,19 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
                     <p className="font-medium text-gray-700">
                       {cert.issuer}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-                      <span>
-                        Issued: {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: '2-digit', year: 'numeric' })}
-                      </span>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <div>
+                        {new Date(cert.issueDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                      </div>
                       {cert.expiryDate && (
-                        <>
-                          <span>•</span>
-                          <span>
-                            Expires: {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: '2-digit', year: 'numeric' })}
-                          </span>
-                        </>
+                        <div>
+                          Expires {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
+                        </div>
                       )}
                     </div>
                     {cert.credentialId && (
                       <p className="text-xs text-gray-500">
-                        ID: {cert.credentialId}
+                        {cert.credentialId}
                       </p>
                     )}
                     {cert.description && (
