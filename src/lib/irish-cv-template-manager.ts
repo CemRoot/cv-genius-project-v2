@@ -758,6 +758,27 @@ export class IrishCVTemplateManager {
         border-radius: 2px;
       }
       
+      .language-groups {
+        margin-bottom: 1rem;
+      }
+      
+      .language-group {
+        margin-bottom: 0.4rem;
+      }
+      
+      .language-list {
+        font-size: 11pt; /* 11pt for ATS */
+        color: #000000;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+      
+      .language-level-label {
+        font-weight: 600;
+        color: #2563eb;
+      }
+      
+      /* Legacy support */
       .language-item {
         display: flex;
         justify-content: space-between;
@@ -1077,12 +1098,27 @@ export class IrishCVTemplateManager {
         font-weight: 400;
       }
       
-      .language-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+      .language-groups {
+        margin-bottom: 1rem;
       }
       
+      .language-group {
+        margin-bottom: 0.4rem;
+      }
+      
+      .language-list {
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+      
+      .language-level-label {
+        font-weight: 600;
+        color: #166534;
+      }
+      
+      /* Legacy support */
       .language-item {
         display: flex;
         justify-content: space-between;
@@ -1563,6 +1599,27 @@ export class IrishCVTemplateManager {
         margin-bottom: 1rem;
       }
       
+      .cv-container.classic .language-groups {
+        margin-bottom: 1rem;
+      }
+      
+      .cv-container.classic .language-group {
+        margin-bottom: 0.4rem;
+      }
+      
+      .cv-container.classic .language-list {
+        font-size: 12pt; /* 12pt for ATS */
+        color: #000000;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+      
+      .cv-container.classic .language-level-label {
+        font-weight: 600;
+        color: #000000;
+      }
+      
+      /* Legacy support */
       .cv-container.classic .languages-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -1969,12 +2026,27 @@ export class IrishCVTemplateManager {
         font-weight: 400;
       }
       
-      .dublin-pharma .language-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+      .dublin-pharma .language-groups {
+        margin-bottom: 1rem;
       }
       
+      .dublin-pharma .language-group {
+        margin-bottom: 0.4rem;
+      }
+      
+      .dublin-pharma .language-list {
+        font-size: 11pt;
+        color: #000000;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+      
+      .dublin-pharma .language-level-label {
+        font-weight: 600;
+        color: #059669;
+      }
+      
+      /* Legacy support */
       .dublin-pharma .language-item {
         display: flex;
         justify-content: space-between;
@@ -2170,14 +2242,31 @@ export class IrishCVTemplateManager {
   private renderLanguagesSection(data: CVData): string {
     if (!data.languages || data.languages.length === 0) return ''
     
+    // Group languages by proficiency level for space efficiency and ATS optimization
+    const languagesByLevel = data.languages.reduce((acc, lang) => {
+      const level = lang.level || 'Unknown'
+      if (!acc[level]) {
+        acc[level] = []
+      }
+      acc[level].push(lang.name)
+      return acc
+    }, {} as Record<string, string[]>)
+    
+    // Sort levels by proficiency (Native > Fluent > Advanced > Intermediate > Basic > Beginner)
+    const levelOrder = ['Native', 'Fluent', 'Advanced', 'Intermediate', 'Basic', 'Beginner']
+    const sortedLevels = Object.keys(languagesByLevel).sort((a, b) => {
+      const indexA = levelOrder.indexOf(a)
+      const indexB = levelOrder.indexOf(b)
+      return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB)
+    })
+    
     return `
       <section class="languages">
         <h2>Languages</h2>
-        <div class="languages-grid">
-          ${data.languages.map(lang => `
-            <div class="language-item">
-              <span class="lang-name">${lang.name}</span>
-              <span class="lang-level">${lang.level}</span>
+        <div class="language-groups">
+          ${sortedLevels.map(level => `
+            <div class="language-group">
+              <span class="language-list">${languagesByLevel[level].join(', ')}: <span class="language-level-label">${level}</span></span>
             </div>
           `).join('')}
         </div>
