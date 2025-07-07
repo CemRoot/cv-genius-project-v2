@@ -8,7 +8,7 @@ import {
   Eye, EyeOff, Save, RefreshCw, Plus, Trash2, Edit,
   ChevronRight, Home, Menu, X, Bell, Search, Filter,
   Users, Activity, Server, Database, Globe, Zap, Wand2,
-  Loader2
+  Loader2, Variable
 } from 'lucide-react'
 import './admin-login.css'
 
@@ -51,6 +51,7 @@ import { SecurityHeader } from '@/components/admin/security-header'
 import { MaintenanceToggleManagement } from '@/components/admin/maintenance-toggle-management'
 import AdsManagement from '@/components/admin/ads-management'
 import AdSenseConfiguration from '@/components/admin/adsense-config'
+import EnvironmentManager from '@/components/admin/environment-manager'
 
 // Types
 interface AdminStats {
@@ -293,6 +294,7 @@ export default function AdminPanel() {
     { id: 'users', label: 'Users', icon: Users },
     { id: 'content', label: 'Content & Prompts', icon: FileText },
     { id: 'ads', label: 'Ads & Revenue', icon: DollarSign },
+    { id: 'environment', label: 'Environment Variables', icon: Variable },
     { id: 'system', label: 'System', icon: Server },
     { id: 'settings', label: 'Settings', icon: Settings },
   ]
@@ -562,6 +564,7 @@ export default function AdminPanel() {
                 </TabsContent>
               </Tabs>
             )}
+            {activeSection === 'environment' && <EnvironmentManager />}
             {activeSection === 'system' && <SystemSection systemHealth={systemHealth} />}
             {activeSection === 'settings' && <SettingsSection />}
           </div>

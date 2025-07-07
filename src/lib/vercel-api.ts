@@ -135,6 +135,46 @@ export class VercelAPI {
   }
   
   /**
+   * Delete environment variable from Vercel
+   */
+  static async deleteEnvironmentVariable(variableId: string): Promise<{ success: boolean; message: string }> {
+    const token = process.env.VERCEL_TOKEN
+    const projectId = process.env.VERCEL_PROJECT_ID
+    
+    if (!token || !projectId) {
+      return {
+        success: false,
+        message: 'Vercel API credentials not configured'
+      }
+    }
+    
+    try {
+      const response = await fetch(`${this.BASE_URL}/v9/projects/${projectId}/env/${variableId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error?.message || 'Failed to delete environment variable')
+      }
+      
+      return {
+        success: true,
+        message: 'Successfully deleted environment variable from Vercel'
+      }
+    } catch (error) {
+      console.error('Vercel API Error:', error)
+      return {
+        success: false,
+        message: `Failed to delete environment variable: ${error instanceof Error ? error.message : 'Unknown error'}`
+      }
+    }
+  }
+
+  /**
    * Update admin password hash in Vercel
    */
   static async updateAdminPasswordHash(newPasswordHash: string): Promise<{ success: boolean; message: string }> {
