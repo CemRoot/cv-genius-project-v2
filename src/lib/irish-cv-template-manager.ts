@@ -1101,10 +1101,10 @@ export class IrishCVTemplateManager {
       }
       
       .reference-item {
-        margin-bottom: 1rem;
-        padding: 0.8rem;
-        background: #ffffff;
-        border: 1px solid #000000;
+        margin-bottom: 20px;
+        padding: 0;
+        background: transparent;
+        border: none;
       }
       
       .reference-item h3 {
@@ -1603,10 +1603,10 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .reference-item {
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #ffffff; /* White background for ATS */
-        border: 1px solid #000000;
+        margin-bottom: 20px;
+        padding: 0;
+        background: transparent;
+        border: none;
       }
       
       .cv-container.classic .reference-item h3 {
@@ -1993,11 +1993,10 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .reference-item {
-        margin-bottom: 1rem;
-        padding: 0.8rem;
-        background: #f0fdfa;
-        border: 1px solid #0d9488;
-        border-radius: 0.25rem;
+        margin-bottom: 20px;
+        padding: 0;
+        background: transparent;
+        border: none;
       }
       
       .dublin-pharma .reference-item h3 {

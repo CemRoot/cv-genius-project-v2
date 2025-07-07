@@ -427,67 +427,15 @@ export function WebBuilderFlow() {
                         </div>
                       </div>
                     )}
-                    {/* Multi-page preview rendering */}
-                    {estimatedPageCount > 1 ? (
-                      // Multiple pages view
-                      <div className="space-y-8">
-                        {Array.from({ length: estimatedPageCount }, (_, pageIndex) => (
-                          <div key={pageIndex} className="relative">
-                            {/* Page number badge */}
-                            <div className="absolute -top-3 right-4 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg z-10 font-medium">
-                              Page {pageIndex + 1} of {estimatedPageCount}
-                            </div>
-                            
-                            <Card className="shadow-lg bg-white overflow-hidden">
-                              {/* Inject CSS */}
-                              <style dangerouslySetInnerHTML={{ __html: previewCss }} />
-                              
-                              {/* Render CV content in A4 page */}
-                              <div 
-                                className="cv-preview-page"
-                                style={{
-                                  width: '100%',
-                                  aspectRatio: '210 / 297', // A4 aspect ratio
-                                  maxWidth: '210mm',
-                                  overflow: 'hidden',
-                                  position: 'relative',
-                                  backgroundColor: 'white'
-                                }}
-                              >
-                                {/* Content specific to each page - removed fixed section indicator */}
-                                
-                                <div 
-                                  className="cv-preview-page-content"
-                                  style={{
-                                    position: 'absolute',
-                                    top: pageIndex === 0 ? '0' : '-100%',
-                                    transform: pageIndex > 0 ? `translateY(-${(pageIndex - 1) * 100}%)` : 'none',
-                                    left: 0,
-                                    right: 0
-                                  }}
-                                  dangerouslySetInnerHTML={{ __html: previewHtml }}
-                                />
-                              </div>
-                            </Card>
-                            
-                            {/* Page break indicator */}
-                            {pageIndex < estimatedPageCount - 1 && (
-                              <div className="relative h-8 my-4">
-                                <div className="absolute inset-0 flex items-center">
-                                  <div className="w-full border-t-2 border-dashed border-gray-300"></div>
-                                </div>
-                                <div className="relative flex justify-center">
-                                  <span className="cv-page-break-text">
-                                    Page Break - Sayfa Sonu
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      // Single page view
+                    {/* Single page preview with page count indicator */}
+                    <div className="relative">
+                      {/* Page count indicator */}
+                      {estimatedPageCount > 1 && (
+                        <div className="absolute -top-3 right-4 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg z-10 font-medium">
+                          Estimated: {estimatedPageCount} pages
+                        </div>
+                      )}
+                      
                       <Card className="shadow-lg bg-white">
                         {/* Inject CSS */}
                         <style dangerouslySetInnerHTML={{ __html: previewCss }} />
@@ -496,8 +444,17 @@ export function WebBuilderFlow() {
                           className="cv-preview-container"
                           dangerouslySetInnerHTML={{ __html: previewHtml }}
                         />
+                        
+                        {/* Page break warning if multiple pages */}
+                        {estimatedPageCount > 1 && (
+                          <div className="border-t-2 border-dashed border-orange-300 mx-4 pt-4 pb-2">
+                            <div className="text-center text-sm text-orange-600 font-medium">
+                              ⚠️ Bu CV yaklaşık {estimatedPageCount} sayfa - PDF export'ta sayfa geçişlerini kontrol edin
+                            </div>
+                          </div>
+                        )}
                       </Card>
-                    )}
+                    </div>
                   </>
                 ) : (
                   <Card className="shadow-lg bg-white p-12">
