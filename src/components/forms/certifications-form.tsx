@@ -305,111 +305,216 @@ export function CertificationsForm() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-cvgenius-primary/20 rounded-lg p-6 bg-cvgenius-primary/5"
+          className="border border-cvgenius-primary/20 rounded-xl p-8 bg-gradient-to-br from-cvgenius-primary/5 to-blue-50/30 shadow-sm"
         >
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Award className="h-5 w-5 text-cvgenius-primary" />
-            Add New Certification
-          </h3>
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <div className="p-2 bg-cvgenius-primary/10 rounded-lg">
+                <Award className="h-6 w-6 text-cvgenius-primary" />
+              </div>
+              Add New Certification
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Add your professional certifications to showcase your expertise and qualifications.
+            </p>
+          </div>
           
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="certName">
-                  Certification Name <span className="text-red-500">*</span>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Basic Information Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                  <span className="text-sm font-semibold text-blue-600">1</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">Basic Information</h4>
+                <span className="text-xs text-red-500 font-medium">* Required fields</span>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="certName" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Award className="h-4 w-4 text-gray-500" />
+                    Certification Name
+                    <span className="text-red-500 ml-1" title="Required field">*</span>
+                  </Label>
+                  <Input
+                    id="certName"
+                    {...register("name")}
+                    placeholder="e.g., AWS Certified Solutions Architect"
+                    className={`h-12 ${errors.name ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="certIssuer" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    Issuing Organization
+                    <span className="text-red-500 ml-1" title="Required field">*</span>
+                  </Label>
+                  <Input
+                    id="certIssuer"
+                    {...register("issuer")}
+                    placeholder="e.g., Amazon Web Services"
+                    className={`h-12 ${errors.issuer ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                  />
+                  {errors.issuer && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.issuer.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Date Information Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
+                  <span className="text-sm font-semibold text-green-600">2</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">Date Information</h4>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="certIssueDate" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    Issue Date
+                    <span className="text-red-500 ml-1" title="Required field">*</span>
+                  </Label>
+                  <Input
+                    id="certIssueDate"
+                    {...register("issueDate")}
+                    type="month"
+                    className={`h-12 ${errors.issueDate ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                  />
+                  {errors.issueDate && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.issueDate.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">When did you receive this certification?</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="certExpiryDate" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    Expiry Date
+                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="certExpiryDate"
+                    {...register("expiryDate")}
+                    type="month"
+                    className="h-12 border-gray-300 focus:border-cvgenius-primary"
+                  />
+                  <p className="text-xs text-gray-500">Leave empty if certification doesn't expire</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Credential Details Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full">
+                  <span className="text-sm font-semibold text-purple-600">3</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">Credential Details</h4>
+                <span className="text-xs text-gray-500 font-medium">Optional - helps with verification</span>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="certCredentialId" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4 text-gray-500" />
+                    Credential ID
+                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="certCredentialId"
+                    {...register("credentialId")}
+                    placeholder="e.g., ABC123XYZ789"
+                    className="h-12 border-gray-300 focus:border-cvgenius-primary"
+                  />
+                  <p className="text-xs text-gray-500">Unique identifier provided by the issuing organization</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="certUrl" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4 text-gray-500" />
+                    Verification URL
+                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="certUrl"
+                    {...register("url")}
+                    placeholder="https://verify.example.com"
+                    className={`h-12 ${errors.url ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                  />
+                  {errors.url && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.url.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">Link where employers can verify your certification</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Information Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-full">
+                  <span className="text-sm font-semibold text-orange-600">4</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">Additional Information</h4>
+                <span className="text-xs text-gray-500 font-medium">Optional - provides context</span>
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="certDescription" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Edit2 className="h-4 w-4 text-gray-500" />
+                  Description
+                  <span className="text-xs text-gray-500 ml-2">(Optional)</span>
                 </Label>
-                <Input
-                  id="certName"
-                  {...register("name")}
-                  placeholder="AWS Certified Developer"
-                  className={errors.name ? "border-red-500" : ""}
+                <Textarea
+                  id="certDescription"
+                  {...register("description")}
+                  placeholder="Brief description of what this certification covers, skills demonstrated, or its relevance to your career..."
+                  rows={4}
+                  className="border-gray-300 focus:border-cvgenius-primary resize-none"
                 />
-                {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="certIssuer">
-                  Issuing Organization <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="certIssuer"
-                  {...register("issuer")}
-                  placeholder="Amazon Web Services"
-                  className={errors.issuer ? "border-red-500" : ""}
-                />
-                {errors.issuer && (
-                  <p className="text-sm text-red-500">{errors.issuer.message}</p>
-                )}
+                <p className="text-xs text-gray-500">
+                  Help employers understand the value and relevance of this certification (max 200 characters recommended)
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="certIssueDate">
-                  Issue Date <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="certIssueDate"
-                  {...register("issueDate")}
-                  type="month"
-                  className={errors.issueDate ? "border-red-500" : ""}
-                />
-                {errors.issueDate && (
-                  <p className="text-sm text-red-500">{errors.issueDate.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="certExpiryDate">Expiry Date (if applicable)</Label>
-                <Input
-                  id="certExpiryDate"
-                  {...register("expiryDate")}
-                  type="month"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="certCredentialId">Credential ID</Label>
-                <Input
-                  id="certCredentialId"
-                  {...register("credentialId")}
-                  placeholder="ABC123XYZ"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="certUrl">Verification URL</Label>
-                <Input
-                  id="certUrl"
-                  {...register("url")}
-                  placeholder="https://verify.example.com"
-                  className={errors.url ? "border-red-500" : ""}
-                />
-                {errors.url && (
-                  <p className="text-sm text-red-500">{errors.url.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="certDescription">Description (optional)</Label>
-              <Textarea
-                id="certDescription"
-                {...register("description")}
-                placeholder="Brief description of what this certification covers..."
-                rows={2}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={handleCancel}>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleCancel}
+                className="h-12 px-8 text-gray-700 border-gray-300 hover:bg-gray-50"
+              >
+                <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
-              <Button type="submit">
+              <Button 
+                type="submit"
+                className="h-12 px-8 bg-cvgenius-primary hover:bg-cvgenius-primary/90 text-white font-medium"
+              >
+                <Save className="h-4 w-4 mr-2" />
                 Add Certification
               </Button>
             </div>

@@ -38,6 +38,49 @@ export function useAdSenseLoader(clientId?: string) {
       return false
     }
 
+    // Check if script was already loaded by layout.tsx
+    const existingScript = document.querySelector(`script[src*="adsbygoogle.js"]`)
+    if (existingScript) {
+      // Script already exists, check if adsbygoogle is available
+      if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+        scriptLoaded = true
+        setState(prev => ({ 
+          ...prev, 
+          isLoaded: true, 
+          isLoading: false, 
+          error: null,
+          isAvailable: true
+        }))
+        return true
+      } else {
+        // Wait for the existing script to initialize
+        return new Promise((resolve) => {
+          let attempts = 0
+          const checkInterval = setInterval(() => {
+            attempts++
+            if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+              clearInterval(checkInterval)
+              scriptLoaded = true
+              setState(prev => ({ 
+                ...prev, 
+                isLoaded: true, 
+                isLoading: false, 
+                error: null,
+                isAvailable: true
+              }))
+              resolve(true)
+            } else if (attempts > 50) { // 5 seconds timeout
+              clearInterval(checkInterval)
+              const error = 'AdSense script available but adsbygoogle not ready'
+              scriptError = error
+              setState(prev => ({ ...prev, isLoaded: false, isLoading: false, error }))
+              resolve(false)
+            }
+          }, 100)
+        })
+      }
+    }
+
     const adSenseClient = clientId || process.env.NEXT_PUBLIC_ADSENSE_CLIENT
     if (!adSenseClient) {
       const error = 'AdSense client ID not configured'
@@ -111,24 +154,7 @@ export function useAdSenseLoader(clientId?: string) {
         handleError('AdSense script failed to load')
       }
 
-      // Check if script is already in the document
-      const existingScript = document.querySelector(`script[src*="adsbygoogle.js"]`)
-      if (existingScript) {
-        // Script already exists, check if adsbygoogle is available
-        if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-          handleSuccess()
-        } else {
-          // Wait a bit for the existing script to initialize
-          setTimeout(() => {
-            if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-              handleSuccess()
-            } else {
-              handleError('Existing AdSense script not responding')
-            }
-          }, 2000)
-        }
-        return
-      }
+      // Note: Script existence check moved to top of function
 
       // Add script to document
       try {
@@ -171,10 +197,36 @@ export function useAdSenseLoader(clientId?: string) {
     return false
   }, [state.isLoaded, initializeAdSense])
 
-  // Load script on mount in production
+  // Check script status on mount
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') {
-      loadScript()
+      // First check if AdSense is already available
+      if (typeof window !== 'undefined') {
+        const existingScript = document.querySelector(`script[src*="adsbygoogle.js"]`)
+        if (existingScript && (window as any).adsbygoogle) {
+          // Script already loaded and ready
+          scriptLoaded = true
+          setState(prev => ({ 
+            ...prev, 
+            isLoaded: true, 
+            isLoading: false, 
+            error: null,
+            isAvailable: true
+          }))
+        } else {
+          // Load or wait for script
+          loadScript()
+        }
+      }
+    } else {
+      // Development mode
+      setState(prev => ({ 
+        ...prev, 
+        isLoaded: false, 
+        isLoading: false, 
+        error: 'Development mode - AdSense disabled',
+        isAvailable: false
+      }))
     }
   }, [loadScript])
 
