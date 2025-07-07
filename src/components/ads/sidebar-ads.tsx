@@ -11,15 +11,14 @@ interface SidebarAdsProps {
 
 export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const [showAd, setShowAd] = useState(false)
-  const { slots: adSenseSlots } = useAdSenseConfig()
   
-  let getAdsByType, adminSettings
-  try {
-    ({ getAdsByType, adminSettings } = useAdConfig())
-  } catch (error) {
-    // Context henüz yüklenmemişse default davranış
-    return null
-  }
+  // Always call hooks unconditionally
+  const { slots: adSenseSlots } = useAdSenseConfig()
+  const adConfigHook = useAdConfig()
+  
+  // Use default values if context not ready
+  const getAdsByType = adConfigHook.getAdsByType || (() => [])
+  const adminSettings = adConfigHook.adminSettings || { enableAds: false }
 
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {
@@ -41,15 +40,13 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
 
   useEffect(() => {
-    // Show ad after delay
-    const delay = adConfig.settings?.delay || 2000
-
+    // Show ad after delay - fixed delay to prevent dependency issues
     const timer = setTimeout(() => {
       setShowAd(true)
-    }, delay)
+    }, 2000) // Fixed 2 second delay
 
     return () => clearTimeout(timer)
-  }, []) // dependency array boşaltıldı - sadece mount'ta çalışsın
+  }, []) // Empty dependency array - runs only on mount - sadece mount'ta çalışsın
 
   // Initialize AdSense when conditions are met
   useEffect(() => {

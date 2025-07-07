@@ -13,15 +13,26 @@ interface BannerAdsProps {
 
 export function BannerAds({ className = '', size = 'large', position = 'header' }: BannerAdsProps) {
   const [showCleanAd, setShowCleanAd] = useState(false)
-  const { slots: adSenseSlots } = useAdSenseConfig()
+  const [isContextReady, setIsContextReady] = useState(false)
   
-  let getAdsByType, adminSettings
-  try {
-    ({ getAdsByType, adminSettings } = useAdConfig())
-  } catch (error) {
-    // Context not ready yet, show placeholder
-    getAdsByType = () => []
-    adminSettings = { enableAds: false, mobileAds: false, testMode: true, monetagPopup: false, monetagPush: false, monetagNative: false }
+  // Always call hooks unconditionally
+  const { slots: adSenseSlots } = useAdSenseConfig()
+  const adConfigHook = useAdConfig()
+  
+  // Set context ready state
+  useEffect(() => {
+    setIsContextReady(true)
+  }, [])
+  
+  // Use default values if context not ready
+  const getAdsByType = adConfigHook.getAdsByType || (() => [])
+  const adminSettings = adConfigHook.adminSettings || { 
+    enableAds: false, 
+    mobileAds: false, 
+    testMode: true, 
+    monetagPopup: false, 
+    monetagPush: false, 
+    monetagNative: false 
   }
 
   // Extract AdSense info from admin config (first matching banner)
@@ -58,15 +69,13 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const hasValidSlot = adSlot && !adSlot.includes('your_')
 
   useEffect(() => {
-    // Basic display control
-    const delay = adConfig?.settings?.delay || 2000
-
+    // Basic display control - fixed delay to prevent dependency issues
     const timer = setTimeout(() => {
       setShowCleanAd(true)
-    }, delay)
+    }, 2000) // Fixed 2 second delay
 
     return () => clearTimeout(timer)
-  }, []) // dependency array'i boşaltıldı - sadece mount'ta çalışsın
+  }, []) // Empty dependency array - runs only on mount
 
   // AdSense ads initialization with error handling
   useEffect(() => {
@@ -82,6 +91,27 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
       return () => clearTimeout(timer)
     }
   }, [showCleanAd, isLoaded, error, hasValidSlot]) // pushAdConfig kaldırıldı
+
+  // Browser extension error handling
+  useEffect(() => {
+    // Suppress browser extension errors
+    const originalError = window.console.error
+    window.console.error = (...args) => {
+      const message = args[0]
+      if (typeof message === 'string' && 
+          (message.includes('Could not establish connection') ||
+           message.includes('Receiving end does not exist') ||
+           message.includes('runtime.lastError'))) {
+        // Suppress extension-related errors
+        return
+      }
+      originalError.apply(console, args)
+    }
+
+    return () => {
+      window.console.error = originalError
+    }
+  }, [])
 
   return (
     <div className={`w-full mx-auto relative z-20 ${className}`}>
