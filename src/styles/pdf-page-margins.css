@@ -1,0 +1,155 @@
+/* PDF Page Margins Fix
+ * Ensures all pages in multi-page PDFs have consistent 15mm top margins
+ * Fixes the issue where page 2+ had insufficient top margin (3mm instead of 15mm)
+ */
+
+/* Screen styles for PDF export preparation */
+@media screen {
+  /* Base container with proper margins for PDF export */
+  .pdf-export-container,
+  .cv-export-content,
+  .cv-preview-container {
+    box-sizing: border-box !important;
+    padding: 42.5px !important; /* 15mm in pixels at 72 DPI */
+    margin: 0 auto !important;
+    background: #ffffff !important;
+  }
+  
+  /* Ensure page breaks maintain proper top margins */
+  .page-break {
+    margin-top: 42.5px !important; /* 15mm top margin for new pages */
+    padding-top: 0 !important;
+    page-break-before: always;
+  }
+  
+  /* Sections that might start on new pages */
+  .section.certifications,
+  .section.projects,
+  .section.languages,
+  .section.references {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+/* Print media query - the most important part for PDF generation */
+@media print {
+  /* Define page margins for ALL pages */
+  @page {
+    size: A4;
+    margin-top: 15mm !important;
+    margin-bottom: 15mm !important;
+    margin-left: 15mm !important;
+    margin-right: 15mm !important;
+  }
+  
+  /* Ensure FIRST page has correct margins */
+  @page :first {
+    margin-top: 15mm !important;
+    margin-bottom: 15mm !important;
+    margin-left: 15mm !important;
+    margin-right: 15mm !important;
+  }
+  
+  /* Ensure LEFT pages (even page numbers) have correct margins */
+  @page :left {
+    margin-top: 15mm !important;
+    margin-bottom: 15mm !important;
+    margin-left: 15mm !important;
+    margin-right: 15mm !important;
+  }
+  
+  /* Ensure RIGHT pages (odd page numbers) have correct margins */
+  @page :right {
+    margin-top: 15mm !important;
+    margin-bottom: 15mm !important;
+    margin-left: 15mm !important;
+    margin-right: 15mm !important;
+  }
+  
+  /* Remove container padding since @page margins handle spacing */
+  .pdf-export-container,
+  .cv-export-content,
+  .cv-preview-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* Ensure body doesn't add conflicting margins */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Page break handling */
+  .page-break {
+    page-break-before: always !important;
+    margin-top: 0 !important; /* @page margins handle the spacing */
+    padding-top: 0 !important;
+  }
+  
+  /* Prevent content from being split across pages */
+  .section,
+  .experience-item,
+  .education-item,
+  .certification-item,
+  .project-item,
+  .reference-item {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Ensure headings don't get orphaned */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  
+  /* Keep related content together */
+  .section-header + .section-content {
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+}
+
+/* Webkit-specific fixes for PDF generation */
+@media print and (-webkit-min-device-pixel-ratio: 0) {
+  @page {
+    margin-top: 15mm !important;
+    margin-bottom: 15mm !important;
+    margin-left: 15mm !important;
+    margin-right: 15mm !important;
+  }
+  
+  /* Additional webkit-specific page margin enforcement */
+  @page :first {
+    -webkit-margin-top: 15mm !important;
+    -webkit-margin-bottom: 15mm !important;
+    -webkit-margin-left: 15mm !important;
+    -webkit-margin-right: 15mm !important;
+  }
+}
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+  @media print {
+    @page {
+      margin-top: 15mm !important;
+      margin-bottom: 15mm !important;
+      margin-left: 15mm !important;
+      margin-right: 15mm !important;
+    }
+  }
+}
+
+/* Edge/Internet Explorer specific fixes */
+@media print and (-ms-high-contrast: none), print and (-ms-high-contrast: active) {
+  @page {
+    margin-top: 15mm !important;
+    margin-bottom: 15mm !important;
+    margin-left: 15mm !important;
+    margin-right: 15mm !important;
+  }
+}

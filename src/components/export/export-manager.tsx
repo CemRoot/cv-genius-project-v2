@@ -131,12 +131,15 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         // Create a temporary container for the CV
         const tempContainer = document.createElement('div')
         tempContainer.id = 'temp-cv-export-mobile'
+        tempContainer.className = 'pdf-export-container cv-export-content'
         tempContainer.style.position = 'fixed'
         tempContainer.style.left = '-9999px'
         tempContainer.style.top = '0'
         tempContainer.style.width = '794px' // A4 width
         tempContainer.style.backgroundColor = '#ffffff'
         tempContainer.style.overflow = 'visible'
+        tempContainer.style.padding = '42.5px' // 15mm margins
+        tempContainer.style.boxSizing = 'border-box'
         document.body.appendChild(tempContainer)
         
         try {
@@ -235,6 +238,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         const containerId = 'temp-cv-export'
         const tempContainer = document.createElement('div')
         tempContainer.id = containerId
+        tempContainer.className = 'pdf-export-container cv-export-content'
         tempContainer.style.position = 'absolute'
         tempContainer.style.left = '0'
         tempContainer.style.top = '0'
@@ -242,6 +246,8 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         tempContainer.style.pointerEvents = 'none'
         tempContainer.style.width = '794px'
         tempContainer.style.background = '#ffffff'
+        tempContainer.style.padding = '42.5px' // 15mm margins
+        tempContainer.style.boxSizing = 'border-box'
         document.body.appendChild(tempContainer)
 
         // Dynamically import ReactDOM to avoid SSR issues

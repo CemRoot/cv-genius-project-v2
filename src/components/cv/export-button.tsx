@@ -71,11 +71,61 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
             @media print {
               @page {
                 size: A4;
-                margin: 0;
+                margin-top: 15mm;
+                margin-bottom: 15mm;
+                margin-left: 15mm;
+                margin-right: 15mm;
               }
+              
+              /* Ensure consistent margins on all pages */
+              @page :first {
+                margin-top: 15mm;
+                margin-bottom: 15mm;
+                margin-left: 15mm;
+                margin-right: 15mm;
+              }
+              
+              @page :left {
+                margin-top: 15mm;
+                margin-bottom: 15mm;
+                margin-left: 15mm;
+                margin-right: 15mm;
+              }
+              
+              @page :right {
+                margin-top: 15mm;
+                margin-bottom: 15mm;
+                margin-left: 15mm;
+                margin-right: 15mm;
+              }
+              
               body {
                 margin: 0;
                 padding: 0;
+              }
+              
+              /* Ensure content doesn't bleed into margins */
+              .cv-content,
+              .cv-preview-container,
+              .a4-page {
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              
+              /* Page break handling with proper margins */
+              .page-break {
+                page-break-before: always;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+              }
+              
+              /* Avoid breaking elements */
+              .section,
+              .experience-item,
+              .education-item,
+              .certification-item {
+                page-break-inside: avoid;
+                break-inside: avoid;
               }
             }
             body {

@@ -760,9 +760,16 @@ export class PDFGenerator {
   }
 
   private checkPageBreak(requiredSpace: number) {
+    // Check if we need a page break (leaving space for bottom margin)
     if (this.currentY + requiredSpace > this.pageHeight - this.margins.bottom - 20) {
       this.doc.addPage()
+      // Reset Y position to top margin for the new page
       this.currentY = this.margins.top
+      
+      // Ensure consistent top margin on all pages (15mm = ~42.5 points)
+      const topMarginMm = 15
+      const topMarginPoints = topMarginMm * 72 / 25.4 // Convert mm to points
+      this.currentY = topMarginPoints
     }
   }
 

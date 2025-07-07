@@ -6,13 +6,17 @@ import { registerPDFFonts, getFontFamilyForPDF } from '@/lib/pdf-fonts'
 // Using web-safe fonts to avoid CORS issues
 // No font registration needed for Helvetica, Times-Roman
 
-// Common styles for all templates
+// Common styles for all templates with proper margins
 const commonStyles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
     lineHeight: 1.4,
-    padding: 40,
+    // Use 15mm (42.5pt) margins for consistency with CSS @page rules
+    paddingTop: 42.5,
+    paddingBottom: 42.5,
+    paddingLeft: 42.5,
+    paddingRight: 42.5,
     backgroundColor: '#ffffff'
   },
   header: {
@@ -598,7 +602,11 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         fontFamily: 'Helvetica', // Always use Helvetica for better text rendering
         fontSize: settings.fontSize,
         lineHeight: 1.0, // Global lineHeight for PDF - ultra-tight spacing
-        padding: `${settings.margins * 72}pt`, // Convert inches to points
+        // Use consistent 15mm (42.5pt) margins instead of variable margins
+        paddingTop: 42.5,
+        paddingBottom: 42.5,
+        paddingLeft: 42.5,
+        paddingRight: 42.5,
         backgroundColor: '#ffffff'
       }}>
         {/* Header - Left aligned professional format */}

@@ -1,5 +1,6 @@
 @import url('../styles/design-tokens.css');
 @import url('../styles/cv-preview-pages.css');
+@import url('../styles/pdf-page-margins.css');
 
 @tailwind base;
 @tailwind components;
@@ -235,8 +236,33 @@
 /* Print styles for CV export */
 @media print {
   @page {
-    margin: 0;
     size: A4;
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
+  /* Ensure consistent margins on all pages */
+  @page :first {
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
+  @page :left {
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
+  @page :right {
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
   }
   
   body {

@@ -9,6 +9,8 @@
   margin: 0 auto;
   background: white;
   box-sizing: border-box;
+  /* Apply consistent 15mm padding for proper PDF margins */
+  padding: 42.5px !important;
   
   /* Improve text rendering */
   -webkit-font-smoothing: antialiased;
@@ -204,18 +206,72 @@
 
 /* Print media query for additional safety */
 @media print {
+  @page {
+    size: A4;
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
+  /* Ensure consistent margins on all pages */
+  @page :first {
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
+  @page :left {
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
+  @page :right {
+    margin-top: 15mm;
+    margin-bottom: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+  }
+  
   .pdf-export-container {
     width: 210mm !important;
     max-width: 210mm !important;
     min-height: 297mm !important;
     margin: 0 !important;
-    padding: 15mm !important;
+    padding: 0 !important; /* Let @page margins handle spacing */
     font-size: 12pt !important;
     line-height: 1.4 !important;
   }
   
   .pdf-section {
     margin-bottom: 20pt !important;
+  }
+  
+  /* Ensure proper spacing for page breaks */
+  .page-break,
+  .print-break-before {
+    page-break-before: always;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Prevent orphaned content */
+  .section,
+  .experience-item,
+  .education-item,
+  .certification-item,
+  .pdf-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Ensure sections that start new pages have proper spacing */
+  .section:first-child,
+  .pdf-section:first-child {
+    margin-top: 0 !important;
   }
   
   .pdf-header h1 {

@@ -164,7 +164,7 @@ export const applyMobileStyles = (element: HTMLElement): (() => void) => {
     textRendering: element.style.textRendering || ''
   }
   
-  // Apply mobile-optimized styles
+  // Apply mobile-optimized styles with proper PDF margins
   element.style.transform = 'none'
   element.style.width = '794px'
   element.style.maxWidth = '794px'
@@ -173,7 +173,8 @@ export const applyMobileStyles = (element: HTMLElement): (() => void) => {
   element.style.left = '0'
   element.style.top = '0'
   element.style.margin = '0 auto'
-  element.style.padding = '40px'
+  // Use 15mm padding (42.5px at 72 DPI) for consistent margins
+  element.style.padding = '42.5px'
   element.style.boxSizing = 'border-box'
   ;(element.style as any).fontSmooth = 'always'
   ;(element.style as any).webkitFontSmoothing = 'antialiased'
@@ -244,6 +245,22 @@ export const addTempStyles = (): (() => void) => {
       -webkit-font-smoothing: antialiased !important;
       -moz-osx-font-smoothing: grayscale !important;
       text-rendering: optimizeLegibility !important;
+    }
+    
+    /* Ensure proper page margins for PDF export */
+    @media print, screen {
+      .pdf-export-active {
+        padding: 15mm !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+      }
+    }
+    
+    /* Page break handling with margins */
+    .pdf-export-active .page-break,
+    .pdf-export-active .print-break-before {
+      margin-top: 15mm !important;
+      padding-top: 0 !important;
     }
     
     .pdf-export-active img {
