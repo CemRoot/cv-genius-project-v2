@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAdConfig } from './dynamic-ad-manager'
 import { useAdSenseConfig } from '@/hooks/use-adsense-config'
+import { useAdSenseLoader } from '@/hooks/use-adsense-loader'
 
 interface BannerAdsProps {
   className?: string
@@ -23,19 +24,24 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     adminSettings = { enableAds: false, mobileAds: false, testMode: true, monetagPopup: false, monetagPush: false, monetagNative: false }
   }
 
+  // Extract AdSense info from admin config (first matching banner)
+  const bannerAds = getAdsByType('banner').filter(ad => 
+    ad.position === position || !ad.position
+  )
+  const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
+  const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
+  
+  // Use the new AdSense loader with proper error handling
+  const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
+
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {
     return null
   }
 
-  // Environment helpers - useEffect'ten önce tanımla
+  // Environment helpers
   const isDevelopment = process.env.NODE_ENV === 'development'
   const isProduction = process.env.NODE_ENV === 'production'
-
-  // Admin ayarlarından reklam durumunu kontrol et
-  const bannerAds = getAdsByType('banner').filter(ad => 
-    ad.position === position || !ad.position
-  )
   
   if (bannerAds.length === 0) {
     return null // Reklam gösterme
@@ -48,16 +54,11 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   }
 
   const config = sizeConfig[size]
-
-  // Extract AdSense info from admin config (first matching banner)
-  const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
-  const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
   const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.headerSlot || '1006957692'
-
   const hasValidSlot = adSlot && !adSlot.includes('your_')
 
   useEffect(() => {
-    // Basit gösterim kontrolü - banner ads zaten component'te kontrol ediliyor
+    // Basic display control
     const delay = adConfig?.settings?.delay || 2000
 
     const timer = setTimeout(() => {
@@ -65,26 +66,22 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     }, delay)
 
     return () => clearTimeout(timer)
-  }, []) // Sadece ilk mount'ta çalışsın
+  }, [adConfig?.settings?.delay])
 
-  // AdSense reklamlarını yüklemek için ayrı useEffect
+  // AdSense ads initialization with error handling
   useEffect(() => {
-    if (isProduction && hasValidSlot && showCleanAd) {
-      const initializeAdSense = () => {
-        try {
-          if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-          }
-        } catch (e) {
-          console.log('AdSense initialization skipped:', e);
+    if (isProduction && hasValidSlot && showCleanAd && isLoaded && !error) {
+      // Use the safe pushAdConfig method instead of direct window access
+      const timer = setTimeout(() => {
+        const success = pushAdConfig()
+        if (!success) {
+          console.log('AdSense banner initialization failed gracefully')
         }
-      };
+      }, 500)
 
-      // Kısa bir gecikme ile AdSense'i başlat
-      const timer = setTimeout(initializeAdSense, 500);
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [showCleanAd]) // Sadece showCleanAd değiştiğinde çalışsın
+  }, [showCleanAd, isLoaded, error, hasValidSlot, pushAdConfig])
 
   return (
     <div className={`w-full mx-auto relative z-20 ${className}`}>
@@ -94,8 +91,8 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
           className="bg-white rounded border-2 overflow-hidden flex items-center justify-center relative mx-auto shadow-md"
           style={{ height: config.height, maxWidth: '728px' }}
         >
-          {/* Render real AdSense banner in production */}
-          {isProduction && hasValidSlot && showCleanAd && (
+          {/* Render real AdSense banner in production when loaded successfully */}
+          {isProduction && hasValidSlot && showCleanAd && isLoaded && !error && (
             <ins 
               className="adsbygoogle"
               style={{ display: 'block', width: '100%', height: config.height }}
@@ -106,19 +103,32 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
             />
           )}
 
-          {/* Placeholder / development view */}
-          {(!isProduction || !hasValidSlot || !showCleanAd) && (
+          {/* Placeholder / development view / error fallback */}
+          {(!isProduction || !hasValidSlot || !showCleanAd || !isLoaded || error) && (
             <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-green-50 flex items-center justify-center">
               <div className="text-center">
                 <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full">
                   <div className="w-8 h-8 bg-blue-200 rounded-full mr-2 flex items-center justify-center">
-                    <div className="text-blue-600 font-bold text-sm">🎯</div>
+                    <div className="text-blue-600 font-bold text-sm">
+                      {isLoading ? '⏳' : error ? '⚠️' : '🎯'}
+                    </div>
                   </div>
                   <div className="text-sm text-gray-600 font-medium">
-                    AdSense Banner ({config.format})
+                    {isLoading ? 'Loading AdSense...' : 
+                     error ? 'AdSense Unavailable' : 
+                     !isProduction ? 'Development Mode' :
+                     !hasValidSlot ? 'Invalid Slot' :
+                     `AdSense Banner (${config.format})`}
                   </div>
-                  <div className="text-xs text-green-600 ml-2 font-medium">✅ Admin Controlled</div>
+                  <div className="text-xs text-green-600 ml-2 font-medium">
+                    {error ? '❌ Script Error' : '✅ Admin Controlled'}
+                  </div>
                 </div>
+                {error && (
+                  <div className="text-xs text-red-600 mt-2 max-w-xs break-words">
+                    {error}
+                  </div>
+                )}
               </div>
             </div>
           )}

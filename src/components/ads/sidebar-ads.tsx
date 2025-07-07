@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useAdConfig } from './dynamic-ad-manager'
 import { useAdSenseConfig } from '@/hooks/use-adsense-config'
+import { useAdSenseLoader } from '@/hooks/use-adsense-loader'
 
 interface SidebarAdsProps {
   className?: string
 }
 
 export function SidebarAds({ className = '' }: SidebarAdsProps) {
-  const [adLoaded, setAdLoaded] = useState(false)
-  const [showPlaceholder, setShowPlaceholder] = useState(false)
+  const [showAd, setShowAd] = useState(false)
   const { slots: adSenseSlots } = useAdSenseConfig()
   
   let getAdsByType, adminSettings
@@ -26,63 +26,46 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
     return null
   }
 
-  useEffect(() => {
-    // Admin ayarlarından sidebar reklamları kontrol et
-    try {
-      const sidebarAds = getAdsByType('sidebar')
-      
-      if (sidebarAds.length === 0) {
-        return // Reklam gösterme
-      }
-
-      const adConfig = sidebarAds[0]
-      const delay = adConfig.settings?.delay || 2000
-
-      // Development modunda sadece placeholder göster
-      if (process.env.NODE_ENV === 'development') {
-        const timer = setTimeout(() => {
-          setShowPlaceholder(true)
-        }, delay)
-        return () => clearTimeout(timer)
-      }
-
-      // Production modunda gerçek AdSense reklamını yükle
-      const timer = setTimeout(() => {
-        try {
-          if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-            setAdLoaded(true)
-          }
-        } catch (error) {
-          console.log('AdSense loading deferred');
-          // Hata durumunda placeholder göster
-          setShowPlaceholder(true)
-        }
-      }, delay)
-
-      return () => clearTimeout(timer)
-    } catch (error) {
-      console.error('Sidebar ad config error:', error)
-    }
-  }, [getAdsByType])
-
-  // Admin ayarlarından reklam durumunu kontrol et
-  let sidebarAds, adConfig, adClient, adSlot
-  try {
-    sidebarAds = getAdsByType('sidebar')
-    
-    if (sidebarAds.length === 0) {
-      return null // Reklam gösterme
-    }
-
-    adConfig = sidebarAds[0]
-    adClient = adConfig.settings?.adSenseClient || 'ca-pub-1742989559393752'
-    adSlot = adSenseSlots.sidebarSlot || adConfig.settings?.adSenseSlot || '1234567890'
-  } catch (error) {
-    return null
+  // Get sidebar ads configuration
+  const sidebarAds = getAdsByType('sidebar')
+  
+  if (sidebarAds.length === 0) {
+    return null // No ads to show
   }
 
-  // Development modunda veya hata durumunda sadece placeholder göster
+  const adConfig = sidebarAds[0]
+  const adClient = adConfig.settings?.adSenseClient || 'ca-pub-1742989559393752'
+  const adSlot = adSenseSlots.sidebarSlot || adConfig.settings?.adSenseSlot || '1234567890'
+  
+  // Use the new AdSense loader with proper error handling
+  const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
+
+  useEffect(() => {
+    // Show ad after delay
+    const delay = adConfig.settings?.delay || 2000
+
+    const timer = setTimeout(() => {
+      setShowAd(true)
+    }, delay)
+
+    return () => clearTimeout(timer)
+  }, [adConfig.settings?.delay])
+
+  // Initialize AdSense when conditions are met
+  useEffect(() => {
+    if (showAd && isLoaded && !error && process.env.NODE_ENV === 'production') {
+      const timer = setTimeout(() => {
+        const success = pushAdConfig()
+        if (!success) {
+          console.log('AdSense sidebar initialization failed gracefully')
+        }
+      }, 500)
+
+      return () => clearTimeout(timer)
+    }
+  }, [showAd, isLoaded, error, pushAdConfig])
+
+  // Environment and validation checks
   const isProduction = process.env.NODE_ENV === 'production'
   const hasValidSlot = adSlot && adSlot !== 'dev-placeholder' && !adSlot.includes('your_')
 
@@ -93,8 +76,8 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
         <div className="text-xs text-gray-500 mb-2 text-center font-medium">Advertisement</div>
         <div className="bg-white rounded border overflow-hidden w-[300px] h-[300px] mx-auto flex items-center justify-center relative">
           
-          {/* Production ve geçerli slot ID'si varsa gerçek AdSense */}
-          {isProduction && hasValidSlot && !showPlaceholder && (
+          {/* Production with valid slot and AdSense loaded successfully */}
+          {isProduction && hasValidSlot && showAd && isLoaded && !error && (
             <ins 
               className="adsbygoogle"
               style={{ display: 'block', width: '300px', height: '300px' }}
@@ -105,21 +88,33 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
             />
           )}
           
-          {/* Development veya fallback placeholder */}
-          {(!isProduction || !hasValidSlot || showPlaceholder || !adLoaded) && (
+          {/* Development, error fallback, or loading placeholder */}
+          {(!isProduction || !hasValidSlot || !showAd || !isLoaded || error) && (
             <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
               <div className="text-center p-4">
                 <div className="w-16 h-16 bg-green-200 rounded-full mx-auto mb-3 flex items-center justify-center">
-                  <div className="text-green-600 font-bold text-lg">✅</div>
+                  <div className="text-green-600 font-bold text-lg">
+                    {isLoading ? '⏳' : error ? '⚠️' : '✅'}
+                  </div>
                 </div>
                 <div className="text-sm text-gray-600 font-medium">
-                  {!isProduction ? 'Development Mode' : 
-                   !hasValidSlot ? 'Configure Ad Slot' : 'Admin Controlled'}
+                  {isLoading ? 'Loading AdSense...' : 
+                   error ? 'AdSense Unavailable' : 
+                   !isProduction ? 'Development Mode' : 
+                   !hasValidSlot ? 'Configure Ad Slot' : 
+                   !showAd ? 'Preparing Ad...' : 'Admin Controlled'}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">300 x 300</div>
                 <div className="text-xs text-green-600 mt-1 font-medium">
-                  {!hasValidSlot ? 'Set Valid Slot ID' : 'AdSense Ready!'}
+                  {error ? '❌ Script Error' :
+                   !hasValidSlot ? 'Set Valid Slot ID' : 
+                   'AdSense Ready!'}
                 </div>
+                {error && (
+                  <div className="text-xs text-red-600 mt-2 max-w-xs break-words">
+                    {error}
+                  </div>
+                )}
               </div>
             </div>
           )}

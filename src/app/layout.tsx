@@ -146,11 +146,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
-        {/* Google AdSense - Only in production to prevent 400 errors in development */}
-        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-          <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
-               crossOrigin="anonymous"></script>
-        )}
+        {/* Google AdSense - Now handled by useAdSenseLoader hook for better error handling */}
         
         {/* Monetag - Only Banner Zone (No Popups) */}
         
