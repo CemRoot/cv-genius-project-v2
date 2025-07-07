@@ -57,66 +57,34 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const hasValidSlot = adSlot && !adSlot.includes('your_')
 
   useEffect(() => {
-    // Admin ayarlarından banner reklamları kontrol et
-    try {
-      const bannerAds = getAdsByType('banner').filter(ad => 
-        ad.position === position || !ad.position
-      )
-      
-      if (bannerAds.length === 0) {
-        return // Reklam gösterme
-      }
+    // Basit gösterim kontrolü - banner ads zaten component'te kontrol ediliyor
+    const delay = adConfig?.settings?.delay || 2000
 
-      const adConfig = bannerAds[0]
-      const delay = adConfig.settings?.delay || 2000
+    const timer = setTimeout(() => {
+      setShowCleanAd(true)
+    }, delay)
 
-      // Popup'sız temiz reklam sistemi
-      const timer = setTimeout(() => {
-        // Anti-popup protection
-        if (typeof window !== 'undefined') {
-          const originalOpen = window.open
-          window.open = function() {
-            console.log('Banner popup blocked for UX')
-            return null
-          }
-          
-          setTimeout(() => {
-            window.open = originalOpen
-          }, 3000)
-        }
-        
-        setShowCleanAd(true)
-      }, delay)
+    return () => clearTimeout(timer)
+  }, []) // Sadece ilk mount'ta çalışsın
 
-      return () => clearTimeout(timer)
-    } catch (error) {
-      console.error('Banner ad config error:', error)
-    }
-  }, [size, position, getAdsByType])
-
-  // AdSense reklamlarını yüklemek için ek useEffect
+  // AdSense reklamlarını yüklemek için ayrı useEffect
   useEffect(() => {
-    if (isProduction && hasValidSlot && showCleanAd && typeof window !== 'undefined') {
-      // AdSense script'inin yüklenmesini bekle
-      const loadAds = () => {
+    if (isProduction && hasValidSlot && showCleanAd) {
+      const initializeAdSense = () => {
         try {
-          if ((window as any).adsbygoogle && Array.isArray((window as any).adsbygoogle)) {
-            // AdSense'in yüklü olduğundan emin olun
+          if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-          } else {
-            // AdSense henüz yüklenmemişse biraz bekleyip tekrar dene
-            setTimeout(loadAds, 300);
           }
         } catch (e) {
-          console.error('AdSense error:', e);
+          console.log('AdSense initialization skipped:', e);
         }
       };
-      
-      // Script biraz gecikmeyle yüklensin (SSR hydration tamamlandıktan sonra)
-      const timer = setTimeout(loadAds, 500);
+
+      // Kısa bir gecikme ile AdSense'i başlat
+      const timer = setTimeout(initializeAdSense, 500);
       return () => clearTimeout(timer);
     }
-  }, [isProduction, hasValidSlot, showCleanAd])
+  }, [showCleanAd]) // Sadece showCleanAd değiştiğinde çalışsın
 
   return (
     <div className={`w-full mx-auto relative z-20 ${className}`}>
