@@ -17,16 +17,16 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   
   // Always call hooks unconditionally
   const { slots: adSenseSlots } = useAdSenseConfig()
-  const adConfigHook = useAdConfig()
+  const adConfigHook = useAdConfig() ?? {}
   
   // Set context ready state
   useEffect(() => {
     setIsContextReady(true)
   }, [])
   
-  // Use default values if context not ready
-  const getAdsByType = adConfigHook.getAdsByType || (() => [])
-  const adminSettings = adConfigHook.adminSettings || { 
+  // Safe destructuring with fallbacks
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  const adminSettings = adConfigHook.adminSettings ?? { 
     enableAds: false, 
     mobileAds: false, 
     testMode: true, 

@@ -140,8 +140,23 @@ export const AdConfigContext = React.createContext<{
 
 export const useAdConfig = () => {
   const context = React.useContext(AdConfigContext)
+  
+  // Instead of throwing error, return default values
   if (!context) {
-    throw new Error('useAdConfig must be used within DynamicAdManager')
+    return {
+      adConfigs: [],
+      adminSettings: {
+        enableAds: false,
+        mobileAds: false,
+        testMode: true,
+        monetagPopup: false,
+        monetagPush: false,
+        monetagNative: false
+      },
+      getAdsByType: () => [],
+      shouldShowAd: () => false
+    }
   }
+  
   return context
 }

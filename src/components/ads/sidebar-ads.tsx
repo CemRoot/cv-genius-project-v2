@@ -14,11 +14,11 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
   
   // Always call hooks unconditionally
   const { slots: adSenseSlots } = useAdSenseConfig()
-  const adConfigHook = useAdConfig()
+  const adConfigHook = useAdConfig() ?? {}
   
-  // Use default values if context not ready
-  const getAdsByType = adConfigHook.getAdsByType || (() => [])
-  const adminSettings = adConfigHook.adminSettings || { enableAds: false }
+  // Safe destructuring with fallbacks
+  const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
+  const adminSettings = adConfigHook.adminSettings ?? { enableAds: false }
 
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {
