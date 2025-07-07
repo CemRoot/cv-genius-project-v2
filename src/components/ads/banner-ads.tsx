@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAdConfig } from './dynamic-ad-manager'
 import { useAdSenseConfig } from '@/hooks/use-adsense-config'
 import { useAdSenseLoader } from '@/hooks/use-adsense-loader'
+import { SafeAdWrapper } from '../../../components/SafeAdWrapper'
 
 interface BannerAdsProps {
   className?: string
@@ -114,7 +115,8 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   }, [])
 
   return (
-    <div className={`w-full mx-auto relative z-20 ${className}`}>
+    <SafeAdWrapper name="BannerAds" fallbackHeight={config.height}>
+      <div className={`w-full mx-auto relative z-20 ${className}`}>
       <div className="bg-gray-50 p-3 rounded-lg shadow-sm border">
         <div className="text-xs text-gray-500 mb-2 text-center font-medium">Advertisement</div>
         <div 
@@ -180,6 +182,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </SafeAdWrapper>
   )
 } 

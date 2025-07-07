@@ -229,10 +229,36 @@ export default function RootLayout({
         {/* Mobile Keyboard Avoidance */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
         
-        {/* Console Error Suppression - Must be first! */}
+        {/* React Hook Error Tracking - Must be first! */}
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
+              // React Hook Error Tracking for Production
+              if (typeof window !== 'undefined') {
+                window.addEventListener('error', function(event) {
+                  if (event.error && event.error.message && event.error.message.includes('Hook')) {
+                    console.error('React Hook Error Details:', {
+                      message: event.error.message,
+                      stack: event.error.stack,
+                      timestamp: new Date().toISOString(),
+                      userAgent: navigator.userAgent,
+                      url: window.location.href
+                    });
+                  }
+                });
+                
+                window.addEventListener('unhandledrejection', function(event) {
+                  if (event.reason && event.reason.message && event.reason.message.includes('Hook')) {
+                    console.error('React Hook Promise Rejection:', {
+                      message: event.reason.message,
+                      stack: event.reason.stack,
+                      timestamp: new Date().toISOString(),
+                      url: window.location.href
+                    });
+                  }
+                });
+              }
+              
               // Early browser extension error suppression
               if (typeof window !== 'undefined' && window.console) {
                 const originalError = console.error;
