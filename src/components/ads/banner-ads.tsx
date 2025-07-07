@@ -140,23 +140,39 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
                 <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full">
                   <div className="w-8 h-8 bg-blue-200 rounded-full mr-2 flex items-center justify-center">
                     <div className="text-blue-600 font-bold text-sm">
-                      {isLoading ? '⏳' : error ? '⚠️' : '🎯'}
+                      {isLoading ? '⏳' : error ? '🔄' : '🎯'}
                     </div>
                   </div>
                   <div className="text-sm text-gray-600 font-medium">
                     {isLoading ? 'Loading AdSense...' : 
+                     error && error.includes('timeout') ? 'Network Timeout - Retrying...' :
+                     error && error.includes('retries') ? 'AdSense Connection Issues' :
                      error ? 'AdSense Unavailable' : 
                      !isProduction ? 'Development Mode' :
                      !hasValidSlot ? 'Invalid Slot' :
                      `AdSense Banner (${config.format})`}
                   </div>
                   <div className="text-xs text-green-600 ml-2 font-medium">
-                    {error ? '❌ Script Error' : '✅ Admin Controlled'}
+                    {error && error.includes('timeout') ? '🔄 Retrying' :
+                     error && error.includes('retries') ? '⚠️ Network Issue' :
+                     error ? '❌ Script Error' : '✅ Admin Controlled'}
                   </div>
                 </div>
                 {error && (
-                  <div className="text-xs text-red-600 mt-2 max-w-xs break-words">
-                    {error}
+                  <div className="text-center">
+                    <div className="text-xs text-red-600 mt-2 max-w-xs break-words">
+                      {error.includes('timeout') ? 'AdSense servers are slow. Retrying automatically...' :
+                       error.includes('retries') ? 'Unable to connect to AdSense after multiple attempts.' :
+                       error}
+                    </div>
+                    {error.includes('retries') && (
+                      <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-2 px-3 py-1 text-xs bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                      >
+                        🔄 Retry Page
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

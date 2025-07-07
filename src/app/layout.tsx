@@ -154,13 +154,36 @@ export default function RootLayout({
           </>
         )}
         
-        {/* Google AdSense */}
+        {/* Google AdSense with Timeout Handling */}
         {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-          <script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
-            crossOrigin="anonymous"
-          />
+          <>
+            <script
+              async
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
+              crossOrigin="anonymous"
+            />
+            <script dangerouslySetInnerHTML={{
+              __html: `
+                // AdSense timeout protection
+                (function() {
+                  var adsenseTimeout = setTimeout(function() {
+                    if (!window.adsbygoogle) {
+                      console.warn('AdSense script timeout - using fallback');
+                      window.adsbygoogle = [];
+                    }
+                  }, 10000);
+                  
+                  // Clear timeout if script loads successfully
+                  var checkAdSense = setInterval(function() {
+                    if (window.adsbygoogle) {
+                      clearTimeout(adsenseTimeout);
+                      clearInterval(checkAdSense);
+                    }
+                  }, 500);
+                })();
+              `
+            }} />
+          </>
         )}
         
         {/* Monetag - Only Banner Zone (No Popups) */}

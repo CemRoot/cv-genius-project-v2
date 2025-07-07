@@ -13,6 +13,8 @@ interface AdSenseLoaderState {
 let scriptLoadPromise: Promise<boolean> | null = null
 let scriptLoaded = false
 let scriptError: string | null = null
+let retryCount = 0
+const MAX_RETRIES = 2
 
 export function useAdSenseLoader(clientId?: string) {
   const [state, setState] = useState<AdSenseLoaderState>({
@@ -134,10 +136,10 @@ export function useAdSenseLoader(clientId?: string) {
         resolve(false)
       }
 
-      // Set timeout for script loading (10 seconds)
+      // Set timeout for script loading (15 seconds for better reliability)
       timeoutId = setTimeout(() => {
-        handleError('AdSense script load timeout (10s)')
-      }, 10000)
+        handleError('AdSense script load timeout (15s)')
+      }, 15000)
 
       script.onload = () => {
         // Additional check to ensure adsbygoogle is available
@@ -151,7 +153,18 @@ export function useAdSenseLoader(clientId?: string) {
       }
 
       script.onerror = () => {
-        handleError('AdSense script failed to load')
+        if (retryCount < MAX_RETRIES) {
+          retryCount++
+          console.log(`AdSense script failed, retrying... (${retryCount}/${MAX_RETRIES})`)
+          
+          // Reset promise and try again after delay
+          scriptLoadPromise = null
+          setTimeout(() => {
+            loadScript()
+          }, 2000 * retryCount) // Exponential backoff
+        } else {
+          handleError(`AdSense script failed to load after ${MAX_RETRIES} retries`)
+        }
       }
 
       // Note: Script existence check moved to top of function
