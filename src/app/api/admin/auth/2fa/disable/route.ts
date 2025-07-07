@@ -7,12 +7,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { password, token } = body
 
-    // Verify admin password
-    const crypto = require('crypto')
-    const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
-    const expectedHash = 'f8f403a41c6308a3b69d4d7fe1efa322be3bc6de344eb0535dd7560f79d858db'
-
-    if (passwordHash !== expectedHash) {
+    // Verify admin password using bcrypt (consistent with other endpoints)
+    const bcrypt = require('bcryptjs')
+    const adminPasswordHash = process.env.ADMIN_PWD_HASH_B64
+    
+    if (!adminPasswordHash) {
+      return NextResponse.json(
+        { error: 'Admin password not configured' },
+        { status: 500 }
+      )
+    }
+    
+    const decodedHash = Buffer.from(adminPasswordHash, 'base64').toString()
+    const isValidPassword = await bcrypt.compare(password, decodedHash)
+    
+    if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Invalid password' },
         { status: 401 }

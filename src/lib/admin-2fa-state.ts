@@ -63,11 +63,79 @@ export class Admin2FAState {
         fs.writeFileSync(STATE_FILE, JSON.stringify(this.state, null, 2))
       }
 
-      // Note: For Vercel production, you need to manually update environment variable
-      // or use a database for true persistence
+      // Update Vercel environment variable for production persistence
+      if (process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) {
+        this.updateVercelEnvironment(stateJson).catch(error => {
+          console.error('Failed to update 2FA state in Vercel:', error)
+        })
+      }
       
     } catch (error) {
       // Silent error handling for production
+    }
+  }
+
+  private static async updateVercelEnvironment(stateJson: string): Promise<void> {
+    const VERCEL_TOKEN = process.env.VERCEL_TOKEN
+    const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID
+    const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID
+
+    if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
+      throw new Error('Vercel integration not configured')
+    }
+
+    const apiUrl = VERCEL_TEAM_ID 
+      ? `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`
+      : `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env`
+
+    // Get existing env vars
+    const getResponse = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${VERCEL_TOKEN}`,
+      }
+    })
+
+    if (!getResponse.ok) {
+      throw new Error('Failed to fetch environment variables')
+    }
+
+    const envVars = await getResponse.json()
+    const existingVar = envVars.envs?.find((env: any) => env.key === this.ENV_KEY)
+
+    // Delete existing if found
+    if (existingVar) {
+      const deleteUrl = VERCEL_TEAM_ID
+        ? `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env/${existingVar.id}?teamId=${VERCEL_TEAM_ID}`
+        : `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env/${existingVar.id}`
+
+      await fetch(deleteUrl, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${VERCEL_TOKEN}`,
+        }
+      })
+    }
+
+    // Create new env var if state is not default
+    if (this.state?.enabled || this.state?.secret) {
+      const createResponse = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${VERCEL_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          key: this.ENV_KEY,
+          value: stateJson,
+          type: 'encrypted',
+          target: ['production', 'preview', 'development']
+        })
+      })
+
+      if (!createResponse.ok) {
+        const error = await createResponse.text()
+        throw new Error(`Failed to update 2FA state in Vercel: ${error}`)
+      }
     }
   }
 

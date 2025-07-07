@@ -748,13 +748,28 @@ function SecuritySection() {
   }
 
   const handlePasswordChange = async () => {
+    // Enhanced client-side validation
     if (newPassword !== confirmPassword) {
       toast.error('Passwords do not match')
       return
     }
 
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters')
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters')
+      return
+    }
+
+    // Additional password strength validation
+    if (newPassword === currentPassword) {
+      toast.error('New password must be different from current password')
+      return
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(newPassword)
+    const hasNumber = /\d/.test(newPassword)
+    
+    if (!hasLetter || !hasNumber) {
+      toast.error('Password must contain at least one letter and one number')
       return
     }
 
@@ -765,7 +780,8 @@ function SecuritySection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentPassword,
-          newPassword
+          newPassword,
+          confirmPassword
         })
       })
 
@@ -785,10 +801,45 @@ function SecuritySection() {
         setNewPassword('')
         setConfirmPassword('')
       } else {
-        toast.error(data.error || 'Failed to change password')
+        // Enhanced error handling with user-friendly messages
+        if (data.error) {
+          const errorMessage = data.error.toLowerCase()
+          
+          if (errorMessage.includes('current password is incorrect')) {
+            toast.error('Current password is incorrect. Please try again.')
+          } else if (errorMessage.includes('password must be at least')) {
+            toast.error('Password must be at least 8 characters long')
+          } else if (errorMessage.includes('passwords do not match')) {
+            toast.error('New password and confirmation do not match')
+          } else if (errorMessage.includes('must contain at least one letter')) {
+            toast.error('Password must contain at least one letter and one number')
+          } else if (errorMessage.includes('must be different from current')) {
+            toast.error('New password must be different from current password')
+          } else if (errorMessage.includes('unauthorized') || errorMessage.includes('session')) {
+            toast.error('Session expired. Please log in again.')
+            // Optionally redirect to login
+          } else {
+            toast.error(data.error)
+          }
+        } else {
+          toast.error('Failed to change password. Please try again.')
+        }
       }
     } catch (error) {
-      toast.error('Network error. Please try again.')
+      // Enhanced error handling for network issues
+      if (error instanceof TypeError) {
+        toast.error('Connection failed. Check your internet connection.')
+      } else if (error instanceof Error) {
+        if (error.message?.includes('timeout')) {
+          toast.error('Request timed out. Please try again.')
+        } else if (error.message?.includes('Session security violation')) {
+          toast.error('Session expired. Please log in again.')
+        } else {
+          toast.error('Network error. Please try again.')
+        }
+      } else {
+        toast.error('An unexpected error occurred. Please try again.')
+      }
     } finally {
       setPasswordLoading(false)
     }
