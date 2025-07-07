@@ -597,16 +597,13 @@ export class IrishCVTemplateManager {
   // CSS generation functions
   private getDublinTechCSS(): string {
     return `
-      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
-      .cv-preview-container .cv-container,
+      /* Live preview normalization */
+      .cv-preview-direct .cv-container,
       .cv-container {
-        position: static !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        width: auto !important;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
       
       .cv-container.dublin-tech {
@@ -619,6 +616,8 @@ export class IrishCVTemplateManager {
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         font-size: 11pt; /* Base font size for ATS */
         color: #000000; /* Pure black text */
+        padding: 15mm; /* Consistent margins with other templates */
+        box-sizing: border-box;
       }
       
       /* A4 Page Simulation for Web Preview */
@@ -959,16 +958,13 @@ export class IrishCVTemplateManager {
   
   private getIrishFinanceCSS(): string {
     return `
-      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
-      .cv-preview-container .cv-container,
+      /* Live preview normalization */
+      .cv-preview-direct .cv-container,
       .cv-container {
-        position: static !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        width: auto !important;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
       
       .cv-container.irish-finance {
@@ -976,7 +972,7 @@ export class IrishCVTemplateManager {
         max-width: 210mm;
         min-height: 297mm;
         margin: 0 auto;
-        padding: 25.4mm; /* 1 inch margins */
+        padding: 15mm; /* Reduced margins for better live preview */
         background: white;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         line-height: 1.3;
@@ -1312,16 +1308,13 @@ export class IrishCVTemplateManager {
   
   private getClassicCSS(): string {
     return `
-      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
-      .cv-preview-container .cv-container,
+      /* Live preview normalization */
+      .cv-preview-direct .cv-container,
       .cv-container {
-        position: static !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        width: auto !important;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
       
       /* Classic Template Styles - ATS Optimized */
@@ -1334,7 +1327,7 @@ export class IrishCVTemplateManager {
         color: #000000; /* Pure black for ATS */
         line-height: 1.3; /* Better readability */
         font-size: 12pt; /* 12pt for ATS compliance */
-        padding: 25.4mm; /* 1 inch margins for ATS */
+        padding: 15mm; /* Reduced margins for better live preview */
         box-sizing: border-box;
         min-height: 297mm; /* A4 height */
         position: relative;
@@ -1993,16 +1986,13 @@ export class IrishCVTemplateManager {
   
   private getDublinPharmaCSS(): string {
     return `
-      /* Wrapper isolation - prevent preview wrappers from affecting CV content */
-      .cv-preview-container .cv-container,
+      /* Live preview normalization */
+      .cv-preview-direct .cv-container,
       .cv-container {
-        position: static !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        width: auto !important;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
       
       /* Dublin Pharma Template Styles - ATS Optimized */
@@ -2010,7 +2000,7 @@ export class IrishCVTemplateManager {
         font-family: Arial, Calibri, sans-serif; /* ATS-friendly fonts */
         max-width: 210mm;
         margin: 0 auto;
-        padding: 25.4mm; /* 1 inch margins for ATS */
+        padding: 15mm; /* Reduced margins for better live preview */
         font-size: 12pt; /* Base 12pt for ATS */
         color: #000000; /* Pure black text */
         line-height: 1.3;

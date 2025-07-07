@@ -427,73 +427,33 @@ export function WebBuilderFlow() {
                         </div>
                       </div>
                     )}
-                    {/* Multi-page preview with real page breaks */}
-                    <div className="space-y-6">
-                      {Array.from({ length: Math.max(1, estimatedPageCount) }, (_, pageIndex) => (
-                        <div key={pageIndex} className="relative">
-                          {/* Page number indicator */}
-                          <div className="absolute -top-3 right-4 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg z-10 font-medium">
-                            Page {pageIndex + 1} of {Math.max(1, estimatedPageCount)}
+                    {/* Simplified single preview - matches PDF exactly */}
+                    <Card className="shadow-lg bg-white">
+                      {/* Inject CSS */}
+                      <style dangerouslySetInnerHTML={{ __html: previewCss }} />
+                      
+                      {/* Direct CV content without wrappers */}
+                      <div 
+                        className="cv-preview-direct"
+                        style={{
+                          width: '100%',
+                          minHeight: 'auto',
+                          backgroundColor: 'white',
+                          overflow: 'visible'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: previewHtml }}
+                      />
+                      
+                      {/* Page count info */}
+                      {estimatedPageCount > 1 && (
+                        <div className="px-4 py-2 bg-gray-50 border-t text-sm text-gray-600 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-500" />
+                            Bu CV yaklaşık {estimatedPageCount} sayfa olacaktır
                           </div>
-                          
-                          <Card className="shadow-lg bg-white overflow-hidden">
-                            {/* Inject CSS */}
-                            <style dangerouslySetInnerHTML={{ __html: previewCss }} />
-                            
-                            {/* A4 Page Container */}
-                            <div 
-                              className="cv-preview-page"
-                              style={{
-                                width: '100%',
-                                height: '1000px', // Approximate A4 height optimized for screen
-                                maxHeight: '1000px',
-                                overflow: 'hidden',
-                                position: 'relative',
-                                backgroundColor: 'white',
-                                border: '1px solid #e5e7eb'
-                              }}
-                            >
-                              {/* CV Content with page offset */}
-                              <div 
-                                className="cv-preview-container"
-                                style={{
-                                  position: 'absolute',
-                                  top: `-${pageIndex * 1000}px`, // Offset each page by container height
-                                  left: 0,
-                                  right: 0,
-                                  width: '100%',
-                                  // Prevent wrapper interference with CV content
-                                  isolation: 'isolate'
-                                }}
-                              >
-                                {/* Normalize wrapper effects on CV content */}
-                                <div 
-                                  style={{
-                                    position: 'static',
-                                    width: 'auto',
-                                    height: 'auto',
-                                    margin: 0,
-                                    padding: 0
-                                  }}
-                                  dangerouslySetInnerHTML={{ __html: previewHtml }}
-                                />
-                              </div>
-                            </div>
-                          </Card>
-                          
-                          {/* Page break indicator */}
-                          {pageIndex < estimatedPageCount - 1 && (
-                            <div className="flex items-center justify-center my-4">
-                              <div className="flex-1 border-t-2 border-dashed border-gray-300"></div>
-                              <div className="px-4 bg-gray-100 text-gray-600 text-sm font-medium rounded">
-                                Page Break
-                              </div>
-                              <div className="flex-1 border-t-2 border-dashed border-gray-300"></div>
-                            </div>
-                          )}
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </Card>
                   </>
                 ) : (
                   <Card className="shadow-lg bg-white p-12">
