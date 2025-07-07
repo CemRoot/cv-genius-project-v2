@@ -792,10 +792,20 @@ function SecuritySection() {
           toast.success('Password changed successfully and synced with Vercel!')
         } else {
           toast.success('Password changed successfully (local only)')
-          if (vercelStatus && vercelStatus.configured) {
+          if (data.vercelError) {
+            toast.error(`Vercel sync failed: ${data.vercelError}`)
+            console.error('Vercel sync error details:', data.vercelError)
+          } else if (vercelStatus && vercelStatus.configured) {
             toast.info('Failed to sync with Vercel - update may be required')
           }
         }
+        
+        // Show the new hash for manual update if Vercel failed
+        if (!data.vercelUpdated && data.newHashB64) {
+          toast.info(`Manual update required: ADMIN_PWD_HASH_B64=${data.newHashB64.substring(0, 20)}...`)
+          console.log('New password hash for manual update:', data.newHashB64)
+        }
+        
         setShowPasswordDialog(false)
         setCurrentPassword('')
         setNewPassword('')

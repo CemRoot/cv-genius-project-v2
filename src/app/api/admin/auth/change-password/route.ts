@@ -128,15 +128,33 @@ export async function POST(request: NextRequest) {
     
     // Update Vercel environment variable
     let vercelUpdateSuccess = false
+    let vercelError = ''
+    
+    // Debug: Log Vercel configuration status
+    console.log('🔍 Vercel integration status:', {
+      hasToken: !!process.env.VERCEL_TOKEN,
+      hasProjectId: !!process.env.VERCEL_PROJECT_ID,
+      hasTeamId: !!process.env.VERCEL_TEAM_ID,
+      tokenLength: process.env.VERCEL_TOKEN?.length || 0,
+      projectId: process.env.VERCEL_PROJECT_ID ? 'configured' : 'missing'
+    })
     
     if (process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) {
       try {
+        console.log('🚀 Attempting to update Vercel environment variable...')
         await updatePasswordInVercel(newHashB64)
         vercelUpdateSuccess = true
+        console.log('✅ Vercel environment variable updated successfully')
       } catch (error) {
-        const vercelError = error instanceof Error ? error.message : 'Unknown error'
-        console.error('Failed to update password in Vercel:', vercelError)
+        vercelError = error instanceof Error ? error.message : 'Unknown error'
+        console.error('❌ Failed to update password in Vercel:', {
+          error: vercelError,
+          stack: error instanceof Error ? error.stack : undefined
+        })
       }
+    } else {
+      vercelError = 'Vercel integration not configured - missing VERCEL_TOKEN or VERCEL_PROJECT_ID'
+      console.warn('⚠️ ' + vercelError)
     }
 
     // Return success response with instructions
@@ -145,9 +163,13 @@ export async function POST(request: NextRequest) {
       message: 'Password changed successfully',
       newHashB64: newHashB64,
       vercelUpdated: vercelUpdateSuccess,
+      vercelError: vercelError || undefined,
       instructions: {
         manual: 'Update your .env.local file with the new ADMIN_PWD_HASH_B64 value',
-        restart: 'Restart your development server after updating .env.local'
+        restart: 'Restart your development server after updating .env.local',
+        vercel: vercelUpdateSuccess 
+          ? 'Vercel environment variable updated automatically' 
+          : `Vercel update failed: ${vercelError}. Manual update required.`
       }
     }
 
@@ -179,13 +201,22 @@ async function updatePasswordInVercel(newHashB64: string): Promise<void> {
   const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID
   const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID
 
+  console.log('🔧 Vercel API Configuration:', {
+    hasToken: !!VERCEL_TOKEN,
+    hasProjectId: !!VERCEL_PROJECT_ID,
+    hasTeamId: !!VERCEL_TEAM_ID,
+    projectId: VERCEL_PROJECT_ID?.substring(0, 8) + '...' || 'missing'
+  })
+
   if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
-    throw new Error('Vercel integration not configured')
+    throw new Error('Vercel integration not configured - missing credentials')
   }
 
   const apiUrl = VERCEL_TEAM_ID 
     ? `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`
     : `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env`
+
+  console.log('📡 Fetching environment variables from:', apiUrl.replace(VERCEL_TOKEN, '[TOKEN]'))
 
   // Get existing env vars
   const getResponse = await fetch(apiUrl, {
@@ -194,12 +225,19 @@ async function updatePasswordInVercel(newHashB64: string): Promise<void> {
     }
   })
 
+  console.log('📥 GET Response status:', getResponse.status, getResponse.statusText)
+
   if (!getResponse.ok) {
-    throw new Error('Failed to fetch environment variables')
+    const errorText = await getResponse.text()
+    console.error('❌ Failed to fetch env vars:', errorText)
+    throw new Error(`Failed to fetch environment variables: ${getResponse.status} ${errorText}`)
   }
 
   const envVars = await getResponse.json()
+  console.log('📋 Found environment variables:', envVars.envs?.length || 0)
+  
   const existingVar = envVars.envs?.find((env: any) => env.key === 'ADMIN_PWD_HASH_B64')
+  console.log('🔍 Existing ADMIN_PWD_HASH_B64:', existingVar ? 'found' : 'not found')
 
   // Delete existing if found
   if (existingVar) {
@@ -207,15 +245,24 @@ async function updatePasswordInVercel(newHashB64: string): Promise<void> {
       ? `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env/${existingVar.id}?teamId=${VERCEL_TEAM_ID}`
       : `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env/${existingVar.id}`
 
-    await fetch(deleteUrl, {
+    console.log('🗑️ Deleting existing variable...')
+    const deleteResponse = await fetch(deleteUrl, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${VERCEL_TOKEN}`,
       }
     })
+    
+    console.log('🗑️ DELETE Response status:', deleteResponse.status, deleteResponse.statusText)
+    
+    if (!deleteResponse.ok) {
+      const deleteError = await deleteResponse.text()
+      console.warn('⚠️ Delete failed but continuing:', deleteError)
+    }
   }
 
   // Create new env var
+  console.log('➕ Creating new environment variable...')
   const createResponse = await fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -230,8 +277,14 @@ async function updatePasswordInVercel(newHashB64: string): Promise<void> {
     })
   })
 
+  console.log('➕ POST Response status:', createResponse.status, createResponse.statusText)
+
   if (!createResponse.ok) {
     const error = await createResponse.text()
-    throw new Error(`Failed to update password in Vercel: ${error}`)
+    console.error('❌ Failed to create env var:', error)
+    throw new Error(`Failed to update password in Vercel: ${createResponse.status} ${error}`)
   }
+  
+  const createResult = await createResponse.json()
+  console.log('✅ Environment variable created successfully:', createResult)
 }
