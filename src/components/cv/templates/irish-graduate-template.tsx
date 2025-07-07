@@ -315,8 +315,19 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
                 <div key={cert.id} className="flex items-start">
                   <span className="text-yellow-500 mr-2">🏆</span>
                   <div className="flex-1">
-                    <span className="font-semibold">{cert.name}</span>
-                    <span className="text-sm text-gray-600"> - {cert.issuer} ({cert.issueDate})</span>
+                    <div>
+                      <span className="font-semibold">{cert.name}</span>
+                      <span className="text-sm text-gray-600"> - {cert.issuer}</span>
+                      {cert.credentialId && (
+                        <span className="text-xs text-gray-500"> (ID: {cert.credentialId})</span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {cert.issueDate}
+                      {cert.expiryDate && (
+                        <span> • Expires: {cert.expiryDate}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

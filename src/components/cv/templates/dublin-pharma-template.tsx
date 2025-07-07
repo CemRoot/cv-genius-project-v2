@@ -272,7 +272,7 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
                   <div className="flex justify-between items-center mt-1">
                     <span className="text-xs text-gray-600">Issued: {cert.issueDate}</span>
                     {cert.expiryDate && (
-                      <span className="text-xs text-red-600">Expires: {cert.expiryDate}</span>
+                      <span className="text-xs text-gray-600">Expires: {cert.expiryDate}</span>
                     )}
                   </div>
                   {cert.credentialId && (

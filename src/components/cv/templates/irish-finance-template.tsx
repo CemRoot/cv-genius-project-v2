@@ -229,11 +229,14 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
                     <span className="font-semibold">{cert.name}</span>
                     <span className="text-sm"> - {cert.issuer}</span>
                     {cert.credentialId && (
-                      <span className="text-xs text-gray-600"> (ID: {cert.credentialId})</span>
+                      <span className="text-xs text-gray-500"> (ID: {cert.credentialId})</span>
                     )}
                   </div>
                   <div className="text-sm italic">
                     {cert.issueDate}
+                    {cert.expiryDate && (
+                      <span> • Expires: {cert.expiryDate}</span>
+                    )}
                   </div>
                 </div>
               ))}
