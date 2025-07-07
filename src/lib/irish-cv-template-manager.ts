@@ -713,7 +713,7 @@ export class IrishCVTemplateManager {
       }
       
       .sidebar-section {
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
       }
       
       .sidebar-section h2 {
@@ -783,11 +783,11 @@ export class IrishCVTemplateManager {
       }
       
       .cv-main section {
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
       }
       
       .experience-item, .education-item, .project-item {
-        margin-bottom: 1.5rem;
+        margin-bottom: 12px;
       }
       
       .exp-header, .edu-header {
@@ -819,19 +819,19 @@ export class IrishCVTemplateManager {
       }
       
       .achievements {
-        margin-top: 0.5rem;
+        margin-top: 0.3rem;
         padding-left: 1.5rem;
       }
       
       .achievements li {
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
         font-size: 12pt; /* 12pt for ATS */
         color: #000000;
         font-weight: 400;
       }
       
       .tech-stack {
-        margin-top: 0.5rem;
+        margin-top: 0.3rem;
       }
       
       .tech-tag {
@@ -873,7 +873,7 @@ export class IrishCVTemplateManager {
         padding: 25.4mm; /* 1 inch margins */
         background: white;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        line-height: 1.5;
+        line-height: 1.3;
         font-size: 12pt; /* Base 12pt for ATS */
         color: #000000;
       }
@@ -933,8 +933,8 @@ export class IrishCVTemplateManager {
           display: block;
           width: 100%;
           text-align: center;
-          margin: 2rem 0;
-          padding: 1rem 0;
+          margin: 1rem 0;
+          padding: 0.5rem 0;
           border-top: 2px dashed #ccc;
           border-bottom: 2px dashed #ccc;
           color: #666;
@@ -955,9 +955,9 @@ export class IrishCVTemplateManager {
       
       .cv-header {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         border-bottom: 3px solid #000000; /* Black for ATS */
-        padding-bottom: 1rem;
+        padding-bottom: 0.5rem;
       }
       
       .cv-header .name {
@@ -983,13 +983,13 @@ export class IrishCVTemplateManager {
       .irish-finance h2 {
         color: #000000; /* Black for ATS */
         font-size: 14pt; /* 14pt section headers */
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-weight: bold;
         border-bottom: 2px solid #000000;
-        padding-bottom: 0.5rem;
+        padding-bottom: 0.3rem;
       }
       
       .professional-profile p {
@@ -997,7 +997,8 @@ export class IrishCVTemplateManager {
         color: #000000;
         font-size: 12pt;
         font-weight: 400;
-        line-height: 1.5;
+        line-height: 1.3;
+        margin-bottom: 8px;
       }
       
       .competencies-grid {
@@ -1018,14 +1019,14 @@ export class IrishCVTemplateManager {
       }
       
       .experience-item {
-        margin-bottom: 1.5rem;
+        margin-bottom: 12px;
       }
       
       .exp-header {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
       }
       
       .exp-header .date {
@@ -1043,23 +1044,23 @@ export class IrishCVTemplateManager {
       }
       
       .achievements {
-        margin-top: 0.5rem;
+        margin-top: 0.3rem;
         padding-left: 1.5rem;
       }
       
       .achievements li {
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
         font-size: 12pt;
         color: #000000;
         font-weight: 400;
       }
       
       .education-item {
-        margin-bottom: 0.8rem;
+        margin-bottom: 12px;
       }
       
       .certifications {
-        margin-top: 1rem;
+        margin-top: 0.5rem;
       }
       
       .certifications h3 {
@@ -1101,7 +1102,7 @@ export class IrishCVTemplateManager {
       }
       
       .reference-item {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
         padding: 0;
         background: transparent;
         border: none;
@@ -1128,8 +1129,8 @@ export class IrishCVTemplateManager {
       }
       
       .cv-footer {
-        margin-top: 2rem;
-        padding-top: 1rem;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
         border-top: 1px solid #000000;
         text-align: center;
         font-size: 11pt;
@@ -1164,7 +1165,7 @@ export class IrishCVTemplateManager {
         margin: 0 auto;
         background: white;
         color: #000000; /* Pure black for ATS */
-        line-height: 1.5; /* Better readability */
+        line-height: 1.3; /* Better readability */
         font-size: 12pt; /* 12pt for ATS compliance */
         padding: 25.4mm; /* 1 inch margins for ATS */
         box-sizing: border-box;
@@ -1259,8 +1260,8 @@ export class IrishCVTemplateManager {
       /* Header */
       .cv-container.classic .cv-header {
         text-align: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
+        margin-bottom: 1rem;
+        padding-bottom: 8px;
         border-bottom: 2px solid #000;
       }
       
@@ -1305,39 +1306,39 @@ export class IrishCVTemplateManager {
         font-weight: bold;
         text-transform: uppercase;
         color: #000000;
-        margin: 25px 0 12px 0;
-        padding-bottom: 5px;
+        margin: 1rem 0 8px 0;
+        padding-bottom: 3px;
         border-bottom: 2px solid #000000; /* Thicker for better visibility */
         letter-spacing: 0.5px;
       }
       
       /* Summary */
       .cv-container.classic .summary {
-        margin-bottom: 25px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .summary p {
         font-size: 12pt; /* 12pt for ATS */
-        line-height: 1.5;
+        line-height: 1.3;
         text-align: left; /* Left align for ATS */
         color: #000000;
-        margin: 0;
+        margin: 0 0 8px 0;
         font-weight: 400;
       }
       
       /* Skills */
       .cv-container.classic .skills {
-        margin-bottom: 25px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .skills-categories {
-        margin: 15px 0 0 0;
+        margin: 8px 0 0 0;
       }
       
       .cv-container.classic .skill-category {
         display: flex;
-        margin-bottom: 8px;
-        line-height: 1.5;
+        margin-bottom: 4px;
+        line-height: 1.3;
         font-size: 12pt; /* 12pt for ATS */
       }
       
@@ -1356,11 +1357,11 @@ export class IrishCVTemplateManager {
       
       /* Experience */
       .cv-container.classic .experience {
-        margin-bottom: 25px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .experience-item {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
       }
       
       .cv-container.classic .exp-header {
@@ -1416,23 +1417,23 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .exp-description {
-        margin: 8px 0 0 0;
+        margin: 4px 0 0 0;
         font-size: 12pt; /* 12pt for ATS */
         color: #000000;
-        line-height: 1.5;
+        line-height: 1.3;
         font-weight: 400;
       }
       
       /* Achievements */
       .cv-container.classic .achievements {
-        margin: 8px 0 0 0;
+        margin: 4px 0 0 0;
         padding-left: 20px;
         list-style-type: disc;
       }
       
       .cv-container.classic .achievements li {
-        margin-bottom: 4px;
-        line-height: 1.5;
+        margin-bottom: 2px;
+        line-height: 1.3;
         font-size: 12pt; /* 12pt for ATS */
         color: #000000;
         font-weight: 400;
@@ -1440,11 +1441,11 @@ export class IrishCVTemplateManager {
       
       /* Education */
       .cv-container.classic .education {
-        margin-bottom: 25px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .education-item {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
       }
       
       .cv-container.classic .edu-header {
@@ -1486,11 +1487,11 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .projects {
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .project-item {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
       }
       
       .cv-container.classic .project-item h3 {
@@ -1502,8 +1503,8 @@ export class IrishCVTemplateManager {
       
       .cv-container.classic .project-description {
         font-size: 12pt;
-        margin-bottom: 5px;
-        line-height: 1.5;
+        margin-bottom: 3px;
+        line-height: 1.3;
         color: #000000;
         font-weight: 400;
       }
@@ -1519,11 +1520,11 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .certifications {
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .certification-item {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
       
       .cv-container.classic .cert-header {
@@ -1559,7 +1560,7 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .languages {
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .languages-grid {
@@ -1588,22 +1589,22 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .interests {
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .interests p {
         font-size: 12pt; /* 12pt for ATS */
-        line-height: 1.5;
+        line-height: 1.3;
         color: #000000;
         font-weight: 400;
       }
       
       .cv-container.classic .references {
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
       }
       
       .cv-container.classic .reference-item {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
         padding: 0;
         background: transparent;
         border: none;
@@ -1779,7 +1780,7 @@ export class IrishCVTemplateManager {
         padding: 25.4mm; /* 1 inch margins for ATS */
         font-size: 12pt; /* Base 12pt for ATS */
         color: #000000; /* Pure black text */
-        line-height: 1.5;
+        line-height: 1.3;
         background: #ffffff;
         color: #111827;
       }
@@ -1861,9 +1862,9 @@ export class IrishCVTemplateManager {
       
       .dublin-pharma .cv-header {
         text-align: center;
-        padding-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
         border-bottom: 2px solid #000000; /* Black for ATS */
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
       }
       
       .dublin-pharma .name {
@@ -1890,15 +1891,15 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma section {
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
       }
       
       .dublin-pharma h2 {
         font-size: 14pt; /* 14pt section headers */
         font-weight: bold;
         color: #000000; /* Black for ATS */
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.3rem;
         border-bottom: 2px solid #000000;
         text-transform: uppercase;
       }
@@ -1912,7 +1913,7 @@ export class IrishCVTemplateManager {
       .dublin-pharma .experience-item,
       .dublin-pharma .education-item,
       .dublin-pharma .certification-item {
-        margin-bottom: 1.5rem;
+        margin-bottom: 12px;
       }
       
       .dublin-pharma .exp-header,
@@ -1938,12 +1939,12 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .achievements {
-        margin-top: 0.5rem;
+        margin-top: 0.3rem;
         padding-left: 1.5rem;
       }
       
       .dublin-pharma .achievements li {
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.15rem;
         font-size: 12pt;
         color: #000000;
         font-weight: 400;
@@ -1993,7 +1994,7 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .reference-item {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
         padding: 0;
         background: transparent;
         border: none;

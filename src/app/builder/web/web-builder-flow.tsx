@@ -427,33 +427,59 @@ export function WebBuilderFlow() {
                         </div>
                       </div>
                     )}
-                    {/* Single page preview with page count indicator */}
-                    <div className="relative">
-                      {/* Page count indicator */}
-                      {estimatedPageCount > 1 && (
-                        <div className="absolute -top-3 right-4 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg z-10 font-medium">
-                          Estimated: {estimatedPageCount} pages
-                        </div>
-                      )}
-                      
-                      <Card className="shadow-lg bg-white">
-                        {/* Inject CSS */}
-                        <style dangerouslySetInnerHTML={{ __html: previewCss }} />
-                        {/* Render CV */}
-                        <div 
-                          className="cv-preview-container"
-                          dangerouslySetInnerHTML={{ __html: previewHtml }}
-                        />
-                        
-                        {/* Page break warning if multiple pages */}
-                        {estimatedPageCount > 1 && (
-                          <div className="border-t-2 border-dashed border-orange-300 mx-4 pt-4 pb-2">
-                            <div className="text-center text-sm text-orange-600 font-medium">
-                              ⚠️ Bu CV yaklaşık {estimatedPageCount} sayfa - PDF export'ta sayfa geçişlerini kontrol edin
-                            </div>
+                    {/* Multi-page preview with real page breaks */}
+                    <div className="space-y-6">
+                      {Array.from({ length: Math.max(1, estimatedPageCount) }, (_, pageIndex) => (
+                        <div key={pageIndex} className="relative">
+                          {/* Page number indicator */}
+                          <div className="absolute -top-3 right-4 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg z-10 font-medium">
+                            Page {pageIndex + 1} of {Math.max(1, estimatedPageCount)}
                           </div>
-                        )}
-                      </Card>
+                          
+                          <Card className="shadow-lg bg-white overflow-hidden">
+                            {/* Inject CSS */}
+                            <style dangerouslySetInnerHTML={{ __html: previewCss }} />
+                            
+                            {/* A4 Page Container */}
+                            <div 
+                              className="cv-preview-page"
+                              style={{
+                                width: '100%',
+                                height: '1000px', // Approximate A4 height optimized for screen
+                                maxHeight: '1000px',
+                                overflow: 'hidden',
+                                position: 'relative',
+                                backgroundColor: 'white',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            >
+                              {/* CV Content with page offset */}
+                              <div 
+                                className="cv-preview-container"
+                                style={{
+                                  position: 'absolute',
+                                  top: `-${pageIndex * 1000}px`, // Offset each page by container height
+                                  left: 0,
+                                  right: 0,
+                                  width: '100%'
+                                }}
+                                dangerouslySetInnerHTML={{ __html: previewHtml }}
+                              />
+                            </div>
+                          </Card>
+                          
+                          {/* Page break indicator */}
+                          {pageIndex < estimatedPageCount - 1 && (
+                            <div className="flex items-center justify-center my-4">
+                              <div className="flex-1 border-t-2 border-dashed border-gray-300"></div>
+                              <div className="px-4 bg-gray-100 text-gray-600 text-sm font-medium rounded">
+                                Page Break
+                              </div>
+                              <div className="flex-1 border-t-2 border-dashed border-gray-300"></div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </>
                 ) : (

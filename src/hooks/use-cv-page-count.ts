@@ -63,9 +63,9 @@ export function useCVPageCount(templateId?: string) {
         contentLength += 100 + (currentCV.references.length * 150)
       }
       
-      // Approximate characters per page (adjusted for formatting)
-      // Reduced to match actual A4 page capacity with margins
-      const CHARS_PER_PAGE = 2800
+      // Approximate characters per page (adjusted for compact formatting)
+      // Increased due to reduced spacing and line-height (1.3 instead of 1.5)
+      const CHARS_PER_PAGE = 3200
       
       // Calculate pages with a minimum of 1
       const calculatedPages = Math.max(1, Math.ceil(contentLength / CHARS_PER_PAGE))
