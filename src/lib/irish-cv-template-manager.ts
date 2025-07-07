@@ -391,8 +391,25 @@ export class IrishCVTemplateManager {
   }
   
   private renderIrishFinance(data: CVData): string {
+    // Use sections array if available, otherwise use default sections
+    const sections = data.sections && data.sections.length > 0 
+      ? data.sections 
+      : this.getDefaultSections()
+    
+    // Sort sections by order and filter visible ones
+    const visibleSections = sections
+      .filter(section => section.visible)
+      .sort((a, b) => a.order - b.order)
+    
+    // Render dynamic sections
+    const sectionHTML = visibleSections
+      .map(section => this.getSectionRenderer(section.type)(data))
+      .filter(html => html.trim() !== '') // Remove empty sections
+      .join('')
+
     return `
       <div class="cv-container irish-finance">
+        <!-- Header (Always First) -->
         <header class="cv-header">
           <h1 class="name">${data.personal.fullName}</h1>
           <p class="title">${data.personal.title || 'Finance Professional'}</p>
@@ -405,85 +422,8 @@ export class IrishCVTemplateManager {
           </div>
         </header>
         
-        ${data.personal.summary ? `
-          <section class="professional-profile">
-            <h2>Professional Profile</h2>
-            <p>${data.personal.summary}</p>
-          </section>
-        ` : ''}
-        
-        <section class="core-competencies">
-          <h2>Core Competencies</h2>
-          <div class="competencies-grid">
-            ${data.skills.map(skill => `<span class="competency">${skill.name}</span>`).join('')}
-          </div>
-        </section>
-        
-        <section class="professional-experience">
-          <h2>Professional Experience</h2>
-          ${data.experience.map(exp => `
-            <div class="experience-item">
-              <div class="exp-header">
-                <strong>${exp.position} at ${exp.company}</strong>
-                <span class="date">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
-              </div>
-              <p class="exp-description">${exp.description}</p>
-              ${exp.achievements.length > 0 ? `
-                <ul class="achievements">
-                  ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
-                </ul>
-              ` : ''}
-            </div>
-          `).join('')}
-        </section>
-        
-        <section class="education-qualifications">
-          <h2>Education & Qualifications</h2>
-          ${data.education.map(edu => `
-            <div class="education-item">
-              <strong>${edu.degree} in ${edu.field}</strong> - ${edu.institution}${edu.current || edu.endDate === 'Present' ? ' (Present)' : edu.endDate ? ` (${this.formatDate(edu.endDate).split(' ')[1] || ''})` : ''}
-              ${edu.grade ? ` - ${edu.grade}` : ''}
-            </div>
-          `).join('')}
-          
-          ${data.certifications && data.certifications.length > 0 ? `
-            <div class="certifications">
-              <h3>Professional Certifications</h3>
-              ${data.certifications.map(cert => `
-                <div class="cert-item">
-                  <strong>${cert.name}</strong> - ${cert.issuer} (${this.formatDate(cert.issueDate).split(' ')[1]})
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-        </section>
-        
-        ${data.languages && data.languages.length > 0 ? `
-          <section class="languages">
-            <h2>Languages</h2>
-            <div class="language-list">
-              ${data.languages.map(lang => `
-                <div class="language-item">
-                  <span class="language-name">${lang.name}</span>
-                  <span class="language-level">${lang.level}</span>
-                </div>
-              `).join('')}
-            </div>
-          </section>
-        ` : ''}
-
-        ${data.references && data.references.length > 0 ? `
-          <section class="references">
-            <h2>References</h2>
-            ${data.references.map(ref => `
-              <div class="reference-item">
-                <h3>${ref.name}</h3>
-                <p class="ref-position">${ref.position} at ${ref.company}</p>
-                <p class="ref-contact">${ref.email} • ${ref.phone}</p>
-              </div>
-            `).join('')}
-          </section>
-        ` : ''}
+        <!-- Dynamic sections based on user's ordering -->
+        ${sectionHTML}
         
         <footer class="cv-footer">
           <p>EU Work Authorization: Full rights to work in Ireland/EU</p>
@@ -1987,8 +1927,25 @@ export class IrishCVTemplateManager {
   }
   
   private renderDublinPharma(data: CVData): string {
+    // Use sections array if available, otherwise use default sections
+    const sections = data.sections && data.sections.length > 0 
+      ? data.sections 
+      : this.getDefaultSections()
+    
+    // Sort sections by order and filter visible ones
+    const visibleSections = sections
+      .filter(section => section.visible)
+      .sort((a, b) => a.order - b.order)
+    
+    // Render dynamic sections
+    const sectionHTML = visibleSections
+      .map(section => this.getSectionRenderer(section.type)(data))
+      .filter(html => html.trim() !== '') // Remove empty sections
+      .join('')
+
     return `
       <div class="cv-container dublin-pharma">
+        <!-- Header (Always First) -->
         <header class="cv-header">
           <h1 class="name">${data.personal.fullName}</h1>
           <p class="title">${data.personal.title || 'Pharmaceutical Professional'}</p>
@@ -2000,97 +1957,8 @@ export class IrishCVTemplateManager {
           </div>
         </header>
         
-        ${data.personal.summary ? `
-          <section class="profile">
-            <h2>Professional Profile</h2>
-            <p>${data.personal.summary}</p>
-          </section>
-        ` : ''}
-        
-        <section class="experience">
-          <h2>Professional Experience</h2>
-          ${data.experience.map(exp => `
-            <div class="experience-item">
-              <div class="exp-header">
-                <h3>${exp.position} at ${exp.company}</h3>
-                <span class="date">${exp.location} • ${this.formatDate(exp.startDate)} - ${exp.current ? 'Present' : this.formatDate(exp.endDate)}</span>
-              </div>
-              <p class="exp-description">${exp.description}</p>
-              ${exp.achievements.length > 0 ? `
-                <ul class="achievements">
-                  ${exp.achievements.map(a => `<li>${a}</li>`).join('')}
-                </ul>
-              ` : ''}
-            </div>
-          `).join('')}
-        </section>
-        
-        ${data.skills && data.skills.length > 0 ? `
-          <section class="technical-skills">
-            <h2>Technical Competencies</h2>
-            <div class="skills-grid">
-              ${this.groupSkillsByCategory(data.skills).map(group => `
-                <div class="skill-category">
-                  <h3>${group.category}</h3>
-                  <p>${group.skills.join(' • ')}</p>
-                </div>
-              `).join('')}
-            </div>
-          </section>
-        ` : ''}
-        
-        <section class="education">
-          <h2>Education</h2>
-          ${data.education.map(edu => `
-            <div class="education-item">
-              <div class="edu-header">
-                <h3>${edu.degree} in ${edu.field}</h3>
-                <span class="date">${this.formatDate(edu.startDate)} - ${edu.current || edu.endDate === 'Present' ? 'Present' : this.formatDate(edu.endDate)}</span>
-              </div>
-              <div class="edu-institution">${edu.institution} | ${edu.location}</div>
-              ${edu.grade ? `<p class="grade">Grade: ${edu.grade}</p>` : ''}
-            </div>
-          `).join('')}
-        </section>
-        
-        ${data.certifications && data.certifications.length > 0 ? `
-          <section class="certifications">
-            <h2>Certifications & Training</h2>
-            ${data.certifications.map(cert => `
-              <div class="certification-item">
-                <h3>${cert.name}</h3>
-                <p>${cert.issuer} • ${this.formatDate(cert.issueDate)}</p>
-              </div>
-            `).join('')}
-          </section>
-        ` : ''}
-        
-        ${data.languages && data.languages.length > 0 ? `
-          <section class="languages">
-            <h2>Languages</h2>
-            <div class="language-list">
-              ${data.languages.map(lang => `
-                <div class="language-item">
-                  <span class="language-name">${lang.name}</span>
-                  <span class="language-level">${lang.level}</span>
-                </div>
-              `).join('')}
-            </div>
-          </section>
-        ` : ''}
-
-        ${data.references && data.references.length > 0 ? `
-          <section class="references">
-            <h2>References</h2>
-            ${data.references.map(ref => `
-              <div class="reference-item">
-                <h3>${ref.name}</h3>
-                <p class="ref-position">${ref.position} at ${ref.company}</p>
-                <p class="ref-contact">${ref.email} • ${ref.phone}</p>
-              </div>
-            `).join('')}
-          </section>
-        ` : ''}
+        <!-- Dynamic sections based on user's ordering -->
+        ${sectionHTML}
       </div>
     `
   }

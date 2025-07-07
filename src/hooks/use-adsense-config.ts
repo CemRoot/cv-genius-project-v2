@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 
 interface AdSenseSlots {
+  headerSlot: string
   sidebarSlot: string
   inlineSlot: string
   footerSlot: string
@@ -10,6 +11,7 @@ interface AdSenseSlots {
 }
 
 const defaultSlots: AdSenseSlots = {
+  headerSlot: '',
   sidebarSlot: '',
   inlineSlot: '',
   footerSlot: '',
@@ -37,6 +39,7 @@ export function useAdSenseConfig() {
       } else {
         // Fallback olarak environment variable'ları kullan
         setSlots({
+          headerSlot: process.env.NEXT_PUBLIC_ADSENSE_HEADER_SLOT || '',
           sidebarSlot: process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT || '',
           inlineSlot: process.env.NEXT_PUBLIC_ADSENSE_INLINE_SLOT || '',
           footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT || '',
@@ -47,6 +50,7 @@ export function useAdSenseConfig() {
       console.error('Failed to load AdSense config:', error)
       // Hata durumunda environment variable'ları kullan
       setSlots({
+        headerSlot: process.env.NEXT_PUBLIC_ADSENSE_HEADER_SLOT || '',
         sidebarSlot: process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT || '',
         inlineSlot: process.env.NEXT_PUBLIC_ADSENSE_INLINE_SLOT || '',
         footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT || '',

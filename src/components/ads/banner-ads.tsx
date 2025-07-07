@@ -52,7 +52,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   // Extract AdSense info from admin config (first matching banner)
   const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
   const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
-  const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.inlineSlot || '1006957692'
+  const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.headerSlot || '1006957692'
 
   const hasValidSlot = adSlot && !adSlot.includes('your_')
 
