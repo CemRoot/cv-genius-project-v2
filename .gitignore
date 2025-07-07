@@ -102,6 +102,10 @@ auth-keys/
 **/*token*
 **/*key*.json
 
+# Allow admin API routes even if they contain security keywords
+!src/app/api/admin/auth/change-password/
+!src/app/api/admin/auth/change-password/**
+
 # Admin authentication files (CRITICAL - NEVER COMMIT)
 auth.json
 auth_test.json

@@ -33,7 +33,7 @@ function checkIPWhitelist(request: NextRequest): boolean {
   const envWhitelist = process.env.ADMIN_IP_WHITELIST || ''
   const allowedIPs = envWhitelist.split(',').map(ip => ip.trim()).filter(Boolean)
   
-  console.log(`🔍 Checking IP: ${clientIP} against whitelist: [${allowedIPs.join(', ')}]`)
+  console.log(`🔍 Checking IP: ${clientIP} against whitelist: [${allowedIPs.length} IPs configured]`)
 
   // Check if IP is in whitelist
   const isAllowed = allowedIPs.some(allowedIP => 
@@ -44,7 +44,7 @@ function checkIPWhitelist(request: NextRequest): boolean {
   )
 
   if (!isAllowed) {
-    console.warn(`🚨 MIDDLEWARE BLOCKED: IP ${clientIP} not in whitelist [${allowedIPs.join(', ')}]`)
+    console.warn(`🚨 MIDDLEWARE BLOCKED: IP ${clientIP} not in whitelist [${allowedIPs.length} IPs configured]`)
   } else {
     console.log(`✅ MIDDLEWARE ALLOWED: IP ${clientIP}`)
   }
@@ -154,12 +154,12 @@ function createAccessDeniedResponse(clientIP: string, allowedIPs: string[]): Nex
           </div>
           <p>Your access has been blocked for security reasons. If you believe this is an error, please contact the administrator.</p>
           
-          <div class="debug">
-            <strong>Security Information:</strong><br/>
-            Your IP: <code>${clientIP}</code><br/>
-            Allowed IPs: <code>${allowedIPs.length > 0 ? allowedIPs.join(', ') : 'None configured'}</code><br/>
-            Timestamp: <code>${new Date().toISOString()}</code>
-          </div>
+                     <div class="debug">
+             <strong>Security Information:</strong><br/>
+             Your IP: <code>${clientIP}</code><br/>
+             Access Level: <code>RESTRICTED</code><br/>
+             Timestamp: <code>${new Date().toISOString()}</code>
+           </div>
           
           <br/>
           <a href="/" class="btn">🏠 Go to Home</a>
