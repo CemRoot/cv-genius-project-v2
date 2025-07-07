@@ -60,7 +60,10 @@ export async function POST(request: NextRequest) {
       hasUsername: !!process.env.ADMIN_USERNAME,
       hasPasswordHash: !!process.env.ADMIN_PWD_HASH_B64,
       nodeEnv: process.env.NODE_ENV,
-      runtime: 'edge'
+      jwtLength: process.env.JWT_SECRET?.length || 0,
+      usernameValue: process.env.ADMIN_USERNAME || 'undefined',
+      hashLength: process.env.ADMIN_PWD_HASH_B64?.length || 0,
+      allEnvKeys: Object.keys(process.env).filter(k => k.includes('ADMIN')).join(', ')
     })
     
     // Check if environment is properly configured
@@ -363,7 +366,9 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
       hasJWT: !!process.env.JWT_SECRET,
       hasUsername: !!process.env.ADMIN_USERNAME,
-      hasPassword: !!process.env.ADMIN_PWD_HASH_B64
+      hasPassword: !!process.env.ADMIN_PWD_HASH_B64,
+      errorName: error instanceof Error ? error.name : 'Unknown',
+      errorConstructor: error?.constructor?.name || 'Unknown'
     })
     
     if (error instanceof SyntaxError) {
@@ -373,20 +378,24 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Provide more detailed error in development
+    // Provide more detailed error in production for debugging
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace'
     
     return NextResponse.json(
       { 
         error: 'Authentication failed',
-        message: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
-        debug: process.env.NODE_ENV === 'development' ? {
+        message: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
+        debug: {
           hasRequiredEnvVars: {
             JWT_SECRET: !!process.env.JWT_SECRET,
             ADMIN_USERNAME: !!process.env.ADMIN_USERNAME,
             ADMIN_PWD_HASH_B64: !!process.env.ADMIN_PWD_HASH_B64
-          }
-        } : undefined
+          },
+          timestamp: new Date().toISOString(),
+          nodeEnv: process.env.NODE_ENV
+        }
       },
       { status: 500 }
     )
