@@ -1496,21 +1496,18 @@ export class IrishCVTemplateManager {
       }
       
       .cv-container.classic .skill-category {
-        display: flex;
-        margin-bottom: 4px;
+        margin-bottom: 0.2rem;
         line-height: 1.3;
         font-size: 12pt; /* 12pt for ATS */
       }
       
       .cv-container.classic .skill-category strong {
         font-weight: bold;
-        min-width: 140px;
-        flex-shrink: 0;
         color: #000000;
+        margin-right: 0.5rem;
       }
       
       .cv-container.classic .skill-category span {
-        flex: 1;
         color: #000000;
         font-weight: 400;
       }
@@ -2174,22 +2171,33 @@ export class IrishCVTemplateManager {
       }
       
       .dublin-pharma .skills-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+      
+      .dublin-pharma .skill-category {
+        margin-bottom: 0.3rem;
+        line-height: 1.3;
       }
       
       .dublin-pharma .skill-category h3 {
         font-size: 12pt;
         color: #000000; /* Black for ATS */
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.1rem;
         font-weight: bold;
+        display: inline;
+        margin-right: 0.5rem;
+      }
+      
+      .dublin-pharma .skill-category h3:after {
+        content: ":";
       }
       
       .dublin-pharma .skill-category p {
         font-size: 11pt;
         color: #000000;
         font-weight: 400;
+        display: inline;
+        margin: 0;
       }
       
       .dublin-pharma .language-groups {
