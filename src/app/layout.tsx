@@ -154,36 +154,72 @@ export default function RootLayout({
           </>
         )}
         
-        {/* Google AdSense with Timeout Handling */}
+        {/* Google AdSense with Enhanced Timeout Handling */}
         {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-          <>
-            <script
-              async
-              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
-              crossOrigin="anonymous"
-            />
-            <script dangerouslySetInnerHTML={{
-              __html: `
-                // AdSense timeout protection
-                (function() {
-                  var adsenseTimeout = setTimeout(function() {
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              // Enhanced AdSense loading with retry and fallback
+              (function() {
+                var retryCount = 0;
+                var maxRetries = 3;
+                var retryDelay = 2000;
+                
+                function loadAdSenseScript() {
+                  // Create script element
+                  var script = document.createElement('script');
+                  script.async = true;
+                  script.crossOrigin = 'anonymous';
+                  script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}';
+                  
+                  // Set up timeout
+                  var timeoutId = setTimeout(function() {
+                    console.warn('AdSense script timeout (' + (retryCount + 1) + '/' + maxRetries + ')');
+                    script.remove();
+                    handleScriptError();
+                  }, 15000); // 15 second timeout
+                  
+                  // Success handler
+                  script.onload = function() {
+                    clearTimeout(timeoutId);
+                    console.log('AdSense script loaded successfully');
+                    
+                    // Ensure adsbygoogle is available
                     if (!window.adsbygoogle) {
-                      console.warn('AdSense script timeout - using fallback');
                       window.adsbygoogle = [];
                     }
-                  }, 10000);
+                  };
                   
-                  // Clear timeout if script loads successfully
-                  var checkAdSense = setInterval(function() {
-                    if (window.adsbygoogle) {
-                      clearTimeout(adsenseTimeout);
-                      clearInterval(checkAdSense);
+                  // Error handler with retry
+                  script.onerror = function() {
+                    clearTimeout(timeoutId);
+                    script.remove();
+                    handleScriptError();
+                  };
+                  
+                  // Add to document
+                  document.head.appendChild(script);
+                }
+                
+                function handleScriptError() {
+                  if (retryCount < maxRetries) {
+                    retryCount++;
+                    console.log('Retrying AdSense script load in ' + retryDelay + 'ms... (' + retryCount + '/' + maxRetries + ')');
+                    setTimeout(loadAdSenseScript, retryDelay);
+                    retryDelay *= 1.5; // Exponential backoff
+                  } else {
+                    console.warn('AdSense script failed to load after ' + maxRetries + ' attempts - using fallback');
+                    // Initialize fallback
+                    if (!window.adsbygoogle) {
+                      window.adsbygoogle = [];
                     }
-                  }, 500);
-                })();
-              `
-            }} />
-          </>
+                  }
+                }
+                
+                // Start loading
+                loadAdSenseScript();
+              })();
+            `
+          }} />
         )}
         
         {/* Monetag - Only Banner Zone (No Popups) */}

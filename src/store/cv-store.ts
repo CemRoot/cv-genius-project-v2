@@ -135,7 +135,7 @@ const createDefaultCV = (): CVData => ({
     { id: '5', type: 'skills', title: 'Skills', visible: false, order: 5 },
     { id: '6', type: 'languages', title: 'Languages', visible: false, order: 6 },
     { id: '7', type: 'projects', title: 'Projects', visible: false, order: 7 },
-    { id: '8', type: 'certifications', title: 'Certifications', visible: false, order: 8 },
+    { id: '8', type: 'certifications', title: 'Certifications', visible: true, order: 8 },
     { id: '9', type: 'interests', title: 'Interests & Hobbies', visible: false, order: 9 },
     { id: '10', type: 'references', title: 'References', visible: false, order: 10 },
   ],
