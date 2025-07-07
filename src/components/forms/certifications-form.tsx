@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useCVStore } from "@/store/cv-store"
 import { useState } from "react"
-import { PlusCircle, Trash2, Edit2, Save, X, ExternalLink, Award, Calendar } from "lucide-react"
+import { Plus, Trash2, Edit3, Check, X, ExternalLink, Award, Calendar, Building, Hash, FileText, Star, Zap } from "lucide-react"
 import { Certification } from "@/types/cv"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -103,184 +103,180 @@ export function CertificationsForm() {
   const certifications = currentCV.certifications || []
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Existing Certifications */}
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cvgenius-primary/10 to-blue-100 rounded-2xl">
+          <Award className="h-8 w-8 text-cvgenius-primary" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Professional Certifications</h2>
+          <p className="text-gray-600 max-w-md mx-auto">
+            Showcase your expertise with industry-recognized certifications that set you apart
+          </p>
+        </div>
+      </div>
+
+      {/* Existing Certifications - Clean Cards */}
       {certifications.length > 0 && (
         <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            <Award className="h-5 w-5 text-cvgenius-primary" />
-            Your Certifications ({certifications.length})
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-3">
+            <div className="w-1 h-6 bg-cvgenius-primary rounded-full"></div>
+            Your Certifications
+            <span className="text-sm font-normal text-gray-500">({certifications.length})</span>
           </h3>
           
-          <div className="space-y-4">
+          <div className="grid gap-4">
             <AnimatePresence>
               {certifications.map((certification) => (
                 <motion.div
                   key={certification.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-cvgenius-primary/20 cert-card-hover"
                 >
                   {editingId === certification.id ? (
-                    /* Inline Edit Form */
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    /* Compact Edit Form */
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label>Certification Name <span className="text-red-500">*</span></Label>
+                          <Label className="text-sm font-medium text-gray-700">Certification Name *</Label>
                           <Input
                             {...register("name")}
                             placeholder="AWS Certified Developer"
-                            className={errors.name ? "border-red-500" : ""}
+                            className={`h-11 form-transition enhanced-focus ${errors.name ? "border-red-500" : ""}`}
                           />
-                          {errors.name && (
-                            <p className="text-sm text-red-500">{errors.name.message}</p>
-                          )}
+                          {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
                         </div>
-
                         <div className="space-y-2">
-                          <Label>Issuing Organization <span className="text-red-500">*</span></Label>
+                          <Label className="text-sm font-medium text-gray-700">Issuing Organization *</Label>
                           <Input
                             {...register("issuer")}
                             placeholder="Amazon Web Services"
-                            className={errors.issuer ? "border-red-500" : ""}
+                            className={`h-11 form-transition enhanced-focus ${errors.issuer ? "border-red-500" : ""}`}
                           />
-                          {errors.issuer && (
-                            <p className="text-sm text-red-500">{errors.issuer.message}</p>
-                          )}
+                          {errors.issuer && <p className="text-sm text-red-500">{errors.issuer.message}</p>}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label>Issue Date <span className="text-red-500">*</span></Label>
+                          <Label className="text-sm font-medium text-gray-700">Issue Date *</Label>
                           <Input
                             {...register("issueDate")}
                             type="month"
-                            className={errors.issueDate ? "border-red-500" : ""}
+                            className={`h-11 form-transition enhanced-focus ${errors.issueDate ? "border-red-500" : ""}`}
                           />
-                          {errors.issueDate && (
-                            <p className="text-sm text-red-500">{errors.issueDate.message}</p>
-                          )}
+                          {errors.issueDate && <p className="text-sm text-red-500">{errors.issueDate.message}</p>}
                         </div>
-
                         <div className="space-y-2">
-                          <Label>Expiry Date (if applicable)</Label>
-                          <Input
-                            {...register("expiryDate")}
-                            type="month"
-                          />
+                          <Label className="text-sm font-medium text-gray-700">Expiry Date</Label>
+                          <Input {...register("expiryDate")} type="month" className="h-11 form-transition enhanced-focus" />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label>Credential ID</Label>
-                          <Input
-                            {...register("credentialId")}
-                            placeholder="ABC123XYZ"
-                          />
+                          <Label className="text-sm font-medium text-gray-700">Credential ID</Label>
+                          <Input {...register("credentialId")} placeholder="ABC123XYZ" className="h-11" />
                         </div>
-
                         <div className="space-y-2">
-                          <Label>Verification URL</Label>
+                          <Label className="text-sm font-medium text-gray-700">Verification URL</Label>
                           <Input
                             {...register("url")}
                             placeholder="https://verify.example.com"
-                            className={errors.url ? "border-red-500" : ""}
+                            className={`h-11 form-transition enhanced-focus ${errors.url ? "border-red-500" : ""}`}
                           />
-                          {errors.url && (
-                            <p className="text-sm text-red-500">{errors.url.message}</p>
-                          )}
+                          {errors.url && <p className="text-sm text-red-500">{errors.url.message}</p>}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Description (optional)</Label>
+                        <Label className="text-sm font-medium text-gray-700">Description</Label>
                         <Textarea
                           {...register("description")}
-                          placeholder="Brief description of what this certification covers..."
-                          rows={2}
+                          placeholder="Brief description..."
+                          rows={3}
+                          className="resize-none"
                         />
                       </div>
 
-                      <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={handleCancel}>
-                          <X className="h-4 w-4 mr-2" />
-                          Cancel
+                      <div className="flex justify-end gap-3 pt-4 border-t">
+                        <Button type="button" variant="outline" onClick={handleCancel} className="h-10">
+                          <X className="h-4 w-4 mr-2" />Cancel
                         </Button>
-                        <Button type="submit">
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Changes
+                        <Button type="submit" className="h-10">
+                          <Check className="h-4 w-4 mr-2" />Save
                         </Button>
                       </div>
                     </form>
                   ) : (
-                    /* View Mode */
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-gray-900">{certification.name}</h4>
-                            {certification.url && (
-                              <a 
-                                href={certification.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            )}
-                            {certification.expiryDate && isExpired(certification.expiryDate) && (
-                              <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">
-                                Expired
-                              </span>
-                            )}
+                    /* Clean View Mode */
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-blue-50 rounded-lg">
+                            <Award className="h-5 w-5 text-blue-600" />
                           </div>
-                          
-                          <p className="text-sm text-gray-600 font-medium mb-1">{certification.issuer}</p>
-                          
-                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              Issued: {formatDate(certification.issueDate)}
-                            </span>
-                            {certification.expiryDate && (
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <h4 className="text-lg font-semibold text-gray-900">{certification.name}</h4>
+                              {certification.url && (
+                                <a
+                                  href={certification.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-700 transition-colors"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              )}
+                              {certification.expiryDate && isExpired(certification.expiryDate) && (
+                                <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                                  Expired
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-gray-600 font-medium mb-2">{certification.issuer}</p>
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                Expires: {formatDate(certification.expiryDate)}
+                                {formatDate(certification.issueDate)}
                               </span>
+                              {certification.expiryDate && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Expires {formatDate(certification.expiryDate)}
+                                </span>
+                              )}
+                              {certification.credentialId && (
+                                <span className="flex items-center gap-1">
+                                  <Hash className="h-3 w-3" />
+                                  {certification.credentialId}
+                                </span>
+                              )}
+                            </div>
+                            {certification.description && (
+                              <p className="text-gray-700 mt-2 text-sm leading-relaxed">{certification.description}</p>
                             )}
                           </div>
-
-                          {certification.credentialId && (
-                            <p className="text-xs text-gray-500 mb-2">
-                              Credential ID: {certification.credentialId}
-                            </p>
-                          )}
-
-                          {certification.description && (
-                            <p className="text-sm text-gray-700">{certification.description}</p>
-                          )}
                         </div>
-                        
-                        <div className="flex items-center gap-1 ml-4">
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(certification)}
-                            className="text-blue-600 hover:text-blue-800 p-1"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemove(certification.id)}
-                            className="text-red-600 hover:text-red-800 p-1"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEdit(certification)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleRemove(certification.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   )}
@@ -293,239 +289,159 @@ export function CertificationsForm() {
 
       {/* No Certifications Message */}
       {certifications.length === 0 && !isAdding && (
-        <div className="text-center py-8">
-          <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="font-medium text-gray-900 mb-2">No certifications added yet</h3>
-          <p className="text-gray-500 mb-4">Add your professional certifications and licenses</p>
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+            <Award className="h-10 w-10 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Ready to add your certifications?</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            Professional certifications demonstrate your expertise and commitment to your field. 
+            Let's showcase what makes you qualified.
+          </p>
         </div>
       )}
 
-      {/* Add New Certification Form */}
+      {/* Modern Add Form */}
       {isAdding && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-cvgenius-primary/20 rounded-xl p-8 bg-gradient-to-br from-cvgenius-primary/5 to-blue-50/30 shadow-sm"
+          className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm form-transition"
         >
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <div className="p-2 bg-cvgenius-primary/10 rounded-lg">
-                <Award className="h-6 w-6 text-cvgenius-primary" />
-              </div>
-              Add New Certification
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Add your professional certifications to showcase your expertise and qualifications.
-            </p>
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-cvgenius-primary/10 to-blue-100 rounded-xl mb-4">
+              <Plus className="h-6 w-6 text-cvgenius-primary" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Add New Certification</h3>
+            <p className="text-gray-600">Showcase your professional expertise and qualifications</p>
           </div>
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {/* Basic Information Section */}
+            {/* Step 1 - Basic Info */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                  <span className="text-sm font-semibold text-blue-600">1</span>
+              <div className="flex items-center gap-3 pb-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Award className="h-4 w-4 text-blue-600" />
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900">Basic Information</h4>
-                <span className="text-xs text-red-500 font-medium">* Required fields</span>
+                <h4 className="text-lg font-semibold text-gray-900">Certification Details</h4>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label htmlFor="certName" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Award className="h-4 w-4 text-gray-500" />
-                    Certification Name
-                    <span className="text-red-500 ml-1" title="Required field">*</span>
-                  </Label>
+                  <Label className="text-sm font-semibold text-gray-700">Certification Name *</Label>
                   <Input
-                    id="certName"
                     {...register("name")}
-                    placeholder="e.g., AWS Certified Solutions Architect"
-                    className={`h-12 ${errors.name ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                    placeholder="AWS Certified Solutions Architect"
+                    className={`h-12 text-base ${errors.name ? "border-red-500" : "border-gray-300 focus:border-cvgenius-primary"}`}
                   />
-                  {errors.name && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.name.message}
-                    </p>
-                  )}
+                  {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
                 </div>
-
                 <div className="space-y-3">
-                  <Label htmlFor="certIssuer" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    Issuing Organization
-                    <span className="text-red-500 ml-1" title="Required field">*</span>
-                  </Label>
+                  <Label className="text-sm font-semibold text-gray-700">Issuing Organization *</Label>
                   <Input
-                    id="certIssuer"
                     {...register("issuer")}
-                    placeholder="e.g., Amazon Web Services"
-                    className={`h-12 ${errors.issuer ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                    placeholder="Amazon Web Services"
+                    className={`h-12 text-base ${errors.issuer ? "border-red-500" : "border-gray-300 focus:border-cvgenius-primary"}`}
                   />
-                  {errors.issuer && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.issuer.message}
-                    </p>
-                  )}
+                  {errors.issuer && <p className="text-sm text-red-500">{errors.issuer.message}</p>}
                 </div>
               </div>
             </div>
 
-            {/* Date Information Section */}
+            {/* Step 2 - Dates */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
-                  <span className="text-sm font-semibold text-green-600">2</span>
+              <div className="flex items-center gap-3 pb-4">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <Calendar className="h-4 w-4 text-green-600" />
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900">Date Information</h4>
+                <h4 className="text-lg font-semibold text-gray-900">Timeline</h4>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label htmlFor="certIssueDate" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                    <span className="flex-1">Issue Date</span>
-                    <span className="text-red-500 ml-1 flex-shrink-0" title="Required field">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="certIssueDate"
-                      {...register("issueDate")}
-                      type="month"
-                      className={`h-12 w-full ${errors.issueDate ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
-                    />
-                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                  {errors.issueDate && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <X className="h-3 w-3 flex-shrink-0" />
-                      <span>{errors.issueDate.message}</span>
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 leading-relaxed">When did you receive this certification?</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label htmlFor="certExpiryDate" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                    <span className="flex-1">Expiry Date</span>
-                    <span className="text-xs text-gray-500 ml-2 flex-shrink-0">(Optional)</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="certExpiryDate"
-                      {...register("expiryDate")}
-                      type="month"
-                      className="h-12 w-full border-gray-300 focus:border-cvgenius-primary"
-                    />
-                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">Leave empty if certification doesn't expire</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Credential Details Section */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full">
-                  <span className="text-sm font-semibold text-purple-600">3</span>
-                </div>
-                <h4 className="text-lg font-semibold text-gray-900">Credential Details</h4>
-                <span className="text-xs text-gray-500 font-medium">Optional - helps with verification</span>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label htmlFor="certCredentialId" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4 text-gray-500" />
-                    Credential ID
-                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
-                  </Label>
+                  <Label className="text-sm font-semibold text-gray-700">Issue Date *</Label>
                   <Input
-                    id="certCredentialId"
+                    {...register("issueDate")}
+                    type="month"
+                    className={`h-12 text-base ${errors.issueDate ? "border-red-500" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                  />
+                  {errors.issueDate && <p className="text-sm text-red-500">{errors.issueDate.message}</p>}
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-700">Expiry Date <span className="text-gray-500 font-normal">(Optional)</span></Label>
+                  <Input
+                    {...register("expiryDate")}
+                    type="month"
+                    className="h-12 text-base border-gray-300 focus:border-cvgenius-primary"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 - Additional Details */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-4">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Hash className="h-4 w-4 text-purple-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">Verification Details</h4>
+                <span className="text-sm text-gray-500">Optional</span>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-700">Credential ID</Label>
+                  <Input
                     {...register("credentialId")}
-                    placeholder="e.g., ABC123XYZ789"
-                    className="h-12 border-gray-300 focus:border-cvgenius-primary"
+                    placeholder="ABC123XYZ789"
+                    className="h-12 text-base border-gray-300 focus:border-cvgenius-primary"
                   />
-                  <p className="text-xs text-gray-500">Unique identifier provided by the issuing organization</p>
                 </div>
-
                 <div className="space-y-3">
-                  <Label htmlFor="certUrl" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4 text-gray-500" />
-                    Verification URL
-                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
-                  </Label>
+                  <Label className="text-sm font-semibold text-gray-700">Verification URL</Label>
                   <Input
-                    id="certUrl"
                     {...register("url")}
                     placeholder="https://verify.example.com"
-                    className={`h-12 ${errors.url ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                    className={`h-12 text-base ${errors.url ? "border-red-500" : "border-gray-300 focus:border-cvgenius-primary"}`}
                   />
-                  {errors.url && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.url.message}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500">Link where employers can verify your certification</p>
+                  {errors.url && <p className="text-sm text-red-500">{errors.url.message}</p>}
                 </div>
               </div>
             </div>
 
-            {/* Additional Information Section */}
+            {/* Step 4 - Description */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-full">
-                  <span className="text-sm font-semibold text-orange-600">4</span>
+              <div className="flex items-center gap-3 pb-4">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-orange-600" />
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900">Additional Information</h4>
-                <span className="text-xs text-gray-500 font-medium">Optional - provides context</span>
+                <h4 className="text-lg font-semibold text-gray-900">Description</h4>
+                <span className="text-sm text-gray-500">Optional</span>
               </div>
               
-              <div className="space-y-3">
-                <Label htmlFor="certDescription" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Edit2 className="h-4 w-4 text-gray-500" />
-                  Description
-                  <span className="text-xs text-gray-500 ml-2">(Optional)</span>
-                </Label>
-                <Textarea
-                  id="certDescription"
-                  {...register("description")}
-                  placeholder="Brief description of what this certification covers, skills demonstrated, or its relevance to your career..."
-                  rows={4}
-                  className="border-gray-300 focus:border-cvgenius-primary resize-none"
-                />
-                <p className="text-xs text-gray-500">
-                  Help employers understand the value and relevance of this certification (max 200 characters recommended)
-                </p>
-              </div>
+              <Textarea
+                {...register("description")}
+                placeholder="Describe what this certification covers and its relevance to your career..."
+                rows={4}
+                className="text-base form-transition enhanced-focus border-gray-300 focus:border-cvgenius-primary resize-none"
+              />
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleCancel}
-                className="h-12 px-8 text-gray-700 border-gray-300 hover:bg-gray-50"
+                className="flex-1 h-12 text-base"
               >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
+                <X className="h-4 w-4 mr-2" />Cancel
               </Button>
               <Button 
                 type="submit"
-                className="h-12 px-8 bg-cvgenius-primary hover:bg-cvgenius-primary/90 text-white font-medium"
+                className="flex-1 h-12 text-base bg-cvgenius-primary hover:bg-cvgenius-primary/90"
               >
-                <Save className="h-4 w-4 mr-2" />
-                Add Certification
+                <Check className="h-4 w-4 mr-2" />Add Certification
               </Button>
             </div>
           </form>
@@ -534,88 +450,112 @@ export function CertificationsForm() {
 
       {/* Add Certification Button */}
       {!isAdding && (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setIsAdding(true)}
-          className="w-full border-dashed"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Add Certification
-        </Button>
+        <div className="text-center">
+          <Button
+            onClick={() => setIsAdding(true)}
+            className="h-14 px-8 text-base bg-cvgenius-primary hover:bg-cvgenius-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <Plus className="h-5 w-5 mr-3" />
+            Add Certification
+          </Button>
+        </div>
       )}
 
       {/* Quick Add Popular Certifications */}
       {!isAdding && certifications.length < 3 && (
-        <div className="space-y-4">
-          <h4 className="font-medium text-gray-900">Quick Add Popular Certifications</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="space-y-6">
+          <div className="text-center">
+            <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
+              <Zap className="h-5 w-5 text-cvgenius-primary" />
+              Quick Add Popular Certifications
+            </h4>
+            <p className="text-gray-600 text-sm">Choose from common industry certifications</p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {[
-              { name: "AWS Certified Solutions Architect", issuer: "Amazon Web Services" },
-              { name: "Google Cloud Professional", issuer: "Google Cloud" },
-              { name: "Microsoft Azure Fundamentals", issuer: "Microsoft" },
-              { name: "PMP (Project Management Professional)", issuer: "PMI" },
-              { name: "CISSP", issuer: "ISC²" },
-              { name: "CompTIA Security+", issuer: "CompTIA" }
+              { name: "AWS Certified Solutions Architect", issuer: "Amazon Web Services", category: "Cloud" },
+              { name: "Google Cloud Professional", issuer: "Google Cloud", category: "Cloud" },
+              { name: "Microsoft Azure Fundamentals", issuer: "Microsoft", category: "Cloud" },
+              { name: "PMP (Project Management Professional)", issuer: "PMI", category: "Management" },
+              { name: "CISSP", issuer: "ISC²", category: "Security" },
+              { name: "CompTIA Security+", issuer: "CompTIA", category: "Security" }
             ].filter(suggestion => 
               !certifications.some(cert => 
                 cert.name.toLowerCase().includes(suggestion.name.toLowerCase())
               )
             ).slice(0, 6).map((suggestion) => (
-              <Button
+              <motion.button
                 key={suggestion.name}
-                type="button"
-                variant="outline"
-                size="sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setValue("name", suggestion.name)
                   setValue("issuer", suggestion.issuer)
                   setIsAdding(true)
                 }}
-                className="text-left justify-start p-3 h-auto min-h-[64px] hover:bg-gray-50 transition-colors relative overflow-hidden group"
+                className="p-4 text-left bg-white border border-gray-200 rounded-xl hover:border-cvgenius-primary/30 hover:shadow-md transition-all duration-200 group"
               >
-                <div className="text-left w-full overflow-hidden">
-                  <div className="font-medium text-sm text-gray-900 leading-tight mb-1 relative">
-                    <div className="truncate group-hover:animate-none">
-                      {suggestion.name}
-                    </div>
-                    {suggestion.name.length > 25 && (
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:animate-marquee whitespace-nowrap transition-opacity duration-300">
-                        {suggestion.name}
-                      </div>
-                    )}
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between">
+                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full font-medium">
+                      {suggestion.category}
+                    </span>
+                    <Star className="h-4 w-4 text-gray-300 group-hover:text-yellow-400 transition-colors" />
                   </div>
-                  <div className="text-xs text-gray-500 leading-tight relative">
-                    <div className="truncate group-hover:animate-none">
-                      {suggestion.issuer}
-                    </div>
-                    {suggestion.issuer.length > 15 && (
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:animate-marquee whitespace-nowrap transition-opacity duration-300">
-                        {suggestion.issuer}
-                      </div>
-                    )}
-                  </div>
+                  <h5 className="font-semibold text-gray-900 text-sm leading-tight">
+                    {suggestion.name}
+                  </h5>
+                  <p className="text-xs text-gray-600">
+                    {suggestion.issuer}
+                  </p>
                 </div>
-                
-                {/* Fade effect for long text */}
-                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none group-hover:opacity-0 transition-opacity duration-300" />
-              </Button>
+              </motion.button>
             ))}
           </div>
         </div>
       )}
 
       {/* Irish CV Tips */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-800 mb-2">🇮🇪 Irish CV Tips for Certifications</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Include relevant professional certifications for your industry</li>
-          <li>• List certifications in reverse chronological order (newest first)</li>
-          <li>• Include expiry dates and renewal status if applicable</li>
-          <li>• Provide verification links or credential IDs when possible</li>
-          <li>• Focus on certifications that add value to your target role</li>
-          <li>• Include both technical and professional development certifications</li>
-        </ul>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <FileText className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-blue-900 mb-3">🇮🇪 Irish CV Best Practices</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-blue-800">
+              <div className="space-y-2">
+                <p className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Include industry-relevant certifications
+                </p>
+                <p className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  List newest certifications first
+                </p>
+                <p className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Include expiry dates when applicable
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Provide verification links/IDs
+                </p>
+                <p className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Focus on role-relevant certifications
+                </p>
+                <p className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Include technical & professional certs
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
