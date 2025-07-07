@@ -32,15 +32,30 @@ export function DynamicAdManager({ children }: DynamicAdManagerProps) {
   const pathname = usePathname()
 
   useEffect(() => {
-    loadAdConfigs()
-    loadAdminSettings()
+    let mounted = true
+    
+    const loadInitialData = async () => {
+      if (!mounted) return
+      
+      await loadAdConfigs()
+      if (!mounted) return
+      
+      await loadAdminSettings()
+    }
+    
+    loadInitialData()
 
-    // Periodic refresh to sync with admin changes
+    // Periodic refresh to sync with admin changes - but only if component is still mounted
     const refreshInterval = setInterval(() => {
-      loadAdminSettings()
-    }, 5000) // Check every 5 seconds
+      if (mounted) {
+        loadAdminSettings()
+      }
+    }, 10000) // Reduced frequency to 10 seconds
 
-    return () => clearInterval(refreshInterval)
+    return () => {
+      mounted = false
+      clearInterval(refreshInterval)
+    }
   }, [])
 
   const loadAdConfigs = async () => {
@@ -102,18 +117,17 @@ export function DynamicAdManager({ children }: DynamicAdManagerProps) {
     return adConfigs.filter(ad => ad.type === type && shouldShowAd(ad))
   }
 
-  if (loading) {
-    return <>{children}</>
+  // Always provide context, even while loading
+  const contextValue = {
+    adConfigs: loading ? [] : adConfigs.filter(shouldShowAd),
+    adminSettings,
+    getAdsByType: loading ? () => [] : getAdsByType,
+    shouldShowAd: loading ? () => false : shouldShowAd
   }
 
   // Ad configs'i global context'e ekle
   return (
-    <AdConfigContext.Provider value={{ 
-      adConfigs: adConfigs.filter(shouldShowAd),
-      adminSettings,
-      getAdsByType,
-      shouldShowAd 
-    }}>
+    <AdConfigContext.Provider value={contextValue}>
       {children}
     </AdConfigContext.Provider>
   )

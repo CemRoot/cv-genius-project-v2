@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface AdSenseLoaderState {
   isLoaded: boolean
@@ -16,6 +16,10 @@ export function useAdSenseLoader(clientId?: string) {
     error: null,
     isAvailable: false
   })
+  
+  // Use ref to store current state for stable callbacks
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   // Check if AdSense is available and ready
   const checkAdSenseAvailability = useCallback(() => {
@@ -50,9 +54,16 @@ export function useAdSenseLoader(clientId?: string) {
 
   // Push ad configuration safely
   const pushAdConfig = useCallback((config?: any) => {
-    if (state.isLoaded && state.isAvailable) {
+    // Use ref to get current state without dependencies
+    const currentState = stateRef.current
+    
+    if (currentState.isLoaded && currentState.isAvailable) {
       try {
-        if (initializeAdSense()) {
+        // Initialize directly without dependency
+        if (typeof window !== 'undefined') {
+          if (!(window as any).adsbygoogle) {
+            (window as any).adsbygoogle = []
+          }
           (window as any).adsbygoogle.push(config || {})
           return true
         }
@@ -62,7 +73,7 @@ export function useAdSenseLoader(clientId?: string) {
       }
     }
     return false
-  }, [state.isLoaded, state.isAvailable, initializeAdSense])
+  }, []) // Empty dependencies - stable reference
 
   // Check script status periodically
   useEffect(() => {
@@ -78,33 +89,42 @@ export function useAdSenseLoader(clientId?: string) {
 
     let checkCount = 0
     const maxChecks = 60 // 30 seconds (500ms * 60)
+    let checkInterval: NodeJS.Timeout
     
-    const checkInterval = setInterval(() => {
-      checkCount++
-      
-      const isAvailable = checkAdSenseAvailability()
-      
-      if (isAvailable) {
-        setState({
-          isLoaded: true,
-          isLoading: false,
-          error: null,
-          isAvailable: true
-        })
-        clearInterval(checkInterval)
-      } else if (checkCount >= maxChecks) {
-        setState({
-          isLoaded: false,
-          isLoading: false,
-          error: 'AdSense script not available after 30 seconds',
-          isAvailable: false
-        })
+    const startChecking = () => {
+      checkInterval = setInterval(() => {
+        checkCount++
+        
+        const isAvailable = checkAdSenseAvailability()
+        
+        if (isAvailable) {
+          setState({
+            isLoaded: true,
+            isLoading: false,
+            error: null,
+            isAvailable: true
+          })
+          clearInterval(checkInterval)
+        } else if (checkCount >= maxChecks) {
+          setState({
+            isLoaded: false,
+            isLoading: false,
+            error: 'AdSense script not available after 30 seconds',
+            isAvailable: false
+          })
+          clearInterval(checkInterval)
+        }
+      }, 500)
+    }
+
+    startChecking()
+
+    return () => {
+      if (checkInterval) {
         clearInterval(checkInterval)
       }
-    }, 500)
-
-    return () => clearInterval(checkInterval)
-  }, [checkAdSenseAvailability])
+    }
+  }, []) // Empty dependency array - checkAdSenseAvailability removed
 
   // Manual retry function
   const retry = useCallback(() => {
