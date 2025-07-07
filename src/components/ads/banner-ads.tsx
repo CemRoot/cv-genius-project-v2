@@ -99,17 +99,21 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     if (isProduction && hasValidSlot && showCleanAd && typeof window !== 'undefined') {
       // AdSense script'inin yüklenmesini bekle
       const loadAds = () => {
-        if ((window as any).adsbygoogle) {
-          try {
+        try {
+          if ((window as any).adsbygoogle && Array.isArray((window as any).adsbygoogle)) {
+            // AdSense'in yüklü olduğundan emin olun
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-          } catch (e) {
-            console.error('AdSense error:', e);
+          } else {
+            // AdSense henüz yüklenmemişse biraz bekleyip tekrar dene
+            setTimeout(loadAds, 300);
           }
+        } catch (e) {
+          console.error('AdSense error:', e);
         }
       };
       
-      // Script biraz gecikmeyle yüklensin
-      const timer = setTimeout(loadAds, 100);
+      // Script biraz gecikmeyle yüklensin (SSR hydration tamamlandıktan sonra)
+      const timer = setTimeout(loadAds, 500);
       return () => clearTimeout(timer);
     }
   }, [isProduction, hasValidSlot, showCleanAd])
@@ -124,23 +128,14 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
         >
           {/* Render real AdSense banner in production */}
           {isProduction && hasValidSlot && showCleanAd && (
-            <>
-              <ins 
-                className="adsbygoogle"
-                style={{ display: 'block', width: '100%', height: config.height }}
-                data-ad-client={adClient}
-                data-ad-slot={adSlot}
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-              />
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                  `
-                }}
-              />
-            </>
+            <ins 
+              className="adsbygoogle"
+              style={{ display: 'block', width: '100%', height: config.height }}
+              data-ad-client={adClient}
+              data-ad-slot={adSlot}
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            />
           )}
 
           {/* Placeholder / development view */}
