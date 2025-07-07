@@ -385,38 +385,48 @@ export function CertificationsForm() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="certIssueDate" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    Issue Date
-                    <span className="text-red-500 ml-1" title="Required field">*</span>
+                    <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span className="flex-1">Issue Date</span>
+                    <span className="text-red-500 ml-1 flex-shrink-0" title="Required field">*</span>
                   </Label>
-                  <Input
-                    id="certIssueDate"
-                    {...register("issueDate")}
-                    type="month"
-                    className={`h-12 ${errors.issueDate ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="certIssueDate"
+                      {...register("issueDate")}
+                      type="month"
+                      className={`h-12 w-full ${errors.issueDate ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-cvgenius-primary"}`}
+                    />
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
                   {errors.issueDate && (
                     <p className="text-sm text-red-600 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.issueDate.message}
+                      <X className="h-3 w-3 flex-shrink-0" />
+                      <span>{errors.issueDate.message}</span>
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">When did you receive this certification?</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">When did you receive this certification?</p>
                 </div>
 
                 <div className="space-y-3">
                   <Label htmlFor="certExpiryDate" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    Expiry Date
-                    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
+                    <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span className="flex-1">Expiry Date</span>
+                    <span className="text-xs text-gray-500 ml-2 flex-shrink-0">(Optional)</span>
                   </Label>
-                  <Input
-                    id="certExpiryDate"
-                    {...register("expiryDate")}
-                    type="month"
-                    className="h-12 border-gray-300 focus:border-cvgenius-primary"
-                  />
-                  <p className="text-xs text-gray-500">Leave empty if certification doesn't expire</p>
+                  <div className="relative">
+                    <Input
+                      id="certExpiryDate"
+                      {...register("expiryDate")}
+                      type="month"
+                      className="h-12 w-full border-gray-300 focus:border-cvgenius-primary"
+                    />
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">Leave empty if certification doesn't expire</p>
                 </div>
               </div>
             </div>
@@ -562,16 +572,33 @@ export function CertificationsForm() {
                   setValue("issuer", suggestion.issuer)
                   setIsAdding(true)
                 }}
-                className="text-left justify-start p-3 h-auto min-h-[64px] hover:bg-gray-50 transition-colors"
+                className="text-left justify-start p-3 h-auto min-h-[64px] hover:bg-gray-50 transition-colors relative overflow-hidden group"
               >
-                <div className="text-left w-full">
-                  <div className="font-medium text-sm text-gray-900 leading-tight mb-1 break-words">
-                    {suggestion.name}
+                <div className="text-left w-full overflow-hidden">
+                  <div className="font-medium text-sm text-gray-900 leading-tight mb-1 relative">
+                    <div className="truncate group-hover:animate-none">
+                      {suggestion.name}
+                    </div>
+                    {suggestion.name.length > 25 && (
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:animate-marquee whitespace-nowrap transition-opacity duration-300">
+                        {suggestion.name}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-xs text-gray-500 leading-tight break-words">
-                    {suggestion.issuer}
+                  <div className="text-xs text-gray-500 leading-tight relative">
+                    <div className="truncate group-hover:animate-none">
+                      {suggestion.issuer}
+                    </div>
+                    {suggestion.issuer.length > 15 && (
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:animate-marquee whitespace-nowrap transition-opacity duration-300">
+                        {suggestion.issuer}
+                      </div>
+                    )}
                   </div>
                 </div>
+                
+                {/* Fade effect for long text */}
+                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none group-hover:opacity-0 transition-opacity duration-300" />
               </Button>
             ))}
           </div>
