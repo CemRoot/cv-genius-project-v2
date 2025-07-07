@@ -8,8 +8,6 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
@@ -26,7 +24,6 @@ import {
   Eye,
   EyeOff,
   Lock,
-  Unlock,
   Globe,
   Server,
   Smartphone,
@@ -34,8 +31,10 @@ import {
   Key,
   Database,
   Shield,
-  Download,
-  Upload
+  Search,
+  Filter,
+  Edit3,
+  X
 } from 'lucide-react'
 import { ClientAdminAuth } from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
@@ -53,17 +52,11 @@ interface EnvVariable {
   lastUpdated?: string
 }
 
-interface EnvCategory {
-  id: string
-  name: string
-  icon: React.ComponentType<any>
-  description: string
-  variables: EnvVariable[]
-}
-
 export default function EnvironmentManager() {
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
+  
+  // States
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
@@ -73,7 +66,7 @@ export default function EnvironmentManager() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingVariable, setEditingVariable] = useState<EnvVariable | null>(null)
   const [maskedVariables, setMaskedVariables] = useState<Set<string>>(new Set())
-  const [categories, setCategories] = useState<EnvCategory[]>([])
+  const [variables, setVariables] = useState<EnvVariable[]>([])
   const [vercelConnected, setVercelConnected] = useState(false)
   
   const [newVariable, setNewVariable] = useState<EnvVariable>({
@@ -84,15 +77,22 @@ export default function EnvironmentManager() {
     category: 'config'
   })
 
-  // Environment categories for organization
-  const envCategories: Record<string, { name: string; icon: React.ComponentType<any>; description: string }> = {
-    security: { name: 'Security', icon: Shield, description: 'JWT secrets, admin credentials, API keys' },
-    api: { name: 'API Keys', icon: Key, description: 'External service API keys and tokens' },
-    ads: { name: 'Advertising', icon: Globe, description: 'AdSense, Monetag and other ad network settings' },
-    config: { name: 'Configuration', icon: Settings, description: 'App configuration and feature flags' },
-    database: { name: 'Database', icon: Database, description: 'Database connections and storage' },
-    features: { name: 'Features', icon: Smartphone, description: 'Feature flags and toggles' }
-  }
+  // Environment categories
+  const categories = [
+    { id: 'security', name: 'Security', icon: Shield, color: 'red' },
+    { id: 'api', name: 'API Keys', icon: Key, color: 'blue' },
+    { id: 'ads', name: 'Advertising', icon: Globe, color: 'green' },
+    { id: 'config', name: 'Configuration', icon: Settings, color: 'gray' },
+    { id: 'database', name: 'Database', icon: Database, color: 'purple' },
+    { id: 'features', name: 'Features', icon: Smartphone, color: 'orange' }
+  ]
+
+  // Environment tabs
+  const envTabs = [
+    { id: 'production', name: 'Production', icon: Server, color: 'red' },
+    { id: 'preview', name: 'Preview', icon: Globe, color: 'yellow' },
+    { id: 'development', name: 'Development', icon: Smartphone, color: 'blue' }
+  ]
 
   useEffect(() => {
     loadEnvironmentVariables()
@@ -105,81 +105,41 @@ export default function EnvironmentManager() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          organizeVariablesByCategory(data.variables)
+          const enrichedVars = data.variables.map((v: EnvVariable) => ({
+            ...v,
+            category: detectCategory(v.key)
+          }))
+          setVariables(enrichedVars)
           setVercelConnected(data.vercelConnected)
           
           // Auto-mask sensitive variables
-          const sensitiveKeys = data.variables
-            .filter((v: EnvVariable) => v.type === 'sensitive' || v.key.includes('SECRET') || v.key.includes('KEY') || v.key.includes('HASH'))
+          const sensitiveKeys = enrichedVars
+            .filter((v: EnvVariable) => 
+              v.type === 'sensitive' || 
+              v.key.includes('SECRET') || 
+              v.key.includes('KEY') || 
+              v.key.includes('HASH') ||
+              v.key.includes('TOKEN') ||
+              v.key.includes('PASSWORD')
+            )
             .map((v: EnvVariable) => v.key)
           setMaskedVariables(new Set(sensitiveKeys))
         }
       }
     } catch (error) {
-      toast.error("Error", "Failed to load environment variables")
+      toast.error("Failed to load environment variables")
     } finally {
       setLoading(false)
     }
   }
 
-  const organizeVariablesByCategory = (variables: EnvVariable[]) => {
-    const categorizedVars: Record<string, EnvVariable[]> = {}
-    
-    // Initialize categories
-    Object.keys(envCategories).forEach(cat => {
-      categorizedVars[cat] = []
-    })
-    categorizedVars.other = []
-
-    // Categorize variables
-    variables.forEach((variable: EnvVariable) => {
-      const category = detectCategory(variable.key)
-      variable.category = category
-      categorizedVars[category].push(variable)
-    })
-
-    // Create category objects
-    const cats: EnvCategory[] = Object.entries(envCategories).map(([id, info]) => ({
-      id,
-      name: info.name,
-      icon: info.icon,
-      description: info.description,
-      variables: categorizedVars[id] || []
-    }))
-
-    // Add "Other" category if it has variables
-    if (categorizedVars.other.length > 0) {
-      cats.push({
-        id: 'other',
-        name: 'Other',
-        icon: Settings,
-        description: 'Uncategorized variables',
-        variables: categorizedVars.other
-      })
-    }
-
-    setCategories(cats)
-  }
-
   const detectCategory = (key: string): string => {
     const lowerKey = key.toLowerCase()
-    
-    if (lowerKey.includes('jwt') || lowerKey.includes('secret') || lowerKey.includes('admin') || lowerKey.includes('password') || lowerKey.includes('hash')) {
-      return 'security'
-    }
-    if (lowerKey.includes('api_key') || lowerKey.includes('token') || lowerKey.includes('gemini') || lowerKey.includes('huggingface')) {
-      return 'api'
-    }
-    if (lowerKey.includes('adsense') || lowerKey.includes('monetag') || lowerKey.includes('ad_')) {
-      return 'ads'
-    }
-    if (lowerKey.includes('kv_') || lowerKey.includes('database') || lowerKey.includes('redis')) {
-      return 'database'
-    }
-    if (lowerKey.includes('maintenance') || lowerKey.includes('enable_') || lowerKey.includes('disable_')) {
-      return 'features'
-    }
-    
+    if (lowerKey.includes('secret') || lowerKey.includes('password') || lowerKey.includes('hash') || lowerKey.includes('jwt')) return 'security'
+    if (lowerKey.includes('api') || lowerKey.includes('key') || lowerKey.includes('token')) return 'api'
+    if (lowerKey.includes('adsense') || lowerKey.includes('monetag') || lowerKey.includes('ad_')) return 'ads'
+    if (lowerKey.includes('db') || lowerKey.includes('database') || lowerKey.includes('mongo') || lowerKey.includes('postgres')) return 'database'
+    if (lowerKey.includes('enable') || lowerKey.includes('feature') || lowerKey.includes('mode')) return 'features'
     return 'config'
   }
 
@@ -203,7 +163,7 @@ export default function EnvironmentManager() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          toast.success("Success", `Variable ${isNew ? 'added' : 'updated'} successfully`)
+          toast.success(`Variable ${isNew ? 'added' : 'updated'} successfully`)
           await loadEnvironmentVariables()
           setShowAddDialog(false)
           setEditingVariable(null)
@@ -215,16 +175,14 @@ export default function EnvironmentManager() {
         throw new Error('Failed to save variable')
       }
     } catch (error) {
-      toast.error("Error", `Failed to ${isNew ? 'add' : 'update'} variable`)
+      toast.error(`Failed to ${isNew ? 'add' : 'update'} variable`)
     } finally {
       setSaving(false)
     }
   }
 
   const deleteVariable = async (key: string) => {
-    if (!confirm(`Are you sure you want to delete the variable "${key}"? This action cannot be undone.`)) {
-      return
-    }
+    if (!confirm(`Are you sure you want to delete "${key}"?`)) return
 
     setSaving(true)
     try {
@@ -237,7 +195,7 @@ export default function EnvironmentManager() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          toast.success("Success", "Variable deleted successfully")
+          toast.success("Variable deleted successfully")
           await loadEnvironmentVariables()
         } else {
           throw new Error(data.error)
@@ -246,7 +204,7 @@ export default function EnvironmentManager() {
         throw new Error('Failed to delete variable')
       }
     } catch (error) {
-      toast.error("Error", "Failed to delete variable")
+      toast.error("Failed to delete variable")
     } finally {
       setSaving(false)
     }
@@ -264,7 +222,7 @@ export default function EnvironmentManager() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
-    toast.success("Copied", `${label} copied to clipboard`)
+    toast.success(`${label} copied to clipboard`)
   }
 
   const resetNewVariable = () => {
@@ -281,7 +239,7 @@ export default function EnvironmentManager() {
     setRefreshing(true)
     await loadEnvironmentVariables()
     setRefreshing(false)
-    toast.success("Refreshed", "Environment variables refreshed")
+    toast.success("Environment variables refreshed")
   }
 
   const getVariableValue = (variable: EnvVariable) => {
@@ -291,309 +249,339 @@ export default function EnvironmentManager() {
     return variable.value
   }
 
-  const filteredCategories = categories.map(category => ({
-    ...category,
-    variables: category.variables.filter(variable => {
-      const matchesSearch = variable.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           (variable.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = selectedCategory === 'all' || category.id === selectedCategory
-      return matchesSearch && matchesCategory
-    })
-  })).filter(category => category.variables.length > 0)
+  const filteredVariables = variables.filter(variable => {
+    const matchesSearch = variable.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (variable.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || variable.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
-  const totalVariables = categories.reduce((sum, cat) => sum + cat.variables.length, 0)
+  const groupedVariables = categories.reduce((acc, category) => {
+    acc[category.id] = filteredVariables.filter(v => v.category === category.id)
+    return acc
+  }, {} as Record<string, EnvVariable[]>)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Environment Variables Manager
-              </CardTitle>
-              <CardDescription>
-                Manage your Vercel environment variables directly from the admin panel
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={vercelConnected ? "default" : "destructive"}>
-                {vercelConnected ? 'Vercel Connected' : 'Vercel Disconnected'}
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshVariables}
-                disabled={refreshing}
-              >
-                {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                Refresh
-              </Button>
-            </div>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+              <Settings className="w-6 h-6" />
+              Environment Variables
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Manage your Vercel environment variables directly from the admin panel
+            </p>
           </div>
-        </CardHeader>
-      </Card>
-
-      {!vercelConnected && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Vercel Integration Required</AlertTitle>
-          <AlertDescription>
-            To manage environment variables, ensure VERCEL_TOKEN and VERCEL_PROJECT_ID are configured.
-            <br />
-            <Button variant="link" className="p-0 h-auto" asChild>
-              <a href="https://vercel.com/docs/environment-variables" target="_blank" rel="noopener noreferrer">
-                Learn how to set up Vercel API credentials
-                <ExternalLink className="w-3 h-3 ml-1" />
-              </a>
+          <div className="flex items-center gap-2">
+            <Badge 
+              variant={vercelConnected ? "default" : "destructive"}
+              className="h-6"
+            >
+              {vercelConnected ? 'Vercel Connected' : 'Vercel Disconnected'}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshVariables}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline ml-2">Refresh</span>
             </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+          </div>
+        </div>
+
+        {!vercelConnected && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Vercel Integration Required</AlertTitle>
+            <AlertDescription>
+              To manage environment variables, ensure VERCEL_TOKEN and VERCEL_PROJECT_ID are configured.
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
 
       {/* Controls */}
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="flex-1 max-w-md">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   placeholder="Search variables..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
                 />
               </div>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {Object.entries(envCategories).map(([id, info]) => (
-                    <SelectItem key={id} value={id}>{info.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
-            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-              <DialogTrigger asChild>
-                <Button disabled={!vercelConnected}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Variable
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add Environment Variable</DialogTitle>
-                  <DialogDescription>
-                    Create a new environment variable for {activeTab}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="key">Variable Name</Label>
-                    <Input
-                      id="key"
-                      placeholder="VARIABLE_NAME"
-                      value={newVariable.key}
-                      onChange={(e) => setNewVariable({...newVariable, key: e.target.value.toUpperCase()})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="value">Value</Label>
-                    <Textarea
-                      id="value"
-                      placeholder="Variable value"
-                      value={newVariable.value}
-                      onChange={(e) => setNewVariable({...newVariable, value: e.target.value})}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select
-                      value={newVariable.category}
-                      onValueChange={(value) => setNewVariable({...newVariable, category: value as any})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(envCategories).map(([id, info]) => (
-                          <SelectItem key={id} value={id}>{info.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description (Optional)</Label>
-                    <Input
-                      id="description"
-                      placeholder="What this variable is used for"
-                      value={newVariable.description || ''}
-                      onChange={(e) => setNewVariable({...newVariable, description: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={() => saveVariable(newVariable, true)}
-                    disabled={saving || !newVariable.key || !newVariable.value}
-                  >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Add Variable
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="appearance-none bg-white border border-gray-200 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+              <Button 
+                onClick={() => setShowAddDialog(true)}
+                disabled={!vercelConnected}
+                className="whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Variable</span>
+              </Button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>{totalVariables} variables total</span>
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>{variables.length} variables total</span>
             <Separator orientation="vertical" className="h-4" />
-            <span>{filteredCategories.reduce((sum, cat) => sum + cat.variables.length, 0)} showing</span>
+            <span>{filteredVariables.length} showing</span>
           </div>
         </CardContent>
       </Card>
 
       {/* Environment Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="production" className="flex items-center gap-2">
-            <Server className="w-4 h-4" />
-            Production
-          </TabsTrigger>
-          <TabsTrigger value="preview" className="flex items-center gap-2">
-            <Globe className="w-4 h-4" />
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="development" className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4" />
-            Development
-          </TabsTrigger>
-        </TabsList>
+      <div className="space-y-4">
+        <div className="flex overflow-x-auto">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg min-w-max">
+            {envTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.name}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <TabsContent value={activeTab} className="space-y-4">
-          {loading ? (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Loading environment variables...
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {filteredCategories.map((category) => (
+        {loading ? (
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading environment variables...
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {categories.map((category) => {
+              const categoryVars = groupedVariables[category.id] || []
+              if (categoryVars.length === 0) return null
+
+              return (
                 <Card key={category.id}>
-                  <CardHeader>
+                  <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2">
                       <category.icon className="w-5 h-5" />
                       {category.name}
-                      <Badge variant="secondary">{category.variables.length}</Badge>
+                      <Badge variant="secondary" className="ml-auto">
+                        {categoryVars.length}
+                      </Badge>
                     </CardTitle>
-                    <CardDescription>{category.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {category.variables.map((variable) => (
-                      <div key={variable.key} className="flex items-center gap-3 p-3 border rounded-lg">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <code className="text-sm font-mono">{variable.key}</code>
-                            {variable.type === 'sensitive' && (
-                              <Badge variant="destructive" className="text-xs">Sensitive</Badge>
-                            )}
-                            {variable.required && (
-                              <Badge variant="outline" className="text-xs">Required</Badge>
+                    {categoryVars.map((variable) => (
+                      <div key={variable.key} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <code className="text-sm font-mono font-semibold">
+                                {variable.key}
+                              </code>
+                              {variable.type === 'sensitive' && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Sensitive
+                                </Badge>
+                              )}
+                              {variable.required && (
+                                <Badge variant="outline" className="text-xs">
+                                  Required
+                                </Badge>
+                              )}
+                            </div>
+                            {variable.description && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                {variable.description}
+                              </p>
                             )}
                           </div>
-                          {variable.description && (
-                            <p className="text-xs text-muted-foreground mb-2">{variable.description}</p>
-                          )}
-                          <div className="flex items-center gap-2">
-                            <code className="text-xs bg-muted px-2 py-1 rounded flex-1 min-w-0 font-mono">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingVariable(variable)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteVariable(variable.key)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 min-w-0">
+                            <code className="block text-xs bg-gray-50 px-3 py-2 rounded border font-mono break-all">
                               {getVariableValue(variable)}
                             </code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => toggleVariableMask(variable.key)}
-                            >
-                              {maskedVariables.has(variable.key) ? (
-                                <Eye className="w-3 h-3" />
-                              ) : (
-                                <EyeOff className="w-3 h-3" />
-                              )}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(variable.value, variable.key)}
-                            >
-                              <Copy className="w-3 h-3" />
-                            </Button>
                           </div>
-                          {variable.target && (
-                            <div className="flex gap-1 mt-2">
-                              {variable.target.map((env) => (
-                                <Badge key={env} variant="outline" className="text-xs">
-                                  {env}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setEditingVariable(variable)}
+                            onClick={() => toggleVariableMask(variable.key)}
+                            className="h-8 w-8 p-0"
                           >
-                            <Settings className="w-3 h-3" />
+                            {maskedVariables.has(variable.key) ? (
+                              <Eye className="w-3 h-3" />
+                            ) : (
+                              <EyeOff className="w-3 h-3" />
+                            )}
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => deleteVariable(variable.key)}
-                            className="text-destructive hover:text-destructive"
+                            onClick={() => copyToClipboard(variable.value, variable.key)}
+                            className="h-8 w-8 p-0"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Copy className="w-3 h-3" />
                           </Button>
                         </div>
+
+                        {variable.target && variable.target.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {variable.target.map((env) => (
+                              <Badge key={env} variant="outline" className="text-xs">
+                                {env}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </CardContent>
                 </Card>
-              ))}
-              
-              {filteredCategories.length === 0 && (
-                <Card>
-                  <CardContent className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <p className="text-muted-foreground">No environment variables found</p>
-                      {searchQuery && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Try adjusting your search or category filter
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
+              )
+            })}
+            
+            {filteredVariables.length === 0 && (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <div className="text-center">
+                    <p className="text-gray-600">No environment variables found</p>
+                    {searchQuery && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Try adjusting your search or category filter
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Add Variable Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-md mx-4">
+          <DialogHeader>
+            <DialogTitle>Add Environment Variable</DialogTitle>
+            <DialogDescription>
+              Create a new environment variable for {activeTab}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="key">Variable Name</Label>
+              <Input
+                id="key"
+                placeholder="VARIABLE_NAME"
+                value={newVariable.key}
+                onChange={(e) => setNewVariable({...newVariable, key: e.target.value.toUpperCase()})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="value">Value</Label>
+              <Textarea
+                id="value"
+                placeholder="Variable value"
+                value={newVariable.value}
+                onChange={(e) => setNewVariable({...newVariable, value: e.target.value})}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <select
+                id="category"
+                value={newVariable.category}
+                onChange={(e) => setNewVariable({...newVariable, category: e.target.value as any})}
+                className="w-full bg-white border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Input
+                id="description"
+                placeholder="What this variable is used for"
+                value={newVariable.description || ''}
+                onChange={(e) => setNewVariable({...newVariable, description: e.target.value})}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => saveVariable(newVariable, true)}
+              disabled={saving || !newVariable.key || !newVariable.value}
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Add Variable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Variable Dialog */}
       <Dialog open={!!editingVariable} onOpenChange={(open) => !open && setEditingVariable(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md mx-4">
           <DialogHeader>
             <DialogTitle>Edit Environment Variable</DialogTitle>
             <DialogDescription>
@@ -604,7 +592,7 @@ export default function EnvironmentManager() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Variable Name</Label>
-                <Input value={editingVariable.key} readOnly className="bg-muted" />
+                <Input value={editingVariable.key} readOnly className="bg-gray-50" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-value">Value</Label>

@@ -545,7 +545,7 @@ export default function AdminPanel() {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 sm:p-6">
+          <div className={activeSection === 'environment' ? '' : 'p-4 sm:p-6'}>
             {activeSection === 'dashboard' && <DashboardSection stats={stats} systemHealth={systemHealth} />}
             {activeSection === 'security' && <SecuritySection />}
             {activeSection === 'users' && <UsersSection />}
