@@ -44,24 +44,26 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
     return section?.visible ?? false
   }
 
-  // Classic design settings
+  // Classic design settings - LIVE PREVIEW ILE AYNI
   const defaultSettings: DesignSettings = {
-    margins: 0.15,
-    sectionSpacing: 'normal',
-    headerSpacing: 'normal',
-    fontFamily: 'Arial, sans-serif',
+    margins: 0.25, // Daha geniş kenar boşlukları (live preview gibi)
+    sectionSpacing: 'normal', // Dar satır aralığı
+    headerSpacing: 'normal', // Compact header spacing
+    fontFamily: 'Arial, Helvetica, sans-serif', // SANS-SERIF zorunlu
     fontSize: 11,
-    lineHeight: 1.4
+    lineHeight: 1.3 // Daha sıkışık satır aralığı
   }
 
   const settings = designSettings || defaultSettings
 
-  // Dynamic styles based on settings
+  // Dynamic styles - LIVE PREVIEW ILE AYNI
   const containerStyle = {
-    padding: isMobile ? '1rem' : `${settings.margins}in`,
-    fontFamily: settings.fontFamily,
+    padding: isMobile ? '1.5rem' : `${settings.margins}in`, // Geniş padding
+    fontFamily: settings.fontFamily, // Sans-serif
     fontSize: isMobile ? '11px' : `${settings.fontSize}pt`,
-    lineHeight: settings.lineHeight,
+    lineHeight: settings.lineHeight, // Sıkışık line-height
+    maxWidth: '8.5in', // A4 width
+    margin: '0 auto'
   }
 
   return (
@@ -69,70 +71,97 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       className={`cv-container classic bg-white text-black min-h-full w-full ${isMobile ? 'text-xs' : ''}`}
       style={containerStyle}
     >
-      {/* Header - Clean centered layout like user requested */}
-      <header className="cv-header text-center mb-6">
-        <h1 className={`name ${isMobile ? 'text-2xl' : 'text-3xl'} font-bold uppercase mb-2 text-black`}>
+      {/* Header - LIVE PREVIEW LAYOUT */}
+      <header className="cv-header text-center mb-4">
+        {/* Ana başlık - KALIN SANS-SERIF */}
+        <h1 className={`name ${isMobile ? 'text-2xl' : 'text-3xl'} font-black uppercase mb-1 text-black`}
+            style={{fontFamily: 'Arial, Helvetica, sans-serif', fontWeight: '900'}}>
           {personalInfo.fullName || "YOUR NAME"}
         </h1>
-        <p className={`title ${isMobile ? 'text-base' : 'text-lg'} mb-3 text-gray-600`}>
+        
+        {/* Alt başlık - SİYAH SANS-SERIF */}
+        <p className={`title ${isMobile ? 'text-base' : 'text-lg'} mb-3 text-black font-medium`}
+           style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
           {personalInfo.title || "Test Developer"}
         </p>
         
-        {/* Contact info - Simple inline format */}
-        <div className="contact-info text-sm text-gray-700 space-y-1">
-          <div className="flex justify-center items-center flex-wrap gap-2">
+        {/* Contact info - İKİ SATIRLIK LAYOUT (LIVE PREVIEW GİBİ) */}
+        <div className="contact-info text-sm text-black space-y-1"
+             style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
+          {/* İlk satır: Email, Phone, Address */}
+          <div className="flex justify-center items-center flex-wrap gap-3">
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{formatIrishPhone(personalInfo.phone)}</span>}
             {personalInfo.address && <span>{personalInfo.address}</span>}
-            {personalInfo.nationality && <span className="nationality text-green-700 font-medium">{personalInfo.nationality}</span>}
+            {/* STAMP2 SİYAH OLACAK (yeşil değil) */}
+            {personalInfo.nationality && <span className="nationality text-black font-medium">{personalInfo.nationality}</span>}
+          </div>
+          
+          {/* İkinci satır: Website, LinkedIn */}
+          <div className="flex justify-center items-center flex-wrap gap-3">
             {personalInfo.website && <span>{personalInfo.website.replace('https://', '').replace('http://', '')}</span>}
             {personalInfo.linkedin && <span>linkedin.com</span>}
           </div>
         </div>
       </header>
 
-      {/* Summary Section */}
+      {/* Summary Section - KALIN ÇİZGİ */}
       {personalInfo.summary && isSectionVisible('summary') && (
-        <section className="summary mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="summary mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             SUMMARY
           </h2>
-          <p className="text-justify leading-relaxed">
+          <p className="text-justify leading-snug" // SIKIŞIK LEADING
+             style={{fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: '1.3'}}>
             {personalInfo.summary}
           </p>
         </section>
       )}
 
-      {/* Experience Section */}
+      {/* Experience Section - KALIN ÇİZGİ */}
       {experience.length > 0 && isSectionVisible('experience') && (
-        <section className="experience mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="experience mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             EXPERIENCE
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3"> {/* COMPACT SPACING */}
             {experience.map((exp) => (
               <div key={exp.id} className="experience-item">
-                <div className="exp-header flex justify-between items-start mb-2">
+                <div className="exp-header flex justify-between items-start mb-1">
                   <div className="exp-left">
-                    <h3 className="font-bold text-black">
+                    <h3 className="font-bold text-black"
+                        style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                       {exp.position} at {exp.company}
                     </h3>
                   </div>
                   <div className="exp-right text-right">
-                    <p className="exp-meta text-sm text-gray-600">
+                    <p className="exp-meta text-sm text-black" // SİYAH OLACAK
+                       style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                       {exp.location} • {new Date(exp.startDate).toLocaleDateString('en-IE', { month: 'short', year: 'numeric' })} - {exp.current ? 'Present' : new Date(exp.endDate).toLocaleDateString('en-IE', { month: 'short', year: 'numeric' })}
                     </p>
                   </div>
                 </div>
                 {exp.description && (
-                  <p className="exp-description text-justify leading-relaxed">
+                  <p className="exp-description text-justify leading-snug" // SIKIŞIK
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: '1.3'}}>
                     {exp.description}
                   </p>
                 )}
                 {exp.achievements && exp.achievements.length > 0 && (
-                  <ul className="list-disc pl-6 space-y-1 mt-2">
+                  <ul className="list-disc pl-6 space-y-0 mt-1"> {/* COMPACT */}
                     {exp.achievements.map((achievement, index) => (
-                      <li key={index} className="leading-relaxed">
+                      <li key={index} className="leading-snug"
+                          style={{fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: '1.3'}}>
                         {achievement}
                       </li>
                     ))}
@@ -144,40 +173,51 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </section>
       )}
 
-      {/* Education Section */}
+      {/* Education Section - KALIN ÇİZGİ */}
       {education.length > 0 && isSectionVisible('education') && (
-        <section className="education mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="education mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             EDUCATION
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2"> {/* COMPACT */}
             {education.map((edu) => (
               <div key={edu.id} className="education-item">
                 <div className="edu-header flex justify-between items-start">
                   <div className="edu-left">
-                    <h3 className="font-bold text-black">
+                    <h3 className="font-bold text-black"
+                        style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                       {edu.degree} in {edu.field}
                     </h3>
-                    <p className="institution font-medium text-gray-700">
+                    <p className="institution font-medium text-black" // SİYAH
+                       style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                       {edu.institution}
                     </p>
                   </div>
                   <div className="edu-right text-right">
-                    <p className="location text-sm text-gray-600">
+                    <p className="location text-sm text-black" // SİYAH
+                       style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                       {edu.location}
                     </p>
-                    <p className="date text-sm text-gray-600">
+                    <p className="date text-sm text-black" // SİYAH
+                       style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                       {formatMonthYear(edu.startDate)}{edu.current || edu.endDate === 'Present' ? ' - Present' : edu.endDate ? ` - ${formatMonthYear(edu.endDate)}` : ''}
                     </p>
                   </div>
                 </div>
                 {edu.grade && (
-                  <p className="text-sm mt-1 text-gray-600">
+                  <p className="text-sm mt-1 text-black"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                     Grade: {edu.grade}
                   </p>
                 )}
                 {edu.description && (
-                  <p className="text-sm mt-1 text-justify">
+                  <p className="text-sm mt-1 text-justify leading-snug"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: '1.3'}}>
                     {edu.description}
                   </p>
                 )}
@@ -187,13 +227,18 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </section>
       )}
 
-      {/* Skills Section */}
+      {/* Skills Section - KALIN ÇİZGİ */}
       {skills.length > 0 && isSectionVisible('skills') && (
-        <section className="skills mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="skills mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             SKILLS
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-1"> {/* COMPACT */}
             {['Technical', 'Software', 'Soft', 'Other'].map((category) => {
               const categorySkills = skills.filter(skill => skill.category === category)
               if (categorySkills.length === 0) return null
@@ -201,7 +246,8 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
               const skillNames = categorySkills.map(skill => skill.name).join(' • ')
               
               return (
-                <div key={category} className="text-sm">
+                <div key={category} className="text-sm leading-snug"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                   <span className="font-semibold">{category}:</span> {skillNames}
                 </div>
               )
@@ -210,43 +256,58 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </section>
       )}
 
-      {/* Languages Section */}
+      {/* Languages Section - KALIN ÇİZGİ */}
       {languages && languages.length > 0 && isSectionVisible('languages') && (
-        <section className="languages mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="languages mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             LANGUAGES
           </h2>
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="grid grid-cols-2 gap-1 text-sm"> {/* COMPACT */}
             {languages.map(language => (
-              <div key={language.id} className="flex justify-between">
+              <div key={language.id} className="flex justify-between"
+                   style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                 <span className="font-medium">{language.name}</span>
-                <span className="text-gray-600">{language.level}</span>
+                <span className="text-black">{language.level}</span> {/* SİYAH */}
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Projects Section */}
+      {/* Projects Section - KALIN ÇİZGİ */}
       {projects && projects.length > 0 && isSectionVisible('projects') && (
-        <section className="projects mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="projects mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             PROJECTS
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2"> {/* COMPACT */}
             {projects.map((project) => (
               <div key={project.id}>
                 <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-bold">{project.name}</h3>
-                  <span className="text-sm text-gray-600">
+                  <h3 className="font-bold"
+                      style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>{project.name}</h3>
+                  <span className="text-sm text-black"
+                        style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                     {project.startDate} - {project.current ? "Present" : project.endDate}
                   </span>
                 </div>
                 {project.description && (
-                  <p className="text-sm text-justify mb-2">{project.description}</p>
+                  <p className="text-sm text-justify mb-1 leading-snug"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: '1.3'}}>{project.description}</p>
                 )}
                 {(project.technologies || []).length > 0 && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-black"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                     <span className="font-semibold">Technologies:</span> {(project.technologies || []).join(', ')}
                   </p>
                 )}
@@ -256,21 +317,29 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </section>
       )}
 
-      {/* Certifications Section */}
+      {/* Certifications Section - KALIN ÇİZGİ */}
       {certifications && certifications.length > 0 && isSectionVisible('certifications') && (
-        <section className="certifications mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="certifications mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             CERTIFICATIONS
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2"> {/* COMPACT */}
             {certifications.map((cert) => (
               <div key={cert.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold">{cert.name}</h3>
-                    <p className="text-sm text-gray-700">{cert.issuer}</p>
+                    <h3 className="font-bold"
+                        style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>{cert.name}</h3>
+                    <p className="text-sm text-black"
+                       style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>{cert.issuer}</p>
                   </div>
-                  <div className="text-right text-sm text-gray-600">
+                  <div className="text-right text-sm text-black"
+                       style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                     <p>{new Date(cert.issueDate).toLocaleDateString('en-IE', { month: 'short', year: 'numeric' })}</p>
                     {cert.expiryDate && (
                       <p>Expires {new Date(cert.expiryDate).toLocaleDateString('en-IE', { month: 'short', year: 'numeric' })}</p>
@@ -278,7 +347,8 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
                   </div>
                 </div>
                 {cert.description && (
-                  <p className="text-sm mt-1 text-justify">{cert.description}</p>
+                  <p className="text-sm mt-1 text-justify leading-snug"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: '1.3'}}>{cert.description}</p>
                 )}
               </div>
             ))}
@@ -286,18 +356,24 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </section>
       )}
 
-      {/* Interests Section */}
+      {/* Interests Section - KALIN ÇİZGİ */}
       {interests && interests.length > 0 && isSectionVisible('interests') && (
-        <section className="interests mb-6">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+        <section className="interests mb-4">
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             INTERESTS
           </h2>
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="grid grid-cols-2 gap-1 text-sm"> {/* COMPACT */}
             {interests.map(interest => (
-              <div key={interest.id}>
+              <div key={interest.id}
+                   style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                 <span className="font-medium">{interest.name}</span>
                 {interest.description && (
-                  <div className="text-xs text-gray-600">{interest.description}</div>
+                  <div className="text-xs text-black">{interest.description}</div>
                 )}
               </div>
             ))}
@@ -305,16 +381,22 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </section>
       )}
 
-      {/* References Section */}
+      {/* References Section - KALIN ÇİZGİ */}
       {isSectionVisible('references') && (
         <section className="references">
-          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold uppercase border-b border-black pb-1 mb-3`}>
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
+              style={{
+                fontFamily: 'Arial, Helvetica, sans-serif', 
+                borderBottom: '2px solid black', // KALIN ÇİZGİ
+                paddingBottom: '2px'
+              }}>
             REFERENCES
           </h2>
           {data.referencesDisplay === 'detailed' && references && references.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-1"> {/* COMPACT */}
               {references.map((reference) => (
-                <div key={reference.id} className="text-sm">
+                <div key={reference.id} className="text-sm"
+                     style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
                   <p className="font-semibold">{reference.name} - {reference.position}</p>
                   <p>{reference.company}</p>
                   <p>{reference.email} • {reference.phone}</p>
@@ -322,7 +404,8 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
               ))}
             </div>
           ) : (
-            <p className="references-available text-center italic text-gray-600">
+            <p className="references-available text-center italic text-black" // SİYAH
+               style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
               Available upon request
             </p>
           )}
