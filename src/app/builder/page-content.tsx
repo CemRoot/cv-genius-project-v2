@@ -14,6 +14,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useToast, createToastUtils } from "@/components/ui/toast"
 import { MobileCVWizard } from "@/components/mobile-cv-wizard"
 import { useAutoSave } from "@/hooks/use-auto-save"
+import { AdModal } from "@/components/cv/ad-modal"
+import html2canvas from "html2canvas"
+import jsPDF from "jspdf"
 
 interface CVBuilderPageContentProps {
   initialIsMobile: boolean
@@ -24,6 +27,7 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
   
   const [showPreview, setShowPreview] = useState(true)
   const [isPreviewOnly, setIsPreviewOnly] = useState(false)
+  const [isAdModalOpen, setIsAdModalOpen] = useState(false)
   
   // Initialize from sessionState or default to 'edit'
   const [mobileActiveTab, setMobileActiveTab] = useState(sessionState.mobileActiveTab || 'edit')
@@ -163,14 +167,57 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
 
   const handleExport = () => {
     try {
-      // Save current CV before exporting
       saveCV()
-      toast.success('CV Saved', 'Redirecting to export page.')
-      // Navigate to export page
-      router.push('/export')
+      setIsAdModalOpen(true)
     } catch (error) {
       toast.error('Error', 'Export process could not be started.')
     }
+  }
+
+  const generatePdf = async () => {
+    const cvElement = document.getElementById('cv-export-content')
+    if (!cvElement) {
+      toast.error('Error', 'CV content not found.')
+      return
+    }
+
+    const canvas = await html2canvas(cvElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+    })
+
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'pt',
+      format: 'a4',
+    })
+
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = pdf.internal.pageSize.getHeight()
+    const canvasWidth = canvas.width
+    const canvasHeight = canvas.height
+    const ratio = canvasWidth / pdfWidth
+    const scaledHeight = canvasHeight / ratio
+
+    let position = 0
+    let pageCount = 1
+
+    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight)
+
+    let heightLeft = scaledHeight - pdfHeight
+
+    while (heightLeft > 0) {
+      position = -pdfHeight * pageCount
+      pdf.addPage()
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight)
+      heightLeft -= pdfHeight
+      pageCount++
+    }
+
+    pdf.save(`${currentCV.personal.fullName || 'cv'}-export.pdf`)
+    toast.success('Success', 'CV has been exported as PDF.')
   }
 
   const mobileTabs = [
@@ -221,6 +268,14 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdModal
+        isOpen={isAdModalOpen}
+        onClose={() => setIsAdModalOpen(false)}
+        onCountdownComplete={() => {
+          setIsAdModalOpen(false)
+          generatePdf()
+        }}
+      />
       {/* Mobile Layout */}
       {isMobile ? (
         <>
@@ -264,10 +319,9 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toast.info('Export Unavailable', 'Export feature is temporarily disabled.')}
-                    className="p-2 touch-manipulation opacity-50 cursor-not-allowed"
-                    title="Export CV (Temporarily Unavailable)"
-                    disabled
+                    onClick={handleExport}
+                    className="p-2 touch-manipulation"
+                    title="Export CV"
                   >
                     <Share className="h-4 w-4" />
                   </Button>
@@ -454,12 +508,10 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    disabled
-                    className="opacity-50 cursor-not-allowed"
-                    title="Export feature is temporarily unavailable"
+                    onClick={handleExport}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Export (Unavailable)
+                    Export
                   </Button>
                 </div>
               </div>
