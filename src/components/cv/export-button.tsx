@@ -66,37 +66,50 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
       <html>
         <head>
           <meta charset="utf-8">
-          <title>${fileName} - CV</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta name="format-detection" content="telephone=no, email=no, address=no">
+          <title>${fileName} - Professional CV</title>
           <style>
             @media print {
               @page {
                 size: A4;
-                margin-top: 15mm;
-                margin-bottom: 15mm;
-                margin-left: 15mm;
-                margin-right: 15mm;
+                margin: 15mm;
+                /* Hide browser headers and footers */
+                margin-header: 0;
+                margin-footer: 0;
               }
               
-              /* Ensure consistent margins on all pages */
+              /* Remove all browser-generated content */
               @page :first {
-                margin-top: 15mm;
-                margin-bottom: 15mm;
-                margin-left: 15mm;
-                margin-right: 15mm;
+                margin: 15mm;
+                margin-header: 0;
+                margin-footer: 0;
               }
               
               @page :left {
-                margin-top: 15mm;
-                margin-bottom: 15mm;
-                margin-left: 15mm;
-                margin-right: 15mm;
+                margin: 15mm;
+                margin-header: 0;
+                margin-footer: 0;
               }
               
               @page :right {
-                margin-top: 15mm;
-                margin-bottom: 15mm;
-                margin-left: 15mm;
-                margin-right: 15mm;
+                margin: 15mm;
+                margin-header: 0;
+                margin-footer: 0;
+              }
+              
+              /* Hide browser-generated elements */
+              body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              
+              /* Ensure no browser elements appear */
+              html {
+                margin: 0 !important;
+                padding: 0 !important;
               }
               
               body {
@@ -146,13 +159,55 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
     
     // Wait for content to load
     printWindow.onload = () => {
-      // Trigger print dialog
-      printWindow.print()
+      // Add JavaScript to configure print settings
+      const script = printWindow.document.createElement('script')
+      script.innerHTML = `
+        // Configure print settings to hide headers/footers
+        if (window.chrome && window.chrome.runtime && window.chrome.runtime.onConnect) {
+          // Chrome-specific settings
+          const printSettings = {
+            shouldPrintBackgrounds: true,
+            shouldPrintSelectionOnly: false,
+            marginType: 1, // NO_MARGINS
+            headerFooterEnabled: false,
+            isLandscape: false,
+            paperSizeUnit: 0,
+            paperWidth: 210,
+            paperHeight: 297
+          };
+        }
+        
+        // Fallback: Use CSS to ensure clean print
+        const style = document.createElement('style');
+        style.innerHTML = \`
+          @media print {
+            @page { margin: 15mm; }
+            body { margin: 0; padding: 0; }
+          }
+        \`;
+        document.head.appendChild(style);
+        
+        // Set document title for better PDF naming
+        document.title = '${fileName}_CV_Professional';
+        
+        // Ensure proper viewport
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
+      `
+      printWindow.document.head.appendChild(script)
       
-      // Close the window after printing
-      printWindow.onafterprint = () => {
-        printWindow.close()
-      }
+      // Small delay to ensure scripts run
+      setTimeout(() => {
+        // Trigger print dialog
+        printWindow.print()
+        
+        // Close the window after printing
+        printWindow.onafterprint = () => {
+          printWindow.close()
+        }
+      }, 100)
     }
   }
   

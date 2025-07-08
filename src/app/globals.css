@@ -1787,3 +1787,73 @@
     animation: none;
   }
 }
+
+/* PDF Export Print Styles - Hide Browser Headers/Footers */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+    /* Hide browser headers and footers */
+    margin-header: 0;
+    margin-footer: 0;
+  }
+  
+  /* Remove all browser-generated content */
+  @page :first {
+    margin: 15mm;
+    margin-header: 0;
+    margin-footer: 0;
+  }
+  
+  @page :left {
+    margin: 15mm; 
+    margin-header: 0;
+    margin-footer: 0;
+  }
+  
+  @page :right {
+    margin: 15mm;
+    margin-header: 0;
+    margin-footer: 0;
+  }
+  
+  /* Ensure clean document structure */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Hide browser-generated elements */
+  body::before,
+  body::after,
+  html::before,
+  html::after {
+    display: none !important;
+    content: "" !important;
+  }
+  
+  /* Ensure proper page breaks */
+  .page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+  
+  /* Avoid breaking important elements */
+  .experience-item,
+  .education-item,
+  .certification-item,
+  .section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Ensure all text is visible */
+  * {
+    color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
