@@ -13,6 +13,7 @@ import { ExportButton } from '@/components/cv/export-button'
 import SectionReorderPanel from '@/components/cv/section-reorder-panel'
 import { ErrorStateWithFallback } from '@/components/ui/error-state-with-fallback'
 import { useCVPageCount } from '@/hooks/use-cv-page-count'
+import { AutoSaveStatus } from '@/components/ui/auto-save-status'
 
 export function WebBuilderFlow() {
   const { currentCV, sessionState, updateSessionState, setTemplate } = useCVStore()
@@ -395,6 +396,8 @@ export function WebBuilderFlow() {
                     {estimatedPageCount} pages
                   </Badge>
                 )}
+                {/* Auto-save Status */}
+                <AutoSaveStatus compact={true} className="ml-2" />
               </div>
               <div className="flex gap-2">
                 <ExportButton 
