@@ -34,6 +34,8 @@ import { IrishGraduateTemplate } from '@/components/cv/templates/irish-graduate-
 import { ClassicTemplate } from '@/components/cv/templates/classic-template'
 import { getAdConfig } from '@/lib/ad-config'
 import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -95,6 +97,10 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   const router = useRouter()
   const { handleDownload } = useDownloadWithRedirect()
 
+  // MoneTags integration state
+  const [monetagTriggered, setMonetagTriggered] = useState(false)
+  const [monetagLoading, setMonetagLoading] = useState(false)
+
   // Smart navigation to CV builder
   const navigateToBuilder = () => {
     // Ensure user goes to form/editor, not template selection
@@ -120,7 +126,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     if (!currentCV) throw new Error('No CV data available')
     
     try {
-      console.log('Starting template manager PDF generation with CV data:', currentCV.id)
+      console.log('Starting real PDF generation with template manager...')
       
       // Use the same IrishCVTemplateManager as live preview
       const templateManager = new IrishCVTemplateManager()
@@ -133,92 +139,106 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         throw new Error(`Template ${templateId} not found`)
       }
       
-      // Render the CV using the template manager (same as live preview)
+      // Render the exact same CV as live preview
       const html = templateManager.renderCV(currentCV)
       const css = templateManager.getTemplateCSS()
       
-      // Create a print window with the exact same content as live preview
-      const printWindow = window.open('', '_blank')
-      if (!printWindow) {
-        throw new Error('Could not open print window')
-      }
+      // Create a hidden container for rendering
+      const container = document.createElement('div')
+      container.style.position = 'absolute'
+      container.style.top = '-9999px'
+      container.style.left = '-9999px'
+      container.style.width = '794px'  // A4 width in pixels (96 DPI)
+      container.style.height = 'auto'
+      container.style.background = 'white'
+      container.style.zIndex = '-1000'
       
-      // Write the optimized HTML/CSS with minimal top margin
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <title>${currentCV.personal.fullName}_CV</title>
-            <style>
-              ${css}
-              
-              /* Print-specific optimizations - minimal top margin */
-              @media print {
-                @page {
-                  size: A4 portrait;
-                  margin: 0 !important;
-                }
-                
-                body {
-                  margin: 10px 15mm 15mm 15mm !important;
-                  padding: 0 !important;
-                  -webkit-print-color-adjust: exact !important;
-                  print-color-adjust: exact !important;
-                }
-                
-                * {
-                  page-break-inside: avoid !important;
-                }
-              }
-              
-              /* Minimal top margin for screen view */
-              body {
-                font-family: Arial, sans-serif;
-                background: white;
-                margin: 10px 15mm 15mm 15mm;
-                padding: 0;
-              }
-              
-              /* Remove any header spacing */
-              header, .header, .cv-header {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-              }
-              
-              /* Start content immediately */
-              h1, .cv-name, .name {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-              }
-            </style>
-          </head>
-          <body>
-            <div style="margin-top: 0; padding-top: 0;">
-              ${html}
-            </div>
-          </body>
-        </html>
-      `)
+      // Add CSS styles
+      const styleElement = document.createElement('style')
+      styleElement.textContent = `
+        ${css}
+        
+        /* A4 optimized styles */
+        .cv-container {
+          width: 794px !important;
+          min-height: 1123px !important; /* A4 height */
+          padding: 40px !important;
+          box-sizing: border-box !important;
+          background: white !important;
+          font-family: Arial, sans-serif !important;
+          font-size: 11pt !important;
+          line-height: 1.4 !important;
+          color: black !important;
+        }
+        
+        /* Remove any print-specific styles that might interfere */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          page-break-inside: avoid !important;
+        }
+      `
       
-      printWindow.document.close()
+      container.appendChild(styleElement)
       
-      // Wait for loading and trigger print
-      return new Promise((resolve, reject) => {
-        printWindow.onload = () => {
-          setTimeout(() => {
-            printWindow.print()
-            
-            // Close after printing
-            printWindow.onafterprint = () => {
-              printWindow.close()
-            }
-            
-            // Return placeholder blob
-            resolve(new Blob(['PDF generated via browser print'], { type: 'application/pdf' }))
-          }, 500)
+      // Add CV content
+      const contentDiv = document.createElement('div')
+      contentDiv.innerHTML = html
+      container.appendChild(contentDiv)
+      
+      // Add to DOM temporarily
+      document.body.appendChild(container)
+      
+      // Wait for fonts and images to load
+      await new Promise(resolve => {
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(resolve)
+        } else {
+          setTimeout(resolve, 500)
         }
       })
+      
+      // Additional wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // Generate canvas using html2canvas
+      const canvas = await html2canvas(container, {
+        scale: 2, // High quality
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: 794,
+        height: 1123, // A4 height
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 794,
+        windowHeight: 1123,
+        ignoreElements: (element) => {
+          // Ignore any elements that shouldn't be in PDF
+          return element.classList.contains('no-export') || 
+                 element.classList.contains('print:hidden')
+        }
+      })
+      
+      // Remove temporary container
+      document.body.removeChild(container)
+      
+      // Convert canvas to PDF
+      const imgData = canvas.toDataURL('image/jpeg', 0.95)
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      
+      // Calculate dimensions to fit A4
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      
+      // Add image to PDF (full page)
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+      
+      // Convert to blob
+      const pdfBlob = pdf.output('blob')
+      
+      console.log('✅ PDF generated successfully, size:', pdfBlob.size)
+      return pdfBlob
       
     } catch (error) {
       console.error('PDF generation error:', error)
@@ -309,24 +329,68 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
   }
 
   const downloadFile = (blob: Blob, filename: string, format: ExportFormat) => {
-    // Check if download interstitial is enabled
-    const downloadAdConfig = getAdConfig('download-interstitial')
-    
-    console.log('Download Ad Config:', downloadAdConfig)
-    console.log('Download Ad Enabled:', downloadAdConfig?.enabled)
-    
-    // Always show interstitial for PDF and DOCX downloads
-    if (format === 'pdf' || format === 'docx') {
-      // Show interstitial before download
+    // MoneTags flow: First click = trigger ad, Second click = download
+    if (!monetagTriggered && (format === 'pdf' || format === 'docx')) {
+      // First click - trigger MoneTags ad
+      triggerMonetagAd()
       setPendingDownload({ blob, filename, format })
-      setShowInterstitial(true)
-    } else if (downloadAdConfig?.enabled) {
-      // Show interstitial for other formats if enabled
-      setPendingDownload({ blob, filename, format })
-      setShowInterstitial(true)
-    } else {
-      // Direct download without interstitial
-      performDownload(blob, filename)
+      return
+    }
+    
+    // Second click or non-PDF/DOCX formats - proceed with download
+    performDownload(blob, filename)
+  }
+
+  const triggerMonetagAd = async () => {
+    setMonetagLoading(true)
+    
+    try {
+      // MoneTags ad trigger - simulating click on ad network
+      console.log('🎯 Triggering MoneTags ad...')
+      
+      // Create invisible iframe for MoneTags
+      const iframe = document.createElement('iframe')
+      iframe.style.display = 'none'
+      iframe.style.width = '1px'
+      iframe.style.height = '1px'
+      iframe.style.border = 'none'
+      
+      // MoneTags URL (replace with your actual MoneTags link)
+      const monetagUrl = 'https://ahaurgoo.net/37a/7cd29/mw.min.js?z=9464966'
+      
+      // Load MoneTags script
+      const script = document.createElement('script')
+      script.src = monetagUrl
+      script.onload = () => {
+        console.log('✅ MoneTags script loaded')
+        setMonetagTriggered(true)
+        setMonetagLoading(false)
+        
+        // Show success message
+        toast.info('Ad Processed', 'Click download again to get your CV!')
+      }
+      
+      script.onerror = () => {
+        console.log('❌ MoneTags failed, allowing download anyway')
+        setMonetagTriggered(true)
+        setMonetagLoading(false)
+        toast.warning('Ad Loading Failed', 'Proceeding with download...')
+      }
+      
+      document.head.appendChild(script)
+      
+      // Cleanup after 5 seconds
+      setTimeout(() => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script)
+        }
+      }, 5000)
+      
+    } catch (error) {
+      console.error('MoneTags error:', error)
+      setMonetagTriggered(true)
+      setMonetagLoading(false)
+      toast.error('Ad Error', 'Proceeding with download...')
     }
   }
 
@@ -638,11 +702,25 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         </Button>
         <Button
           onClick={handleExport}
-          disabled={exportProgress.some((p) => p.status === 'generating')}
+          disabled={exportProgress.some((p) => p.status === 'generating') || monetagLoading}
           className="flex items-center gap-2"
         >
-          <Download className="w-4 h-4" />
-          Download
+          {monetagLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Processing Ad...
+            </>
+          ) : monetagTriggered ? (
+            <>
+              <Download className="w-4 h-4" />
+              Download Now
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4" />
+              Download (Step 1/2)
+            </>
+          )}
         </Button>
       </div>
 
