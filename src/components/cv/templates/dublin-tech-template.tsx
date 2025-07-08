@@ -81,11 +81,11 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
       style={containerStyle}
     >
       {/* Modern Tech Header with Sidebar Design */}
-      <div className="flex flex-col md:flex-row gap-6 mb-6">
+      <div className="flex flex-col md:flex-row gap-6 mb-4">
         {/* Left Column - Contact & Skills */}
         <div className="md:w-1/3 bg-gray-50 p-6 rounded-lg">
           {/* Name & Title */}
-          <div className="mb-6">
+          <div className="mb-4">
             <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-900 mb-2`}>
               {personal.fullName || "Your Name"}
             </h1>
@@ -95,7 +95,7 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
           </div>
 
           {/* Contact Info with Icons */}
-          <div className="space-y-2 mb-6 text-sm">
+          <div className="space-y-2 mb-4 text-sm">
             {personal.email && (
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gray-500" />
@@ -153,7 +153,7 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
 
           {/* Tech Skills - Categorized */}
           {skills.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-4">
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Technical Skills</h2>
               <div className="space-y-3">
                 {['Languages', 'Frameworks', 'Tools', 'Cloud'].map((category) => {

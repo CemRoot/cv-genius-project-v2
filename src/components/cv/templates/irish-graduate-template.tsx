@@ -81,7 +81,7 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
       style={containerStyle}
     >
       {/* Graduate Header - Clean and Modern */}
-      <div className="text-center mb-6 pb-4 border-b-2 border-green-600">
+      <div className="text-center mb-4 pb-4 border-b-2 border-green-600">
         <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-900 mb-2`}>
           {personal.fullName || "Your Name"}
         </h1>

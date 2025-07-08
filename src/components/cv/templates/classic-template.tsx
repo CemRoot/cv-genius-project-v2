@@ -95,11 +95,11 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       style={containerStyle}
     >
       {/* Header */}
-      <header className="text-center mb-8">
+      <header className="text-center mb-3">
         <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-bold uppercase mb-2 text-black`}>
           {personalInfo.fullName || "YOUR NAME"}
         </h1>
-        <p className={`${isMobile ? 'text-lg' : 'text-xl'} mb-4 text-gray-600`}>
+        <p className={`${isMobile ? 'text-lg' : 'text-xl'} mb-3 text-gray-600`}>
           {personalInfo.title || "Python Developer"}
         </p>
         <div className="flex justify-center items-center flex-wrap gap-4 text-sm">

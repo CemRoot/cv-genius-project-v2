@@ -81,7 +81,7 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
       style={containerStyle}
     >
       {/* Pharma Professional Header */}
-      <div className="bg-blue-50 p-6 rounded-lg mb-6">
+      <div className="bg-blue-50 p-6 rounded-lg mb-4">
         <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-blue-900 mb-2`}>
           {personal.fullName || "Your Name"}
         </h1>

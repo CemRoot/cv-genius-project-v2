@@ -80,7 +80,7 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
       style={containerStyle}
     >
       {/* Traditional Finance Header */}
-      <div className="border-b-2 border-gray-800 pb-4 mb-4">
+      <div className="border-b-2 border-gray-800 pb-4 mb-3">
         <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-center mb-1`}>
           {personal.fullName || "Your Name"}
         </h1>
