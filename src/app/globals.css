@@ -2,6 +2,73 @@
 @import url('../styles/cv-preview-pages.css');
 @import url('../styles/pdf-page-margins.css');
 
+/* NUCLEAR PDF PRINT RULES - Global Override */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* Eliminate ALL browser headers/footers */
+    @top-left-corner { content: "" !important; display: none !important; }
+    @top-left { content: "" !important; display: none !important; }
+    @top-center { content: "" !important; display: none !important; }
+    @top-right { content: "" !important; display: none !important; }
+    @top-right-corner { content: "" !important; display: none !important; }
+    
+    @bottom-left-corner { content: "" !important; display: none !important; }
+    @bottom-left { content: "" !important; display: none !important; }
+    @bottom-center { content: "" !important; display: none !important; }
+    @bottom-right { content: "" !important; display: none !important; }
+    @bottom-right-corner { content: "" !important; display: none !important; }
+    
+    @left-top { content: "" !important; display: none !important; }
+    @left-middle { content: "" !important; display: none !important; }
+    @left-bottom { content: "" !important; display: none !important; }
+    
+    @right-top { content: "" !important; display: none !important; }
+    @right-middle { content: "" !important; display: none !important; }
+    @right-bottom { content: "" !important; display: none !important; }
+  }
+  
+  /* Force single page document */
+  html {
+    height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  body {
+    margin: 15mm !important;
+    padding: 0 !important;
+    height: calc(297mm - 30mm) !important;
+    max-height: calc(297mm - 30mm) !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Prevent ALL page breaks */
+  * {
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-after: avoid !important;
+    break-inside: avoid !important;
+    break-before: avoid !important;
+  }
+  
+  /* Hide page break elements */
+  .page-break,
+  .pagebreak,
+  [class*="page-break"],
+  [class*="break"] {
+    display: none !important;
+  }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

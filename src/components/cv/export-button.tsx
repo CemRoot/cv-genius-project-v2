@@ -71,101 +71,111 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
           <title>${fileName} - Professional CV</title>
           <style>
             @media print {
-              /* Force single page layout */
+              /* ULTIMATE header/footer elimination */
               @page {
                 size: A4 portrait;
-                margin: 15mm;
-                margin-top: 0;
-                margin-bottom: 0;
-                margin-left: 15mm;
-                margin-right: 15mm;
-                /* Aggressive header/footer removal */
-                @top-left { content: ""; }
-                @top-center { content: ""; }
-                @top-right { content: ""; }
-                @bottom-left { content: ""; }
-                @bottom-center { content: ""; }
-                @bottom-right { content: ""; }
-              }
-              
-              /* Remove ALL browser-generated content */
-              @page :first {
-                margin: 15mm;
-                margin-top: 0;
-                margin-bottom: 0;
-                @top-left { content: none !important; }
-                @top-center { content: none !important; }
-                @top-right { content: none !important; }
-                @bottom-left { content: none !important; }
-                @bottom-center { content: none !important; }
-                @bottom-right { content: none !important; }
-              }
-              
-              @page :last {
-                margin: 15mm;
-                margin-top: 0;
-                margin-bottom: 0;
-                @top-left { content: none !important; }
-                @top-center { content: none !important; }
-                @top-right { content: none !important; }
-                @bottom-left { content: none !important; }
-                @bottom-center { content: none !important; }
-                @bottom-right { content: none !important; }
-              }
-              
-              /* Force clean document structure */
-              html, body {
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 210mm !important;
-                height: auto !important;
-                overflow: hidden !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                page-break-inside: avoid !important;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                
+                /* Nuclear option - remove everything */
+                @top-left-corner { content: "" !important; display: none !important; }
+                @top-left { content: "" !important; display: none !important; }
+                @top-center { content: "" !important; display: none !important; }
+                @top-right { content: "" !important; display: none !important; }
+                @top-right-corner { content: "" !important; display: none !important; }
+                
+                @left-top { content: "" !important; display: none !important; }
+                @left-middle { content: "" !important; display: none !important; }
+                @left-bottom { content: "" !important; display: none !important; }
+                
+                @right-top { content: "" !important; display: none !important; }
+                @right-middle { content: "" !important; display: none !important; }
+                @right-bottom { content: "" !important; display: none !important; }
+                
+                @bottom-left-corner { content: "" !important; display: none !important; }
+                @bottom-left { content: "" !important; display: none !important; }
+                @bottom-center { content: "" !important; display: none !important; }
+                @bottom-right { content: "" !important; display: none !important; }
+                @bottom-right-corner { content: "" !important; display: none !important; }
               }
               
-              /* Ensure single page content */
-              .cv-content, .cv-preview-container, .a4-page {
+              /* Force single page behavior AGGRESSIVELY */
+              html {
                 margin: 0 !important;
-                padding: 15mm !important;
+                padding: 0 !important;
+                height: 297mm !important;
+                width: 210mm !important;
+                max-height: 297mm !important;
+                max-width: 210mm !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+              }
+              
+              body {
+                margin: 15mm !important;
+                padding: 0 !important;
                 width: calc(210mm - 30mm) !important;
-                min-height: calc(297mm - 30mm) !important;
+                height: calc(297mm - 30mm) !important;
+                max-width: calc(210mm - 30mm) !important;
                 max-height: calc(297mm - 30mm) !important;
                 overflow: hidden !important;
                 page-break-after: avoid !important;
                 page-break-inside: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+                position: relative !important;
+                box-sizing: border-box !important;
+                
+                /* Color settings */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+              
+              /* Ensure ALL content stays in single page */
+              * {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+                break-before: avoid !important;
                 box-sizing: border-box !important;
               }
               
-              body {
-                margin: 0;
-                padding: 0;
-              }
-              
-              /* Ensure content doesn't bleed into margins */
+              /* Target all possible content wrappers */
               .cv-content,
               .cv-preview-container,
-              .a4-page {
+              .a4-page,
+              .cv-container,
+              .cv-wrapper,
+              .cv-page,
+              [class*="cv-"],
+              [class*="template-"],
+              div {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+                break-before: avoid !important;
                 margin: 0 !important;
-                padding: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
               }
               
-              /* Page break handling with proper margins */
-              .page-break {
-                page-break-before: always;
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-              }
-              
-              /* Avoid breaking elements */
-              .section,
-              .experience-item,
-              .education-item,
-              .certification-item {
-                page-break-inside: avoid;
-                break-inside: avoid;
+              /* Hide any page break elements */
+              .page-break,
+              .pagebreak,
+              [class*="page-break"],
+              [class*="break"] {
+                display: none !important;
               }
             }
             body {
@@ -189,65 +199,121 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
       // Add JavaScript to configure print settings
       const script = printWindow.document.createElement('script')
       script.innerHTML = `
-        // Enhanced print settings configuration
+        // NUCLEAR OPTION: Remove ALL possible browser interference
         try {
-          // Chrome-specific print settings
-          if (window.chrome) {
-            const style = document.createElement('style');
-            style.innerHTML = \`
-              @media print {
-                @page { size: A4 portrait; margin: 0; }
-                body { margin: 15mm; padding: 0; }
-                * { page-break-inside: avoid; }
+          // Set absolute clean document title
+          document.title = 'CV';
+          
+          // Remove ALL meta tags that could generate headers
+          const allMetas = document.querySelectorAll('meta');
+          allMetas.forEach(meta => meta.remove());
+          
+          // Add only essential meta
+          const essentialMeta = document.createElement('meta');
+          essentialMeta.setAttribute('charset', 'utf-8');
+          document.head.appendChild(essentialMeta);
+          
+          // Force document structure
+          document.documentElement.style.cssText = \`
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 297mm !important;
+            width: 210mm !important;
+            max-height: 297mm !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
+          \`;
+          
+          document.body.style.cssText = \`
+            margin: 15mm !important;
+            padding: 0 !important;
+            width: calc(210mm - 30mm) !important;
+            height: calc(297mm - 30mm) !important;
+            max-height: calc(297mm - 30mm) !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+          \`;
+          
+          // Nuclear CSS injection
+          const ultimateStyle = document.createElement('style');
+          ultimateStyle.innerHTML = \`
+            @media print {
+              @page {
+                size: A4 portrait;
+                margin: 0 !important;
+                
+                /* Every possible header/footer position */
+                @top-left-corner { content: "" !important; display: none !important; }
+                @top-left { content: "" !important; display: none !important; }
+                @top-center { content: "" !important; display: none !important; }
+                @top-right { content: "" !important; display: none !important; }
+                @top-right-corner { content: "" !important; display: none !important; }
+                @bottom-left-corner { content: "" !important; display: none !important; }
+                @bottom-left { content: "" !important; display: none !important; }
+                @bottom-center { content: "" !important; display: none !important; }
+                @bottom-right { content: "" !important; display: none !important; }
+                @bottom-right-corner { content: "" !important; display: none !important; }
+                @left-top { content: "" !important; display: none !important; }
+                @left-middle { content: "" !important; display: none !important; }
+                @left-bottom { content: "" !important; display: none !important; }
+                @right-top { content: "" !important; display: none !important; }
+                @right-middle { content: "" !important; display: none !important; }
+                @right-bottom { content: "" !important; display: none !important; }
               }
-            \`;
-            document.head.appendChild(style);
-          }
+              
+              html {
+                height: 297mm !important;
+                max-height: 297mm !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+              }
+              
+              body {
+                height: calc(297mm - 30mm) !important;
+                max-height: calc(297mm - 30mm) !important;
+                margin: 15mm !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+              }
+              
+              * {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+                break-before: avoid !important;
+              }
+            }
+          \`;
+          document.head.appendChild(ultimateStyle);
           
-          // Force single page behavior
-          document.body.style.pageBreakAfter = 'avoid';
-          document.body.style.pageBreakInside = 'avoid';
-          document.body.style.overflow = 'hidden';
-          
-          // Remove any existing page breaks
-          const pageBreaks = document.querySelectorAll('.page-break, [style*="page-break"]');
-          pageBreaks.forEach(el => {
-            el.style.pageBreakBefore = 'avoid';
-            el.style.pageBreakAfter = 'avoid';
-            el.style.breakBefore = 'avoid';
-            el.style.breakAfter = 'avoid';
+          // Remove any elements that could cause page breaks
+          const allElements = document.querySelectorAll('*');
+          allElements.forEach(el => {
+            if (el.style) {
+              el.style.pageBreakAfter = 'avoid';
+              el.style.pageBreakBefore = 'avoid';
+              el.style.pageBreakInside = 'avoid';
+              el.style.breakAfter = 'avoid';
+              el.style.breakBefore = 'avoid';
+              el.style.breakInside = 'avoid';
+            }
           });
+          
+          // Hide any page break elements
+          const pageBreakElements = document.querySelectorAll('.page-break, .pagebreak, [class*="page-break"], [class*="break"]');
+          pageBreakElements.forEach(el => {
+            el.style.display = 'none';
+            el.remove();
+          });
+          
         } catch (e) {
-          console.warn('Print settings configuration failed:', e);
-        }
-        
-        // Fallback: Use CSS to ensure clean print
-        const style = document.createElement('style');
-        style.innerHTML = \`
-          @media print {
-            @page { margin: 15mm; }
-            body { margin: 0; padding: 0; }
-          }
-        \`;
-        document.head.appendChild(style);
-        
-        // Set clean document title (no browser info)
-        document.title = '${fileName.replace(/[^a-zA-Z0-9]/g, '_')}_CV';
-        
-        // Remove any meta tags that might show in headers
-        const metaTags = document.querySelectorAll('meta[name], meta[property]');
-        metaTags.forEach(tag => tag.remove());
-        
-        // Add clean meta structure
-        const cleanMeta = document.createElement('meta');
-        cleanMeta.setAttribute('name', 'description');
-        cleanMeta.setAttribute('content', 'Professional CV');
-        document.head.appendChild(cleanMeta);
-        
-        // Ensure proper viewport
-        const viewport = document.querySelector('meta[name="viewport"]');
-        if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+          console.warn('Ultimate print configuration failed:', e);
         }
       `
       printWindow.document.head.appendChild(script)
@@ -268,22 +334,36 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
           }
         });
         
-        // Create user instruction overlay
+        // Create URGENT user instruction overlay
         const overlay = printWindow.document.createElement('div');
         overlay.innerHTML = `
-          <div style="position: fixed; top: 10px; left: 10px; background: #000; color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 9999; font-family: Arial, sans-serif;">
-            📄 PDF Settings: Please click 'More settings' → Turn OFF 'Headers and footers' → Save as PDF
-            <button onclick="this.parentElement.style.display='none'" style="margin-left: 10px; background: #fff; color: #000; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">✕</button>
+          <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); color: #fff; z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif;">
+            <div style="background: #1f2937; padding: 30px; border-radius: 10px; max-width: 500px; text-align: center; border: 2px solid #ef4444;">
+              <div style="font-size: 24px; margin-bottom: 20px;">🚨 ÖNEMLİ PDF AYARLARI</div>
+              <div style="font-size: 16px; margin-bottom: 15px; line-height: 1.5;">
+                Print Dialog açıldığında <strong>MUTLAKA</strong> şu ayarları yapın:
+              </div>
+              <div style="background: #374151; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: left;">
+                <div style="margin: 8px 0;">1. <strong>"More settings"</strong> (Daha fazla ayar) tıklayın</div>
+                <div style="margin: 8px 0;">2. <strong>"Headers and footers"</strong> seçeneğini <span style="color: #ef4444;">❌ KAPATIN</span></div>
+                <div style="margin: 8px 0;">3. <strong>"Background graphics"</strong> seçeneğini ✅ açın</div>
+                <div style="margin: 8px 0;">4. <strong>"Margins"</strong> → <strong>"Minimum"</strong> seçin</div>
+              </div>
+              <div style="color: #fbbf24; font-size: 14px; margin: 15px 0;">
+                Bu ayarları yapmadan PDF almayın! Yoksa tarih/sayfa numarası görünecektir.
+              </div>
+              <button onclick="this.parentElement.parentElement.style.display='none'" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;">Anladım, Print Dialog'u Aç</button>
+            </div>
           </div>
         `;
         printWindow.document.body.appendChild(overlay);
         
-        // Hide overlay after 10 seconds
+        // Hide overlay when user clicks the button or after 15 seconds
         setTimeout(() => {
           if (overlay.parentElement) {
             overlay.style.display = 'none';
           }
-        }, 10000);
+        }, 15000);
         
         // Trigger print dialog
         printWindow.print();
