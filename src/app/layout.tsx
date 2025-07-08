@@ -148,7 +148,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
         {/* AdSense Performance */}
-        {process.env.NODE_ENV === 'production' && (
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
           <>
             <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
             <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
@@ -156,7 +156,7 @@ export default function RootLayout({
         )}
         
         {/* Google AdSense with Enhanced Timeout Handling */}
-        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
           <script dangerouslySetInnerHTML={{
             __html: `
               // Enhanced AdSense loading with retry and fallback
@@ -168,7 +168,7 @@ export default function RootLayout({
                 
                 console.log('🚀 [AdSense] Starting AdSense script loading...', {
                   clientId: '${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}',
-                  environment: 'production',
+                  environment: '${process.env.NODE_ENV}',
                   timestamp: new Date().toISOString()
                 });
                 
