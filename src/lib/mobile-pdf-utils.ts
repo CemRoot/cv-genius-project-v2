@@ -487,7 +487,7 @@ export const exportMobilePDF = async (
       progress.updateProgress(70, 'Creating PDF')
       
       // Create PDF
-      const jsPDF = (await import('jspdf')).default
+      const { jsPDF } = await import('jspdf')
       const pdf = new jsPDF('p', 'mm', 'a4')
       
       const pdfWidth = pdf.internal.pageSize.getWidth()
@@ -510,11 +510,13 @@ export const exportMobilePDF = async (
       progress.updateProgress(90, 'Saving file')
       
       // Save PDF
-      pdf.save(filename)
+      const { saveAs } = await import('file-saver')
+      const pdfBlob = pdf.output('blob')
+      saveAs(pdfBlob, filename)
       
       progress.updateProgress(100, 'Complete')
       
-      return { success: true, blob: pdf.output('blob') }
+      return { success: true, blob: pdfBlob }
       
     } finally {
       // Cleanup
