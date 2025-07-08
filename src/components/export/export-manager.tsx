@@ -119,22 +119,116 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     if (!currentCV) throw new Error('No CV data available')
     
     try {
-      console.log('Starting simplified PDF generation with CV data:', currentCV.id)
+      console.log('Starting HTML-to-PDF generation with CV data:', currentCV.id)
       
-      // Use simple react-pdf renderer directly to avoid Chrome crashes
-      console.log('Using react-pdf renderer for stability')
-      const doc = <PDFTemplate data={currentCV} />
-      const blob = await pdf(doc).toBlob()
+      // Create temporary container with actual template
+      const tempContainer = document.createElement('div')
+      tempContainer.id = 'temp-cv-export'
+      tempContainer.style.position = 'fixed'
+      tempContainer.style.left = '-9999px'
+      tempContainer.style.top = '0'
+      tempContainer.style.width = '794px' // A4 width
+      tempContainer.style.backgroundColor = '#ffffff'
+      tempContainer.style.padding = '15mm'
+      tempContainer.style.boxSizing = 'border-box'
+      document.body.appendChild(tempContainer)
       
-      if (!blob || blob.size === 0) {
-        throw new Error('Generated PDF is empty')
+      try {
+        // Dynamically import ReactDOM
+        const ReactDOM = await import('react-dom/client')
+        
+        // Get the correct template component based on currentCV.template
+        const getTemplateElement = () => {
+          switch (currentCV.template) {
+            case 'harvard':
+              return <HarvardTemplate cv={currentCV} isMobile={false} />
+            case 'dublin-tech':
+            case 'dublin':
+              return <DublinTechTemplate cv={currentCV} isMobile={false} />
+            case 'irish-finance':
+              return <IrishFinanceTemplate cv={currentCV} isMobile={false} />
+            case 'dublin-pharma':
+              return <DublinPharmaTemplate cv={currentCV} isMobile={false} />
+            case 'irish-graduate':
+              return <IrishGraduateTemplate cv={currentCV} isMobile={false} />
+            case 'classic':
+              return <ClassicTemplate cv={currentCV} isMobile={false} />
+            default:
+              return <ClassicTemplate cv={currentCV} isMobile={false} />
+          }
+        }
+        
+        // Render the actual template
+        const root = ReactDOM.createRoot(tempContainer)
+        root.render(getTemplateElement())
+        
+        // Wait for rendering
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Use html2canvas to capture the rendered template
+        const html2canvas = (await import('html2canvas')).default
+        const canvas = await html2canvas(tempContainer, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: 794,
+          height: 1123, // A4 height
+          scrollX: 0,
+          scrollY: 0
+        })
+        
+        // Convert canvas to blob
+        const blob = await new Promise<Blob>((resolve) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              throw new Error('Canvas to blob conversion failed')
+            }
+          }, 'image/jpeg', 0.95)
+        })
+        
+        // Create PDF from image
+        const jsPDF = (await import('jspdf')).jsPDF
+        const pdf = new jsPDF('p', 'mm', 'a4')
+        
+        // Convert blob to data URL
+        const dataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(blob)
+        })
+        
+        // Add image to PDF
+        pdf.addImage(dataUrl, 'JPEG', 0, 0, 210, 297)
+        
+        // Get PDF blob
+        const pdfBlob = pdf.output('blob')
+        
+        // Cleanup
+        root.unmount()
+        
+        if (!pdfBlob || pdfBlob.size === 0) {
+          throw new Error('Generated PDF is empty')
+        }
+        
+        console.log('PDF generated successfully, size:', pdfBlob.size)
+        return pdfBlob
+        
+      } finally {
+        // Cleanup temporary container
+        if (tempContainer.parentNode) {
+          document.body.removeChild(tempContainer)
+        }
       }
-      
-      console.log('PDF generated successfully, size:', blob.size)
-      return blob
     } catch (error) {
       console.error('PDF generation error:', error)
-      throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      // Fallback to react-pdf if HTML generation fails
+      console.log('Falling back to react-pdf renderer')
+      const doc = <PDFTemplate data={currentCV} />
+      const blob = await pdf(doc).toBlob()
+      return blob
     }
   }
 
