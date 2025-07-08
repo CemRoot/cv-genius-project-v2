@@ -175,50 +175,61 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
   }
 
   const generatePdf = async () => {
-    const cvElement = document.getElementById('cv-export-content')
+    const cvElement = document.getElementById('cv-export-content');
     if (!cvElement) {
-      toast.error('Error', 'CV content not found.')
-      return
+      toast.error('Error', 'CV content not found.');
+      return;
     }
 
+    // Wait for fonts and images to load
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const canvas = await html2canvas(cvElement, {
-      scale: 2,
+      scale: 3, // Increased scale for better quality
       useCORS: true,
       backgroundColor: '#ffffff',
-    })
+      logging: true, // Enable logging for debugging
+      onclone: (document) => {
+        // Attempt to re-trigger font loading in the cloned document
+        const fontLink = document.createElement('link');
+        fontLink.rel = 'stylesheet';
+        fontLink.href = '/fonts/inter.css'; // Adjust this path to your font file
+        document.head.appendChild(fontLink);
+      }
+    });
 
-    const imgData = canvas.toDataURL('image/png')
+    const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'pt',
       format: 'a4',
-    })
+    });
 
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = pdf.internal.pageSize.getHeight()
-    const canvasWidth = canvas.width
-    const canvasHeight = canvas.height
-    const ratio = canvasWidth / pdfWidth
-    const scaledHeight = canvasHeight / ratio
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const ratio = canvasWidth / pdfWidth;
+    const scaledHeight = canvasHeight / ratio;
 
-    let position = 0
-    let pageCount = 1
+    let position = 0;
+    let pageCount = 1;
 
-    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight)
+    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
 
-    let heightLeft = scaledHeight - pdfHeight
+    let heightLeft = scaledHeight - pdfHeight;
 
     while (heightLeft > 0) {
-      position = -pdfHeight * pageCount
-      pdf.addPage()
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight)
-      heightLeft -= pdfHeight
-      pageCount++
+      position = -pdfHeight * pageCount;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
+      heightLeft -= pdfHeight;
+      pageCount++;
     }
 
-    pdf.save(`${currentCV.personal.fullName || 'cv'}-export.pdf`)
-    toast.success('Success', 'CV has been exported as PDF.')
-  }
+    pdf.save(`${currentCV.personal.fullName || 'cv'}-export.pdf`);
+    toast.success('Success', 'CV has been exported as PDF.');
+  };
 
   const mobileTabs = [
     {
