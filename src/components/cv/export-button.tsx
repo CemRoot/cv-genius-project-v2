@@ -153,7 +153,7 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
                 box-sizing: border-box !important;
               }
               
-              /* CV Container - Match Live Preview EXACTLY */
+              /* CV Container - EXACT DOM Structure Match */
               .cv-container {
                 padding: 1rem !important;
                 font-family: Arial, Helvetica, sans-serif !important;
@@ -174,60 +174,101 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
                 color: black !important;
               }
               
-              /* Header - Match Live Preview EXACTLY */
+              /* Header - EXACT DOM Structure */
               .cv-header {
                 text-align: center !important;
                 margin-bottom: 1rem !important;
               }
               
-              .cv-header .name, .cv-header h1 {
+              /* Name - h1.name */
+              .cv-header h1.name {
                 font-size: 1.875rem !important; /* 30px */
                 font-weight: 900 !important;
                 text-transform: uppercase !important;
                 margin-bottom: 0.25rem !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin-top: 0 !important;
               }
               
-              .cv-header .title, .cv-header p {
+              /* Title - p.title */
+              .cv-header p.title {
                 font-size: 1.125rem !important; /* 18px */
                 margin-bottom: 0.75rem !important;
                 color: black !important;
                 font-weight: 500 !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin-top: 0 !important;
               }
               
+              /* Contact Info - div.contact-info with spans */
               .cv-header .contact-info {
                 font-size: 0.875rem !important; /* 14px */
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                text-align: center !important;
               }
               
-              .cv-header .contact-info div {
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                gap: 1.5rem !important;
-                flex-wrap: wrap !important;
+              .cv-header .contact-info span {
+                display: inline !important;
+                margin-right: 1.5rem !important;
+                color: black !important;
+                font-family: Arial, Helvetica, sans-serif !important;
               }
               
-              /* Sections - Match Live Preview EXACTLY */
-              .summary, .experience, .education, .skills, .languages, .projects, .certifications, .interests, .references {
+              .cv-header .contact-info span:last-child {
+                margin-right: 0 !important;
+              }
+              
+              .cv-header .contact-info span.nationality {
+                font-weight: 500 !important;
+                color: black !important;
+              }
+              
+              /* Sections - EXACT DOM Structure */
+              section.summary, 
+              section.experience, 
+              section.education, 
+              section.skills, 
+              section.languages, 
+              section.projects, 
+              section.certifications, 
+              section.interests, 
+              section.references {
                 margin-bottom: 1rem !important;
               }
               
-              .summary h2, .experience h2, .education h2, .skills h2, .languages h2, .projects h2, .certifications h2, .interests h2, .references h2 {
+              /* Section Headers - h2 direct children */
+              section.summary > h2, 
+              section.experience > h2, 
+              section.education > h2, 
+              section.skills > h2, 
+              section.languages > h2, 
+              section.projects > h2, 
+              section.certifications > h2, 
+              section.interests > h2, 
+              section.references > h2 {
                 font-size: 1.25rem !important; /* 20px */
                 font-weight: 900 !important;
                 text-transform: uppercase !important;
                 margin-bottom: 0.5rem !important;
+                margin-top: 0 !important;
                 padding-bottom: 2px !important;
                 border-bottom: 2px solid black !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
               }
               
-              /* Experience items */
+              /* Summary Section - EXACT DOM Structure */
+              section.summary > p {
+                color: black !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                text-align: justify !important;
+                line-height: 1.3 !important;
+                margin: 0 !important;
+              }
+              
+              /* Experience Section - EXACT DOM Structure */
               .experience-item {
                 margin-bottom: 0.75rem !important;
               }
@@ -239,25 +280,31 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
                 margin-bottom: 0.25rem !important;
               }
               
-              .exp-header h3 {
+              .exp-left h3 {
                 font-weight: bold !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin: 0 !important;
+                font-size: 1rem !important;
               }
               
-              .exp-meta {
+              .exp-right p.exp-meta {
                 font-size: 0.875rem !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin: 0 !important;
+                text-align: right !important;
               }
               
               .exp-description {
                 text-align: justify !important;
                 line-height: 1.3 !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                color: black !important;
+                margin: 0 !important;
               }
               
-              /* Education items */
+              /* Education Section - EXACT DOM Structure */
               .education-item {
                 margin-bottom: 0.5rem !important;
               }
@@ -268,101 +315,100 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
                 align-items: flex-start !important;
               }
               
-              .edu-header h3 {
+              .edu-left h3 {
                 font-weight: bold !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin: 0 !important;
+                font-size: 1rem !important;
               }
               
-              .institution {
+              .edu-left p.institution {
                 font-weight: 500 !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin: 0 !important;
               }
               
-              .location, .date {
+              .edu-right p.location,
+              .edu-right p.date {
                 font-size: 0.875rem !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin: 0 !important;
+                text-align: right !important;
               }
               
-              /* Skills */
-              .skills > div {
-                margin-bottom: 0.25rem !important;
-              }
-              
-              .skills span {
-                font-size: 0.875rem !important;
-                line-height: 1.3 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
-              }
-              
-              /* Languages */
-              .languages > div {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 0.25rem !important;
-              }
-              
-              .languages div > div {
-                display: flex !important;
-                justify-content: space-between !important;
-                font-family: Arial, Helvetica, sans-serif !important;
-              }
-              
-              /* References */
-              .references-available {
+              /* References Section - EXACT DOM Structure */
+              section.references > p.references-available {
                 text-align: center !important;
                 font-style: italic !important;
                 color: black !important;
                 font-family: Arial, Helvetica, sans-serif !important;
+                margin: 0 !important;
               }
               
-              /* Lists */
-              ul {
-                list-style-type: disc !important;
-                padding-left: 1.5rem !important;
-                margin-top: 0.25rem !important;
+              /* Clean up default margins and padding */
+              * {
+                margin: 0 !important;
+                padding: 0 !important;
               }
               
-              ul li {
-                line-height: 1.3 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
+              /* Restore necessary spacing */
+              .cv-container {
+                padding: 1rem !important;
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
               }
               
-              /* Common utility classes */
-              .text-center { text-align: center !important; }
-              .text-right { text-align: right !important; }
-              .text-justify { text-align: justify !important; }
-              .text-sm { font-size: 0.875rem !important; }
-              .text-xs { font-size: 0.75rem !important; }
-              .font-bold { font-weight: 700 !important; }
-              .font-medium { font-weight: 500 !important; }
-              .font-semibold { font-weight: 600 !important; }
-              .font-black { font-weight: 900 !important; }
-              .uppercase { text-transform: uppercase !important; }
-              .italic { font-style: italic !important; }
-              .flex { display: flex !important; }
-              .justify-center { justify-content: center !important; }
-              .justify-between { justify-content: space-between !important; }
-              .items-center { align-items: center !important; }
-              .items-start { align-items: flex-start !important; }
-              .flex-wrap { flex-wrap: wrap !important; }
-              .mb-1 { margin-bottom: 0.25rem !important; }
-              .mb-2 { margin-bottom: 0.5rem !important; }
-              .mb-3 { margin-bottom: 0.75rem !important; }
-              .mb-4 { margin-bottom: 1rem !important; }
-              .mt-1 { margin-top: 0.25rem !important; }
-              .space-y-1 > * + * { margin-top: 0.25rem !important; }
-              .space-y-2 > * + * { margin-top: 0.5rem !important; }
-              .space-y-3 > * + * { margin-top: 0.75rem !important; }
-              .leading-snug { line-height: 1.3 !important; }
-              .pl-6 { padding-left: 1.5rem !important; }
-              .grid { display: grid !important; }
-              .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-              .gap-1 { gap: 0.25rem !important; }
-              .gap-3 { gap: 0.75rem !important; }
-              .gap-6 { gap: 1.5rem !important; }
+              .cv-header {
+                margin-bottom: 1rem !important;
+              }
+              
+              .cv-header h1.name {
+                margin-bottom: 0.25rem !important;
+              }
+              
+              .cv-header p.title {
+                margin-bottom: 0.75rem !important;
+              }
+              
+              .cv-header .contact-info span {
+                margin-right: 1.5rem !important;
+              }
+              
+              .cv-header .contact-info span:last-child {
+                margin-right: 0 !important;
+              }
+              
+              section.summary, 
+              section.experience, 
+              section.education, 
+              section.skills, 
+              section.languages, 
+              section.projects, 
+              section.certifications, 
+              section.interests, 
+              section.references {
+                margin-bottom: 1rem !important;
+              }
+              
+              section h2 {
+                margin-bottom: 0.5rem !important;
+                padding-bottom: 2px !important;
+              }
+              
+              .experience-item {
+                margin-bottom: 0.75rem !important;
+              }
+              
+              .exp-header {
+                margin-bottom: 0.25rem !important;
+              }
+              
+              .education-item {
+                margin-bottom: 0.5rem !important;
+              }
             }
             
             /* Screen styles - match live preview */
