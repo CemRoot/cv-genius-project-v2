@@ -832,27 +832,110 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
 
       {/* Add Experience Button */}
       {!isAdding && (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setIsAdding(true)}
-          className="w-full border-dashed"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative group"
         >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Add Work Experience
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsAdding(true)}
+            className="w-full h-16 border-2 border-dashed border-blue-300 hover:border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-300 group-hover:scale-[1.02] text-blue-700 hover:text-blue-800"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-200 group-hover:bg-blue-300 transition-colors duration-200">
+                <PlusCircle className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold text-lg">Add Work Experience</div>
+                <div className="text-sm text-blue-600">Click to add your professional journey</div>
+              </div>
+            </div>
+          </Button>
+        </motion.div>
       )}
 
       {/* Irish CV Tips */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-800 mb-2">🇮🇪 Irish CV Tips for Work Experience</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Use Irish date format (DD/MM/YYYY)</li>
-          <li>• Include city/county location (e.g., "Dublin" or "Cork")</li>
-          <li>• Focus on achievements and quantifiable results</li>
-          <li>• List experiences in reverse chronological order</li>
-          <li>• Keep descriptions concise - aim for 2-3 bullet points per role</li>
-        </ul>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 via-blue-50 to-teal-50 border-2 border-emerald-200 shadow-sm">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-200/30 to-blue-200/30 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="relative p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xl">
+              🇮🇪
+            </div>
+            <div>
+              <h4 className="font-bold text-emerald-800 text-lg">Irish CV Best Practices</h4>
+              <p className="text-emerald-600 text-sm">Optimize for the Irish job market</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200/50">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                  📅
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">Date Format</div>
+                  <div className="text-xs text-emerald-600">Use Month Year format (e.g., "January 2024")</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200/50">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                  📍
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">Location Details</div>
+                  <div className="text-xs text-emerald-600">Include city/county ("Dublin", "Cork", "Remote")</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200/50">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                  📊
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">Quantify Results</div>
+                  <div className="text-xs text-emerald-600">Include specific numbers and percentages</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200/50">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                  ⏰
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">Chronological Order</div>
+                  <div className="text-xs text-emerald-600">List most recent experience first</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200/50">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                  ✨
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">Concise Descriptions</div>
+                  <div className="text-xs text-emerald-600">Aim for 2-3 impactful bullet points per role</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200/50">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                  🎯
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">Impact Focus</div>
+                  <div className="text-xs text-emerald-600">Highlight achievements over responsibilities</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
