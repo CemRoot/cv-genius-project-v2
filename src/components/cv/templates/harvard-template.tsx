@@ -158,12 +158,12 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
                     <div>
                       <h3 className="font-bold">{exp.position}</h3>
                       <div className="italic">{exp.company}</div>
+                      <div className="text-sm italic text-gray-600">{exp.location}</div>
                     </div>
                     <div className="text-right text-sm">
                       {exp.startDate} - {exp.current ? "Present" : exp.endDate}
                     </div>
                   </div>
-                  <div className="text-sm italic text-gray-600">{exp.location}</div>
                 </div>
                 
                 {exp.description && (

@@ -164,11 +164,11 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
                       <span className="mx-2">|</span>
                       <span className="font-semibold">{exp.company}</span>
                     </div>
-                    <div className="text-sm italic">
-                      {formatMonthYear(exp.startDate)}{exp.current ? ' - Present' : exp.endDate ? ` - ${formatMonthYear(exp.endDate)}` : ''}
-                    </div>
                     <div className="text-sm text-gray-600">
                       {exp.location}
+                    </div>
+                    <div className="text-sm italic">
+                      {formatMonthYear(exp.startDate)}{exp.current ? ' - Present' : exp.endDate ? ` - ${formatMonthYear(exp.endDate)}` : ''}
                     </div>
                   </div>
                   

@@ -230,10 +230,10 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
                       <div>
                         <h3 className="font-semibold text-lg text-gray-900">{exp.position}</h3>
                         <div className="text-blue-600 font-medium">{exp.company}</div>
+                        <div className="text-sm text-gray-600">{exp.location}</div>
                         <div className="text-sm text-gray-500">
                           {exp.startDate} - {exp.current ? "Present" : exp.endDate}
                         </div>
-                        <div className="text-sm text-gray-600">{exp.location}</div>
                       </div>
                     </div>
                     

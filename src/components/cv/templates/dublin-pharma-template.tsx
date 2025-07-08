@@ -198,12 +198,12 @@ export function DublinPharmaTemplate({ cv, cvData, isMobile = false }: DublinPha
                       <div>
                         <h3 className="font-bold text-lg text-blue-900">{exp.position}</h3>
                         <div className="font-semibold text-gray-700">{exp.company}</div>
+                        <div className="text-sm text-gray-600">{exp.location}</div>
                       </div>
                       <div className="text-sm text-gray-600 bg-blue-100 px-3 py-1 rounded">
                         {exp.startDate} - {exp.current ? "Present" : exp.endDate}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-600">{exp.location}</div>
                   </div>
                   
                   {exp.description && (

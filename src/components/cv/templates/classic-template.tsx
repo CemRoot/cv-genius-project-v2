@@ -191,11 +191,11 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
                   <p className="font-medium">
                     {exp.company}
                   </p>
-                  <p className="text-sm">
-                    {new Date(exp.startDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })} - {exp.current ? 'Present' : new Date(exp.endDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
-                  </p>
                   <p className="text-sm text-gray-600">
                     {exp.location}
+                  </p>
+                  <p className="text-sm">
+                    {new Date(exp.startDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })} - {exp.current ? 'Present' : new Date(exp.endDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}
                   </p>
                 </div>
               </div>

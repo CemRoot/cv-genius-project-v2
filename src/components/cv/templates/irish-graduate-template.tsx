@@ -211,12 +211,12 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
                       <div>
                         <h3 className="font-bold text-gray-900">{exp.position}</h3>
                         <div className="text-gray-700">{exp.company}</div>
+                        <div className="text-sm text-gray-600">{exp.location}</div>
                       </div>
                       <div className="text-sm text-gray-600">
                         {exp.startDate} - {exp.current ? "Present" : exp.endDate}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-600">{exp.location}</div>
                   </div>
                   
                   {exp.description && (
