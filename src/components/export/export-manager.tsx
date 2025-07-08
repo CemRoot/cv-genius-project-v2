@@ -119,187 +119,18 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     if (!currentCV) throw new Error('No CV data available')
     
     try {
-      console.log('Starting PDF generation with CV data:', currentCV.id)
+      console.log('Starting simplified PDF generation with CV data:', currentCV.id)
       
-      // Check if we're on mobile
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
-      
-      if (isMobileDevice) {
-        // Use mobile-specific PDF generation with proper React rendering
-        console.log('Using mobile PDF generation with React components')
-        
-        // Create a temporary container for the CV
-        const tempContainer = document.createElement('div')
-        tempContainer.id = 'temp-cv-export-mobile'
-        tempContainer.className = 'pdf-export-container cv-export-content'
-        tempContainer.style.position = 'fixed'
-        tempContainer.style.left = '-9999px'
-        tempContainer.style.top = '0'
-        tempContainer.style.width = '794px' // A4 width
-        tempContainer.style.backgroundColor = '#ffffff'
-        tempContainer.style.overflow = 'visible'
-        tempContainer.style.padding = '42.5px' // 15mm margins
-        tempContainer.style.boxSizing = 'border-box'
-        document.body.appendChild(tempContainer)
-        
-        try {
-          // Dynamically import ReactDOM to avoid SSR issues
-          const ReactDOM = await import('react-dom/client')
-        
-          // Get the appropriate template component
-          const getTemplateElement = () => {
-            switch (currentCV.template) {
-              case 'harvard':
-                return <HarvardTemplate cv={currentCV} isMobile={false} />
-              case 'dublin-tech':
-              case 'dublin':
-                return <DublinTechTemplate cv={currentCV} isMobile={false} />
-              case 'irish-finance':
-                return <IrishFinanceTemplate cv={currentCV} isMobile={false} />
-              case 'dublin-pharma':
-                return <DublinPharmaTemplate cv={currentCV} isMobile={false} />
-              case 'irish-graduate':
-                return <IrishGraduateTemplate cv={currentCV} isMobile={false} />
-              case 'classic':
-                return <ClassicTemplate cv={currentCV} isMobile={false} />
-              default:
-                return <HarvardTemplate cv={currentCV} isMobile={false} />
-            }
-          }
-          
-          // Render the React component
-          const root = ReactDOM.createRoot(tempContainer)
-          root.render(getTemplateElement())
-          
-          // Wait for the component to render
-          await new Promise(resolve => setTimeout(resolve, 500))
-          
-          // Use the mobile PDF export utility with the rendered React component
-          const result = await exportMobilePDF(
-            'temp-cv-export-mobile',
-            `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`,
-            {
-              scale: Math.min(window.devicePixelRatio * 1.5, 3),
-              quality: 0.95,
-              timeout: 30000,
-              width: 794,
-              backgroundColor: '#ffffff'
-            },
-            (progress, stage) => {
-              console.log(`Mobile PDF progress: ${progress}% - ${stage}`)
-            }
-          )
-          
-          // Clean up
-          root.unmount()
-          
-          if (result.success && result.blob) {
-            console.log('Mobile PDF generated successfully, size:', result.blob.size)
-            return result.blob
-          } else {
-            throw new Error(result.error || 'Mobile PDF generation failed')
-          }
-        } catch (error) {
-          console.error('Mobile PDF generation error:', error)
-          throw error
-        } finally {
-          // Clean up temporary container
-          if (tempContainer && tempContainer.parentNode) {
-            document.body.removeChild(tempContainer)
-          }
-        }
-      }
-      
-      // Attempt DOM capture of existing preview element first
-      try {
-        const existingEl = document.getElementById('cv-export-content')
-        if (existingEl) {
-          console.log('Found existing cv-export-content element, exporting directly...')
-          const directResult = await exportMobilePDF('cv-export-content', `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`, {
-            scale: 2,
-            quality: 0.95,
-            timeout: 30000
-          })
-          if (directResult.success && directResult.blob) {
-            console.log('Direct DOM export succeeded')
-            return directResult.blob
-          }
-          console.warn('Direct DOM export failed:', directResult.error)
-        }
-
-      } catch (err) {
-        console.warn('Direct DOM export error, will try temp container:', err)
-      }
-
-      // Attempt DOM capture export via temporary container for perfect visual parity
-      try {
-        console.log('Attempting DOM-to-PDF export via temp container for desktop...')
-
-        const containerId = 'temp-cv-export'
-        const tempContainer = document.createElement('div')
-        tempContainer.id = containerId
-        tempContainer.className = 'pdf-export-container cv-export-content'
-        tempContainer.style.position = 'absolute'
-        tempContainer.style.left = '0'
-        tempContainer.style.top = '0'
-        tempContainer.style.opacity = '0'
-        tempContainer.style.pointerEvents = 'none'
-        tempContainer.style.width = '794px'
-        tempContainer.style.background = '#ffffff'
-        tempContainer.style.padding = '42.5px' // 15mm margins
-        tempContainer.style.boxSizing = 'border-box'
-        document.body.appendChild(tempContainer)
-
-        // Dynamically import ReactDOM to avoid SSR issues
-        const ReactDOM = await import('react-dom/client')
-
-        const getTemplateElement = () => {
-          switch (currentCV.template) {
-            case 'harvard':
-              return <HarvardTemplate cv={currentCV} />
-            case 'dublin-tech':
-            case 'dublin':
-              return <DublinTechTemplate cv={currentCV} />
-            case 'irish-finance':
-              return <IrishFinanceTemplate cv={currentCV} />
-            case 'dublin-pharma':
-              return <DublinPharmaTemplate cv={currentCV} />
-            case 'irish-graduate':
-              return <IrishGraduateTemplate cv={currentCV} />
-            default:
-              return <HarvardTemplate cv={currentCV} />
-          }
-        }
-
-        const root = ReactDOM.createRoot(tempContainer)
-        root.render(getTemplateElement())
-
-        // Wait a tick for layout
-        await new Promise(res => setTimeout(res, 100))
-
-        const result = await exportMobilePDF(containerId, `${currentCV.personal.fullName.replace(/\\s+/g, '_')}_CV.pdf`, {
-          scale: 2,
-          quality: 0.95,
-          timeout: 30000
-        })
-
-        // Clean up
-        root.unmount()
-        document.body.removeChild(tempContainer)
-
-        if (result.success && result.blob) {
-          console.log('DOM export succeeded')
-          return result.blob
-        }
-        console.warn('DOM export failed, falling back to react-pdf:', result.error)
-      } catch (err) {
-        console.warn('DOM export threw error, falling back:', err)
-      }
-
-      // Fallback to react-pdf renderer
-      console.log('Using react-pdf fallback renderer')
+      // Use simple react-pdf renderer directly to avoid Chrome crashes
+      console.log('Using react-pdf renderer for stability')
       const doc = <PDFTemplate data={currentCV} />
       const blob = await pdf(doc).toBlob()
+      
+      if (!blob || blob.size === 0) {
+        throw new Error('Generated PDF is empty')
+      }
+      
+      console.log('PDF generated successfully, size:', blob.size)
       return blob
     } catch (error) {
       console.error('PDF generation error:', error)
@@ -538,50 +369,43 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     let successCount = 0
     let failureCount = 0
     
+    // Process formats sequentially to avoid memory issues
     for (const format of selectedFormats) {
       try {
         let blob: Blob
         let filename: string
         
+        console.log(`Starting ${format.toUpperCase()} generation...`)
+        updateProgress(format, 10)
+        
         switch (format) {
           case 'pdf':
-            try {
-              console.log(`Starting ${format.toUpperCase()} generation...`)
-              blob = await trackProgress(format, generatePDF)
-              filename = `${name}.pdf`
-              console.log(`${format.toUpperCase()} generated successfully`)
-            } catch (pdfError) {
-              console.error('PDF generation error:', pdfError)
-              throw new Error(`PDF generation failed: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`)
-            }
+            updateProgress(format, 30)
+            blob = await generatePDF()
+            filename = `${name}.pdf`
             break
           case 'docx':
-            try {
-              console.log(`Starting ${format.toUpperCase()} generation...`)
-              blob = await trackProgress(format, generateDOCX)
-              filename = `${name}.docx`
-              console.log(`${format.toUpperCase()} generated successfully`)
-            } catch (docxError) {
-              console.error('DOCX generation error:', docxError)
-              throw new Error(`DOCX generation failed: ${docxError instanceof Error ? docxError.message : 'Network error'}`)
-            }
+            updateProgress(format, 30)
+            blob = await generateDOCX()
+            filename = `${name}.docx`
             break
           case 'txt':
-            try {
-              console.log(`Starting ${format.toUpperCase()} generation...`)
-              blob = await trackProgress(format, generateTXT)
-              filename = `${name}.txt`
-              console.log(`${format.toUpperCase()} generated successfully`)
-            } catch (txtError) {
-              console.error('TXT generation error:', txtError)
-              throw new Error(`TXT generation failed: ${txtError instanceof Error ? txtError.message : 'Unknown error'}`)
-            }
+            updateProgress(format, 30)
+            blob = await generateTXT()
+            filename = `${name}.txt`
             break
           default:
             throw new Error(`Unsupported format: ${format}`)
         }
-        console.log(`Downloading ${format} file:`, { filename, size: blob.size })
+        
+        updateProgress(format, 90)
+        console.log(`${format.toUpperCase()} generated successfully, size:`, blob.size)
+        
+        // Small delay before download to prevent Chrome memory issues
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         downloadFile(blob, filename, format)
+        updateProgress(format, 100)
         successCount++
         
         setExportProgress(prev => 
@@ -589,6 +413,12 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         )
         
         console.log(`${format.toUpperCase()} export completed successfully`)
+        
+        // Cleanup memory after each export
+        if (window.gc) {
+          window.gc()
+        }
+        
       } catch (error) {
         failureCount++
         const errorMessage = error instanceof Error ? error.message : 'Export failed'
@@ -607,13 +437,10 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     // Show summary message
     setTimeout(() => {
       if (successCount > 0 && failureCount === 0) {
-        // All successful
         toast.success('Export Completed', `${successCount} file(s) downloaded successfully.`)
       } else if (successCount > 0 && failureCount > 0) {
-        // Partial success
         toast.warning('Partial Success', `${successCount} file(s) successful, ${failureCount} file(s) failed.`)
       } else {
-        // All failed
         toast.error('Export Failed', 'All files failed to download. Please check your internet connection.')
       }
     }, 1000)
