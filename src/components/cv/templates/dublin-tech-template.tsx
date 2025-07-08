@@ -226,14 +226,14 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
               <div className={itemSpacing}>
                 {experience.map((exp) => (
                   <div key={exp.id} className="border-l-2 border-gray-200 pl-4 ml-2">
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="mb-2">
                       <div>
                         <h3 className="font-semibold text-lg text-gray-900">{exp.position}</h3>
                         <div className="text-blue-600 font-medium">{exp.company}</div>
+                        <div className="text-sm text-gray-500">
+                          {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                        </div>
                         <div className="text-sm text-gray-600">{exp.location}</div>
-                      </div>
-                      <div className="text-sm text-gray-500 whitespace-nowrap">
-                        {exp.startDate} - {exp.current ? "Present" : exp.endDate}
                       </div>
                     </div>
                     

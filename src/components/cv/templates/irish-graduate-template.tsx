@@ -206,14 +206,17 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
             <div className={itemSpacing}>
               {experience.map((exp) => (
                 <div key={exp.id} className="pl-4 border-l-2 border-gray-300">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-bold text-gray-900">{exp.position}</h3>
-                      <div className="text-gray-700">{exp.company} • {exp.location}</div>
+                  <div className="mb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-gray-900">{exp.position}</h3>
+                        <div className="text-gray-700">{exp.company}</div>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {exp.startDate} - {exp.current ? "Present" : exp.endDate}
-                    </div>
+                    <div className="text-sm text-gray-600">{exp.location}</div>
                   </div>
                   
                   {exp.description && (

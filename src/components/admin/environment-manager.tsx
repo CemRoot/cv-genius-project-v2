@@ -34,7 +34,8 @@ import {
   Search,
   Filter,
   Edit3,
-  X
+  X,
+  Clock
 } from 'lucide-react'
 import { ClientAdminAuth } from '@/lib/admin-auth'
 import { useToast, createToastUtils } from '@/components/ui/toast'
@@ -50,6 +51,8 @@ interface EnvVariable {
   description?: string
   required?: boolean
   lastUpdated?: string
+  createdAt?: number // milliseconds timestamp from Vercel
+  updatedAt?: number // milliseconds timestamp from Vercel
 }
 
 export default function EnvironmentManager() {
@@ -247,6 +250,34 @@ export default function EnvironmentManager() {
       return '••••••••••••••••'
     }
     return variable.value
+  }
+
+  const formatTimestamp = (timestamp?: number) => {
+    if (!timestamp) return 'Unknown'
+    const date = new Date(timestamp)
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    })
+  }
+
+  const getTimeSince = (timestamp?: number) => {
+    if (!timestamp) return 'Unknown'
+    const now = Date.now()
+    const diff = now - timestamp
+    const seconds = Math.floor(diff / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
+    
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`
+    return 'Just now'
   }
 
   const filteredVariables = variables.filter(variable => {
@@ -487,6 +518,32 @@ export default function EnvironmentManager() {
                             ))}
                           </div>
                         )}
+
+                        {/* Timestamp Information */}
+                        <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
+                          <div className="flex items-center gap-4">
+                            {variable.createdAt && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>Created: {getTimeSince(variable.createdAt)}</span>
+                              </div>
+                            )}
+                            {variable.updatedAt && variable.updatedAt !== variable.createdAt && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>Modified: {getTimeSince(variable.updatedAt)}</span>
+                              </div>
+                            )}
+                          </div>
+                          {(variable.updatedAt || variable.createdAt) && (
+                            <div 
+                              className="text-xs text-gray-400 cursor-help" 
+                              title={`Created: ${formatTimestamp(variable.createdAt)}\nLast Modified: ${formatTimestamp(variable.updatedAt)}`}
+                            >
+                              {formatTimestamp(variable.updatedAt || variable.createdAt)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </CardContent>

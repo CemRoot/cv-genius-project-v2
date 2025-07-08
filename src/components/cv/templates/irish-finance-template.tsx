@@ -158,15 +158,17 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
             <div className={itemSpacing}>
               {experience.map((exp) => (
                 <div key={exp.id} className="mb-3">
-                  <div className="flex justify-between items-start mb-1">
+                  <div className="mb-1">
                     <div>
                       <span className="font-bold">{exp.position}</span>
                       <span className="mx-2">|</span>
                       <span className="font-semibold">{exp.company}</span>
-                      <span className="text-gray-600">, {exp.location}</span>
                     </div>
-                    <div className="text-sm italic whitespace-nowrap">
+                    <div className="text-sm italic">
                       {formatMonthYear(exp.startDate)}{exp.current ? ' - Present' : exp.endDate ? ` - ${formatMonthYear(exp.endDate)}` : ''}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {exp.location}
                     </div>
                   </div>
                   

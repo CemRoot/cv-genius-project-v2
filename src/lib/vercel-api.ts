@@ -1,8 +1,13 @@
 interface VercelEnvVar {
+  id: string
   key: string
   value: string
   type: 'encrypted' | 'plain'
   target: ('production' | 'preview' | 'development')[]
+  createdAt: number // milliseconds timestamp
+  updatedAt: number // milliseconds timestamp
+  configurationId?: string
+  comment?: string
 }
 
 export class VercelAPI {

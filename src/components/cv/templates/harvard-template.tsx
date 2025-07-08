@@ -153,14 +153,17 @@ export function HarvardTemplate({ cv, cvData, isMobile = false }: HarvardTemplat
             <div className={itemSpacing}>
             {experience.map((exp) => (
               <div key={exp.id}>
-                <div className="flex justify-between items-start mb-1">
-                  <div>
-                    <h3 className="font-bold">{exp.position}</h3>
-                    <div className="italic">{exp.company}, {exp.location}</div>
+                <div className="mb-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold">{exp.position}</h3>
+                      <div className="italic">{exp.company}</div>
+                    </div>
+                    <div className="text-right text-sm">
+                      {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                    </div>
                   </div>
-                  <div className="text-right text-sm">
-                    {exp.startDate} - {exp.current ? "Present" : exp.endDate}
-                  </div>
+                  <div className="text-sm italic text-gray-600">{exp.location}</div>
                 </div>
                 
                 {exp.description && (

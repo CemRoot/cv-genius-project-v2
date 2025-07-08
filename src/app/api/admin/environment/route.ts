@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
         type: detectVariableType(env.key),
         target: env.target,
         lastUpdated: env.updatedAt,
+        createdAt: env.createdAt, // Vercel timestamp (milliseconds)
+        updatedAt: env.updatedAt, // Vercel timestamp (milliseconds)
         category: detectCategory(env.key),
         description: getVariableDescription(env.key)
       })) || []
@@ -91,6 +93,7 @@ function getLocalEnvironmentVariables() {
   )
 
   for (const key of relevantKeys) {
+    const now = Date.now()
     localVars.push({
       id: key,
       key,
@@ -99,7 +102,9 @@ function getLocalEnvironmentVariables() {
       target: ['development'],
       category: detectCategory(key),
       description: getVariableDescription(key),
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      createdAt: now, // Local env - use current time as placeholder
+      updatedAt: now // Local env - use current time as placeholder
     })
   }
 
