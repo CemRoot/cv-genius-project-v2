@@ -130,10 +130,13 @@ function SortableExperienceItem({
             <div className="flex-1">
               <h4 className="font-semibold text-gray-900">{experience.position}</h4>
               <p className="text-sm text-gray-600">
-                {experience.company} • {experience.location}
+                {experience.company}
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 {formatDateForDisplay(experience.startDate)} - {experience.current ? "Present" : formatDateForDisplay(experience.endDate)}
+              </p>
+              <p className="text-xs text-gray-500">
+                {experience.location}
               </p>
             </div>
           </div>
