@@ -201,10 +201,11 @@ export default function HomePage() {
               { 
                 icon: Download, 
                 title: "Export CV", 
-                desc: "PDF, Word & text formats",
-                href: "/export",
-                time: "Instant",
-                variant: "outline" as const
+                desc: "Temporarily unavailable",
+                href: "#",
+                time: "Soon",
+                variant: "outline" as const,
+                disabled: true
               }
             ].map((tool, index) => (
               <motion.div 
@@ -220,12 +221,19 @@ export default function HomePage() {
                 </div>
                 <h3 className="font-semibold mb-2">{tool.title}</h3>
                 <p className="text-sm text-muted-foreground mb-4">{tool.desc}</p>
-                <Button variant={tool.variant} size="sm" className="w-full" asChild>
-                  <Link href={tool.href}>
+                {(tool as any).disabled ? (
+                  <Button variant={tool.variant} size="sm" className="w-full opacity-50 cursor-not-allowed" disabled>
                     Get Started
                     <ArrowRight className="ml-2 h-3 w-3" />
-                  </Link>
-                </Button>
+                  </Button>
+                ) : (
+                  <Button variant={tool.variant} size="sm" className="w-full" asChild>
+                    <Link href={tool.href}>
+                      Get Started
+                      <ArrowRight className="ml-2 h-3 w-3" />
+                    </Link>
+                  </Button>
+                )}
               </motion.div>
             ))}
           </motion.div>

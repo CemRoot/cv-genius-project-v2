@@ -20,6 +20,9 @@ import { useCVStore } from '@/store/cv-store'
 import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
+import { InlineExportModal } from '@/components/export/inline-export-modal'
+import { motion } from 'framer-motion'
+import { useToast, createToastUtils } from '@/components/ui/toast'
 
 interface Step {
   id: string
@@ -121,7 +124,11 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   const [currentStep, setCurrentStep] = useState<number>(sessionState.currentStep || 0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set<number>())
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [isCompleteButtonBlinking, setIsCompleteButtonBlinking] = useState(false)
   
+  const { addToast } = useToast()
+  const toast = createToastUtils(addToast)
   const router = useRouter()
   
   
@@ -190,10 +197,24 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
   
   const handleComplete = async () => {
     try {
+      // Start blinking animation
+      setIsCompleteButtonBlinking(true)
+      
+      // Save CV
       await saveCV()
-      // Navigate to export page
-      router.push('/export')
+      
+      // Show success message briefly
+      toast.success('CV Created!', 'Opening export options...')
+      
+      // Wait for animation then open export modal
+      setTimeout(() => {
+        setIsCompleteButtonBlinking(false)
+        setShowExportModal(true)
+      }, 1500)
+      
     } catch (error) {
+      setIsCompleteButtonBlinking(false)
+      toast.error('Save Failed', 'Failed to save your CV. Please try again.')
       console.error('Failed to save CV:', error)
     }
   }
@@ -408,19 +429,46 @@ export function SimpleMultiStepForm({ templateId, onBack }: SimpleMultiStepFormP
                     </Button>
                   )}
                   
-                  <Button
-                    onClick={handleNext}
-                    className="gap-2 px-6 bg-blue-600 hover:bg-blue-700"
+                  <motion.div
+                    animate={isCompleteButtonBlinking ? {
+                      backgroundColor: ['#2563eb', '#dc2626', '#2563eb'],
+                      scale: [1, 1.05, 1],
+                    } : {}}
+                    transition={isCompleteButtonBlinking ? {
+                      duration: 0.5,
+                      repeat: 2,
+                      ease: "easeInOut"
+                    } : {}}
                   >
-                    {currentStep === visibleSteps.length - 1 ? 'Complete' : 'Next'}
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
+                    <Button
+                      onClick={handleNext}
+                      className="gap-2 px-6 bg-blue-600 hover:bg-blue-700"
+                      disabled={isCompleteButtonBlinking}
+                    >
+                      {currentStep === visibleSteps.length - 1 ? 
+                        (isCompleteButtonBlinking ? 'Saving...' : 'Complete') : 
+                        'Next'
+                      }
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </motion.div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Inline Export Modal */}
+      <InlineExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onComplete={() => {
+          setShowExportModal(false)
+          toast.success('CV Downloaded!', 'Your professional CV has been downloaded successfully.')
+          router.push('/builder')
+        }}
+      />
     </div>
   )
 }

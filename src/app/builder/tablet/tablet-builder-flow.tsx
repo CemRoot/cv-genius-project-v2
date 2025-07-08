@@ -32,7 +32,8 @@ type ViewMode = 'split' | 'editor' | 'preview'
 type NavigationMode = 'sidebar' | 'carousel'
 
 export function TabletBuilderFlow() {
-  const { currentCV, selectedTemplateId, saveCV } = useCVStore()
+  const { currentCV, sessionState, saveCV } = useCVStore()
+  const selectedTemplateId = sessionState.selectedTemplateId || null
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [navigationMode, setNavigationMode] = useState<NavigationMode>('sidebar')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -43,12 +44,12 @@ export function TabletBuilderFlow() {
   // Gesture navigation for swiping between sections
   const { setElement } = useGestureNavigation({
     onSwipeLeft: () => {
-      if (viewMode === 'editor') {
+      if (viewMode === 'editor' || viewMode === 'split') {
         setViewMode('preview')
       }
     },
     onSwipeRight: () => {
-      if (viewMode === 'preview') {
+      if (viewMode === 'preview' || viewMode === 'split') {
         setViewMode('editor')
       }
     },
@@ -133,9 +134,9 @@ export function TabletBuilderFlow() {
             Save
           </Button>
           
-          <Button onClick={handleExport} size="sm">
+          <Button disabled size="sm" className="opacity-50 cursor-not-allowed" title="Export feature is temporarily unavailable">
             <Download className="w-4 h-4 mr-2" />
-            Export
+            Export (Unavailable)
           </Button>
         </div>
       </header>
@@ -217,7 +218,7 @@ export function TabletBuilderFlow() {
       </div>
 
       {/* Bottom navigation for portrait mode */}
-      {!isLandscape && viewMode === 'split' && (
+      {!isLandscape && (
         <div className="bg-white border-t p-2 flex justify-center gap-2">
           <Button
             variant={viewMode === 'editor' ? 'default' : 'outline'}
@@ -226,6 +227,14 @@ export function TabletBuilderFlow() {
           >
             <Edit3 className="w-4 h-4 mr-2" />
             Edit
+          </Button>
+          <Button
+            variant={viewMode === 'split' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('split')}
+          >
+            <Grid className="w-4 h-4 mr-2" />
+            Split
           </Button>
           <Button
             variant={viewMode === 'preview' ? 'default' : 'outline'}

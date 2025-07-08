@@ -8,8 +8,8 @@ import { useCVStore } from '@/store/cv-store'
 import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Eye, Settings, AlertTriangle } from 'lucide-react'
-import { ExportButton } from '@/components/cv/export-button'
+import { Button } from '@/components/ui/button'
+import { Eye, Settings, AlertTriangle, Download } from 'lucide-react'
 import SectionReorderPanel from '@/components/cv/section-reorder-panel'
 import { ErrorStateWithFallback } from '@/components/ui/error-state-with-fallback'
 import { useCVPageCount } from '@/hooks/use-cv-page-count'
@@ -400,11 +400,15 @@ export function WebBuilderFlow() {
                 <AutoSaveStatus compact={true} className="ml-2" />
               </div>
               <div className="flex gap-2">
-                <ExportButton 
-                  templateManager={templateManager}
-                  cvData={currentCV}
-                  templateId={selectedTemplate || undefined}
-                />
+                <Button 
+                  disabled 
+                  size="sm" 
+                  className="opacity-50 cursor-not-allowed"
+                  title="Export feature is temporarily unavailable"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export (Unavailable)
+                </Button>
               </div>
             </div>
             

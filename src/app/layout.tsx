@@ -14,6 +14,7 @@ import { DynamicAdManager } from "@/components/ads/dynamic-ad-manager"
 import AccessibilityWidget, { AccessibilityCSS } from "@/components/accessibility/accessibility-widget"
 import { PWAProvider } from "@/components/pwa-provider"
 import "@/lib/console-error-filter"
+import "@/lib/adsense-debug-helper"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
@@ -163,8 +164,17 @@ export default function RootLayout({
                 var retryCount = 0;
                 var maxRetries = 3;
                 var retryDelay = 2000;
+                var startTime = Date.now();
+                
+                console.log('🚀 [AdSense] Starting AdSense script loading...', {
+                  clientId: '${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}',
+                  environment: 'production',
+                  timestamp: new Date().toISOString()
+                });
                 
                 function loadAdSenseScript() {
+                  console.log('📡 [AdSense] Attempt ' + (retryCount + 1) + '/' + maxRetries + ' - Creating script element...');
+                  
                   // Create script element
                   var script = document.createElement('script');
                   script.async = true;
@@ -173,7 +183,8 @@ export default function RootLayout({
                   
                   // Set up timeout
                   var timeoutId = setTimeout(function() {
-                    console.warn('AdSense script timeout (' + (retryCount + 1) + '/' + maxRetries + ')');
+                    var elapsed = Date.now() - startTime;
+                    console.warn('⏰ [AdSense] Script timeout after ' + elapsed + 'ms (attempt ' + (retryCount + 1) + '/' + maxRetries + ')');
                     script.remove();
                     handleScriptError();
                   }, 15000); // 15 second timeout
@@ -181,37 +192,55 @@ export default function RootLayout({
                   // Success handler
                   script.onload = function() {
                     clearTimeout(timeoutId);
-                    console.log('AdSense script loaded successfully');
+                    var elapsed = Date.now() - startTime;
+                    console.log('✅ [AdSense] Script loaded successfully in ' + elapsed + 'ms');
                     
-                    // Ensure adsbygoogle is available
-                    if (!window.adsbygoogle) {
+                    // Check if adsbygoogle is available
+                    if (window.adsbygoogle) {
+                      console.log('🎯 [AdSense] adsbygoogle global is available, length:', window.adsbygoogle.length);
+                    } else {
+                      console.log('⚠️ [AdSense] adsbygoogle global not found, initializing...');
                       window.adsbygoogle = [];
                     }
+                    
+                    // Store success state globally for debugging
+                    window.adSenseLoaded = true;
+                    window.adSenseLoadTime = elapsed;
                   };
                   
                   // Error handler with retry
-                  script.onerror = function() {
+                  script.onerror = function(error) {
                     clearTimeout(timeoutId);
+                    var elapsed = Date.now() - startTime;
+                    console.error('❌ [AdSense] Script load error after ' + elapsed + 'ms:', error);
                     script.remove();
                     handleScriptError();
                   };
                   
                   // Add to document
                   document.head.appendChild(script);
+                  console.log('📋 [AdSense] Script element added to document head');
                 }
                 
                 function handleScriptError() {
                   if (retryCount < maxRetries) {
                     retryCount++;
-                    console.log('Retrying AdSense script load in ' + retryDelay + 'ms... (' + retryCount + '/' + maxRetries + ')');
+                    console.log('🔄 [AdSense] Retrying script load in ' + retryDelay + 'ms... (' + retryCount + '/' + maxRetries + ')');
                     setTimeout(loadAdSenseScript, retryDelay);
                     retryDelay *= 1.5; // Exponential backoff
                   } else {
-                    console.warn('AdSense script failed to load after ' + maxRetries + ' attempts - using fallback');
+                    var elapsed = Date.now() - startTime;
+                    console.warn('💥 [AdSense] Script failed to load after ' + maxRetries + ' attempts and ' + elapsed + 'ms - using fallback');
+                    
                     // Initialize fallback
                     if (!window.adsbygoogle) {
                       window.adsbygoogle = [];
+                      console.log('🔧 [AdSense] Fallback: adsbygoogle array initialized');
                     }
+                    
+                    // Store failure state globally for debugging
+                    window.adSenseLoaded = false;
+                    window.adSenseError = 'Failed after ' + maxRetries + ' attempts';
                   }
                 }
                 

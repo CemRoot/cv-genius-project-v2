@@ -8,13 +8,12 @@ import { CVToolbar } from "@/components/cv/cv-toolbar"
 import { Button } from "@/components/ui/button"
 import { MobileTabs, useMobileKeyboard, MobileOnboarding, useMobileOnboarding } from "@/components/mobile"
 import { useSwipeNavigation } from "@/hooks/use-swipe-navigation"
-import { PanelLeftClose, PanelLeftOpen, Save, Download, Eye, EyeOff, ArrowLeft, Home, Edit, Settings, Share } from "lucide-react"
+import { PanelLeftClose, PanelLeftOpen, Save, Download, Eye, EyeOff, ArrowLeft, Home, Edit, Settings, Share, CheckCircle } from "lucide-react"
 import { useCVStore } from "@/store/cv-store"
 import { motion, AnimatePresence } from "framer-motion"
 import { useToast, createToastUtils } from "@/components/ui/toast"
 import { MobileCVWizard } from "@/components/mobile-cv-wizard"
 import { useAutoSave } from "@/hooks/use-auto-save"
-import { AutoSaveIndicator } from "@/components/ui/auto-save-indicator"
 
 interface CVBuilderPageContentProps {
   initialIsMobile: boolean
@@ -38,7 +37,7 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
   const router = useRouter()
 
   // Auto-save functionality
-  const { isSaving, lastSaved, saveCount } = useAutoSave({
+  const { isAutoSaveEnabled, lastAutoSave } = useAutoSave({
     onSave: () => {
       try {
         saveCV()
@@ -47,7 +46,7 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
         console.error('Auto-save failed:', error)
       }
     },
-    delay: autoSaveInterval,
+    interval: autoSaveInterval,
     enabled: autoSaveEnabled
   })
 
@@ -253,11 +252,10 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
                       onClick={handleSave}
                       className="p-2 touch-manipulation"
                       title="Save CV"
-                      disabled={isSaving}
                     >
-                      <Save className={`h-4 w-4 ${isSaving ? 'animate-spin' : ''}`} />
+                      <Save className="h-4 w-4" />
                     </Button>
-                    {lastSaved && (
+                    {lastAutoSave && (
                       <span className="text-xs text-green-600 ml-1">
                         ✓
                       </span>
@@ -266,9 +264,10 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => router.push('/export')}
-                    className="p-2 touch-manipulation"
-                    title="Export CV"
+                    onClick={() => toast.info('Export Unavailable', 'Export feature is temporarily disabled.')}
+                    className="p-2 touch-manipulation opacity-50 cursor-not-allowed"
+                    title="Export CV (Temporarily Unavailable)"
+                    disabled
                   >
                     <Share className="h-4 w-4" />
                   </Button>
@@ -437,22 +436,30 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
                       variant="outline" 
                       size="sm" 
                       onClick={handleSave}
-                      disabled={isSaving}
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      {isSaving ? 'Saving...' : 'Save'}
+                      Save
                     </Button>
                     
-                    <AutoSaveIndicator
-                      isSaving={isSaving}
-                      lastSaved={lastSaved}
-                      saveCount={saveCount}
-                    />
+                    {lastAutoSave && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-green-600 text-xs">
+                          Auto-saved
+                        </span>
+                      </div>
+                    )}
                   </div>
                   
-                  <Button variant="cvgenius" size="sm" onClick={handleExport}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled
+                    className="opacity-50 cursor-not-allowed"
+                    title="Export feature is temporarily unavailable"
+                  >
                     <Download className="h-4 w-4 mr-2" />
-                    Export
+                    Export (Unavailable)
                   </Button>
                 </div>
               </div>

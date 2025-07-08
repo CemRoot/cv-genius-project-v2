@@ -68,6 +68,15 @@ class ConsoleErrorFilterImpl implements ConsoleErrorFilter {
   }
 
   private shouldFilter(message: string): boolean {
+    // Never filter AdSense related logs
+    if (message.includes('[AdSense]') || 
+        message.includes('[BannerAds]') || 
+        message.includes('[SidebarAds]') ||
+        message.includes('AdSense Config') ||
+        message.includes('AdSense Loader')) {
+      return false;
+    }
+    
     return this.filters.some(filter => {
       if (typeof filter === 'string') {
         return message.includes(filter);

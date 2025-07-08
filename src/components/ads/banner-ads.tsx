@@ -31,12 +31,28 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
     monetagNative: false 
   }
 
+  console.log('🎯 [BannerAds] Component initialized:', {
+    size,
+    position,
+    className,
+    enableAds: adminSettings.enableAds,
+    environment: process.env.NODE_ENV
+  })
+
   // Extract AdSense info from admin config (first matching banner)
   const bannerAds = getAdsByType('banner').filter(ad => 
     ad.position === position || !ad.position
   )
   const adConfig = bannerAds.length > 0 ? bannerAds[0] : undefined
   const adClient = adConfig?.settings?.adSenseClient || process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1742989559393752'
+  
+  console.log('🎯 [BannerAds] Ad configuration:', {
+    bannerAdsCount: bannerAds.length,
+    hasAdConfig: !!adConfig,
+    adClient: adClient ? adClient.substring(0, 10) + '...' : 'NONE',
+    adConfigEnabled: adConfig?.enabled,
+    adConfigType: adConfig?.type
+  })
   
   // Use the new AdSense loader with proper error handling
   const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
@@ -48,6 +64,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
 
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {
+    console.log('🚫 [BannerAds] Ads disabled by admin settings')
     return null
   }
 
@@ -56,6 +73,7 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const isProduction = process.env.NODE_ENV === 'production'
   
   if (bannerAds.length === 0) {
+    console.log('🚫 [BannerAds] No banner ads configured')
     return null // Reklam gösterme
   }
 
@@ -69,9 +87,21 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const adSlot = adConfig?.settings?.adSenseSlot || adSenseSlots.headerSlot || '1006957692'
   const hasValidSlot = adSlot && !adSlot.includes('your_')
 
+  console.log('🎯 [BannerAds] Slot configuration:', {
+    adSlot: adSlot ? adSlot.substring(0, 6) + '...' : 'NONE',
+    hasValidSlot,
+    sizeConfig: config,
+    adSenseSlots: {
+      hasHeaderSlot: !!adSenseSlots.headerSlot,
+      hasSidebarSlot: !!adSenseSlots.sidebarSlot
+    }
+  })
+
   useEffect(() => {
     // Basic display control - fixed delay to prevent dependency issues
+    console.log('🎯 [BannerAds] Setting up display timer...')
     const timer = setTimeout(() => {
+      console.log('🎯 [BannerAds] Display timer triggered - showing ad')
       setShowCleanAd(true)
     }, 2000) // Fixed 2 second delay
 
@@ -80,12 +110,24 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
 
   // AdSense ads initialization with error handling
   useEffect(() => {
+    console.log('🎯 [BannerAds] AdSense init check:', {
+      isProduction,
+      hasValidSlot,
+      showCleanAd,
+      isLoaded,
+      error,
+      isLoading
+    })
+    
     if (isProduction && hasValidSlot && showCleanAd && isLoaded && !error) {
+      console.log('🎯 [BannerAds] Initializing AdSense...')
       // Use the safe pushAdConfig method instead of direct window access
       const timer = setTimeout(() => {
         const success = pushAdConfig()
         if (!success) {
-          console.log('AdSense banner initialization failed gracefully')
+          console.error('❌ [BannerAds] AdSense banner initialization failed')
+        } else {
+          console.log('✅ [BannerAds] AdSense banner initialized successfully')
         }
       }, 500)
 

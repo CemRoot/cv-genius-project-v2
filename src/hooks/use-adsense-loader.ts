@@ -24,6 +24,7 @@ export function useAdSenseLoader(clientId?: string) {
   // Check if AdSense is available and ready
   const checkAdSenseAvailability = useCallback(() => {
     if (typeof window === 'undefined') {
+      console.log('🔍 [AdSense Loader] Window undefined - running on server')
       return false
     }
 
@@ -32,6 +33,18 @@ export function useAdSenseLoader(clientId?: string) {
     
     // Check if adsbygoogle global is available
     const adsbygoogleAvailable = !!(window as any).adsbygoogle
+    
+    // Check global state from layout script
+    const globalLoadState = (window as any).adSenseLoaded
+    const globalError = (window as any).adSenseError
+    
+    console.log('🔍 [AdSense Loader] Availability check:', {
+      scriptExists,
+      adsbygoogleAvailable,
+      globalLoadState,
+      globalError,
+      adsbygoogleLength: (window as any).adsbygoogle ? (window as any).adsbygoogle.length : 'N/A'
+    })
     
     return scriptExists && adsbygoogleAvailable
   }, [])
@@ -42,13 +55,17 @@ export function useAdSenseLoader(clientId?: string) {
       try {
         if (!(window as any).adsbygoogle) {
           (window as any).adsbygoogle = []
+          console.log('🔧 [AdSense Loader] Initialized adsbygoogle array')
+        } else {
+          console.log('🔧 [AdSense Loader] adsbygoogle already exists, length:', (window as any).adsbygoogle.length)
         }
         return true
       } catch (e) {
-        console.warn('AdSense initialization failed:', e)
+        console.error('❌ [AdSense Loader] Initialization failed:', e)
         return false
       }
     }
+    console.log('🔧 [AdSense Loader] Cannot initialize - window undefined')
     return false
   }, [])
 
@@ -57,20 +74,43 @@ export function useAdSenseLoader(clientId?: string) {
     // Use ref to get current state without dependencies
     const currentState = stateRef.current
     
+    console.log('🎯 [AdSense Loader] pushAdConfig called:', {
+      isLoaded: currentState.isLoaded,
+      isAvailable: currentState.isAvailable,
+      config: config || 'empty config'
+    })
+    
     if (currentState.isLoaded && currentState.isAvailable) {
       try {
         // Initialize directly without dependency
         if (typeof window !== 'undefined') {
           if (!(window as any).adsbygoogle) {
             (window as any).adsbygoogle = []
+            console.log('🔧 [AdSense Loader] Initialized adsbygoogle for push')
           }
-          (window as any).adsbygoogle.push(config || {})
+          
+          const beforeLength = (window as any).adsbygoogle.length
+          ;(window as any).adsbygoogle.push(config || {})
+          const afterLength = (window as any).adsbygoogle.length
+          
+          console.log('✅ [AdSense Loader] Config pushed successfully:', {
+            beforeLength,
+            afterLength,
+            config: config || 'empty config'
+          })
+          
           return true
         }
       } catch (e) {
-        console.warn('AdSense push failed:', e)
+        console.error('❌ [AdSense Loader] Push failed:', e)
         return false
       }
+    } else {
+      console.warn('⚠️ [AdSense Loader] Cannot push - not ready:', {
+        isLoaded: currentState.isLoaded,
+        isAvailable: currentState.isAvailable,
+        error: currentState.error
+      })
     }
     return false
   }, []) // Empty dependencies - stable reference
@@ -78,6 +118,7 @@ export function useAdSenseLoader(clientId?: string) {
   // Check script status periodically
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
+      console.log('🔍 [AdSense Loader] Development mode - AdSense disabled')
       setState({
         isLoaded: false,
         isLoading: false,
@@ -87,6 +128,8 @@ export function useAdSenseLoader(clientId?: string) {
       return
     }
 
+    console.log('🔍 [AdSense Loader] Production mode - Starting availability checks...')
+    
     let checkCount = 0
     const maxChecks = 60 // 30 seconds (500ms * 60)
     let checkInterval: NodeJS.Timeout
@@ -98,6 +141,7 @@ export function useAdSenseLoader(clientId?: string) {
         const isAvailable = checkAdSenseAvailability()
         
         if (isAvailable) {
+          console.log('✅ [AdSense Loader] AdSense is available! Check count:', checkCount)
           setState({
             isLoaded: true,
             isLoading: false,
@@ -106,6 +150,7 @@ export function useAdSenseLoader(clientId?: string) {
           })
           clearInterval(checkInterval)
         } else if (checkCount >= maxChecks) {
+          console.error('❌ [AdSense Loader] AdSense not available after 30 seconds (' + checkCount + ' checks)')
           setState({
             isLoaded: false,
             isLoading: false,
@@ -113,6 +158,9 @@ export function useAdSenseLoader(clientId?: string) {
             isAvailable: false
           })
           clearInterval(checkInterval)
+        } else if (checkCount % 10 === 0) {
+          // Log every 5 seconds
+          console.log('⏳ [AdSense Loader] Still checking... (' + checkCount + '/' + maxChecks + ')')
         }
       }, 500)
     }
@@ -128,10 +176,12 @@ export function useAdSenseLoader(clientId?: string) {
 
   // Manual retry function
   const retry = useCallback(() => {
+    console.log('🔄 [AdSense Loader] Manual retry requested')
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     
     setTimeout(() => {
       const isAvailable = checkAdSenseAvailability()
+      console.log('🔄 [AdSense Loader] Retry result:', { isAvailable })
       setState({
         isLoaded: isAvailable,
         isLoading: false,

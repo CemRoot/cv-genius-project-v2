@@ -20,27 +20,45 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
   const getAdsByType = adConfigHook.getAdsByType ?? (() => [])
   const adminSettings = adConfigHook.adminSettings ?? { enableAds: false }
 
+  console.log('📱 [SidebarAds] Component initialized:', {
+    className,
+    enableAds: adminSettings.enableAds,
+    environment: process.env.NODE_ENV
+  })
+
   // Get sidebar ads configuration
   const sidebarAds = getAdsByType('sidebar')
   const adConfig = sidebarAds[0]
   const adClient = adConfig?.settings?.adSenseClient || 'ca-pub-1742989559393752'
   const adSlot = adSenseSlots.sidebarSlot || adConfig?.settings?.adSenseSlot || '1234567890'
   
+  console.log('📱 [SidebarAds] Configuration:', {
+    sidebarAdsCount: sidebarAds.length,
+    hasAdConfig: !!adConfig,
+    adClient: adClient ? adClient.substring(0, 10) + '...' : 'NONE',
+    adSlot: adSlot ? adSlot.substring(0, 6) + '...' : 'NONE',
+    adConfigEnabled: adConfig?.enabled
+  })
+  
   // Use the new AdSense loader with proper error handling
   const { isLoaded, isLoading, error, pushAdConfig } = useAdSenseLoader(adClient)
 
   // Admin ayarlarından ads kapatıldıysa hiçbir şey gösterme
   if (!adminSettings.enableAds) {
+    console.log('🚫 [SidebarAds] Ads disabled by admin settings')
     return null
   }
   
   if (sidebarAds.length === 0) {
+    console.log('🚫 [SidebarAds] No sidebar ads configured')
     return null // No ads to show
   }
 
   useEffect(() => {
     // Show ad after delay - fixed delay to prevent dependency issues
+    console.log('📱 [SidebarAds] Setting up display timer...')
     const timer = setTimeout(() => {
+      console.log('📱 [SidebarAds] Display timer triggered - showing ad')
       setShowAd(true)
     }, 2000) // Fixed 2 second delay
 
@@ -49,11 +67,26 @@ export function SidebarAds({ className = '' }: SidebarAdsProps) {
 
   // Initialize AdSense when conditions are met
   useEffect(() => {
-    if (showAd && isLoaded && !error && process.env.NODE_ENV === 'production') {
+    const isProduction = process.env.NODE_ENV === 'production'
+    const hasValidSlot = adSlot && adSlot !== 'dev-placeholder' && !adSlot.includes('your_')
+    
+    console.log('📱 [SidebarAds] AdSense init check:', {
+      showAd,
+      isLoaded,
+      error,
+      isProduction,
+      hasValidSlot,
+      isLoading
+    })
+    
+    if (showAd && isLoaded && !error && isProduction) {
+      console.log('📱 [SidebarAds] Initializing AdSense...')
       const timer = setTimeout(() => {
         const success = pushAdConfig()
         if (!success) {
-          console.log('AdSense sidebar initialization failed gracefully')
+          console.error('❌ [SidebarAds] AdSense sidebar initialization failed')
+        } else {
+          console.log('✅ [SidebarAds] AdSense sidebar initialized successfully')
         }
       }, 500)
 

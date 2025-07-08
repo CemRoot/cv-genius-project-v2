@@ -31,6 +31,7 @@ import { useGestureNavigation } from '@/hooks/use-gesture-navigation'
 import { ResponsiveHeading, ResponsiveText } from '@/components/responsive/responsive-text'
 import { SafeAreaWrapper } from '@/components/responsive/adaptive-layout'
 import { MobileSectionReorder } from '@/components/mobile/mobile-section-reorder'
+import { InlineExportModal } from '@/components/export/inline-export-modal'
 
 const steps = [
   {
@@ -84,6 +85,8 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
   const [currentStep, setCurrentStep] = useState(sessionState.currentStep || 0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
   const [showSectionManager, setShowSectionManager] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [isCompleteButtonBlinking, setIsCompleteButtonBlinking] = useState(false)
   const { addToast } = useToast()
   const toast = createToastUtils(addToast)
   const router = useRouter()
@@ -156,11 +159,23 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
 
   const handleComplete = async () => {
     try {
+      // Start blinking animation
+      setIsCompleteButtonBlinking(true)
+      
+      // Save CV
       await saveCV()
-      toast.success('CV Created!', 'Your CV has been saved successfully')
-      // Navigate to export page
-      router.push('/export')
+      
+      // Show success message briefly
+      toast.success('CV Created!', 'Opening export options...')
+      
+      // Wait for animation then open export modal
+      setTimeout(() => {
+        setIsCompleteButtonBlinking(false)
+        setShowExportModal(true)
+      }, 1500)
+      
     } catch (error) {
+      setIsCompleteButtonBlinking(false)
       toast.error('Save Failed', 'Failed to save your CV. Please try again.')
     }
   }
@@ -337,22 +352,36 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
             </Button>
           )}
           
-          <Button
-            onClick={handleNext}
-            className="flex-1 h-12"
+          <motion.div
+            animate={isCompleteButtonBlinking ? {
+              backgroundColor: ['#2563eb', '#dc2626', '#2563eb'],
+              scale: [1, 1.05, 1],
+            } : {}}
+            transition={isCompleteButtonBlinking ? {
+              duration: 0.5,
+              repeat: 2,
+              ease: "easeInOut"
+            } : {}}
+            className="flex-1"
           >
-            {currentStep === visibleSteps.length - 1 ? (
-              <>
-                Complete
-                <Check className="w-4 h-4 ml-2" />
-              </>
-            ) : (
-              <>
-                Next
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
+            <Button
+              onClick={handleNext}
+              className="w-full h-12"
+              disabled={isCompleteButtonBlinking}
+            >
+              {currentStep === visibleSteps.length - 1 ? (
+                <>
+                  {isCompleteButtonBlinking ? 'Saving...' : 'Complete'}
+                  <Check className="w-4 h-4 ml-2" />
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </motion.div>
         </div>
         
         {/* Swipe Hint */}
@@ -372,6 +401,17 @@ export function MobileWizard({ templateId, onBack }: MobileWizardProps) {
           expandedSections={[]}
         />
       )}
+      
+      {/* Inline Export Modal */}
+      <InlineExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onComplete={() => {
+          setShowExportModal(false)
+          toast.success('CV Downloaded!', 'Your professional CV has been downloaded successfully.')
+          router.push('/builder')
+        }}
+      />
     </div>
   )
 }
