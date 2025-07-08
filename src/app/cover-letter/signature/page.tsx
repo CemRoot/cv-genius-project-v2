@@ -30,7 +30,7 @@ export default function SignaturePage() {
   useEffect(() => {
     if (activeTab === 'draw' && canvasRef.current) {
       const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (ctx) {
         // Use simple 1:1 scaling for better touch responsiveness
         canvas.width = 600
@@ -74,7 +74,7 @@ export default function SignaturePage() {
     const canvas = canvasRef.current
     if (canvas) {
       const coords = getCanvasCoordinates(clientX, clientY)
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (ctx) {
         ctx.beginPath()
         ctx.moveTo(coords.x, coords.y)
@@ -87,7 +87,7 @@ export default function SignaturePage() {
     const canvas = canvasRef.current
     if (canvas) {
       const coords = getCanvasCoordinates(clientX, clientY)
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (ctx) {
         ctx.lineTo(coords.x, coords.y)
         ctx.stroke()
@@ -105,7 +105,7 @@ export default function SignaturePage() {
   const clearCanvas = () => {
     const canvas = canvasRef.current
     if (canvas) {
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (ctx) {
         // Clear the entire canvas area
         ctx.clearRect(0, 0, canvas.width, canvas.height)

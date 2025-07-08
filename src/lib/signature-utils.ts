@@ -15,7 +15,7 @@ export async function removeWhiteBackground(imageUrl: string, tolerance: number 
     
     img.onload = () => {
       const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
       
       if (!ctx) {
         reject(new Error('Failed to get canvas context'))
@@ -71,7 +71,7 @@ export async function removeWhiteBackground(imageUrl: string, tolerance: number 
  * @returns Canvas - Trimmed canvas
  */
 function trimCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
   if (!ctx) return canvas
   
   const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height)
@@ -114,7 +114,7 @@ function trimCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
   trimmedCanvas.width = trimmedWidth
   trimmedCanvas.height = trimmedHeight
   
-  const trimmedCtx = trimmedCanvas.getContext('2d')
+  const trimmedCtx = trimmedCanvas.getContext('2d', { willReadFrequently: true })
   if (!trimmedCtx) return canvas
   
   // Copy trimmed image data

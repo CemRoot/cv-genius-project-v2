@@ -40,7 +40,12 @@ export default function EditCoverLetterPage() {
 
   // Save functionality
   const handleSave = useCallback(async () => {
-    if (!contextState.resumeData?.personalInfo?.fullName) {
+    // Check multiple sources for personal info
+    const personalInfo = contextState.resumeData?.personalInfo || 
+                        contextState.personalInfo || 
+                        JSON.parse(localStorage.getItem('cover-letter-template-data') || '{}')?.personalInfo
+    
+    if (!personalInfo?.fullName && !personalInfo?.firstName) {
       addToast({
         type: 'error',
         title: 'CV data not loaded',
