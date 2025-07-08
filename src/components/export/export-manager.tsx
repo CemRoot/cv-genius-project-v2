@@ -33,6 +33,7 @@ import { DublinPharmaTemplate } from '@/components/cv/templates/dublin-pharma-te
 import { IrishGraduateTemplate } from '@/components/cv/templates/irish-graduate-template'
 import { ClassicTemplate } from '@/components/cv/templates/classic-template'
 import { getAdConfig } from '@/lib/ad-config'
+import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -119,140 +120,88 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     if (!currentCV) throw new Error('No CV data available')
     
     try {
-      console.log('Starting browser-print PDF generation with CV data:', currentCV.id)
+      console.log('Starting template manager PDF generation with CV data:', currentCV.id)
       
-      // Create a new window with the actual CV template
-      const printWindow = window.open('', '_blank', 'width=794,height=1123')
+      // Use the same IrishCVTemplateManager as live preview
+      const templateManager = new IrishCVTemplateManager()
+      
+      // Select the same template as in live preview
+      const templateId = currentCV.template || 'classic'
+      const success = templateManager.selectTemplate(templateId)
+      
+      if (!success) {
+        throw new Error(`Template ${templateId} not found`)
+      }
+      
+      // Render the CV using the template manager (same as live preview)
+      const html = templateManager.renderCV(currentCV)
+      const css = templateManager.getTemplateCSS()
+      
+      // Create a print window with the exact same content as live preview
+      const printWindow = window.open('', '_blank')
       if (!printWindow) {
         throw new Error('Could not open print window')
       }
       
-      // Get the correct template element
-      const getTemplateHTML = () => {
-        // We'll create a simple version that matches live preview
-        const template = currentCV.template || 'classic'
-        
-        return `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>${currentCV.personal.fullName}_CV</title>
-              <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { 
-                  font-family: Arial, sans-serif; 
-                  background: white; 
-                  padding: 15mm;
-                  width: 794px;
-                  min-height: 1123px;
+      // Write the same HTML/CSS as live preview
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>${currentCV.personal.fullName}_CV</title>
+            <style>
+              ${css}
+              
+              /* Print-specific optimizations */
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 0 !important;
                 }
-                .cv-header { text-align: center; margin-bottom: 20px; }
-                .cv-name { font-size: 28px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
-                .cv-title { font-size: 18px; color: #666; margin-bottom: 15px; }
-                .cv-contact { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; font-size: 14px; margin-bottom: 20px; }
-                .cv-section { margin-bottom: 20px; }
-                .section-title { 
-                  font-size: 16px; 
-                  font-weight: bold; 
-                  text-transform: uppercase; 
-                  border-bottom: 2px solid #000;
-                  padding-bottom: 5px;
-                  margin-bottom: 15px;
+                
+                body {
+                  margin: 15mm !important;
+                  padding: 0 !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
                 }
-                .experience-item { margin-bottom: 15px; }
-                .exp-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px; }
-                .exp-position { font-weight: bold; font-size: 16px; }
-                .exp-company { font-weight: 600; }
-                .exp-location { color: #666; font-size: 14px; }
-                .exp-date { font-size: 14px; color: #666; }
-                .exp-description { margin-top: 8px; line-height: 1.4; }
-              </style>
-            </head>
-            <body>
-              <div class="cv-header">
-                <h1 class="cv-name">${currentCV.personal.fullName}</h1>
-                <p class="cv-title">${currentCV.personal.title || 'Professional'}</p>
-                <div class="cv-contact">
-                  ${currentCV.personal.email ? `<span>${currentCV.personal.email}</span>` : ''}
-                  ${currentCV.personal.phone ? `<span>${currentCV.personal.phone}</span>` : ''}
-                  ${currentCV.personal.address ? `<span>${currentCV.personal.address}</span>` : ''}
-                  ${currentCV.personal.nationality ? `<span>${currentCV.personal.nationality}</span>` : ''}
-                  ${currentCV.personal.linkedin ? `<span>LinkedIn Profile</span>` : ''}
-                  ${currentCV.personal.website ? `<span>${currentCV.personal.website}</span>` : ''}
-                </div>
-              </div>
+                
+                * {
+                  page-break-inside: avoid !important;
+                }
+              }
               
-              ${currentCV.personal.summary ? `
-                <div class="cv-section">
-                  <h2 class="section-title">Summary</h2>
-                  <p>${currentCV.personal.summary}</p>
-                </div>
-              ` : ''}
-              
-              ${currentCV.experience.length > 0 ? `
-                <div class="cv-section">
-                  <h2 class="section-title">Experience</h2>
-                  ${currentCV.experience.map(exp => `
-                    <div class="experience-item">
-                      <div class="exp-header">
-                        <div>
-                          <div class="exp-position">${exp.position}</div>
-                          <div class="exp-company">${exp.company}</div>
-                          <div class="exp-location">${exp.location}</div>
-                          <div class="exp-date">${new Date(exp.startDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })} - ${exp.current ? 'Present' : new Date(exp.endDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}</div>
-                        </div>
-                      </div>
-                      ${exp.description ? `<div class="exp-description">${exp.description}</div>` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
-              
-              ${currentCV.education.length > 0 ? `
-                <div class="cv-section">
-                  <h2 class="section-title">Education</h2>
-                  ${currentCV.education.map(edu => `
-                    <div class="experience-item">
-                      <div class="exp-header">
-                        <div>
-                          <div class="exp-position">${edu.degree}</div>
-                          <div class="exp-company">${edu.institution}</div>
-                          <div class="exp-location">${edu.location || ''}</div>
-                          <div class="exp-date">${new Date(edu.startDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })} - ${edu.current ? 'Present' : new Date(edu.endDate).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' })}</div>
-                        </div>
-                      </div>
-                      ${edu.description ? `<div class="exp-description">${edu.description}</div>` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
-              
-              <div class="cv-section">
-                <h2 class="section-title">References</h2>
-                <p style="font-style: italic; text-align: center;">Available upon request</p>
-              </div>
-            </body>
-          </html>
-        `
-      }
+              /* Ensure same styling as live preview */
+              body {
+                font-family: Arial, sans-serif;
+                background: white;
+                margin: 15mm;
+                padding: 0;
+              }
+            </style>
+          </head>
+          <body>
+            ${html}
+          </body>
+        </html>
+      `)
       
-      // Write the HTML content
-      printWindow.document.write(getTemplateHTML())
       printWindow.document.close()
       
-      // Return a promise that will be handled by the print mechanism
+      // Wait for loading and trigger print
       return new Promise((resolve, reject) => {
         printWindow.onload = () => {
-          // Trigger print and let browser handle PDF generation
           setTimeout(() => {
             printWindow.print()
-            // Close window after printing
-            setTimeout(() => {
+            
+            // Close after printing
+            printWindow.onafterprint = () => {
               printWindow.close()
-              // Return empty blob as placeholder - actual PDF handled by browser
-              resolve(new Blob(['PDF generated via browser print'], { type: 'application/pdf' }))
-            }, 1000)
+            }
+            
+            // Return placeholder blob
+            resolve(new Blob(['PDF generated via browser print'], { type: 'application/pdf' }))
           }, 500)
         }
       })
