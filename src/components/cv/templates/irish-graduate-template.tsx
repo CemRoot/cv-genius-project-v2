@@ -39,7 +39,7 @@ export function IrishGraduateTemplate({ cv, cvData, isMobile = false }: IrishGra
 
   // Fresh graduate-focused design settings
   const defaultSettings: DesignSettings = {
-    margins: 0.3, // Reduced from 0.75 for more content space
+    margins: 0.15, // Reduced from 0.75 for more content space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Calibri, sans-serif',

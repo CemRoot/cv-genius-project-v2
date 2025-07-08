@@ -46,7 +46,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
   // Classic design settings
   const defaultSettings: DesignSettings = {
-    margins: 0.3, // Reduced from 1 for more content space
+    margins: 0.15, // Reduced from 0.3 for minimal top space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Arial, sans-serif',

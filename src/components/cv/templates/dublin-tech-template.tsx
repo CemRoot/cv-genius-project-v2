@@ -39,7 +39,7 @@ export function DublinTechTemplate({ cv, cvData, isMobile = false }: DublinTechT
 
   // Modern tech-focused design settings
   const defaultSettings: DesignSettings = {
-    margins: 0.3, // Reduced from 0.75 for more content space
+    margins: 0.15, // Reduced from 0.75 for more content space
     sectionSpacing: 'normal',
     headerSpacing: 'normal',
     fontFamily: 'Inter, sans-serif',

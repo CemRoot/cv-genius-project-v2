@@ -38,7 +38,7 @@ export function IrishFinanceTemplate({ cv, cvData, isMobile = false }: IrishFina
 
   // Conservative finance-focused design settings
   const defaultSettings: DesignSettings = {
-    margins: 0.3, // Reduced from 0.6 for more content space
+    margins: 0.15, // Reduced from 0.6 for more content space
     sectionSpacing: 'tight',
     headerSpacing: 'compact',
     fontFamily: 'Georgia, serif',
