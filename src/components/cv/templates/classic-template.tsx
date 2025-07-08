@@ -56,16 +56,16 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
   const settings = designSettings || defaultSettings
 
-  // Dynamic styles - LIVE PREVIEW ILE AYNI
+  // Dynamic styles - Proper CV formatting
   const containerStyle = {
-    padding: isMobile ? '0.75rem' : `${settings.margins}in`, // Daha az padding
-    fontFamily: settings.fontFamily, // Sans-serif
+    padding: isMobile ? '1rem' : `${settings.margins}in`,
+    fontFamily: settings.fontFamily,
     fontSize: isMobile ? '11px' : `${settings.fontSize}pt`,
-    lineHeight: settings.lineHeight, // Sıkışık line-height
+    lineHeight: settings.lineHeight,
     maxWidth: '8.5in', // A4 width
     margin: '0 auto',
-    paddingTop: isMobile ? '0.25rem' : '0.25in', // Daha az üst padding (0.5 → 0.25)
-    paddingBottom: isMobile ? '0.25rem' : '0.25in' // Daha az alt padding (0.5 → 0.25)
+    paddingTop: isMobile ? '0.5rem' : '0.5in',
+    paddingBottom: isMobile ? '0.5rem' : '0.5in'
   }
 
   return (
@@ -73,8 +73,8 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       className={`cv-container classic bg-white text-black min-h-full w-full ${isMobile ? 'text-xs' : ''}`}
       style={containerStyle}
     >
-      {/* Header - LIVE PREVIEW LAYOUT */}
-      <header className="cv-header text-center mb-2"> {/* mb-4 → mb-2 */}
+      {/* Header - Professional spacing */}
+      <header className="cv-header text-center mb-4">
         {/* Ana başlık - KALIN SANS-SERIF */}
         <h1 className={`name ${isMobile ? 'text-2xl' : 'text-3xl'} font-black uppercase mb-1 text-black`}
             style={{fontFamily: 'Arial, Helvetica, sans-serif', fontWeight: '900'}}>
@@ -82,25 +82,19 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </h1>
         
         {/* Alt başlık - SİYAH SANS-SERIF */}
-        <p className={`title ${isMobile ? 'text-base' : 'text-lg'} mb-2 text-black font-medium`} // mb-3 → mb-2
+        <p className={`title ${isMobile ? 'text-base' : 'text-lg'} mb-3 text-black font-medium`}
            style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
           {personalInfo.title || "Test Developer"}
         </p>
         
-        {/* Contact info - İKİ SATIRLIK LAYOUT (LIVE PREVIEW GİBİ) */}
-        <div className="contact-info text-sm text-black space-y-0.5" // space-y-1 → space-y-0.5
+        {/* Contact info - Single line, properly spaced */}
+        <div className="contact-info text-sm text-black"
              style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
-          {/* İlk satır: Email, Phone, Address */}
-          <div className="flex justify-center items-center flex-wrap gap-3">
+          <div className="flex justify-center items-center gap-6 flex-wrap">
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{formatIrishPhone(personalInfo.phone)}</span>}
             {personalInfo.address && <span>{personalInfo.address}</span>}
-            {/* STAMP2 SİYAH OLACAK (yeşil değil) */}
             {personalInfo.nationality && <span className="nationality text-black font-medium">{personalInfo.nationality}</span>}
-          </div>
-          
-          {/* İkinci satır: Website, LinkedIn */}
-          <div className="flex justify-center items-center flex-wrap gap-3">
             {personalInfo.website && <span>{personalInfo.website.replace('https://', '').replace('http://', '')}</span>}
             {personalInfo.linkedin && <span>linkedin.com</span>}
           </div>
@@ -109,7 +103,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
       {/* Summary Section - KALIN ÇİZGİ */}
       {personalInfo.summary && isSectionVisible('summary') && (
-        <section className="summary mb-3"> {/* mb-4 → mb-3 */}
+        <section className="summary mb-4">
           <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
               style={{
                 fontFamily: 'Arial, Helvetica, sans-serif', 
