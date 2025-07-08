@@ -31,24 +31,36 @@
     @right-bottom { content: "" !important; display: none !important; }
   }
   
-  /* Force single page document */
+  /* Force single page document with minimal top margin */
   html {
     height: 297mm !important;
     max-height: 297mm !important;
     overflow: hidden !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   body {
-    margin: 15mm !important;
-    margin-top: 5mm !important;
+    margin: 10px 15mm 15mm 15mm !important;
     padding: 0 !important;
-    height: calc(297mm - 20mm) !important;
-    max-height: calc(297mm - 20mm) !important;
+    height: calc(297mm - 25mm) !important;
+    max-height: calc(297mm - 25mm) !important;
     overflow: hidden !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
+  }
+  
+  /* Remove top spacing from headers and first elements */
+  header, .header, .cv-header {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  h1, .cv-name, .name {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
   }
   
   /* Prevent ALL page breaks */

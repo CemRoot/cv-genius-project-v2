@@ -143,7 +143,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         throw new Error('Could not open print window')
       }
       
-      // Write the same HTML/CSS as live preview
+      // Write the optimized HTML/CSS with minimal top margin
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -153,7 +153,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
             <style>
               ${css}
               
-              /* Print-specific optimizations */
+              /* Print-specific optimizations - minimal top margin */
               @media print {
                 @page {
                   size: A4 portrait;
@@ -161,7 +161,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
                 }
                 
                 body {
-                  margin: 15mm !important;
+                  margin: 10px 15mm 15mm 15mm !important;
                   padding: 0 !important;
                   -webkit-print-color-adjust: exact !important;
                   print-color-adjust: exact !important;
@@ -172,17 +172,31 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
                 }
               }
               
-              /* Ensure same styling as live preview */
+              /* Minimal top margin for screen view */
               body {
                 font-family: Arial, sans-serif;
                 background: white;
-                margin: 15mm;
+                margin: 10px 15mm 15mm 15mm;
                 padding: 0;
+              }
+              
+              /* Remove any header spacing */
+              header, .header, .cv-header {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+              }
+              
+              /* Start content immediately */
+              h1, .cv-name, .name {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
               }
             </style>
           </head>
           <body>
-            ${html}
+            <div style="margin-top: 0; padding-top: 0;">
+              ${html}
+            </div>
           </body>
         </html>
       `)
