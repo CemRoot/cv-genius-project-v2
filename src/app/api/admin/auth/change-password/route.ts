@@ -155,6 +155,33 @@ export async function POST(request: NextRequest) {
     // Update password hash in memory for immediate effect
     process.env.ADMIN_PWD_HASH_B64 = newHashB64
     
+    // Update local .env.local file in development
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envPath = path.join(process.cwd(), '.env.local')
+        
+        if (fs.existsSync(envPath)) {
+          let envContent = fs.readFileSync(envPath, 'utf8')
+          
+          // Update the ADMIN_PWD_HASH_B64 line
+          const hashRegex = /^ADMIN_PWD_HASH_B64=.*$/m
+          if (hashRegex.test(envContent)) {
+            envContent = envContent.replace(hashRegex, `ADMIN_PWD_HASH_B64=${newHashB64}`)
+          } else {
+            // Add if not exists
+            envContent += `\nADMIN_PWD_HASH_B64=${newHashB64}\n`
+          }
+          
+          fs.writeFileSync(envPath, envContent, 'utf8')
+          console.log('✅ Updated .env.local file with new password hash')
+        }
+      } catch (error) {
+        console.error('⚠️ Failed to update .env.local:', error.message)
+      }
+    }
+    
     // Update in Vercel KV if available
     await VercelKVManager.updatePasswordHash(newHashB64)
     
