@@ -1,5 +1,5 @@
 {
-  "enableAds": true,
+  "enableAds": false,
   "mobileAds": true,
   "testMode": false,
   "monetagPopup": false,
