@@ -220,8 +220,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match all routes including admin, but exclude static files and API routes that don't need IP checking
+  // Only match admin frontend routes, exclude API routes to prevent loops
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*$).*)',
+    '/admin',
+    '/admin/((?!api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api|.*\\..*$).*)',
   ]
 } 
