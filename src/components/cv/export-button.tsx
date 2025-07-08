@@ -129,11 +129,12 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
               
               body {
                 margin: 15mm !important;
+                margin-top: 10mm !important;
                 padding: 0 !important;
                 width: calc(210mm - 30mm) !important;
-                height: calc(297mm - 30mm) !important;
+                height: calc(297mm - 20mm) !important;
                 max-width: calc(210mm - 30mm) !important;
-                max-height: calc(297mm - 30mm) !important;
+                max-height: calc(297mm - 20mm) !important;
                 overflow: hidden !important;
                 page-break-after: avoid !important;
                 page-break-inside: avoid !important;

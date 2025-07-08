@@ -42,9 +42,10 @@
   
   body {
     margin: 15mm !important;
+    margin-top: 10mm !important;
     padding: 0 !important;
-    height: calc(297mm - 30mm) !important;
-    max-height: calc(297mm - 30mm) !important;
+    height: calc(297mm - 20mm) !important;
+    max-height: calc(297mm - 20mm) !important;
     overflow: hidden !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
