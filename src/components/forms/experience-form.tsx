@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { MobileInput } from "@/components/ui/mobile-input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { MonthYearPicker } from "@/components/ui/month-year-picker"
 import { useCVStore } from "@/store/cv-store"
 import { useState, useEffect } from "react"
 import { PlusCircle, Trash2, Edit2, Save, X, GripVertical, ChevronDown, ChevronUp, Sparkles } from "lucide-react"
@@ -36,8 +37,8 @@ const experienceSchema = z.object({
   company: z.string().min(2, "Company name is required"),
   position: z.string().min(2, "Position is required"),
   location: z.string().min(2, "Location is required"),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required").regex(/^\d{4}-\d{2}$/, "Please select a valid month and year"),
+  endDate: z.string().optional().refine((val) => !val || /^\d{4}-\d{2}$/.test(val), "Please select a valid month and year"),
   current: z.boolean(),
   description: z.string().min(10, "Description should be at least 10 characters"),
   achievements: z.string().optional()
@@ -237,19 +238,19 @@ function SortableExperienceItem({
                     <Label htmlFor={`startDate-${experience.id}`}>
                       Start Date <span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <MonthYearPicker
                       id={`startDate-${experience.id}`}
-                      type="date"
-                      {...register("startDate")}
-                      min="1900-01-01"
-                      max="9999-12-31"
-                      className={`h-12 ${errors.startDate ? "border-red-500" : ""}`}
+                      value={watch("startDate") || ""}
+                      onChange={(value) => setValue("startDate", value)}
+                      placeholder="Select start month and year"
+                      className={errors.startDate ? "border-red-500" : ""}
+                      required
                     />
                     {errors.startDate && (
                       <p className="text-sm text-red-500">{errors.startDate.message}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Date will be displayed as Month Year (e.g., Jan 2024)
+                      Date will be displayed as Month Year (e.g., January 2024)
                     </p>
                   </div>
 
@@ -257,15 +258,17 @@ function SortableExperienceItem({
                     <Label htmlFor={`endDate-${experience.id}`}>
                       End Date
                     </Label>
-                    <Input
+                    <MonthYearPicker
                       id={`endDate-${experience.id}`}
-                      type="date"
-                      {...register("endDate")}
+                      value={watch("endDate") || ""}
+                      onChange={(value) => setValue("endDate", value)}
+                      placeholder="Select end month and year"
                       disabled={watchCurrent}
-                      min="1900-01-01"
-                      max="9999-12-31"
-                      className={`h-12 ${errors.endDate ? "border-red-500" : ""} ${watchCurrent ? "opacity-50" : ""}`}
+                      className={`${errors.endDate ? "border-red-500" : ""} ${watchCurrent ? "opacity-50" : ""}`}
                     />
+                    {errors.endDate && (
+                      <p className="text-sm text-red-500">{errors.endDate.message}</p>
+                    )}
                     <p className="text-xs text-muted-foreground">
                       Leave empty if current position
                     </p>
@@ -452,14 +455,23 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
 
   const watchCurrent = watch("current")
 
-  // Format date for display (DD/MM/YYYY)
+  // Format date for display (Month Year)
   const formatDateForDisplay = (dateString: string) => {
     if (!dateString || dateString === "Present") return dateString
     try {
+      // Handle YYYY-MM format
+      if (/^\d{4}-\d{2}$/.test(dateString)) {
+        const [year, month] = dateString.split('-')
+        const date = new Date(parseInt(year), parseInt(month) - 1)
+        return date.toLocaleDateString('en-IE', {
+          month: 'long',
+          year: 'numeric'
+        })
+      }
+      // Fallback for other formats
       const date = new Date(dateString)
-      return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit', 
+      return date.toLocaleDateString('en-IE', {
+        month: 'long',
         year: 'numeric'
       })
     } catch {
@@ -467,17 +479,23 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
     }
   }
 
-  // Format date for input (YYYY-MM-DD)
+  // Format date for input (YYYY-MM)
   const formatDateForInput = (dateString: string) => {
     if (!dateString || dateString === "Present") return ""
     try {
-      // If it's already in YYYY-MM-DD format, return as is
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      // If it's already in YYYY-MM format, return as is
+      if (/^\d{4}-\d{2}$/.test(dateString)) {
         return dateString
       }
-      // Try to parse various formats
+      // If it's in YYYY-MM-DD format, extract year and month
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString.substring(0, 7) // Extract YYYY-MM
+      }
+      // Try to parse other formats and convert to YYYY-MM
       const date = new Date(dateString)
-      return date.toISOString().split('T')[0]
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      return `${year}-${month}`
     } catch {
       return dateString
     }
@@ -683,19 +701,19 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
                 <Label htmlFor="startDate">
                   Start Date <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <MonthYearPicker
                   id="startDate"
-                  type="date"
-                  {...register("startDate")}
-                  min="1900-01-01"
-                  max="9999-12-31"
+                  value={watch("startDate") || ""}
+                  onChange={(value) => setValue("startDate", value)}
+                  placeholder="Select start month and year"
                   className={errors.startDate ? "border-red-500" : ""}
+                  required
                 />
                 {errors.startDate && (
                   <p className="text-sm text-red-500">{errors.startDate.message}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Date will be displayed as Month Year (e.g., Jan 2024)
+                  Date will be displayed as Month Year (e.g., January 2024)
                 </p>
               </div>
 
@@ -703,15 +721,20 @@ export function ExperienceForm({ isMobile = false }: ExperienceFormProps) {
                 <Label htmlFor="endDate">
                   End Date
                 </Label>
-                <Input
+                <MonthYearPicker
                   id="endDate"
-                  type="date"
-                  {...register("endDate")}
+                  value={watch("endDate") || ""}
+                  onChange={(value) => setValue("endDate", value)}
+                  placeholder="Select end month and year"
                   disabled={watchCurrent}
-                  min="1900-01-01"
-                  max="9999-12-31"
                   className={errors.endDate ? "border-red-500" : ""}
                 />
+                {errors.endDate && (
+                  <p className="text-sm text-red-500">{errors.endDate.message}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Leave empty if current position
+                </p>
               </div>
 
               <div className="flex items-center space-x-2">
