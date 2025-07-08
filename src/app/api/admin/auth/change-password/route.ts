@@ -17,20 +17,34 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔐 Password change request started')
+    
     // Verify JWT token using existing admin auth
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ No authorization header')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
     const adminSession = await verifyAdminToken(token)
+    console.log('✅ Admin session verified:', adminSession?.email || 'unknown')
     
     if (!adminSession) {
       return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 })
     }
 
     const body = await request.json()
+    console.log('📥 Request body fields:', {
+      hasCurrentPassword: !!body.currentPassword,
+      hasNewPassword: !!body.newPassword,
+      hasConfirmPassword: !!body.confirmPassword,
+      currentPasswordLength: body.currentPassword?.length || 0,
+      newPasswordLength: body.newPassword?.length || 0,
+      confirmPasswordLength: body.confirmPassword?.length || 0,
+      fieldsMatch: body.newPassword === body.confirmPassword
+    })
+    
     let currentPassword, newPassword, confirmPassword
     
     // Check if passwords are encrypted (old format) or plain (new format)
@@ -48,27 +62,34 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!currentPassword || !newPassword) {
+      console.log('❌ Missing required fields')
       return NextResponse.json({ 
-        error: 'Current password and new password are required' 
+        error: 'Current password and new password are required',
+        debug: { currentPassword: !!currentPassword, newPassword: !!newPassword }
       }, { status: 400 })
     }
 
     // Validate password confirmation
     if (confirmPassword && newPassword !== confirmPassword) {
+      console.log('❌ Password confirmation mismatch')
       return NextResponse.json({ 
-        error: 'New password and confirmation password do not match' 
+        error: 'New password and confirmation password do not match',
+        debug: { newPasswordLength: newPassword.length, confirmPasswordLength: confirmPassword.length }
       }, { status: 400 })
     }
 
     // Validate password strength
     if (newPassword.length < 8) {
+      console.log('❌ Password too short:', newPassword.length)
       return NextResponse.json({ 
-        error: 'New password must be at least 8 characters long' 
+        error: 'New password must be at least 8 characters long',
+        debug: { actualLength: newPassword.length }
       }, { status: 400 })
     }
 
     // Additional password strength checks
     if (newPassword === currentPassword) {
+      console.log('❌ New password same as current')
       return NextResponse.json({ 
         error: 'New password must be different from current password' 
       }, { status: 400 })
@@ -79,11 +100,22 @@ export async function POST(request: NextRequest) {
     const hasLowerCase = /[a-z]/.test(newPassword)
     const hasNumbers = /\d/.test(newPassword)
 
+    console.log('🔍 Password complexity check:', {
+      hasUpperCase,
+      hasLowerCase,
+      hasNumbers,
+      passes: (hasUpperCase || hasLowerCase) && hasNumbers
+    })
+
     if (!(hasUpperCase || hasLowerCase) || !hasNumbers) {
+      console.log('❌ Password complexity failed')
       return NextResponse.json({ 
-        error: 'Password must contain at least one letter and one number' 
+        error: 'Password must contain at least one letter and one number',
+        debug: { hasUpperCase, hasLowerCase, hasNumbers }
       }, { status: 400 })
     }
+    
+    console.log('✅ All validations passed')
 
     // Get current password hash from environment
     const currentHashB64 = process.env.ADMIN_PWD_HASH_B64

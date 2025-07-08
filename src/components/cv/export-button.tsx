@@ -71,45 +71,72 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
           <title>${fileName} - Professional CV</title>
           <style>
             @media print {
+              /* Force single page layout */
               @page {
-                size: A4;
+                size: A4 portrait;
                 margin: 15mm;
-                /* Hide browser headers and footers */
-                margin-header: 0;
-                margin-footer: 0;
+                margin-top: 0;
+                margin-bottom: 0;
+                margin-left: 15mm;
+                margin-right: 15mm;
+                /* Aggressive header/footer removal */
+                @top-left { content: ""; }
+                @top-center { content: ""; }
+                @top-right { content: ""; }
+                @bottom-left { content: ""; }
+                @bottom-center { content: ""; }
+                @bottom-right { content: ""; }
               }
               
-              /* Remove all browser-generated content */
+              /* Remove ALL browser-generated content */
               @page :first {
                 margin: 15mm;
-                margin-header: 0;
-                margin-footer: 0;
+                margin-top: 0;
+                margin-bottom: 0;
+                @top-left { content: none !important; }
+                @top-center { content: none !important; }
+                @top-right { content: none !important; }
+                @bottom-left { content: none !important; }
+                @bottom-center { content: none !important; }
+                @bottom-right { content: none !important; }
               }
               
-              @page :left {
+              @page :last {
                 margin: 15mm;
-                margin-header: 0;
-                margin-footer: 0;
+                margin-top: 0;
+                margin-bottom: 0;
+                @top-left { content: none !important; }
+                @top-center { content: none !important; }
+                @top-right { content: none !important; }
+                @bottom-left { content: none !important; }
+                @bottom-center { content: none !important; }
+                @bottom-right { content: none !important; }
               }
               
-              @page :right {
-                margin: 15mm;
-                margin-header: 0;
-                margin-footer: 0;
-              }
-              
-              /* Hide browser-generated elements */
-              body {
+              /* Force clean document structure */
+              html, body {
                 margin: 0 !important;
                 padding: 0 !important;
+                width: 210mm !important;
+                height: auto !important;
+                overflow: hidden !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                page-break-inside: avoid !important;
               }
               
-              /* Ensure no browser elements appear */
-              html {
+              /* Ensure single page content */
+              .cv-content, .cv-preview-container, .a4-page {
                 margin: 0 !important;
-                padding: 0 !important;
+                padding: 15mm !important;
+                width: calc(210mm - 30mm) !important;
+                min-height: calc(297mm - 30mm) !important;
+                max-height: calc(297mm - 30mm) !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                box-sizing: border-box !important;
               }
               
               body {
@@ -162,19 +189,36 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
       // Add JavaScript to configure print settings
       const script = printWindow.document.createElement('script')
       script.innerHTML = `
-        // Configure print settings to hide headers/footers
-        if (window.chrome && window.chrome.runtime && window.chrome.runtime.onConnect) {
-          // Chrome-specific settings
-          const printSettings = {
-            shouldPrintBackgrounds: true,
-            shouldPrintSelectionOnly: false,
-            marginType: 1, // NO_MARGINS
-            headerFooterEnabled: false,
-            isLandscape: false,
-            paperSizeUnit: 0,
-            paperWidth: 210,
-            paperHeight: 297
-          };
+        // Enhanced print settings configuration
+        try {
+          // Chrome-specific print settings
+          if (window.chrome) {
+            const style = document.createElement('style');
+            style.innerHTML = \`
+              @media print {
+                @page { size: A4 portrait; margin: 0; }
+                body { margin: 15mm; padding: 0; }
+                * { page-break-inside: avoid; }
+              }
+            \`;
+            document.head.appendChild(style);
+          }
+          
+          // Force single page behavior
+          document.body.style.pageBreakAfter = 'avoid';
+          document.body.style.pageBreakInside = 'avoid';
+          document.body.style.overflow = 'hidden';
+          
+          // Remove any existing page breaks
+          const pageBreaks = document.querySelectorAll('.page-break, [style*="page-break"]');
+          pageBreaks.forEach(el => {
+            el.style.pageBreakBefore = 'avoid';
+            el.style.pageBreakAfter = 'avoid';
+            el.style.breakBefore = 'avoid';
+            el.style.breakAfter = 'avoid';
+          });
+        } catch (e) {
+          console.warn('Print settings configuration failed:', e);
         }
         
         // Fallback: Use CSS to ensure clean print
@@ -187,8 +231,18 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
         \`;
         document.head.appendChild(style);
         
-        // Set document title for better PDF naming
-        document.title = '${fileName}_CV_Professional';
+        // Set clean document title (no browser info)
+        document.title = '${fileName.replace(/[^a-zA-Z0-9]/g, '_')}_CV';
+        
+        // Remove any meta tags that might show in headers
+        const metaTags = document.querySelectorAll('meta[name], meta[property]');
+        metaTags.forEach(tag => tag.remove());
+        
+        // Add clean meta structure
+        const cleanMeta = document.createElement('meta');
+        cleanMeta.setAttribute('name', 'description');
+        cleanMeta.setAttribute('content', 'Professional CV');
+        document.head.appendChild(cleanMeta);
         
         // Ensure proper viewport
         const viewport = document.querySelector('meta[name="viewport"]');
@@ -198,16 +252,47 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
       `
       printWindow.document.head.appendChild(script)
       
-      // Small delay to ensure scripts run
+      // Enhanced timing for better print handling
       setTimeout(() => {
+        // Force recalculation of page dimensions
+        printWindow.document.body.style.display = 'none';
+        printWindow.document.body.offsetHeight; // Force reflow
+        printWindow.document.body.style.display = 'block';
+        
+        // Additional clean-up before print
+        const allElements = printWindow.document.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (el.style) {
+            el.style.pageBreakInside = 'avoid';
+            el.style.breakInside = 'avoid';
+          }
+        });
+        
+        // Create user instruction overlay
+        const overlay = printWindow.document.createElement('div');
+        overlay.innerHTML = `
+          <div style="position: fixed; top: 10px; left: 10px; background: #000; color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 9999; font-family: Arial, sans-serif;">
+            📄 PDF Settings: Please click 'More settings' → Turn OFF 'Headers and footers' → Save as PDF
+            <button onclick="this.parentElement.style.display='none'" style="margin-left: 10px; background: #fff; color: #000; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">✕</button>
+          </div>
+        `;
+        printWindow.document.body.appendChild(overlay);
+        
+        // Hide overlay after 10 seconds
+        setTimeout(() => {
+          if (overlay.parentElement) {
+            overlay.style.display = 'none';
+          }
+        }, 10000);
+        
         // Trigger print dialog
-        printWindow.print()
+        printWindow.print();
         
         // Close the window after printing
         printWindow.onafterprint = () => {
-          printWindow.close()
-        }
-      }, 100)
+          printWindow.close();
+        };
+      }, 200)
     }
   }
   

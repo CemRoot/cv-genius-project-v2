@@ -1788,72 +1788,136 @@
   }
 }
 
-/* PDF Export Print Styles - Hide Browser Headers/Footers */
+/* PDF Export Print Styles - AGGRESSIVE Header/Footer Removal */
 @media print {
   @page {
-    size: A4;
-    margin: 15mm;
-    /* Hide browser headers and footers */
-    margin-header: 0;
-    margin-footer: 0;
+    size: A4 portrait;
+    margin: 0;
+    padding: 15mm;
+    /* FORCE remove all browser headers/footers */
+    @top-left-corner { content: "" !important; display: none !important; }
+    @top-left { content: "" !important; display: none !important; }
+    @top-center { content: "" !important; display: none !important; }
+    @top-right { content: "" !important; display: none !important; }
+    @top-right-corner { content: "" !important; display: none !important; }
+    @bottom-left-corner { content: "" !important; display: none !important; }
+    @bottom-left { content: "" !important; display: none !important; }
+    @bottom-center { content: "" !important; display: none !important; }
+    @bottom-right { content: "" !important; display: none !important; }
+    @bottom-right-corner { content: "" !important; display: none !important; }
+    @left-top { content: "" !important; display: none !important; }
+    @left-middle { content: "" !important; display: none !important; }
+    @left-bottom { content: "" !important; display: none !important; }
+    @right-top { content: "" !important; display: none !important; }
+    @right-middle { content: "" !important; display: none !important; }
+    @right-bottom { content: "" !important; display: none !important; }
   }
   
-  /* Remove all browser-generated content */
-  @page :first {
-    margin: 15mm;
-    margin-header: 0;
-    margin-footer: 0;
+  /* Remove ALL browser-generated content on all page types */
+  @page :first,
+  @page :last,
+  @page :left,
+  @page :right,
+  @page :blank {
+    margin: 0;
+    padding: 15mm;
+    @top-left-corner { content: none !important; }
+    @top-left { content: none !important; }
+    @top-center { content: none !important; }
+    @top-right { content: none !important; }
+    @top-right-corner { content: none !important; }
+    @bottom-left-corner { content: none !important; }
+    @bottom-left { content: none !important; }
+    @bottom-center { content: none !important; }
+    @bottom-right { content: none !important; }
+    @bottom-right-corner { content: none !important; }
   }
   
-  @page :left {
-    margin: 15mm; 
-    margin-header: 0;
-    margin-footer: 0;
-  }
-  
-  @page :right {
-    margin: 15mm;
-    margin-header: 0;
-    margin-footer: 0;
-  }
-  
-  /* Ensure clean document structure */
+  /* FORCE single page behavior */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: avoid !important;
+    break-inside: avoid !important;
   }
   
-  /* Hide browser-generated elements */
-  body::before,
-  body::after,
-  html::before,
-  html::after {
+  /* Hide ALL browser-generated elements */
+  body::before, body::after,
+  html::before, html::after,
+  head::before, head::after {
     display: none !important;
     content: "" !important;
+    visibility: hidden !important;
   }
   
-  /* Ensure proper page breaks */
-  .page-break {
-    page-break-before: always;
-    break-before: page;
+  /* Remove ANY page breaks to force single page */
+  .page-break,
+  [style*="page-break"],
+  [style*="break-before"],
+  [style*="break-after"] {
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-before: avoid !important;
+    break-after: avoid !important;
+    break-inside: avoid !important;
   }
   
-  /* Avoid breaking important elements */
+  /* Force all content into single page */
   .experience-item,
   .education-item,
   .certification-item,
-  .section {
-    page-break-inside: avoid;
-    break-inside: avoid;
+  .section,
+  div, p, h1, h2, h3, h4, h5, h6 {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
   
-  /* Ensure all text is visible */
+  /* Ensure content fits in single page */
+  .cv-content,
+  .cv-preview-container,
+  .a4-page,
+  main,
+  article {
+    margin: 0 !important;
+    padding: 15mm !important;
+    width: calc(210mm - 30mm) !important;
+    max-width: calc(210mm - 30mm) !important;
+    height: auto !important;
+    max-height: calc(297mm - 30mm) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  
+  /* Hide any navigation or UI elements */
+  nav, .nav, .navigation,
+  .header, .footer,
+  .sidebar, .menu,
+  button, .button,
+  .btn, input, select, textarea {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Ensure all text is visible with exact colors */
   * {
     color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
   }
 }
