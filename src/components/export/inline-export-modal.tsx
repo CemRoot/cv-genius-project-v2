@@ -117,17 +117,178 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
       <html>
         <head>
           <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${fileName}</title>
           <style>
             @media print {
+              /* ULTIMATE header/footer elimination */
               @page {
                 size: A4 portrait;
-                margin: 0.5in;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                
+                /* Nuclear option - remove everything */
+                @top-left-corner { content: "" !important; display: none !important; }
+                @top-left { content: "" !important; display: none !important; }
+                @top-center { content: "" !important; display: none !important; }
+                @top-right { content: "" !important; display: none !important; }
+                @top-right-corner { content: "" !important; display: none !important; }
+                
+                @left-top { content: "" !important; display: none !important; }
+                @left-middle { content: "" !important; display: none !important; }
+                @left-bottom { content: "" !important; display: none !important; }
+                
+                @right-top { content: "" !important; display: none !important; }
+                @right-middle { content: "" !important; display: none !important; }
+                @right-bottom { content: "" !important; display: none !important; }
+                
+                @bottom-left-corner { content: "" !important; display: none !important; }
+                @bottom-left { content: "" !important; display: none !important; }
+                @bottom-center { content: "" !important; display: none !important; }
+                @bottom-right { content: "" !important; display: none !important; }
+                @bottom-right-corner { content: "" !important; display: none !important; }
               }
-              body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-              .cv-container { max-width: 100%; }
+              
+              /* Force single page behavior AGGRESSIVELY */
+              html {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 297mm !important;
+                width: 210mm !important;
+                max-height: 297mm !important;
+                max-width: 210mm !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+              }
+              
+              body {
+                margin: 15mm !important;
+                padding: 0 !important;
+                width: calc(210mm - 30mm) !important;
+                height: calc(297mm - 30mm) !important;
+                max-width: calc(210mm - 30mm) !important;
+                max-height: calc(297mm - 30mm) !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+                position: relative !important;
+                box-sizing: border-box !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                
+                /* Color settings */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+              
+              /* Ensure ALL content stays in single page */
+              * {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+                break-before: avoid !important;
+                box-sizing: border-box !important;
+              }
+              
+              /* CV Container specific styles */
+              .cv-container {
+                padding: 0.5in !important;
+                font-family: 'Source Serif Pro', Arial, Helvetica, sans-serif !important;
+                font-size: 10pt !important;
+                line-height: 1.2 !important;
+                max-width: 8.5in !important;
+                margin: 0 auto !important;
+                padding-top: 0.25in !important;
+                padding-bottom: 0.25in !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+              }
+              
+              .cv-container.classic {
+                background: white !important;
+                color: black !important;
+                min-height: auto !important;
+                width: 100% !important;
+              }
+              
+              /* Classic template header styles */
+              .cv-header {
+                text-align: center !important;
+                margin-bottom: 8px !important;
+              }
+              
+              .cv-header .name {
+                font-size: 24px !important;
+                font-weight: 900 !important;
+                text-transform: uppercase !important;
+                margin-bottom: 4px !important;
+                color: black !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+              }
+              
+              .cv-header .title {
+                font-size: 14px !important;
+                margin-bottom: 8px !important;
+                color: black !important;
+                font-weight: 500 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+              }
+              
+              .cv-header .contact-info {
+                font-size: 10px !important;
+                color: black !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+              }
+              
+              /* Section styles */
+              .cv-section {
+                margin-bottom: 12px !important;
+              }
+              
+              .cv-section h2 {
+                font-size: 12px !important;
+                font-weight: bold !important;
+                text-transform: uppercase !important;
+                margin-bottom: 6px !important;
+                padding-bottom: 2px !important;
+                border-bottom: 1px solid #000 !important;
+                color: black !important;
+              }
+              
+              /* Remove any page numbers, headers, footers */
+              @page {
+                @top-center { content: "" !important; }
+                @bottom-center { content: "" !important; }
+              }
             }
-            body { font-family: Arial, sans-serif; margin: 20px; }
+            
+            body {
+              font-family: Arial, Helvetica, sans-serif;
+              margin: 20px;
+              padding: 0;
+              background: white;
+              color: black;
+            }
+            
+            .cv-container {
+              max-width: 100%;
+              font-family: 'Source Serif Pro', Arial, Helvetica, sans-serif;
+              font-size: 12px;
+              line-height: 1.2;
+              color: black;
+              background: white;
+            }
+            
           </style>
         </head>
         <body>
