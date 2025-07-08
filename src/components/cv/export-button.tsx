@@ -54,10 +54,20 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
   }
   
   const generatePDF = async (html: string, css: string, fileName: string) => {
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank')
+    // Create a hidden iframe for printing (no new tab)
+    const iframe = document.createElement('iframe')
+    iframe.style.position = 'absolute'
+    iframe.style.top = '-10000px'
+    iframe.style.left = '-10000px'
+    iframe.style.width = '0'
+    iframe.style.height = '0'
+    iframe.style.border = 'none'
+    document.body.appendChild(iframe)
+    
+    const printWindow = iframe.contentWindow
     if (!printWindow) {
-      throw new Error('Could not open print window')
+      document.body.removeChild(iframe)
+      throw new Error('Could not create print context')
     }
     
     // Write the CV content to the print window
@@ -339,10 +349,12 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
         // Trigger print dialog
         printWindow.print();
         
-        // Close the window after printing
-        printWindow.onafterprint = () => {
-          printWindow.close();
-        };
+        // Clean up iframe after printing
+        setTimeout(() => {
+          if (iframe.parentNode) {
+            document.body.removeChild(iframe);
+          }
+        }, 1000);
       }, 200)
     }
   }
