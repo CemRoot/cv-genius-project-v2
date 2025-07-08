@@ -95,7 +95,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       style={containerStyle}
     >
       {/* Header */}
-      <header className="text-center mb-3">
+      <header className="text-center mb-1">
         <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-bold uppercase mb-2 text-black`}>
           {personalInfo.fullName || "YOUR NAME"}
         </h1>
