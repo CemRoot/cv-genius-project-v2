@@ -334,36 +334,7 @@ export function ExportButton({ templateManager, cvData, templateId }: ExportButt
           }
         });
         
-        // Create URGENT user instruction overlay
-        const overlay = printWindow.document.createElement('div');
-        overlay.innerHTML = `
-          <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); color: #fff; z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif;">
-            <div style="background: #1f2937; padding: 30px; border-radius: 10px; max-width: 500px; text-align: center; border: 2px solid #ef4444;">
-              <div style="font-size: 24px; margin-bottom: 20px;">🚨 ÖNEMLİ PDF AYARLARI</div>
-              <div style="font-size: 16px; margin-bottom: 15px; line-height: 1.5;">
-                Print Dialog açıldığında <strong>MUTLAKA</strong> şu ayarları yapın:
-              </div>
-              <div style="background: #374151; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: left;">
-                <div style="margin: 8px 0;">1. <strong>"More settings"</strong> (Daha fazla ayar) tıklayın</div>
-                <div style="margin: 8px 0;">2. <strong>"Headers and footers"</strong> seçeneğini <span style="color: #ef4444;">❌ KAPATIN</span></div>
-                <div style="margin: 8px 0;">3. <strong>"Background graphics"</strong> seçeneğini ✅ açın</div>
-                <div style="margin: 8px 0;">4. <strong>"Margins"</strong> → <strong>"Minimum"</strong> seçin</div>
-              </div>
-              <div style="color: #fbbf24; font-size: 14px; margin: 15px 0;">
-                Bu ayarları yapmadan PDF almayın! Yoksa tarih/sayfa numarası görünecektir.
-              </div>
-              <button onclick="this.parentElement.parentElement.style.display='none'" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;">Anladım, Print Dialog'u Aç</button>
-            </div>
-          </div>
-        `;
-        printWindow.document.body.appendChild(overlay);
-        
-        // Hide overlay when user clicks the button or after 15 seconds
-        setTimeout(() => {
-          if (overlay.parentElement) {
-            overlay.style.display = 'none';
-          }
-        }, 15000);
+        // Print dialog will open automatically without overlay
         
         // Trigger print dialog
         printWindow.print();
