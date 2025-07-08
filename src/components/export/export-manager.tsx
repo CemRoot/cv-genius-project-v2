@@ -20,15 +20,6 @@ import {
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { saveAs } from 'file-saver'
-import { renderToStaticMarkup } from 'react-dom/server'
-
-// Import all CV template components 
-import { HarvardTemplate } from '@/components/cv/templates/harvard-template'
-import { ClassicTemplate } from '@/components/cv/templates/classic-template'
-import { DublinTechTemplate } from '@/components/cv/templates/dublin-tech-template'
-import { IrishFinanceTemplate } from '@/components/cv/templates/irish-finance-template'
-import { DublinPharmaTemplate } from '@/components/cv/templates/dublin-pharma-template'
-import { IrishGraduateTemplate } from '@/components/cv/templates/irish-graduate-template'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -107,90 +98,83 @@ export function ExportManager() {
     )
   }
 
-  // Function to render the same React template as live preview
-  const renderCVTemplate = (cv: any) => {
-    console.log('🎯 renderCVTemplate called with cv.template:', cv.template)
-    console.log('🎯 Full CV object:', cv)
-    
-    // If no template is set or empty, use classic as default (user preference)
-    const templateId = cv.template || 'classic'
-    console.log('🎯 Using template ID:', templateId)
-    
-    switch (templateId) {
-      case 'harvard':
-        console.log('✅ Rendering Harvard template')
-        return renderToStaticMarkup(<HarvardTemplate cv={cv} isMobile={false} />)
-      case 'classic':
-        console.log('✅ Rendering Classic template')
-        return renderToStaticMarkup(<ClassicTemplate cv={cv} isMobile={false} />)
-      case 'dublin':
-      case 'dublin-tech':
-        console.log('✅ Rendering Dublin Tech template')
-        return renderToStaticMarkup(<DublinTechTemplate cv={cv} isMobile={false} />)
-      case 'irish-finance':
-        console.log('✅ Rendering Irish Finance template')
-        return renderToStaticMarkup(<IrishFinanceTemplate cv={cv} isMobile={false} />)
-      case 'dublin-pharma':
-        console.log('✅ Rendering Dublin Pharma template')
-        return renderToStaticMarkup(<DublinPharmaTemplate cv={cv} isMobile={false} />)
-      case 'irish-graduate':
-        console.log('✅ Rendering Irish Graduate template')
-        return renderToStaticMarkup(<IrishGraduateTemplate cv={cv} isMobile={false} />)
-      default:
-        console.log('⚠️ No specific template found, using Classic as default. Template was:', cv.template)
-        return renderToStaticMarkup(<ClassicTemplate cv={cv} isMobile={false} />)
-    }
-  }
-
+  // Function to generate PDF from live preview
   const generatePDF = async (): Promise<Blob> => {
     if (!currentCV) throw new Error('No CV data available')
     
     try {
-      console.log('🎯 Starting PDF generation with SAME React templates as live preview')
+      console.log('🖨️ Starting LIVE PREVIEW to PDF generation...')
       
-      // Render the EXACT same template as live preview using React components
-      const htmlContent = renderCVTemplate(currentCV)
+      // Find the live preview element on the page
+      const previewElement = document.querySelector('.cv-preview-container') || 
+                            document.querySelector('.cv-container') ||
+                            document.querySelector('[data-cv-preview]')
       
-      // Create a temporary container for html2canvas
-      const tempDiv = document.createElement('div')
-      tempDiv.innerHTML = htmlContent
-      tempDiv.style.position = 'absolute'
-      tempDiv.style.left = '-9999px'
-      tempDiv.style.top = '0'
-      tempDiv.style.width = '794px' // A4 width in pixels at 96 DPI
-      tempDiv.style.fontFamily = 'Times New Roman, serif'
-      tempDiv.style.fontSize = '11pt'
-      tempDiv.style.lineHeight = '1.15'
-      tempDiv.style.color = '#000000'
-      tempDiv.style.backgroundColor = '#ffffff'
-      tempDiv.style.padding = '40px'
+      if (!previewElement) {
+        throw new Error('Live preview element not found on page')
+      }
       
-      document.body.appendChild(tempDiv)
+      console.log('✅ Found preview element:', previewElement)
       
-      // Generate PDF using html2canvas + jsPDF
-      const canvas = await html2canvas(tempDiv, {
-        width: 794,
-        height: 1123,
-        scale: 2,
+      // Capture the exact live preview with html2canvas
+      const canvas = await html2canvas(previewElement as HTMLElement, {
+        scale: 2, // High quality
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: (previewElement as HTMLElement).scrollWidth,
+        height: (previewElement as HTMLElement).scrollHeight,
+        onclone: (clonedDoc) => {
+          // Ensure all styles are properly applied in cloned document
+          const clonedElement = clonedDoc.querySelector('.cv-preview-container') || 
+                               clonedDoc.querySelector('.cv-container')
+          if (clonedElement && clonedElement instanceof HTMLElement) {
+            // Force styles that might be missing
+            clonedElement.style.setProperty('font-family', 'Arial, Helvetica, sans-serif')
+            clonedElement.style.setProperty('background-color', '#ffffff')
+            clonedElement.style.setProperty('color', '#000000')
+          }
+        }
       })
       
-      // Remove temporary element
-      document.body.removeChild(tempDiv)
+      console.log('✅ Canvas created:', canvas.width, 'x', canvas.height)
       
-      // Create PDF
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const imgData = canvas.toDataURL('image/png')
+      // Create PDF with exact A4 dimensions
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      })
       
       // A4 dimensions in mm
-      const pdfWidth = 210
-      const pdfHeight = 297
+      const a4Width = 210
+      const a4Height = 297
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+      // Calculate scaling to fit A4 while maintaining aspect ratio
+      const imgWidth = canvas.width
+      const imgHeight = canvas.height
+      const aspectRatio = imgHeight / imgWidth
       
-      console.log('✅ PDF generated successfully with React templates!')
+      let pdfWidth = a4Width - 20 // 10mm margin on each side
+      let pdfHeight = pdfWidth * aspectRatio
+      
+      // If height exceeds A4, scale down
+      if (pdfHeight > a4Height - 20) {
+        pdfHeight = a4Height - 20
+        pdfWidth = pdfHeight / aspectRatio
+      }
+      
+      // Center the content
+      const x = (a4Width - pdfWidth) / 2
+      const y = (a4Height - pdfHeight) / 2
+      
+      // Convert canvas to image and add to PDF
+      const imgData = canvas.toDataURL('image/png', 1.0)
+      pdf.addImage(imgData, 'PNG', x, y, pdfWidth, pdfHeight)
+      
+      console.log('✅ PDF generated successfully')
+      
+      // Return as blob
       return pdf.output('blob')
       
     } catch (error) {
