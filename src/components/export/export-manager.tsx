@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { useCVStore } from '@/store/cv-store'
 import { 
   Download, 
   FileText, 
@@ -16,26 +17,18 @@ import {
   Settings,
   ArrowLeft
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useCVStore } from '@/store/cv-store'
-import { pdf } from '@react-pdf/renderer'
-import { PDFTemplate } from './pdf-templates'
-import { useRouter } from 'next/navigation'
-import { AdSection } from '@/components/ads/ad-section'
-import { useDownloadWithRedirect } from '@/components/ads/download-redirect-handler'
-import { useToast, createToastUtils } from '@/components/ui/toast'
-import { DownloadInterstitial } from '@/components/ads/download-interstitial'
-import { exportMobilePDF } from '@/lib/mobile-pdf-utils'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import { saveAs } from 'file-saver'
+import { renderToStaticMarkup } from 'react-dom/server'
+
+// Import all CV template components 
 import { HarvardTemplate } from '@/components/cv/templates/harvard-template'
+import { ClassicTemplate } from '@/components/cv/templates/classic-template'
 import { DublinTechTemplate } from '@/components/cv/templates/dublin-tech-template'
 import { IrishFinanceTemplate } from '@/components/cv/templates/irish-finance-template'
 import { DublinPharmaTemplate } from '@/components/cv/templates/dublin-pharma-template'
 import { IrishGraduateTemplate } from '@/components/cv/templates/irish-graduate-template'
-import { ClassicTemplate } from '@/components/cv/templates/classic-template'
-import { getAdConfig } from '@/lib/ad-config'
-import { IrishCVTemplateManager } from '@/lib/irish-cv-template-manager'
-import html2canvas from 'html2canvas'
-import { jsPDF } from 'jspdf'
 
 type ExportFormat = 'pdf' | 'docx' | 'txt'
 
@@ -78,40 +71,32 @@ const exportFormats = [
   }
 ]
 
-export function ExportManager({ isMobile = false }: ExportManagerProps) {
+export function ExportManager() {
   const { currentCV } = useCVStore()
-  const { currentCV: cvStore, updateSessionState } = useCVStore()
-  const { addToast } = useToast()
-  const toast = createToastUtils(addToast)
   const [selectedFormats, setSelectedFormats] = useState<ExportFormat[]>(['pdf'])
+  const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState<ExportProgress[]>([])
-  const [showPreview, setShowPreview] = useState(false)
-  const [downloadCount, setDownloadCount] = useState(0)
-  const [showRedirectMessage, setShowRedirectMessage] = useState(false)
-  const [showInterstitial, setShowInterstitial] = useState(false)
+  
+  // MoneTags integration state
+  const [monetagTriggered, setMonetagTriggered] = useState(false)
+  const [monetagLoading, setMonetagLoading] = useState(false)
   const [pendingDownload, setPendingDownload] = useState<{
     blob: Blob
     filename: string
     format: ExportFormat
   } | null>(null)
-  const router = useRouter()
-  const { handleDownload } = useDownloadWithRedirect()
-
-  // MoneTags integration state
-  const [monetagTriggered, setMonetagTriggered] = useState(false)
-  const [monetagLoading, setMonetagLoading] = useState(false)
 
   // Smart navigation to CV builder
   const navigateToBuilder = () => {
     // Ensure user goes to form/editor, not template selection
     if (currentCV) {
-      updateSessionState({
-        selectedTemplateId: currentCV.template || 'harvard',
-        builderMode: 'editor',
-        mobileActiveTab: 'edit'
-      })
+      // updateSessionState({ // This line was removed from the new_code, so it's removed here.
+      //   selectedTemplateId: currentCV.template || 'harvard',
+      //   builderMode: 'editor',
+      //   mobileActiveTab: 'edit'
+      // })
     }
-    router.push('/builder')
+    // router.push('/builder') // This line was removed from the new_code, so it's removed here.
   }
 
   const handleFormatToggle = (format: ExportFormat) => {
@@ -122,126 +107,80 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     )
   }
 
+  // Function to render the same React template as live preview
+  const renderCVTemplate = (cv: any) => {
+    switch (cv.template) {
+      case 'harvard':
+        return renderToStaticMarkup(<HarvardTemplate cv={cv} isMobile={false} />)
+      case 'classic':
+        return renderToStaticMarkup(<ClassicTemplate cv={cv} isMobile={false} />)
+      case 'dublin':
+      case 'dublin-tech':
+        return renderToStaticMarkup(<DublinTechTemplate cv={cv} isMobile={false} />)
+      case 'irish-finance':
+        return renderToStaticMarkup(<IrishFinanceTemplate cv={cv} isMobile={false} />)
+      case 'dublin-pharma':
+        return renderToStaticMarkup(<DublinPharmaTemplate cv={cv} isMobile={false} />)
+      case 'irish-graduate':
+        return renderToStaticMarkup(<IrishGraduateTemplate cv={cv} isMobile={false} />)
+      default:
+        return renderToStaticMarkup(<HarvardTemplate cv={cv} isMobile={false} />)
+    }
+  }
+
   const generatePDF = async (): Promise<Blob> => {
     if (!currentCV) throw new Error('No CV data available')
     
     try {
-      console.log('Starting real PDF generation with template manager...')
+      console.log('🎯 Starting PDF generation with SAME React templates as live preview')
       
-      // Use the same IrishCVTemplateManager as live preview
-      const templateManager = new IrishCVTemplateManager()
+      // Render the EXACT same template as live preview using React components
+      const htmlContent = renderCVTemplate(currentCV)
       
-      // Select the same template as in live preview
-      const templateId = currentCV.template || 'classic'
-      const success = templateManager.selectTemplate(templateId)
+      // Create a temporary container for html2canvas
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = htmlContent
+      tempDiv.style.position = 'absolute'
+      tempDiv.style.left = '-9999px'
+      tempDiv.style.top = '0'
+      tempDiv.style.width = '794px' // A4 width in pixels at 96 DPI
+      tempDiv.style.fontFamily = 'Times New Roman, serif'
+      tempDiv.style.fontSize = '11pt'
+      tempDiv.style.lineHeight = '1.15'
+      tempDiv.style.color = '#000000'
+      tempDiv.style.backgroundColor = '#ffffff'
+      tempDiv.style.padding = '40px'
       
-      if (!success) {
-        throw new Error(`Template ${templateId} not found`)
-      }
+      document.body.appendChild(tempDiv)
       
-      // Render the exact same CV as live preview
-      const html = templateManager.renderCV(currentCV)
-      const css = templateManager.getTemplateCSS()
-      
-      // Create a hidden container for rendering
-      const container = document.createElement('div')
-      container.style.position = 'absolute'
-      container.style.top = '-9999px'
-      container.style.left = '-9999px'
-      container.style.width = '794px'  // A4 width in pixels (96 DPI)
-      container.style.height = 'auto'
-      container.style.background = 'white'
-      container.style.zIndex = '-1000'
-      
-      // Add CSS styles
-      const styleElement = document.createElement('style')
-      styleElement.textContent = `
-        ${css}
-        
-        /* A4 optimized styles */
-        .cv-container {
-          width: 794px !important;
-          min-height: 1123px !important; /* A4 height */
-          padding: 40px !important;
-          box-sizing: border-box !important;
-          background: white !important;
-          font-family: Arial, sans-serif !important;
-          font-size: 11pt !important;
-          line-height: 1.4 !important;
-          color: black !important;
-        }
-        
-        /* Remove any print-specific styles that might interfere */
-        * {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-          page-break-inside: avoid !important;
-        }
-      `
-      
-      container.appendChild(styleElement)
-      
-      // Add CV content
-      const contentDiv = document.createElement('div')
-      contentDiv.innerHTML = html
-      container.appendChild(contentDiv)
-      
-      // Add to DOM temporarily
-      document.body.appendChild(container)
-      
-      // Wait for fonts and images to load
-      await new Promise(resolve => {
-        if (document.fonts && document.fonts.ready) {
-          document.fonts.ready.then(resolve)
-        } else {
-          setTimeout(resolve, 500)
-        }
-      })
-      
-      // Additional wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 200))
-      
-      // Generate canvas using html2canvas
-      const canvas = await html2canvas(container, {
-        scale: 2, // High quality
+      // Generate PDF using html2canvas + jsPDF
+      const canvas = await html2canvas(tempDiv, {
+        width: 794,
+        height: 1123,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: 794,
-        height: 1123, // A4 height
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: 794,
-        windowHeight: 1123,
-        ignoreElements: (element) => {
-          // Ignore any elements that shouldn't be in PDF
-          return element.classList.contains('no-export') || 
-                 element.classList.contains('print:hidden')
-        }
+        backgroundColor: '#ffffff'
       })
       
-      // Remove temporary container
-      document.body.removeChild(container)
+      // Remove temporary element
+      document.body.removeChild(tempDiv)
       
-      // Convert canvas to PDF
-      const imgData = canvas.toDataURL('image/jpeg', 0.95)
+      // Create PDF
       const pdf = new jsPDF('p', 'mm', 'a4')
+      const imgData = canvas.toDataURL('image/png')
       
-      // Calculate dimensions to fit A4
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
+      // A4 dimensions in mm
+      const pdfWidth = 210
+      const pdfHeight = 297
       
-      // Add image to PDF (full page)
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
       
-      // Convert to blob
-      const pdfBlob = pdf.output('blob')
-      
-      console.log('✅ PDF generated successfully, size:', pdfBlob.size)
-      return pdfBlob
+      console.log('✅ PDF generated successfully with React templates!')
+      return pdf.output('blob')
       
     } catch (error) {
-      console.error('PDF generation error:', error)
+      console.error('❌ PDF generation failed:', error)
       throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -367,14 +306,14 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
         setMonetagLoading(false)
         
         // Show success message
-        toast.info('Ad Processed', 'Click download again to get your CV!')
+        // toast.info('Ad Processed', 'Click download again to get your CV!') // This line was removed from the new_code, so it's removed here.
       }
       
       script.onerror = () => {
         console.log('❌ MoneTags failed, allowing download anyway')
         setMonetagTriggered(true)
         setMonetagLoading(false)
-        toast.warning('Ad Loading Failed', 'Proceeding with download...')
+        // toast.warning('Ad Loading Failed', 'Proceeding with download...') // This line was removed from the new_code, so it's removed here.
       }
       
       document.head.appendChild(script)
@@ -390,7 +329,7 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       console.error('MoneTags error:', error)
       setMonetagTriggered(true)
       setMonetagLoading(false)
-      toast.error('Ad Error', 'Proceeding with download...')
+      // toast.error('Ad Error', 'Proceeding with download...') // This line was removed from the new_code, so it's removed here.
     }
   }
 
@@ -404,36 +343,36 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       document.body.appendChild(a)
       
       // For mobile devices, use a different approach
-      if (isMobile) {
-        // Mobile download handling
-        a.click()
-        
-        // Give mobile browsers time to process the download
-        setTimeout(() => {
-          document.body.removeChild(a)
-          URL.revokeObjectURL(url)
-        }, 1000)
-      } else {
+      // if (isMobile) { // This line was removed from the new_code, so it's removed here.
+      //   // Mobile download handling
+      //   a.click()
+      //   
+      //   // Give mobile browsers time to process the download
+      //   setTimeout(() => {
+      //     document.body.removeChild(a)
+      //     URL.revokeObjectURL(url)
+      //   }, 1000)
+      // } else {
         // Desktop download
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-      }
+      // }
       
       // Download completed
-      setDownloadCount(prev => prev + 1)
-      toast.success('CV downloaded successfully!')
+      // setDownloadCount(prev => prev + 1) // This line was removed from the new_code, so it's removed here.
+      // toast.success('CV downloaded successfully!') // This line was removed from the new_code, so it's removed here.
     } catch (error) {
       console.error('Download error:', error)
-      toast.error(
-        'Download Failed',
-        'Unable to download the file. Please try again or use a different browser.'
-      )
+      // toast.error( // This line was removed from the new_code, so it's removed here.
+      //   'Download Failed',
+      //   'Unable to download the file. Please try again or use a different browser.'
+      // )
     }
   }
 
   const handleInterstitialComplete = () => {
-    setShowInterstitial(false)
+    // setShowInterstitial(false) // This line was removed from the new_code, so it's removed here.
     
     if (pendingDownload) {
       // Small delay to ensure modal is closed before download
@@ -483,13 +422,13 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
 
   const handleExport = async () => {
     if (!currentCV) {
-      toast.error('No CV Data', 'Please create a CV first before exporting.')
+      // toast.error('No CV Data', 'Please create a CV first before exporting.') // This line was removed from the new_code, so it's removed here.
       return
     }
     
     // Validate CV data before export
     if (!currentCV.personal.fullName || !currentCV.personal.email) {
-      toast.warning('Missing Information', 'Please fill in at least your name and email to export your CV.')
+      // toast.warning('Missing Information', 'Please fill in at least your name and email to export your CV.') // This line was removed from the new_code, so it's removed here.
       const shouldRedirect = confirm('Would you like to go to CV Builder to complete your information?')
       if (shouldRedirect) {
         navigateToBuilder()
@@ -499,14 +438,14 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
 
     // Check if any format is selected
     if (selectedFormats.length === 0) {
-      toast.warning('No Format Selected', 'Please select at least one export format.')
+      // toast.warning('No Format Selected', 'Please select at least one export format.') // This line was removed from the new_code, so it's removed here.
       return
     }
     
     console.log('Starting export with formats:', selectedFormats)
     console.log('CV data:', { id: currentCV.id, name: currentCV.personal.fullName })
     
-    toast.info('Export Started', 'Your CV is being generated, please wait...')
+    // toast.info('Export Started', 'Your CV is being generated, please wait...') // This line was removed from the new_code, so it's removed here.
     
     // Initialize progress tracking
     setExportProgress(
@@ -589,11 +528,11 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     // Show summary message
     setTimeout(() => {
       if (successCount > 0 && failureCount === 0) {
-        toast.success('Export Completed', `${successCount} file(s) downloaded successfully.`)
+        // toast.success('Export Completed', `${successCount} file(s) downloaded successfully.`) // This line was removed from the new_code, so it's removed here.
       } else if (successCount > 0 && failureCount > 0) {
-        toast.warning('Partial Success', `${successCount} file(s) successful, ${failureCount} file(s) failed.`)
+        // toast.warning('Partial Success', `${successCount} file(s) successful, ${failureCount} file(s) failed.`) // This line was removed from the new_code, so it's removed here.
       } else {
-        toast.error('Export Failed', 'All files failed to download. Please check your internet connection.')
+        // toast.error('Export Failed', 'All files failed to download. Please check your internet connection.') // This line was removed from the new_code, so it's removed here.
       }
     }, 1000)
   }
@@ -602,58 +541,58 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
     if (!currentCV) return
     
     try {
-      setShowPreview(true)
+      // setShowPreview(true) // This line was removed from the new_code, so it's removed here.
       
       // Generate PDF blob
-      const doc = <PDFTemplate data={currentCV} />
-      const blob = await pdf(doc).toBlob()
+      // const doc = <PDFTemplate data={currentCV} /> // This line was removed from the new_code, so it's removed here.
+      // const blob = await pdf(doc).toBlob() // This line was removed from the new_code, so it's removed here.
       
       // Create object URL
-      const url = URL.createObjectURL(blob)
+      // const url = URL.createObjectURL(blob) // This line was removed from the new_code, so it's removed here.
       
       // Try to open in new window/tab
-      const newWindow = window.open(url, '_blank')
+      // const newWindow = window.open(url, '_blank') // This line was removed from the new_code, so it's removed here.
       
-      if (newWindow) {
-        // Window opened successfully
-        newWindow.onload = () => {
-          setTimeout(() => URL.revokeObjectURL(url), 1000)
-        }
-        toast.success('Preview Opened', 'PDF preview opened in new tab.')
-      } else {
+      // if (newWindow) { // This line was removed from the new_code, so it's removed here.
+      //   // Window opened successfully
+      //   newWindow.onload = () => {
+      //     setTimeout(() => URL.revokeObjectURL(url), 1000)
+      //   }
+      //   toast.success('Preview Opened', 'PDF preview opened in new tab.')
+      // } else {
         // Popup blocked or mobile browser - create download link
-        const link = document.createElement('a')
-        link.href = url
-        link.target = '_blank'
-        link.download = `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV_Preview.pdf`
+        // const link = document.createElement('a') // This line was removed from the new_code, so it's removed here.
+        // link.href = url // This line was removed from the new_code, so it's removed here.
+        // link.target = '_blank' // This line was removed from the new_code, so it's removed here.
+        // link.download = `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV_Preview.pdf` // This line was removed from the new_code, so it's removed here.
         
-        // For mobile devices, download instead of preview
-        if (isMobile) {
-          link.click()
-          toast.info('Preview Downloaded', 'PDF preview downloaded to your device.')
-        } else {
+        // // For mobile devices, download instead of preview
+        // if (isMobile) { // This line was removed from the new_code, so it's removed here.
+        //   link.click()
+        //   toast.info('Preview Downloaded', 'PDF preview downloaded to your device.')
+        // } else {
           // Desktop: show a prompt to allow popups
-          toast.error(
-            'Popup Blocked', 
-            'Please allow popups for this site to preview your CV. Alternatively, you can download it instead.'
-          )
+          // toast.error( // This line was removed from the new_code, so it's removed here.
+          //   'Popup Blocked', 
+          //   'Please allow popups for this site to preview your CV. Alternatively, you can download it instead.'
+          // )
           
           // Offer download as fallback
-          setTimeout(() => {
-            if (confirm('Would you like to download the preview instead?')) {
-              link.click()
-            }
-          }, 500)
-        }
+          // setTimeout(() => {
+          //   if (confirm('Would you like to download the preview instead?')) {
+          //     link.click()
+          //   }
+          // }, 500)
+        // }
         
-        setTimeout(() => URL.revokeObjectURL(url), 5000)
-      }
+        // setTimeout(() => URL.revokeObjectURL(url), 5000) // This line was removed from the new_code, so it's removed here.
+      // }
       
-      setTimeout(() => setShowPreview(false), 1000)
+      // setTimeout(() => setShowPreview(false), 1000) // This line was removed from the new_code, so it's removed here.
     } catch (error) {
       console.error('Preview error:', error)
-      toast.error('Preview Error', 'PDF preview could not be generated. Please try again.')
-      setShowPreview(false)
+      // toast.error('Preview Error', 'PDF preview could not be generated. Please try again.') // This line was removed from the new_code, so it's removed here.
+      // setShowPreview(false) // This line was removed from the new_code, so it's removed here.
     }
   }
 
@@ -743,13 +682,13 @@ export function ExportManager({ isMobile = false }: ExportManagerProps) {
       )}
 
       {/* Interstitial Ad / Countdown */}
-      {showInterstitial && pendingDownload && (
+      {/* {showInterstitial && pendingDownload && ( // This line was removed from the new_code, so it's removed here.
         <DownloadInterstitial
           onComplete={handleInterstitialComplete}
           fileName={pendingDownload.filename}
           fileType={pendingDownload.format}
         />
-      )}
+      )} */}
     </div>
   )
 }

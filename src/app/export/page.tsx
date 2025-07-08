@@ -93,7 +93,7 @@ export default function ExportPage() {
             
             {/* Export Options - Mobile */}
             <div className="bg-white rounded-lg shadow-lg p-4">
-              <ExportManager isMobile={isMobile} />
+              <ExportManager />
             </div>
           </div>
         ) : (
@@ -112,7 +112,7 @@ export default function ExportPage() {
             
             {/* Export Options - Desktop */}
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <ExportManager isMobile={isMobile} />
+              <ExportManager />
             </div>
           </div>
         )}
