@@ -109,22 +109,36 @@ export function ExportManager() {
 
   // Function to render the same React template as live preview
   const renderCVTemplate = (cv: any) => {
-    switch (cv.template) {
+    console.log('🎯 renderCVTemplate called with cv.template:', cv.template)
+    console.log('🎯 Full CV object:', cv)
+    
+    // If no template is set or empty, use classic as default (user preference)
+    const templateId = cv.template || 'classic'
+    console.log('🎯 Using template ID:', templateId)
+    
+    switch (templateId) {
       case 'harvard':
+        console.log('✅ Rendering Harvard template')
         return renderToStaticMarkup(<HarvardTemplate cv={cv} isMobile={false} />)
       case 'classic':
+        console.log('✅ Rendering Classic template')
         return renderToStaticMarkup(<ClassicTemplate cv={cv} isMobile={false} />)
       case 'dublin':
       case 'dublin-tech':
+        console.log('✅ Rendering Dublin Tech template')
         return renderToStaticMarkup(<DublinTechTemplate cv={cv} isMobile={false} />)
       case 'irish-finance':
+        console.log('✅ Rendering Irish Finance template')
         return renderToStaticMarkup(<IrishFinanceTemplate cv={cv} isMobile={false} />)
       case 'dublin-pharma':
+        console.log('✅ Rendering Dublin Pharma template')
         return renderToStaticMarkup(<DublinPharmaTemplate cv={cv} isMobile={false} />)
       case 'irish-graduate':
+        console.log('✅ Rendering Irish Graduate template')
         return renderToStaticMarkup(<IrishGraduateTemplate cv={cv} isMobile={false} />)
       default:
-        return renderToStaticMarkup(<HarvardTemplate cv={cv} isMobile={false} />)
+        console.log('⚠️ No specific template found, using Classic as default. Template was:', cv.template)
+        return renderToStaticMarkup(<ClassicTemplate cv={cv} isMobile={false} />)
     }
   }
 

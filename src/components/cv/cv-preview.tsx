@@ -134,19 +134,33 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
 
   // Function to render the correct template
   const renderTemplate = () => {
-    switch (currentCV.template) {
+    console.log('🔍 CVPreview - renderTemplate called')
+    console.log('🔍 CVPreview - currentCV.template:', currentCV.template)
+    console.log('🔍 CVPreview - template type:', typeof currentCV.template)
+    
+    // If no template is set or empty, use classic as default (user preference)
+    const templateId = currentCV.template || 'classic'
+    console.log('🔍 CVPreview - Using template ID:', templateId)
+    
+    switch (templateId) {
       case 'harvard':
+        console.log('✅ CVPreview - Rendering Harvard template')
         return <HarvardTemplate cv={currentCV} isMobile={isMobile} />
       case 'classic':
+        console.log('✅ CVPreview - Rendering Classic template')
         return <ClassicTemplate cv={currentCV} isMobile={isMobile} />
       case 'dublin':
       case 'dublin-tech':
+        console.log('✅ CVPreview - Rendering Dublin Tech template')
         return <DublinTechTemplate cv={currentCV} isMobile={isMobile} />
       case 'irish-finance':
+        console.log('✅ CVPreview - Rendering Irish Finance template')
         return <IrishFinanceTemplate cv={currentCV} isMobile={isMobile} />
       case 'dublin-pharma':
+        console.log('✅ CVPreview - Rendering Dublin Pharma template')
         return <DublinPharmaTemplate cv={currentCV} isMobile={isMobile} />
       case 'irish-graduate':
+        console.log('✅ CVPreview - Rendering Irish Graduate template')
         return <IrishGraduateTemplate cv={currentCV} isMobile={isMobile} />
       case 'modern':
         return (
@@ -177,13 +191,17 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
           </div>
         )
       default:
-        return <HarvardTemplate cv={currentCV} isMobile={isMobile} />
+        console.log('⚠️ CVPreview - No specific template found, using Classic as default. Template was:', currentCV.template)
+        return <ClassicTemplate cv={currentCV} isMobile={isMobile} />
     }
   }
 
   // Get template display name
   const getTemplateName = () => {
-    switch (currentCV.template) {
+    // If no template is set or empty, use classic as default (user preference)
+    const templateId = currentCV.template || 'classic'
+    
+    switch (templateId) {
       case 'harvard': return 'Harvard Classic'
       case 'classic': return 'Classic'
       case 'dublin':
@@ -201,7 +219,7 @@ export function CVPreview({ isMobile = false }: CVPreviewProps) {
       case 'irish-education': return 'Irish Education Professional'
       case 'modern': return 'Modern (Coming Soon)'
       case 'creative': return 'Creative (Coming Soon)'
-      default: return 'Harvard Classic'
+      default: return 'Classic'
     }
   }
 

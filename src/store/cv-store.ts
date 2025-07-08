@@ -148,7 +148,7 @@ const createDefaultCV = (): CVData => ({
   interests: [],
   references: [],
   referencesDisplay: 'available-on-request',
-  template: '', // Empty template forces template selection
+  template: 'classic', // Set Classic as default template
   designSettings: {
     margins: 0.5,
     sectionSpacing: 'normal',
