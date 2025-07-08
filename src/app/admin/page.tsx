@@ -811,6 +811,13 @@ function SecuritySection() {
         setNewPassword('')
         setConfirmPassword('')
       } else {
+        // Debug: Log the full error response
+        console.log('🚨 Password change failed:', {
+          status: response.status,
+          data: data,
+          debug: data.debug
+        })
+        
         // Enhanced error handling with user-friendly messages
         if (data.error) {
           const errorMessage = data.error.toLowerCase()
