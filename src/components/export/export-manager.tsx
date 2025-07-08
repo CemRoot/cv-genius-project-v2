@@ -117,11 +117,15 @@ export function ExportManager() {
       }
       
       console.log('✅ Found CV element:', previewElement)
+      console.log('✅ Element class list:', (previewElement as HTMLElement).classList.toString())
+      console.log('✅ Element computed styles:', window.getComputedStyle(previewElement as HTMLElement))
       console.log('✅ Element dimensions:', {
         width: (previewElement as HTMLElement).offsetWidth,
         height: (previewElement as HTMLElement).offsetHeight,
         scrollWidth: (previewElement as HTMLElement).scrollWidth,
-        scrollHeight: (previewElement as HTMLElement).scrollHeight
+        scrollHeight: (previewElement as HTMLElement).scrollHeight,
+        clientWidth: (previewElement as HTMLElement).clientWidth,
+        clientHeight: (previewElement as HTMLElement).clientHeight
       })
       
       // Capture only the CV content, not the container padding
@@ -137,16 +141,41 @@ export function ExportManager() {
         scrollX: 0,
         scrollY: 0,
         onclone: (clonedDoc) => {
-          // Ensure all styles are properly applied in cloned document
+          console.log('🔧 OnClone: Applying force styles...')
+          // Find and style the CV container in cloned document
           const clonedElement = clonedDoc.querySelector('.cv-container.classic') || 
                                clonedDoc.querySelector('.cv-container')
           if (clonedElement && clonedElement instanceof HTMLElement) {
-            // Force styles that might be missing
-            clonedElement.style.setProperty('font-family', 'Arial, Helvetica, sans-serif')
-            clonedElement.style.setProperty('background-color', '#ffffff')
-            clonedElement.style.setProperty('color', '#000000')
-            clonedElement.style.setProperty('margin', '0')
-            clonedElement.style.setProperty('padding', '20px') // Reasonable padding
+            // FORCE all spacing and layout styles
+            console.log('🔧 Found cloned element, applying styles...')
+            clonedElement.style.setProperty('font-family', 'Arial, Helvetica, sans-serif', 'important')
+            clonedElement.style.setProperty('background-color', '#ffffff', 'important')
+            clonedElement.style.setProperty('color', '#000000', 'important')
+            clonedElement.style.setProperty('margin', '0', 'important')
+            clonedElement.style.setProperty('padding', '10px', 'important') // Very minimal padding
+            clonedElement.style.setProperty('padding-top', '5px', 'important') // Minimal top
+            clonedElement.style.setProperty('padding-bottom', '5px', 'important') // Minimal bottom
+            
+            // Force header styles
+            const header = clonedElement.querySelector('.cv-header, header')
+            if (header && header instanceof HTMLElement) {
+              console.log('🔧 Styling header...')
+              header.style.setProperty('margin-bottom', '8px', 'important')
+              header.style.setProperty('margin-top', '0', 'important')
+              header.style.setProperty('padding-top', '0', 'important')
+            }
+            
+            // Force all section margins
+            const sections = clonedElement.querySelectorAll('section')
+            sections.forEach((section, index) => {
+              if (section instanceof HTMLElement) {
+                console.log(`🔧 Styling section ${index}...`)
+                section.style.setProperty('margin-bottom', '12px', 'important')
+                section.style.setProperty('margin-top', '0', 'important')
+              }
+            })
+          } else {
+            console.error('❌ OnClone: Could not find CV container to style')
           }
         }
       })

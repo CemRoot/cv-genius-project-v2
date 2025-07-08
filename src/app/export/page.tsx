@@ -76,46 +76,15 @@ export default function ExportPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {/* Mobile Layout */}
-        {isMobile ? (
-          <div className="space-y-6">
-            {/* CV Preview - Mobile */}
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <div className="text-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">CV Preview</h2>
-                <p className="text-sm text-gray-600">Your CV will look exactly like this in the PDF</p>
-              </div>
-              <div className="border border-gray-200 rounded-lg overflow-hidden cv-preview-container" data-cv-preview>
-                <CVPreview isMobile={true} />
-              </div>
-            </div>
-            
-            {/* Export Options - Mobile */}
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <ExportManager />
-            </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Export Options */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Download Your CV</h2>
+            <p className="text-gray-600">Choose your preferred format and download your professionally formatted CV</p>
           </div>
-        ) : (
-          /* Desktop Layout */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* CV Preview - Desktop */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">CV Preview</h2>
-                <p className="text-gray-600">Your CV will look exactly like this in the PDF</p>
-              </div>
-              <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50 p-4 cv-preview-container" data-cv-preview>
-                <CVPreview isMobile={false} />
-              </div>
-            </div>
-            
-            {/* Export Options - Desktop */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <ExportManager />
-            </div>
-          </div>
-        )}
+          <ExportManager />
+        </div>
       </div>
     </div>
   )
