@@ -46,7 +46,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
   // Classic design settings - LIVE PREVIEW ILE AYNI
   const defaultSettings: DesignSettings = {
-    margins: 0.25, // Daha geniş kenar boşlukları (live preview gibi)
+    margins: 0.15, // Daha az kenar boşlukları (0.25 → 0.15)
     sectionSpacing: 'normal', // Dar satır aralığı
     headerSpacing: 'normal', // Compact header spacing
     fontFamily: 'Arial, Helvetica, sans-serif', // SANS-SERIF zorunlu
@@ -58,12 +58,14 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
   // Dynamic styles - LIVE PREVIEW ILE AYNI
   const containerStyle = {
-    padding: isMobile ? '1.5rem' : `${settings.margins}in`, // Geniş padding
+    padding: isMobile ? '0.75rem' : `${settings.margins}in`, // Daha az padding
     fontFamily: settings.fontFamily, // Sans-serif
     fontSize: isMobile ? '11px' : `${settings.fontSize}pt`,
     lineHeight: settings.lineHeight, // Sıkışık line-height
     maxWidth: '8.5in', // A4 width
-    margin: '0 auto'
+    margin: '0 auto',
+    paddingTop: isMobile ? '0.25rem' : '0.25in', // Daha az üst padding (0.5 → 0.25)
+    paddingBottom: isMobile ? '0.25rem' : '0.25in' // Daha az alt padding (0.5 → 0.25)
   }
 
   return (
@@ -72,7 +74,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
       style={containerStyle}
     >
       {/* Header - LIVE PREVIEW LAYOUT */}
-      <header className="cv-header text-center mb-4">
+      <header className="cv-header text-center mb-2"> {/* mb-4 → mb-2 */}
         {/* Ana başlık - KALIN SANS-SERIF */}
         <h1 className={`name ${isMobile ? 'text-2xl' : 'text-3xl'} font-black uppercase mb-1 text-black`}
             style={{fontFamily: 'Arial, Helvetica, sans-serif', fontWeight: '900'}}>
@@ -80,13 +82,13 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
         </h1>
         
         {/* Alt başlık - SİYAH SANS-SERIF */}
-        <p className={`title ${isMobile ? 'text-base' : 'text-lg'} mb-3 text-black font-medium`}
+        <p className={`title ${isMobile ? 'text-base' : 'text-lg'} mb-2 text-black font-medium`} // mb-3 → mb-2
            style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
           {personalInfo.title || "Test Developer"}
         </p>
         
         {/* Contact info - İKİ SATIRLIK LAYOUT (LIVE PREVIEW GİBİ) */}
-        <div className="contact-info text-sm text-black space-y-1"
+        <div className="contact-info text-sm text-black space-y-0.5" // space-y-1 → space-y-0.5
              style={{fontFamily: 'Arial, Helvetica, sans-serif'}}>
           {/* İlk satır: Email, Phone, Address */}
           <div className="flex justify-center items-center flex-wrap gap-3">
@@ -107,7 +109,7 @@ export function ClassicTemplate({ cv, cvData, isMobile = false }: ClassicTemplat
 
       {/* Summary Section - KALIN ÇİZGİ */}
       {personalInfo.summary && isSectionVisible('summary') && (
-        <section className="summary mb-4">
+        <section className="summary mb-3"> {/* mb-4 → mb-3 */}
           <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-black uppercase mb-2 text-black`}
               style={{
                 fontFamily: 'Arial, Helvetica, sans-serif', 
