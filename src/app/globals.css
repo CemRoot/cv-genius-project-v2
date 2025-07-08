@@ -884,6 +884,58 @@
     background: #fff !important;
     backdrop-filter: none !important;
   }
+  
+  /* CV Container Print Styles */
+  .cv-container {
+    padding: 40px !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .cv-container .name,
+  .cv-container h1 {
+    font-size: 24px !important;
+    font-weight: bold !important;
+    margin-bottom: 20px !important;
+    margin-top: 0 !important;
+    line-height: 1.2 !important;
+  }
+  
+  .cv-container .contact-info {
+    font-size: 14px !important;
+    margin-bottom: 20px !important;
+    line-height: 1.4 !important;
+  }
+  
+  .cv-container section,
+  .cv-container .cv-section {
+    margin-bottom: 25px !important;
+    margin-top: 0 !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .cv-container section h2,
+  .cv-container section h3,
+  .cv-container .section-title {
+    font-size: 18px !important;
+    font-weight: bold !important;
+    margin-bottom: 15px !important;
+    margin-top: 0 !important;
+    color: #333333 !important;
+  }
+  
+  .cv-container section p,
+  .cv-container section li {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    margin-bottom: 10px !important;
+    margin-top: 0 !important;
+  }
 }
 
 /* Template Preview Specific Styles */

@@ -130,7 +130,7 @@ export function ExportManager() {
       
       // Capture only the CV content, not the container padding
       const canvas = await html2canvas(previewElement as HTMLElement, {
-        scale: 2, // High quality
+        scale: 3, // Higher quality for better PDF output
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -152,26 +152,62 @@ export function ExportManager() {
             clonedElement.style.setProperty('background-color', '#ffffff', 'important')
             clonedElement.style.setProperty('color', '#000000', 'important')
             clonedElement.style.setProperty('margin', '0', 'important')
-            clonedElement.style.setProperty('padding', '10px', 'important') // Very minimal padding
-            clonedElement.style.setProperty('padding-top', '5px', 'important') // Minimal top
-            clonedElement.style.setProperty('padding-bottom', '5px', 'important') // Minimal bottom
+            clonedElement.style.setProperty('padding', '40px', 'important') // Standard A4 padding
+            clonedElement.style.setProperty('max-width', '210mm', 'important')
+            clonedElement.style.setProperty('min-height', '297mm', 'important')
+            clonedElement.style.setProperty('box-sizing', 'border-box', 'important')
+            clonedElement.style.setProperty('line-height', '1.5', 'important')
             
-            // Force header styles
-            const header = clonedElement.querySelector('.cv-header, header')
+            // Force header styles to match live preview
+            const header = clonedElement.querySelector('.cv-header, header, h1, .name')
             if (header && header instanceof HTMLElement) {
               console.log('🔧 Styling header...')
-              header.style.setProperty('margin-bottom', '8px', 'important')
+              header.style.setProperty('margin-bottom', '20px', 'important')
               header.style.setProperty('margin-top', '0', 'important')
               header.style.setProperty('padding-top', '0', 'important')
+              header.style.setProperty('font-size', '24px', 'important')
+              header.style.setProperty('font-weight', 'bold', 'important')
+              header.style.setProperty('line-height', '1.2', 'important')
             }
             
-            // Force all section margins
-            const sections = clonedElement.querySelectorAll('section')
+            // Force contact info styles
+            const contactInfo = clonedElement.querySelector('.contact-info, .cv-contact')
+            if (contactInfo && contactInfo instanceof HTMLElement) {
+              console.log('🔧 Styling contact info...')
+              contactInfo.style.setProperty('margin-bottom', '20px', 'important')
+              contactInfo.style.setProperty('font-size', '14px', 'important')
+              contactInfo.style.setProperty('line-height', '1.4', 'important')
+            }
+            
+            // Force all section styles to match live preview
+            const sections = clonedElement.querySelectorAll('section, .cv-section')
             sections.forEach((section, index) => {
               if (section instanceof HTMLElement) {
                 console.log(`🔧 Styling section ${index}...`)
-                section.style.setProperty('margin-bottom', '12px', 'important')
+                section.style.setProperty('margin-bottom', '25px', 'important')
                 section.style.setProperty('margin-top', '0', 'important')
+                section.style.setProperty('page-break-inside', 'avoid', 'important')
+                
+                // Section headers
+                const sectionHeader = section.querySelector('h2, h3, .section-title')
+                if (sectionHeader && sectionHeader instanceof HTMLElement) {
+                  sectionHeader.style.setProperty('font-size', '18px', 'important')
+                  sectionHeader.style.setProperty('font-weight', 'bold', 'important')
+                  sectionHeader.style.setProperty('margin-bottom', '15px', 'important')
+                  sectionHeader.style.setProperty('margin-top', '0', 'important')
+                  sectionHeader.style.setProperty('color', '#333333', 'important')
+                }
+                
+                // Section content
+                const paragraphs = section.querySelectorAll('p, li')
+                paragraphs.forEach((p) => {
+                  if (p instanceof HTMLElement) {
+                    p.style.setProperty('font-size', '14px', 'important')
+                    p.style.setProperty('line-height', '1.5', 'important')
+                    p.style.setProperty('margin-bottom', '10px', 'important')
+                    p.style.setProperty('margin-top', '0', 'important')
+                  }
+                })
               }
             })
           } else {
@@ -198,13 +234,13 @@ export function ExportManager() {
       const imgHeight = canvas.height
       const aspectRatio = imgHeight / imgWidth
       
-      // Use more of the A4 space - smaller margins
-      let pdfWidth = a4Width - 10 // Only 5mm margin on each side
+      // Use more of the A4 space - optimal margins
+      let pdfWidth = a4Width - 20 // 10mm margin on each side
       let pdfHeight = pdfWidth * aspectRatio
       
       // If height exceeds A4, scale down
-      if (pdfHeight > a4Height - 15) { // 7.5mm top/bottom margin
-        pdfHeight = a4Height - 15
+      if (pdfHeight > a4Height - 30) { // 15mm top/bottom margin
+        pdfHeight = a4Height - 30
         pdfWidth = pdfHeight / aspectRatio
       }
       
