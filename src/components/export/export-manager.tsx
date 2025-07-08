@@ -105,34 +105,48 @@ export function ExportManager() {
     try {
       console.log('🖨️ Starting LIVE PREVIEW to PDF generation...')
       
-      // Find the live preview element on the page
-      const previewElement = document.querySelector('.cv-preview-container') || 
+      // Find the live preview element on the page - be more specific
+      const previewElement = document.querySelector('.cv-container.classic') || 
                             document.querySelector('.cv-container') ||
-                            document.querySelector('[data-cv-preview]')
+                            document.querySelector('.cv-preview-container .cv-container') ||
+                            document.querySelector('[data-cv-preview] .cv-container')
       
       if (!previewElement) {
-        throw new Error('Live preview element not found on page')
+        console.error('❌ Available elements:', document.querySelectorAll('*[class*="cv"]'))
+        throw new Error('CV container element not found on page')
       }
       
-      console.log('✅ Found preview element:', previewElement)
+      console.log('✅ Found CV element:', previewElement)
+      console.log('✅ Element dimensions:', {
+        width: (previewElement as HTMLElement).offsetWidth,
+        height: (previewElement as HTMLElement).offsetHeight,
+        scrollWidth: (previewElement as HTMLElement).scrollWidth,
+        scrollHeight: (previewElement as HTMLElement).scrollHeight
+      })
       
-      // Capture the exact live preview with html2canvas
+      // Capture only the CV content, not the container padding
       const canvas = await html2canvas(previewElement as HTMLElement, {
         scale: 2, // High quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: (previewElement as HTMLElement).scrollWidth,
-        height: (previewElement as HTMLElement).scrollHeight,
+        width: (previewElement as HTMLElement).offsetWidth, // Use offsetWidth for visible size
+        height: (previewElement as HTMLElement).offsetHeight,
+        x: 0, // Start from element's origin
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
         onclone: (clonedDoc) => {
           // Ensure all styles are properly applied in cloned document
-          const clonedElement = clonedDoc.querySelector('.cv-preview-container') || 
+          const clonedElement = clonedDoc.querySelector('.cv-container.classic') || 
                                clonedDoc.querySelector('.cv-container')
           if (clonedElement && clonedElement instanceof HTMLElement) {
             // Force styles that might be missing
             clonedElement.style.setProperty('font-family', 'Arial, Helvetica, sans-serif')
             clonedElement.style.setProperty('background-color', '#ffffff')
             clonedElement.style.setProperty('color', '#000000')
+            clonedElement.style.setProperty('margin', '0')
+            clonedElement.style.setProperty('padding', '20px') // Reasonable padding
           }
         }
       })
@@ -155,18 +169,26 @@ export function ExportManager() {
       const imgHeight = canvas.height
       const aspectRatio = imgHeight / imgWidth
       
-      let pdfWidth = a4Width - 20 // 10mm margin on each side
+      // Use more of the A4 space - smaller margins
+      let pdfWidth = a4Width - 10 // Only 5mm margin on each side
       let pdfHeight = pdfWidth * aspectRatio
       
       // If height exceeds A4, scale down
-      if (pdfHeight > a4Height - 20) {
-        pdfHeight = a4Height - 20
+      if (pdfHeight > a4Height - 15) { // 7.5mm top/bottom margin
+        pdfHeight = a4Height - 15
         pdfWidth = pdfHeight / aspectRatio
       }
       
-      // Center the content
+      // Center the content but with minimal margins
       const x = (a4Width - pdfWidth) / 2
       const y = (a4Height - pdfHeight) / 2
+      
+      console.log('📄 PDF layout:', {
+        canvasSize: `${imgWidth}x${imgHeight}`,
+        pdfSize: `${pdfWidth.toFixed(1)}x${pdfHeight.toFixed(1)}mm`,
+        position: `x:${x.toFixed(1)}, y:${y.toFixed(1)}`,
+        utilization: `${((pdfWidth * pdfHeight) / (a4Width * a4Height) * 100).toFixed(1)}%`
+      })
       
       // Convert canvas to image and add to PDF
       const imgData = canvas.toDataURL('image/png', 1.0)
