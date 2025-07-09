@@ -451,8 +451,20 @@ export async function POST(request: NextRequest) {
 
     // Standard analysis
     console.log('🔍 Starting standard analysis...')
-    const keywordAnalysis = await analyzeKeywords(cvText, jobDescription)
-    console.log('🔑 Keyword analysis completed:', { matched: keywordAnalysis.matched, total: keywordAnalysis.total })
+    let keywordAnalysis
+    try {
+      keywordAnalysis = analyzeKeywords(cvText, jobDescription)
+      console.log('🔑 Keyword analysis completed:', { matched: keywordAnalysis?.matched, total: keywordAnalysis?.total })
+    } catch (error) {
+      console.error('❌ Keyword analysis failed:', error)
+      // Provide default values if analysis fails
+      keywordAnalysis = {
+        total: 0,
+        matched: 0,
+        missing: [],
+        density: {}
+      }
+    }
     
     const structureAnalysis = analyzeSections(cvText)
     console.log('🏗️ Structure analysis completed:', { score: structureAnalysis.score })
@@ -486,7 +498,9 @@ export async function POST(request: NextRequest) {
 
     // Calculate scores
     console.log('🧮 Calculating final scores...')
-    const keywordScore = Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100) || 0
+    const keywordScore = keywordAnalysis && keywordAnalysis.matched !== undefined && keywordAnalysis.total !== undefined
+      ? Math.round((keywordAnalysis.matched / Math.max(keywordAnalysis.total, 1)) * 100) 
+      : 0
     const formatScore = Math.round(formatAnalysis.score) || 0
     const structureScore = Math.round(structureAnalysis.score) || 0
     const safeIndustryAlignment = isNaN(industryAlignment) ? 50 : industryAlignment
@@ -631,9 +645,15 @@ function analyzeKeywords(cvText: string, jobDescription?: string) {
     const hfClient = getHuggingFaceClient()
     
     // Use the intelligent extraction method - this will only return meaningful keywords
-    const meaningfulJobKeywords = hfClient.extractJobSpecificKeywords ? 
-      hfClient.extractJobSpecificKeywords(jobDescription) : 
-      hfClient.extractBasicSkills(jobDescription)
+    let meaningfulJobKeywords: string[] = []
+    try {
+      meaningfulJobKeywords = hfClient.extractJobSpecificKeywords ? 
+        hfClient.extractJobSpecificKeywords(jobDescription) : 
+        hfClient.extractBasicSkills(jobDescription)
+    } catch (error) {
+      console.error('HuggingFace keyword extraction failed:', error)
+      meaningfulJobKeywords = []
+    }
     
     // Also include any words from our standard keywords that appear in the job description with word boundaries
     const relevantStandardKeywords = allKeywords.filter(keyword => {
