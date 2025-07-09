@@ -124,12 +124,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
     { value: 'general', label: '📋 General', description: 'All industries / Not specified' }
   ]
 
-  // Helper function to extract text from file
-  const extractTextFromFile = async (file: File): Promise<string> => {
-    // This is a placeholder - in production, you'd use a proper PDF/DOCX parser
-    // For now, we'll just return a message
-    return 'File uploaded: ' + file.name + '\n\nPlease paste your CV text below for analysis.'
-  }
+  // Note: File extraction is now handled by MobileCVUpload component below
 
   const analyzeATS = useCallback(async () => {
     if (!cvText.trim() || cvText.length < 100) {
@@ -236,54 +231,7 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* File Upload Section */}
-          <div className="space-y-4 p-4 bg-gray-50 rounded-lg mb-4">
-            <div className="flex items-center justify-between">
-              <Label className="flex items-center gap-2 text-base font-medium">
-                <Upload className="h-5 w-5" />
-                Upload CV File (Optional)
-              </Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFileUpload(!showFileUpload)}
-              >
-                {showFileUpload ? 'Hide' : 'Show'} Upload
-              </Button>
-            </div>
-            {showFileUpload && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-600">
-                  Upload your PDF or DOCX file for enhanced parsing detection and format analysis
-                </p>
-                <input
-                  type="file"
-                  accept=".pdf,.docx,.doc"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      const reader = new FileReader()
-                      reader.onload = async (event) => {
-                        const text = await extractTextFromFile(file)
-                        setCvText(text)
-                        // Store file data for enhanced analysis
-                        const windowGlobal = window as any
-                        windowGlobal.uploadedFileData = event.target?.result
-                        windowGlobal.uploadedFileName = file.name
-                        windowGlobal.uploadedFileSize = file.size
-                      }
-                      reader.readAsDataURL(file)
-                    }
-                  }}
-                  className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-cvgenius-primary file:text-white hover:file:bg-cvgenius-primary/90"
-                />
-                <p className="text-xs text-gray-500">
-                  Supported formats: PDF, DOCX, DOC (Max 5MB)
-                </p>
-              </div>
-            )}
-          </div>
+          {/* Removed duplicate file upload section - Using the enhanced upload below */}
 
           {/* Enterprise Analysis Section */}
           <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
