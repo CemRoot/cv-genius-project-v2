@@ -547,13 +547,10 @@ export function ClassicTemplate({ data }: { data: CVData }) {
     console.warn('Font registration failed, using system fonts:', error)
   }
   
-  // Use Helvetica to match live preview sans-serif
-  const fontFamily = 'Helvetica'
-  
   return (
     <Document>
       <Page size="A4" style={classicStyles.page}>
-        {/* Header - EXACTLY matching live preview */}
+        {/* Header */}
         <View style={classicStyles.header}>
           <Text style={classicStyles.name}>
             {data.personal.fullName?.toUpperCase() || "YOUR NAME"}
@@ -565,7 +562,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             </Text>
           )}
           
-          {/* Contact info - Single line with proper spacing like live preview */}
+          {/* Contact info - Single line with proper spacing */}
           <View style={classicStyles.contact}>
             <Text>
               {[
@@ -591,7 +588,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           )}
         </View>
 
-        {/* Summary Section - EXACTLY matching live preview */}
+        {/* Summary Section */}
         {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>SUMMARY</Text>
@@ -599,7 +596,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           </View>
         )}
 
-        {/* Experience Section - EXACTLY matching live preview */}
+        {/* Experience Section */}
         {data.experience.length > 0 && isSectionVisible(data.sections, 'experience') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>EXPERIENCE</Text>
@@ -626,12 +623,12 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           </View>
         )}
 
-        {/* Education Section - EXACTLY matching live preview */}
+        {/* Education Section - COMPACT SPACING */}
         {data.education.length > 0 && isSectionVisible(data.sections, 'education') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>EDUCATION</Text>
             {data.education.map((edu, index) => (
-              <View key={index} style={classicStyles.educationItem}>
+              <View key={index} style={{marginBottom: 8, breakInside: 'avoid'}}>
                 <View style={classicStyles.experienceHeader}>
                   <Text style={classicStyles.jobTitle}>
                     {edu.degree} in {edu.field || 'studies'}
@@ -643,19 +640,25 @@ export function ClassicTemplate({ data }: { data: CVData }) {
                     </Text>
                   </View>
                 </View>
-                <Text style={classicStyles.institutionName}>{edu.institution}</Text>
+                <Text style={{fontSize: 11, fontWeight: 500, color: '#000000', marginTop: 0}}>
+                  {edu.institution}
+                </Text>
                 {edu.grade && (
-                  <Text style={classicStyles.grade}>Grade: {edu.grade}</Text>
+                  <Text style={{fontSize: 10, color: '#000000', marginTop: 0}}>
+                    Grade: {edu.grade}
+                  </Text>
                 )}
                 {edu.description && (
-                  <Text style={classicStyles.description}>{edu.description}</Text>
+                  <Text style={{fontSize: 11, lineHeight: 1.3, color: '#000000', textAlign: 'justify', marginTop: 0}}>
+                    {edu.description}
+                  </Text>
                 )}
               </View>
             ))}
           </View>
         )}
 
-        {/* Skills Section - EXACTLY matching live preview with categories */}
+        {/* Skills Section */}
         {data.skills.length > 0 && isSectionVisible(data.sections, 'skills') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>SKILLS</Text>
@@ -676,7 +679,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           </View>
         )}
 
-        {/* References Section - EXACTLY matching live preview */}
+        {/* References Section */}
         {isSectionVisible(data.sections, 'references') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>REFERENCES</Text>
