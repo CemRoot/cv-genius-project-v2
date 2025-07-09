@@ -382,7 +382,11 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="jobDescription">Job Description (Recommended)</Label>
+            <Label htmlFor="jobDescription">
+              Job Description 
+              <span className="text-amber-500 ml-1">(Recommended)</span>
+              <span className="text-xs font-normal text-muted-foreground ml-2">- For specific job matching</span>
+            </Label>
             <Textarea
               id="jobDescription"
               placeholder="Paste the job description to check keyword matching and ATS alignment..."
@@ -392,9 +396,26 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               className="resize-none touch-manipulation"
               style={{ minHeight: '120px' }}
             />
-            <p className="text-xs text-muted-foreground">
-              Including job description enables advanced keyword matching and ATS simulation
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">
+                {jobDescription.trim().length === 0 ? (
+                  <span className="text-amber-600">
+                    💡 Without job description: General ATS compatibility check based on {selectedIndustry} industry
+                  </span>
+                ) : jobDescription.trim().length < 50 ? (
+                  <span className="text-amber-500">
+                    ⚠️ Add more details for better analysis (minimum 50 characters)
+                  </span>
+                ) : (
+                  <span className="text-green-600">
+                    ✅ Job-specific keyword matching enabled
+                  </span>
+                )}
+              </p>
+              <span className={`text-xs ${jobDescription.trim().length === 0 ? 'text-muted-foreground' : jobDescription.trim().length < 50 ? 'text-amber-500' : 'text-green-600'}`}>
+                {jobDescription.length} characters
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -403,6 +424,15 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
               disabled={isAnalyzing || cvText.trim().length < 100}
               className="flex-1"
               size="lg"
+              title={
+                cvText.trim().length < 100 
+                  ? "CV text must be at least 100 characters" 
+                  : jobDescription.trim().length === 0
+                  ? "Analyze general ATS compatibility for " + selectedIndustry + " industry"
+                  : jobDescription.trim().length < 50 
+                  ? "Add more job description details for better analysis" 
+                  : "Analyze CV against specific job requirements"
+              }
             >
               {isAnalyzing ? (
                 <>
