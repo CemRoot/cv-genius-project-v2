@@ -124,6 +124,13 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
     { value: 'general', label: '📋 General', description: 'All industries / Not specified' }
   ]
 
+  // Helper function to extract text from file
+  const extractTextFromFile = async (file: File): Promise<string> => {
+    // This is a placeholder - in production, you'd use a proper PDF/DOCX parser
+    // For now, we'll just return a message
+    return 'File uploaded: ' + file.name + '\n\nPlease paste your CV text below for analysis.'
+  }
+
   const analyzeATS = useCallback(async () => {
     if (!cvText.trim() || cvText.length < 100) {
       setError('CV text must be at least 100 characters long')
@@ -134,6 +141,11 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
     setError(null)
 
     try {
+      // Get file data if uploaded
+      const fileData = (window as any).uploadedFileData
+      const fileName = (window as any).uploadedFileName
+      const fileSize = (window as any).uploadedFileSize
+
       const response = await fetch('/api/ats/analyze', {
         method: 'POST',
         headers: {
@@ -145,7 +157,10 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
           jobDescription: jobDescription.trim(),
           analysisMode,
           targetATS: 'auto', // Always use auto-detection
-          industry: selectedIndustry
+          industry: selectedIndustry,
+          fileData: fileData || null,
+          fileName: fileName || null,
+          fileSize: fileSize || null
         })
       })
 
@@ -210,6 +225,54 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* File Upload Section */}
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg mb-4">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2 text-base font-medium">
+                <Upload className="h-5 w-5" />
+                Upload CV File (Optional)
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFileUpload(!showFileUpload)}
+              >
+                {showFileUpload ? 'Hide' : 'Show'} Upload
+              </Button>
+            </div>
+            {showFileUpload && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  Upload your PDF or DOCX file for enhanced parsing detection and format analysis
+                </p>
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.doc"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onload = async (event) => {
+                        const text = await extractTextFromFile(file)
+                        setCvText(text)
+                        // Store file data for enhanced analysis
+                        (window as any).uploadedFileData = event.target?.result
+                        (window as any).uploadedFileName = file.name
+                        (window as any).uploadedFileSize = file.size
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                  className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-cvgenius-primary file:text-white hover:file:bg-cvgenius-primary/90"
+                />
+                <p className="text-xs text-gray-500">
+                  Supported formats: PDF, DOCX, DOC (Max 5MB)
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Enterprise Analysis Section */}
           <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
               <div className="space-y-4">
@@ -249,6 +312,11 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                     <li>• <strong>Greenhouse</strong> - Tech company favorite</li>
                     <li>• <strong>BambooHR</strong> - SME and startup choice</li>
                   </ul>
+                  <div className="mt-3 p-3 bg-yellow-50 rounded-md">
+                    <p className="text-xs text-yellow-800">
+                      <strong>PDF/DOCX Support:</strong> Upload your CV file for advanced parsing detection
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -380,6 +448,150 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
+            {/* Enhanced Format Analysis - Show if available */}
+            {(analysis as any).enhancedFormatAnalysis && (
+              <Card className="border-2 border-orange-200 bg-orange-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-orange-600" />
+                    PDF/DOCX Parsing Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Parsing Success Rate */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Parsing Success Rate</span>
+                        <span className={`text-sm font-bold ${getScoreColor((analysis as any).enhancedFormatAnalysis.parsingSuccessRate)}`}>
+                          {(analysis as any).enhancedFormatAnalysis.parsingSuccessRate}%
+                        </span>
+                      </div>
+                      <Progress value={(analysis as any).enhancedFormatAnalysis.parsingSuccessRate} className="h-2" />
+                    </div>
+
+                    {/* Format Issues */}
+                    {(analysis as any).enhancedFormatAnalysis.parsingIssues && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        {(analysis as any).enhancedFormatAnalysis.parsingIssues.hasTables && (
+                          <Badge variant="destructive">Tables Detected</Badge>
+                        )}
+                        {(analysis as any).enhancedFormatAnalysis.parsingIssues.hasMultiColumn && (
+                          <Badge variant="destructive">Multi-Column</Badge>
+                        )}
+                        {(analysis as any).enhancedFormatAnalysis.parsingIssues.hasScannedContent && (
+                          <Badge variant="destructive">Scanned PDF</Badge>
+                        )}
+                        {(analysis as any).enhancedFormatAnalysis.parsingIssues.hasComplexFormatting && (
+                          <Badge variant="secondary">Complex Format</Badge>
+                        )}
+                        {(analysis as any).enhancedFormatAnalysis.parsingIssues.layoutComplexity === 'complex' && (
+                          <Badge variant="secondary">Complex Layout</Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Warnings */}
+                    {(analysis as any).enhancedFormatAnalysis.warnings && (analysis as any).enhancedFormatAnalysis.warnings.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-orange-700">Format Warnings:</h4>
+                        <ul className="space-y-1">
+                          {(analysis as any).enhancedFormatAnalysis.warnings.map((warning: string, index: number) => (
+                            <li key={index} className="text-sm text-orange-600 flex items-start gap-2">
+                              <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                              <span>{warning}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Parsing Errors - Show if available */}
+            {(analysis as any).parsingErrors && (analysis as any).parsingErrors.length > 0 && (
+              <Card className="border-2 border-red-200 bg-red-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <XCircle className="h-5 w-5 text-red-600" />
+                    Parsing Errors Detected
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(analysis as any).parsingErrors.map((error: any, index: number) => (
+                      <div key={index} className="p-3 bg-white rounded-lg border border-red-200">
+                        <div className="flex items-start gap-3">
+                          <Badge variant={error.type === 'critical' ? 'destructive' : error.type === 'error' ? 'secondary' : 'outline'}>
+                            {error.type.toUpperCase()}
+                          </Badge>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{error.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{error.impact}</p>
+                            {error.line && (
+                              <p className="text-xs text-muted-foreground mt-1">Line: {error.line}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Rejection Analysis - Show if CV was rejected */}
+            {(analysis as any).rejected && (analysis as any).rejectionAnalysis && (
+              <Card className="border-2 border-red-500 bg-red-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-red-700">
+                    <XCircle className="h-6 w-6" />
+                    CV Rejected by ATS
+                  </CardTitle>
+                  <p className="text-sm text-red-600 mt-2">
+                    Rejection Stage: <strong>{(analysis as any).rejectionAnalysis.rejectionStage}</strong>
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-red-700 mb-2">Rejection Reasons:</h4>
+                      <ul className="space-y-2">
+                        {(analysis as any).rejectionAnalysis.reasons.map((reason: string, index: number) => (
+                          <li key={index} className="text-sm text-red-600 flex items-start gap-2">
+                            <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span>{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">How to Fix:</h4>
+                      <ul className="space-y-2">
+                        {(analysis as any).rejectionAnalysis.recommendations.map((rec: string, index: number) => (
+                          <li key={index} className="text-sm flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span>{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="p-3 bg-yellow-100 rounded-lg border border-yellow-300">
+                      <p className="text-sm font-medium text-yellow-800">
+                        {(analysis as any).rejectionAnalysis.fixable 
+                          ? '✨ Good news: These issues can be fixed!'
+                          : '⚠️ This document needs to be recreated from scratch.'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

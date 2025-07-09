@@ -15,8 +15,7 @@ import { useToast, createToastUtils } from "@/components/ui/toast"
 import { MobileCVWizard } from "@/components/mobile-cv-wizard"
 import { useAutoSave } from "@/hooks/use-auto-save"
 import { AdModal } from "@/components/cv/ad-modal"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
+import { exportCVToPDF, validateCVForPDF } from "@/lib/pdf-export-service"
 
 interface CVBuilderPageContentProps {
   initialIsMobile: boolean
@@ -175,60 +174,31 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
   }
 
   const generatePdf = async () => {
-    const cvElement = document.getElementById('cv-export-content');
-    if (!cvElement) {
-      toast.error('Error', 'CV content not found.');
-      return;
-    }
-
-    // Wait for fonts and images to load
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const canvas = await html2canvas(cvElement, {
-      scale: 3, // Increased scale for better quality
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: true, // Enable logging for debugging
-      onclone: (document) => {
-        // Attempt to re-trigger font loading in the cloned document
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'stylesheet';
-        fontLink.href = '/fonts/inter.css'; // Adjust this path to your font file
-        document.head.appendChild(fontLink);
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading('Generating PDF...', 'Please wait while we create your CV PDF.');
+      
+      // Validate CV data before export
+      const validation = validateCVForPDF(currentCV);
+      if (!validation.isValid) {
+        toast.error('Export Error', `Please fix the following issues:\n${validation.errors.join('\n')}`);
+        return;
       }
-    });
 
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'pt',
-      format: 'a4',
-    });
+      // Export CV to PDF using React-PDF renderer
+      await exportCVToPDF(currentCV, {
+        filename: `${currentCV.personal.fullName || 'cv'}-export.pdf`,
+        quality: 'high',
+        enableOptimization: true
+      });
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
-    const ratio = canvasWidth / pdfWidth;
-    const scaledHeight = canvasHeight / ratio;
-
-    let position = 0;
-    let pageCount = 1;
-
-    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
-
-    let heightLeft = scaledHeight - pdfHeight;
-
-    while (heightLeft > 0) {
-      position = -pdfHeight * pageCount;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
-      heightLeft -= pdfHeight;
-      pageCount++;
+      // Close loading toast and show success
+      toast.dismiss(loadingToast);
+      toast.success('Success', 'CV has been exported as PDF.');
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      toast.error('Export Error', 'Failed to export CV as PDF. Please try again.');
     }
-
-    pdf.save(`${currentCV.personal.fullName || 'cv'}-export.pdf`);
-    toast.success('Success', 'CV has been exported as PDF.');
   };
 
   const mobileTabs = [

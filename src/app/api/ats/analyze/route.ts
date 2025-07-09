@@ -6,7 +6,11 @@ import {
   generateATSReport, 
   calculateIrishMarketRelevance,
   validateATSFormat,
-  analyzeEnterpriseATSCompatibility
+  analyzeEnterpriseATSCompatibility,
+  performEnhancedATSAnalysis,
+  analyzePDFDocxContent,
+  checkImmediateRejection,
+  simulateParsingErrors
 } from '@/lib/ats-utils'
 import { validateAiApiRequest, createApiErrorResponse } from '@/lib/api-auth'
 
@@ -34,6 +38,7 @@ interface ATSAnalysisRequest {
   jobDescription?: string
   fileName?: string
   fileSize?: number
+  fileData?: string // Base64 encoded file data
   analysisMode?: 'basic' | 'enterprise'
   targetATS?: string
   industry?: string
@@ -342,7 +347,8 @@ export async function POST(request: NextRequest) {
       cvText, 
       jobDescription, 
       fileName, 
-      fileSize, 
+      fileSize,
+      fileData,
       analysisMode = 'basic',
       targetATS = 'workday',
       industry = 'technology'
@@ -358,7 +364,82 @@ export async function POST(request: NextRequest) {
       industry 
     })
 
-    // Validation
+    // Use Enhanced Analysis for Enterprise Mode or when fileData is provided
+    if (analysisMode === 'enterprise' || fileData) {
+      console.log('🚀 Using Enhanced ATS Analysis with PDF/DOCX parsing')
+      
+      try {
+        // Convert base64 to ArrayBuffer if fileData is provided
+        let fileContent: string | ArrayBuffer = cvText
+        if (fileData) {
+          const base64Data = fileData.replace(/^data:.*,/, '')
+          const buffer = Buffer.from(base64Data, 'base64')
+          fileContent = buffer.buffer
+        }
+        
+        // Perform enhanced analysis
+        const enhancedResult = await performEnhancedATSAnalysis(fileContent, fileName || 'document.pdf', {
+          jobDescription,
+          targetATS: targetATS as any,
+          industry: industry as any
+        })
+        
+        if (!enhancedResult.success) {
+          // Handle immediate rejection
+          if (enhancedResult.rejection) {
+            console.log('🚫 CV rejected at stage:', enhancedResult.rejection.rejectionStage)
+            return NextResponse.json({
+              rejected: true,
+              rejectionAnalysis: enhancedResult.rejection,
+              enhancedFormatAnalysis: enhancedResult.enhancedFormatAnalysis,
+              overallScore: 0,
+              keywordScore: 0,
+              formatScore: enhancedResult.enhancedFormatAnalysis?.parsingSuccessRate || 0,
+              structureScore: 0,
+              suggestions: enhancedResult.rejection.recommendations,
+              warnings: enhancedResult.rejection.reasons,
+              report: {
+                summary: `Your CV was rejected during ${enhancedResult.rejection.rejectionStage} stage. ${enhancedResult.rejection.reasons[0]}`,
+                keyFindings: enhancedResult.rejection.reasons,
+                priorityActions: enhancedResult.rejection.recommendations,
+                score: 0,
+                timestamp: new Date().toISOString()
+              }
+            }, {
+              status: 200, // Still return 200 but with rejection info
+              headers: {
+                'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+                'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+                'X-Processing-Time': (Date.now() - startTime).toString(),
+                'Cache-Control': 'no-cache'
+              }
+            })
+          }
+        }
+        
+        // Return enhanced analysis result
+        const analysis = enhancedResult.analysis
+        return NextResponse.json({
+          ...analysis,
+          parsingErrors: enhancedResult.parsingErrors,
+          enhancedFormatAnalysis: enhancedResult.enhancedFormatAnalysis,
+          processingMode: 'enhanced'
+        }, {
+          headers: {
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+            'X-Processing-Time': (Date.now() - startTime).toString(),
+            'Cache-Control': isMobileRequest ? 'public, max-age=300' : 'public, max-age=600'
+          }
+        })
+        
+      } catch (enhancedError) {
+        console.error('❌ Enhanced analysis failed, falling back to standard:', enhancedError)
+        // Fall through to standard analysis
+      }
+    }
+    
+    // Validation for standard analysis
     if (!cvText || cvText.trim().length < 100) {
       console.log('❌ Validation failed: CV text too short')
       return NextResponse.json(

@@ -1087,3 +1087,468 @@ function extractCVKeywords(cvText: string): string[] {
     .split(/\s+/)
     .filter(word => word.length > 2 && !commonWords.includes(word))
 }
+
+// ==================== NEW PDF/DOCX PARSING INTEGRATION ====================
+
+// Enhanced Format Analysis with PDF/DOCX specific checks
+export interface EnhancedFormatAnalysis extends FileFormatAnalysis {
+  parsingIssues: {
+    hasTables: boolean
+    hasMultiColumn: boolean
+    hasImages: boolean
+    hasHeaders: boolean
+    hasFooters: boolean
+    hasComplexFormatting: boolean
+    hasScannedContent: boolean
+    fontIssues: string[]
+    layoutComplexity: 'simple' | 'moderate' | 'complex'
+  }
+  immediateRejectionRisk: boolean
+  parsingSuccessRate: number // 0-100
+}
+
+// PDF/DOCX Content Analysis
+export function analyzePDFDocxContent(content: string, fileName?: string): EnhancedFormatAnalysis {
+  const baseAnalysis = analyzeFileFormat(fileName || 'document.pdf')
+  
+  // Detect parsing issues
+  const parsingIssues = {
+    hasTables: /[│├┤┌┐└┘┬┴┼]/.test(content) || /\|\s*\w+\s*\|/.test(content),
+    hasMultiColumn: detectMultiColumnLayout(content),
+    hasImages: content.includes('[IMAGE]') || content.includes('[FIGURE]') || /\[.*\.(jpg|png|gif)\]/i.test(content),
+    hasHeaders: detectHeaderFooter(content, 'header'),
+    hasFooters: detectHeaderFooter(content, 'footer'),
+    hasComplexFormatting: detectComplexFormatting(content),
+    hasScannedContent: detectScannedContent(content),
+    fontIssues: detectFontIssues(content),
+    layoutComplexity: determineLayoutComplexity(content)
+  }
+  
+  // Calculate parsing success rate
+  let parsingSuccessRate = 100
+  if (parsingIssues.hasTables) parsingSuccessRate -= 20
+  if (parsingIssues.hasMultiColumn) parsingSuccessRate -= 25
+  if (parsingIssues.hasImages) parsingSuccessRate -= 10
+  if (parsingIssues.hasComplexFormatting) parsingSuccessRate -= 15
+  if (parsingIssues.hasScannedContent) parsingSuccessRate -= 50
+  if (parsingIssues.fontIssues.length > 0) parsingSuccessRate -= 5 * parsingIssues.fontIssues.length
+  
+  parsingSuccessRate = Math.max(0, parsingSuccessRate)
+  
+  // Check for immediate rejection risks
+  const immediateRejectionRisk = 
+    parsingIssues.hasScannedContent ||
+    parsingSuccessRate < 30 ||
+    (parsingIssues.hasTables && parsingIssues.hasMultiColumn) ||
+    content.length < 100
+  
+  // Update warnings and recommendations
+  if (parsingIssues.hasTables) {
+    baseAnalysis.warnings.push('Contains tables that may not parse correctly in ATS')
+    baseAnalysis.recommendations.push('Replace tables with simple bullet points or paragraphs')
+  }
+  
+  if (parsingIssues.hasMultiColumn) {
+    baseAnalysis.warnings.push('Multi-column layout detected - high risk of parsing errors')
+    baseAnalysis.recommendations.push('Use single-column layout for ATS compatibility')
+  }
+  
+  if (parsingIssues.hasScannedContent) {
+    baseAnalysis.warnings.push('⚠️ CRITICAL: Appears to be a scanned document - ATS cannot read')
+    baseAnalysis.recommendations.push('Create a new text-based document instead of scanning')
+  }
+  
+  return {
+    ...baseAnalysis,
+    parsingIssues,
+    immediateRejectionRisk,
+    parsingSuccessRate
+  }
+}
+
+// Helper functions for format detection
+function detectMultiColumnLayout(content: string): boolean {
+  const lines = content.split('\n')
+  let columnIndicators = 0
+  
+  lines.forEach(line => {
+    // Check for multiple aligned sections in same line
+    const segments = line.split(/\s{5,}/) // 5+ spaces might indicate columns
+    if (segments.length > 1 && segments.every(s => s.trim().length > 0)) {
+      columnIndicators++
+    }
+  })
+  
+  return columnIndicators > 3 // More than 3 lines with potential columns
+}
+
+function detectHeaderFooter(content: string, type: 'header' | 'footer'): boolean {
+  const lines = content.split('\n')
+  const checkLines = type === 'header' ? lines.slice(0, 5) : lines.slice(-5)
+  
+  // Common header/footer patterns
+  const patterns = [
+    /page\s*\d+/i,
+    /\d+\s*of\s*\d+/i,
+    /confidential/i,
+    /©|copyright/i,
+    /^\s*\d+\s*$/ // Just page numbers
+  ]
+  
+  return checkLines.some(line => patterns.some(pattern => pattern.test(line)))
+}
+
+function detectComplexFormatting(content: string): boolean {
+  // Check for various complex formatting indicators
+  const complexIndicators = [
+    /[╔╗╚╝║═╠╣╦╩╬]/, // Box drawing characters
+    /[①②③④⑤⑥⑦⑧⑨⑩]/, // Circled numbers
+    /[▪▫◦•◘○◙]/, // Various bullets
+    /[★☆✓✗✔✘]/, // Special symbols
+    /\{\{|\}\}/, // Template markers
+    /<[^>]+>/, // HTML/XML tags
+  ]
+  
+  return complexIndicators.some(pattern => pattern.test(content))
+}
+
+function detectScannedContent(content: string): boolean {
+  // Scanned documents often have OCR artifacts
+  const ocrIndicators = [
+    /[Il1][Il1]/, // Common OCR confusion
+    /[0O][0O]/, // Zero/O confusion
+    /\b\w{20,}\b/, // Very long "words" from bad OCR
+    content.split(' ').filter(word => /[^a-zA-Z0-9]/.test(word)).length > content.split(' ').length * 0.3,
+    content.match(/[^\x00-\x7F]/g)?.length > content.length * 0.1 // Too many non-ASCII
+  ]
+  
+  return ocrIndicators.filter(Boolean).length >= 2
+}
+
+function detectFontIssues(content: string): string[] {
+  const issues: string[] = []
+  
+  // Check for problematic Unicode characters that might indicate font issues
+  if (/[\uFFFD]/.test(content)) issues.push('Replacement characters detected')
+  if (/[\u0080-\u009F]/.test(content)) issues.push('Control characters in text')
+  if (/[𝐀-𝑍𝑎-𝑧]/.test(content)) issues.push('Mathematical alphanumeric symbols')
+  if (/[ﬀ-ﬆ]/.test(content)) issues.push('Ligatures that may not parse correctly')
+  
+  return issues
+}
+
+function determineLayoutComplexity(content: string): 'simple' | 'moderate' | 'complex' {
+  let complexityScore = 0
+  
+  // Check various complexity factors
+  if (detectMultiColumnLayout(content)) complexityScore += 3
+  if (/[│├┤┌┐└┘]/.test(content)) complexityScore += 2
+  if (content.split('\n').some(line => line.split(/\s{5,}/).length > 2)) complexityScore += 2
+  if (detectComplexFormatting(content)) complexityScore += 2
+  if (content.match(/^\s{10,}/gm)?.length > 5) complexityScore += 1 // Deep indentation
+  
+  if (complexityScore >= 5) return 'complex'
+  if (complexityScore >= 2) return 'moderate'
+  return 'simple'
+}
+
+// ==================== IMMEDIATE REJECTION CRITERIA ====================
+
+export interface RejectionAnalysis {
+  rejected: boolean
+  rejectionStage: 'parsing' | 'format' | 'content' | 'keywords' | 'requirements' | null
+  reasons: string[]
+  fixable: boolean
+  recommendations: string[]
+}
+
+export function checkImmediateRejection(
+  content: string,
+  formatAnalysis: EnhancedFormatAnalysis,
+  options?: {
+    jobKeywords?: string[]
+    requiredSections?: string[]
+    minWordCount?: number
+  }
+): RejectionAnalysis {
+  const reasons: string[] = []
+  const recommendations: string[] = []
+  let rejectionStage: RejectionAnalysis['rejectionStage'] = null
+  
+  // Stage 1: Parsing Failures (Immediate rejection)
+  if (formatAnalysis.immediateRejectionRisk) {
+    rejectionStage = 'parsing'
+    if (formatAnalysis.parsingIssues.hasScannedContent) {
+      reasons.push('Document appears to be scanned - no readable text')
+      recommendations.push('Create a new text-based CV instead of scanning')
+    }
+    if (formatAnalysis.parsingSuccessRate < 30) {
+      reasons.push('Document format too complex for ATS to parse')
+      recommendations.push('Simplify formatting and use standard document structure')
+    }
+    return {
+      rejected: true,
+      rejectionStage,
+      reasons,
+      fixable: !formatAnalysis.parsingIssues.hasScannedContent,
+      recommendations
+    }
+  }
+  
+  // Stage 2: Format Issues (High rejection risk)
+  if (formatAnalysis.parsingSuccessRate < 60) {
+    rejectionStage = 'format'
+    if (formatAnalysis.parsingIssues.hasTables && formatAnalysis.parsingIssues.hasMultiColumn) {
+      reasons.push('Complex table and column layout will cause parsing errors')
+      recommendations.push('Convert to simple single-column format')
+    }
+    if (formatAnalysis.parsingIssues.layoutComplexity === 'complex') {
+      reasons.push('Layout too complex for reliable ATS parsing')
+      recommendations.push('Use a standard CV template with clear sections')
+    }
+  }
+  
+  // Stage 3: Content Checks
+  const contentLower = content.toLowerCase()
+  
+  // No contact information
+  const hasEmail = /[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}/.test(content)
+  const hasPhone = /[\+]?[\d\s\-\(\)]{10,}/.test(content)
+  
+  if (!hasEmail && !hasPhone) {
+    rejectionStage = rejectionStage || 'content'
+    reasons.push('No contact information found (email/phone)')
+    recommendations.push('Add email and phone number at the top of CV')
+  }
+  
+  // Too short
+  const wordCount = content.split(/\s+/).length
+  const minWords = options?.minWordCount || 150
+  
+  if (wordCount < minWords) {
+    rejectionStage = rejectionStage || 'content'
+    reasons.push(`CV too short (${wordCount} words, minimum ${minWords})`)
+    recommendations.push('Expand with more details about experience and skills')
+  }
+  
+  // Stage 4: Keyword Density Check
+  if (options?.jobKeywords && options.jobKeywords.length > 0) {
+    const matchedKeywords = options.jobKeywords.filter(kw => 
+      contentLower.includes(kw.toLowerCase())
+    )
+    const keywordDensity = (matchedKeywords.length / options.jobKeywords.length) * 100
+    
+    if (keywordDensity < 10) {
+      rejectionStage = rejectionStage || 'keywords'
+      reasons.push(`Critical keyword deficiency (${keywordDensity.toFixed(0)}% match)`)
+      recommendations.push('Add relevant keywords from job description')
+      recommendations.push(`Missing critical keywords: ${options.jobKeywords.slice(0, 5).join(', ')}`)
+    }
+  }
+  
+  // Stage 5: Required Sections Check
+  if (options?.requiredSections) {
+    const missingSections = options.requiredSections.filter(section => {
+      const sectionRegex = new RegExp(`\\b${section}\\b`, 'i')
+      return !sectionRegex.test(content)
+    })
+    
+    if (missingSections.length > 0) {
+      rejectionStage = rejectionStage || 'requirements'
+      reasons.push(`Missing required sections: ${missingSections.join(', ')}`)
+      recommendations.push('Add standard CV sections: Contact, Experience, Education, Skills')
+    }
+  }
+  
+  return {
+    rejected: reasons.length > 0 && rejectionStage !== null,
+    rejectionStage,
+    reasons,
+    fixable: rejectionStage !== 'parsing',
+    recommendations
+  }
+}
+
+// ==================== PARSING ERROR SIMULATION ====================
+
+export interface ParsingError {
+  type: 'warning' | 'error' | 'critical'
+  category: 'format' | 'content' | 'structure' | 'encoding'
+  message: string
+  impact: string
+  line?: number
+  position?: number
+}
+
+export function simulateParsingErrors(
+  content: string,
+  formatAnalysis: EnhancedFormatAnalysis
+): ParsingError[] {
+  const errors: ParsingError[] = []
+  const lines = content.split('\n')
+  
+  // Format-based errors
+  if (formatAnalysis.parsingIssues.hasTables) {
+    lines.forEach((line, index) => {
+      if (/[│├┤┌┐└┘]/.test(line)) {
+        errors.push({
+          type: 'error',
+          category: 'format',
+          message: 'Table structure detected',
+          impact: 'Content may be read out of order or skipped',
+          line: index + 1
+        })
+      }
+    })
+  }
+  
+  if (formatAnalysis.parsingIssues.hasMultiColumn) {
+    errors.push({
+      type: 'critical',
+      category: 'structure',
+      message: 'Multi-column layout will cause text merging',
+      impact: 'Skills may merge with experience section, causing keyword loss'
+    })
+  }
+  
+  // Content parsing errors
+  lines.forEach((line, index) => {
+    // Check for parsing confusion patterns
+    if (/[Il1]{3,}/.test(line)) {
+      errors.push({
+        type: 'warning',
+        category: 'content',
+        message: 'Ambiguous characters detected (I/l/1)',
+        impact: 'May cause incorrect text recognition',
+        line: index + 1
+      })
+    }
+    
+    if (/[0O]{3,}/.test(line)) {
+      errors.push({
+        type: 'warning',
+        category: 'content',
+        message: 'Ambiguous characters detected (0/O)',
+        impact: 'Numbers may be read as letters',
+        line: index + 1
+      })
+    }
+    
+    // Very long lines
+    if (line.length > 150) {
+      errors.push({
+        type: 'warning',
+        category: 'format',
+        message: 'Line exceeds recommended length',
+        impact: 'May be truncated in some ATS systems',
+        line: index + 1
+      })
+    }
+  })
+  
+  // Encoding issues
+  if (formatAnalysis.parsingIssues.fontIssues.length > 0) {
+    formatAnalysis.parsingIssues.fontIssues.forEach(issue => {
+      errors.push({
+        type: 'error',
+        category: 'encoding',
+        message: issue,
+        impact: 'Special characters may not display correctly'
+      })
+    })
+  }
+  
+  // Structure issues
+  if (!content.toLowerCase().includes('experience')) {
+    errors.push({
+      type: 'critical',
+      category: 'structure',
+      message: 'No "Experience" section header found',
+      impact: 'Work history may not be properly categorized'
+    })
+  }
+  
+  return errors
+}
+
+// ==================== ENHANCED SCORING WITH REAL PARSING ====================
+
+export async function performEnhancedATSAnalysis(
+  fileContent: string | ArrayBuffer,
+  fileName: string,
+  options: {
+    jobDescription?: string
+    targetATS?: keyof typeof ENTERPRISE_ATS_STANDARDS.systems
+    industry?: keyof typeof ENTERPRISE_ATS_STANDARDS.industryRequirements
+  }
+): Promise<{
+  success: boolean
+  analysis?: any
+  rejection?: RejectionAnalysis
+  parsingErrors?: ParsingError[]
+  enhancedFormatAnalysis?: EnhancedFormatAnalysis
+}> {
+  try {
+    // Convert to text if needed
+    let textContent: string
+    if (typeof fileContent === 'string') {
+      textContent = fileContent
+    } else {
+      // This is where we'd parse PDF/DOCX
+      const { parsePDFBuffer } = await import('./pdf-parser-alternative')
+      textContent = await parsePDFBuffer(fileContent)
+    }
+    
+    // Perform enhanced format analysis
+    const enhancedFormatAnalysis = analyzePDFDocxContent(textContent, fileName)
+    
+    // Check for immediate rejection
+    const rejection = checkImmediateRejection(textContent, enhancedFormatAnalysis, {
+      jobKeywords: options.jobDescription ? extractJobKeywords(options.jobDescription) : undefined,
+      requiredSections: ['experience', 'education', 'skills'],
+      minWordCount: 150
+    })
+    
+    if (rejection.rejected) {
+      return {
+        success: false,
+        rejection,
+        enhancedFormatAnalysis
+      }
+    }
+    
+    // Simulate parsing errors
+    const parsingErrors = simulateParsingErrors(textContent, enhancedFormatAnalysis)
+    
+    // Continue with existing analysis if not rejected
+    const analysis = await analyzeEnterpriseATSCompatibility(textContent, {
+      ...options,
+      fileName,
+      fileSize: textContent.length
+    })
+    
+    // Adjust scores based on parsing issues
+    if (enhancedFormatAnalysis.parsingSuccessRate < 80) {
+      analysis.overallScore *= (enhancedFormatAnalysis.parsingSuccessRate / 100)
+      analysis.overallScore = Math.round(analysis.overallScore)
+    }
+    
+    return {
+      success: true,
+      analysis,
+      parsingErrors,
+      enhancedFormatAnalysis
+    }
+  } catch (error) {
+    return {
+      success: false,
+      rejection: {
+        rejected: true,
+        rejectionStage: 'parsing',
+        reasons: [`Failed to parse document: ${error.message}`],
+        fixable: false,
+        recommendations: ['Ensure document is not corrupted', 'Try saving as PDF or DOCX']
+      }
+    }
+  }
+}

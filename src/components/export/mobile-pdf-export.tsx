@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useCallback } from 'react'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import { Button } from '@/components/ui/button'
 import { Download, Loader2, Smartphone, Monitor } from 'lucide-react'
+import { exportCVToPDF, validateCVForPDF } from '@/lib/pdf-export-service'
+import { useCVStore } from '@/store/cv-store'
 
 interface MobilePDFExportProps {
-  elementId: string
+  elementId?: string // Optional now since we use CV store
   filename?: string
   onSuccess?: () => void
   onError?: (error: Error) => void
@@ -20,6 +20,7 @@ export function MobilePDFExport({
   onError 
 }: MobilePDFExportProps) {
   const [isExporting, setIsExporting] = useState(false)
+  const { currentCV } = useCVStore()
   
   const detectMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -91,137 +92,36 @@ export function MobilePDFExport({
     setIsExporting(true)
     
     try {
-      // Wait for fonts to load
-      await waitForFonts()
-      
-      const element = document.getElementById(elementId)
-      if (!element) throw new Error(`Element with ID '${elementId}' not found`)
-      
-      const isMobile = detectMobile()
-      
-      // Hide export elements
-      const { hiddenElements, originalDisplays } = hideExportElements(element)
-      
-      // Prepare element for mobile export
-      let originalStyles: any = {}
-      if (isMobile) {
-        originalStyles = prepareMobileElement(element)
+      if (!currentCV) {
+        throw new Error('No CV data available for export')
       }
       
-      // Add temporary styles for better rendering
-      const tempStyle = document.createElement('style')
-      tempStyle.textContent = `
-        #${elementId} {
-          font-smooth: always;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-rendering: optimizeLegibility;
-          word-wrap: break-word;
-          word-break: normal;
-        }
-        #${elementId} * {
-          transition: none !important;
-          animation: none !important;
-          box-sizing: border-box;
-          max-width: 100%;
-        }
-      `
-      document.head.appendChild(tempStyle)
+      console.log('📱 Starting mobile PDF export with React-PDF...')
       
-      // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      // Configure html2canvas options based on device
-      const canvasOptions = {
-        scale: isMobile ? Math.min(window.devicePixelRatio * 1.5, 3) : 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        removeContainer: true,
-        logging: false,
-        width: isMobile ? 794 : element.scrollWidth,
-        height: element.scrollHeight,
-        letterRendering: true,
-        foreignObjectRendering: false,
-        imageTimeout: isMobile ? 20000 : 15000,
-        onclone: (clonedDoc: Document) => {
-          // Apply fixes to cloned document
-          const clonedElement = clonedDoc.getElementById(elementId)
-          if (clonedElement) {
-            if (isMobile) {
-              clonedElement.style.width = '794px'
-              clonedElement.style.maxWidth = '794px'
-              clonedElement.style.transform = 'none'
-              clonedElement.style.position = 'static'
-              clonedElement.style.margin = '0'
-              clonedElement.style.padding = '40px'
-              clonedElement.style.boxSizing = 'border-box'
-            }
-            
-            // Fix font rendering in cloned document
-            clonedElement.style.fontSmooth = 'always'
-            clonedElement.style.webkitFontSmoothing = 'antialiased'
-            clonedElement.style.textRendering = 'optimizeLegibility'
-          }
-        },
-        ignoreElements: (element: Element) => {
-          return element.classList.contains('no-export') || 
-                 element.classList.contains('print:hidden') ||
-                 element.tagName === 'SCRIPT' ||
-                 element.tagName === 'STYLE'
-        }
+      // Validate CV data before export
+      const validation = validateCVForPDF(currentCV)
+      if (!validation.isValid) {
+        console.warn('⚠️ CV validation warnings:', validation.errors)
+        // Continue with generation but log warnings
       }
       
-      // Generate canvas
-      const canvas = await html2canvas(element, canvasOptions)
+      // Generate PDF using React-PDF renderer for perfect consistency
+      await exportCVToPDF(currentCV, {
+        filename: filename,
+        quality: 'high',
+        enableOptimization: true
+      })
       
-      // Clean up temporary styles
-      document.head.removeChild(tempStyle)
-      
-      // Restore element styles
-      if (isMobile) {
-        restoreElementStyles(element, originalStyles)
-      }
-      
-      // Restore hidden elements
-      restoreExportElements(hiddenElements, originalDisplays)
-      
-      // Create PDF
-      const imgData = canvas.toDataURL('image/jpeg', 0.95)
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
-      
-      // Calculate dimensions while maintaining aspect ratio
-      const canvasAspectRatio = canvas.height / canvas.width
-      let finalWidth = pdfWidth
-      let finalHeight = pdfWidth * canvasAspectRatio
-      let xOffset = 0
-      let yOffset = 0
-      
-      // Center the content if it doesn't fill the page
-      if (finalHeight < pdfHeight) {
-        yOffset = (pdfHeight - finalHeight) / 2
-      } else if (finalHeight > pdfHeight) {
-        // Scale down to fit height
-        finalHeight = pdfHeight
-        finalWidth = pdfHeight / canvasAspectRatio
-        xOffset = (pdfWidth - finalWidth) / 2
-      }
-      
-      pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight)
-      pdf.save(filename)
-      
+      console.log('✅ Mobile PDF export completed successfully')
       onSuccess?.()
       
     } catch (error) {
-      console.error('PDF export failed:', error)
+      console.error('❌ Mobile PDF export failed:', error)
       onError?.(error as Error)
     } finally {
       setIsExporting(false)
     }
-  }, [elementId, filename, onSuccess, onError])
+  }, [currentCV, filename, onSuccess, onError])
   
   const isMobile = detectMobile()
   
