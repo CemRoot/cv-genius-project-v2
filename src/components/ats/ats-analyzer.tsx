@@ -257,9 +257,10 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                         const text = await extractTextFromFile(file)
                         setCvText(text)
                         // Store file data for enhanced analysis
-                        (window as any).uploadedFileData = event.target?.result
-                        (window as any).uploadedFileName = file.name
-                        (window as any).uploadedFileSize = file.size
+                        const windowGlobal = window as any
+                        windowGlobal.uploadedFileData = event.target?.result
+                        windowGlobal.uploadedFileName = file.name
+                        windowGlobal.uploadedFileSize = file.size
                       }
                       reader.readAsDataURL(file)
                     }

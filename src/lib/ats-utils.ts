@@ -1231,7 +1231,7 @@ function detectFontIssues(content: string): string[] {
   // Check for problematic Unicode characters that might indicate font issues
   if (/[\uFFFD]/.test(content)) issues.push('Replacement characters detected')
   if (/[\u0080-\u009F]/.test(content)) issues.push('Control characters in text')
-  if (/[𝐀-𝑍𝑎-𝑧]/.test(content)) issues.push('Mathematical alphanumeric symbols')
+  if (/[\u{1D400}-\u{1D7FF}]/u.test(content)) issues.push('Mathematical alphanumeric symbols')
   if (/[ﬀ-ﬆ]/.test(content)) issues.push('Ligatures that may not parse correctly')
   
   return issues
