@@ -159,75 +159,123 @@ const modernStyles = StyleSheet.create({
   }
 })
 
-// Classic template styles - matching Irish Finance live preview
+// Classic template styles - EXACTLY matching live preview
 const classicStyles = StyleSheet.create({
-  ...commonStyles,
   page: {
-    ...commonStyles.page,
-    fontFamily: 'Times-Roman', // Closest to Georgia serif in PDF
-    lineHeight: 1.6,  // Match Irish Finance line height
+    fontFamily: 'Helvetica', // Match live preview sans-serif
+    fontSize: 11,
+    lineHeight: 1.3,  // Match live preview tight line height
+    paddingTop: 40,   // Compact margins like live preview (0.5in)
+    paddingBottom: 40,
+    paddingLeft: 40,
+    paddingRight: 40,
     backgroundColor: '#ffffff'
   },
   header: {
-    ...commonStyles.header,
     textAlign: 'center',
-    borderBottom: '1px solid #000000',  // Siyah border, ince: 2px -> 1px
-    marginBottom: 12  // Azalt: 20 -> 12
+    marginBottom: 16,  // Match mb-4 from live preview
+    borderBottom: 'none'  // No border in header itself
   },
   name: {
-    ...commonStyles.name,
-    fontSize: 18,  // Match live preview 18pt
+    fontSize: 20,  // Match text-3xl from live preview
+    fontWeight: 900,  // Match font-black
     textAlign: 'center',
-    color: '#000000',  // Black color to match live preview
-    fontWeight: 700,
-    textTransform: 'uppercase'  // Make name uppercase like live preview
+    color: '#000000',
+    marginBottom: 4  // Match mb-1 from live preview
+  },
+  title: {
+    fontSize: 16,  // Match text-lg from live preview
+    fontWeight: 500,  // Match font-medium
+    textAlign: 'center',
+    color: '#000000',
+    marginBottom: 12  // Match mb-3 from live preview
   },
   contact: {
-    ...commonStyles.contact,
-    justifyContent: 'center',
-    gap: 6,  // Azalt: 8 -> 6
-    fontSize: 9,  // Küçült: 11 -> 9
-    color: '#000000'  // Siyah yap: #111827 -> #000000
+    textAlign: 'center',
+    fontSize: 11,  // text-sm from live preview
+    color: '#000000',
+    marginBottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'center'
   },
   section: {
-    ...commonStyles.section,
-    marginBottom: 12  // Azalt: 20 -> 12 (tek sayfaya sığsın)
+    marginBottom: 16,  // Match mb-4 from live preview
+    breakInside: 'avoid'  // Prevent section breaks
   },
   sectionTitle: {
-    fontSize: 14,  // Match live preview
-    fontWeight: 'bold',
-    color: '#000000',  // SİYAH: live preview ile aynı (#166534 -> #000000)
-    marginBottom: 12,  // Match live preview spacing
-    textAlign: 'left',  // Left align like live preview
-    backgroundColor: 'transparent',  // ARKA PLAN KALDIR: live preview ile aynı
-    padding: 0,  // PADDING KALDIR: live preview ile aynı
-    borderLeft: 'none',  // SOL BORDER KALDIR: live preview ile aynı
-    borderBottom: '2px solid #000000',  // KALIN ÇİZGİ: live preview ile aynı
-    paddingBottom: 2,  // LIVE PREVIEW İLE AYNI: 2px
+    fontSize: 14,  // Match text-xl from live preview
+    fontWeight: 900,  // Match font-black
+    color: '#000000',
+    marginBottom: 8,  // Match mb-2 from live preview
+    textAlign: 'left',
+    borderBottom: '2px solid #000000',  // Match 2px border
+    paddingBottom: 2,
     textTransform: 'uppercase'
   },
   experienceItem: {
-    ...commonStyles.experienceItem,
-    marginBottom: 8  // Azalt: 12 -> 8
+    marginBottom: 12,  // Match space-y-3 from live preview
+    breakInside: 'avoid'  // Prevent item breaks
+  },
+  experienceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4  // Match mb-1 from live preview
   },
   jobTitle: {
-    ...commonStyles.jobTitle,
-    color: '#000000',  // Siyah yap: #166534 -> #000000
-    fontWeight: 500,  // Azalt: 600 -> 500
-    fontSize: 10  // Küçült
+    fontSize: 11,
+    fontWeight: 700,  // Match font-bold from live preview
+    color: '#000000'
   },
-  company: {
-    ...commonStyles.company,
-    color: '#111827'  // Irish Finance text color
-  },
-  dates: {
-    ...commonStyles.dates,
-    color: '#111827'  // Irish Finance text color
+  jobMeta: {
+    fontSize: 10,  // Match text-sm from live preview
+    color: '#000000',
+    textAlign: 'right'
   },
   description: {
-    ...commonStyles.description,
-    color: '#111827',  // Irish Finance text color
-    lineHeight: 1.6  // Match Irish Finance line height
+    fontSize: 11,
+    lineHeight: 1.3,  // Match leading-snug from live preview
+    color: '#000000',
+    textAlign: 'justify',  // Match text-justify from live preview
+    marginTop: 2
+  },
+  achievement: {
+    fontSize: 11,
+    lineHeight: 1.3,
+    color: '#000000',
+    marginLeft: 12,  // Match pl-6 from live preview
+    marginTop: 2
+  },
+  educationItem: {
+    marginBottom: 8,  // Match space-y-2 from live preview
+    breakInside: 'avoid'
+  },
+  institutionName: {
+    fontSize: 11,
+    fontWeight: 500,  // Match font-medium from live preview
+    color: '#000000',
+    marginTop: 2
+  },
+  grade: {
+    fontSize: 10,  // Match text-sm from live preview
+    color: '#000000',
+    marginTop: 4
+  },
+  skillsContainer: {
+    marginBottom: 4  // Match space-y-1 from live preview
+  },
+  skillCategory: {
+    fontSize: 10,  // Match text-sm from live preview
+    lineHeight: 1.3,
+    color: '#000000'
+  },
+  referenceText: {
+    fontSize: 11,
+    lineHeight: 1.3,
+    color: '#000000',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 8
   }
 })
 
@@ -499,51 +547,51 @@ export function ClassicTemplate({ data }: { data: CVData }) {
     console.warn('Font registration failed, using system fonts:', error)
   }
   
-  // Get font family from design settings - Irish Finance uses serif fonts
-  const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Times-Roman')
+  // Use Helvetica to match live preview sans-serif
+  const fontFamily = 'Helvetica'
   
   return (
     <Document>
-      <Page size="A4" style={{...classicStyles.page, fontFamily}}>
-        {/* Header */}
+      <Page size="A4" style={classicStyles.page}>
+        {/* Header - EXACTLY matching live preview */}
         <View style={classicStyles.header}>
           <Text style={classicStyles.name}>
-            {data.personal.fullName?.toUpperCase()}
+            {data.personal.fullName?.toUpperCase() || "YOUR NAME"}
           </Text>
+          
           {data.personal.title && (
-            <Text style={{
-              fontSize: 12,  // Küçült: 14 -> 12
-              fontWeight: 500,  // Azalt: 600 -> 500
-              color: '#000000',  // Siyah yap: #166534 -> #000000
-              textAlign: 'center',
-              marginTop: 3  // Azalt: 4 -> 3
-            }}>
+            <Text style={classicStyles.title}>
               {data.personal.title}
             </Text>
           )}
+          
+          {/* Contact info - Single line with proper spacing like live preview */}
           <View style={classicStyles.contact}>
             <Text>
               {[
                 data.personal.email,
                 data.personal.phone && formatIrishPhone(data.personal.phone),
                 data.personal.address,
-                data.personal.stamp
-              ].filter(Boolean).join(' • ')}
+                data.personal.nationality || data.personal.stamp
+              ].filter(Boolean).join('   ')}
             </Text>
           </View>
-          {(data.personal.github || data.personal.linkedin) && (
+          
+          {/* GitHub and LinkedIn on separate line if present */}
+          {(data.personal.github || data.personal.linkedin || data.personal.website) && (
             <View style={{...classicStyles.contact, marginTop: 4}}>
               <Text>
                 {[
-                  data.personal.github,
-                  data.personal.linkedin
-                ].filter(Boolean).join(' • ')}
+                  data.personal.github && data.personal.github.replace('https://', '').replace('http://', ''),
+                  data.personal.linkedin && 'linkedin.com',
+                  data.personal.website && data.personal.website.replace('https://', '').replace('http://', '')
+                ].filter(Boolean).join('   ')}
               </Text>
             </View>
           )}
         </View>
 
-        {/* Professional Profile/Summary */}
+        {/* Summary Section - EXACTLY matching live preview */}
         {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>SUMMARY</Text>
@@ -551,109 +599,88 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           </View>
         )}
 
-        {/* Professional Experience */}
+        {/* Experience Section - EXACTLY matching live preview */}
         {data.experience.length > 0 && isSectionVisible(data.sections, 'experience') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>EXPERIENCE</Text>
             {data.experience.map((exp, index) => (
               <View key={index} style={classicStyles.experienceItem}>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline'}}>
-                  <Text style={classicStyles.jobTitle}>{exp.position} at {exp.company}</Text>
-                  <Text style={classicStyles.dates}>
-                    {exp.location && `${exp.location} • `}{exp.startDate ? formatIrishDate(exp.startDate) : ''} - {exp.current ? 'Present' : (exp.endDate ? formatIrishDate(exp.endDate) : '')}
+                <View style={classicStyles.experienceHeader}>
+                  <Text style={classicStyles.jobTitle}>
+                    {exp.position} at {exp.company}
+                  </Text>
+                  <Text style={classicStyles.jobMeta}>
+                    {exp.location} • {exp.startDate ? formatIrishDate(exp.startDate) : ''} - {exp.current ? 'Present' : (exp.endDate ? formatIrishDate(exp.endDate) : '')}
                   </Text>
                 </View>
-                <Text style={classicStyles.description}>{exp.description}</Text>
+                {exp.description && (
+                  <Text style={classicStyles.description}>{exp.description}</Text>
+                )}
                 {exp.achievements?.map((achievement, idx) => (
-                  <Text key={idx} style={{
-                    ...classicStyles.achievement,
-                    color: '#111827'
-                  }}>• {achievement}</Text>
+                  <Text key={idx} style={classicStyles.achievement}>
+                    • {achievement}
+                  </Text>
                 ))}
               </View>
             ))}
           </View>
         )}
 
-        {/* Education */}
+        {/* Education Section - EXACTLY matching live preview */}
         {data.education.length > 0 && isSectionVisible(data.sections, 'education') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>EDUCATION</Text>
             {data.education.map((edu, index) => (
-              <View key={index} style={classicStyles.experienceItem}>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline'}}>
-                  <Text style={classicStyles.jobTitle}>{edu.degree} in {edu.field || edu.institution}</Text>
+              <View key={index} style={classicStyles.educationItem}>
+                <View style={classicStyles.experienceHeader}>
+                  <Text style={classicStyles.jobTitle}>
+                    {edu.degree} in {edu.field || 'studies'}
+                  </Text>
                   <View style={{alignItems: 'flex-end'}}>
-                    <Text style={classicStyles.dates}>{edu.location || 'Dublin, Ireland'}</Text>
-                    <Text style={classicStyles.dates}>
-                      {edu.startDate ? formatIrishDate(edu.startDate) : ''} - {edu.endDate ? formatIrishDate(edu.endDate) : 'Present'}
+                    <Text style={classicStyles.jobMeta}>{edu.location || 'Dublin, Ireland'}</Text>
+                    <Text style={classicStyles.jobMeta}>
+                      {edu.startDate ? formatIrishDate(edu.startDate) : ''} - {edu.current || edu.endDate === 'Present' ? 'Present' : edu.endDate ? formatIrishDate(edu.endDate) : ''}
                     </Text>
                   </View>
                 </View>
-                <Text style={classicStyles.company}>{edu.institution}</Text>
-                {edu.grade && <Text style={classicStyles.description}>Grade: {edu.grade}</Text>}
-                {edu.description && <Text style={classicStyles.description}>{edu.description}</Text>}
+                <Text style={classicStyles.institutionName}>{edu.institution}</Text>
+                {edu.grade && (
+                  <Text style={classicStyles.grade}>Grade: {edu.grade}</Text>
+                )}
+                {edu.description && (
+                  <Text style={classicStyles.description}>{edu.description}</Text>
+                )}
               </View>
             ))}
           </View>
         )}
 
-        {/* Qualifications/Certifications */}
-        {data.certifications && data.certifications.length > 0 && isSectionVisible(data.sections, 'certifications') && (
-          <View style={classicStyles.section}>
-            <Text style={classicStyles.sectionTitle}>QUALIFICATIONS</Text>
-            {data.certifications.map((cert, index) => (
-              <View key={index} style={classicStyles.experienceItem}>
-                <Text style={classicStyles.jobTitle}>{cert.name}</Text>
-                <Text style={classicStyles.company}>{cert.issuer}</Text>
-                <Text style={classicStyles.dates}>
-                  {cert.issueDate ? formatIrishDate(cert.issueDate) : ''}
-                  {cert.expiryDate && ` • Expires: ${formatIrishDate(cert.expiryDate)}`}
-                </Text>
-                {cert.description && <Text style={classicStyles.description}>{cert.description}</Text>}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Skills */}
+        {/* Skills Section - EXACTLY matching live preview with categories */}
         {data.skills.length > 0 && isSectionVisible(data.sections, 'skills') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>SKILLS</Text>
-            <View style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: 8
-            }}>
-              {data.skills.map((skill, index) => (
-                <Text key={index} style={{
-                  backgroundColor: '#f5f5f5',  // Gri yap: #f0fdf4 -> #f5f5f5
-                  padding: '3 6',  // Küçült: 4 8 -> 3 6
-                  borderRadius: 2,
-                  fontSize: 10,  // Küçült: 11 -> 10
-                  color: '#000000',  // Siyah yap: #166534 -> #000000
-                  fontWeight: 500,  // Azalt: 600 -> 500
-                  border: '1px solid #cccccc'  // Gri border: #166534 -> #cccccc
-                }}>
-                  {skill.name}
-                </Text>
-              ))}
-            </View>
+            {['Technical', 'Software', 'Soft', 'Other'].map((category) => {
+              const categorySkills = data.skills.filter(skill => skill.category === category)
+              if (categorySkills.length === 0) return null
+              
+              const skillNames = categorySkills.map(skill => skill.name).join(' • ')
+              
+              return (
+                <View key={category} style={classicStyles.skillsContainer}>
+                  <Text style={classicStyles.skillCategory}>
+                    <Text style={{fontWeight: 600}}>{category}:</Text> {skillNames}
+                  </Text>
+                </View>
+              )
+            })}
           </View>
         )}
 
-        {/* References */}
+        {/* References Section - EXACTLY matching live preview */}
         {isSectionVisible(data.sections, 'references') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>REFERENCES</Text>
-            <Text style={{
-              fontSize: 11,
-              lineHeight: 1.3,
-              color: '#000000',
-              fontStyle: 'italic',
-              textAlign: 'center',
-              marginTop: 8
-            }}>
+            <Text style={classicStyles.referenceText}>
               Available upon request
             </Text>
           </View>
