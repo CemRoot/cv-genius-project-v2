@@ -177,14 +177,18 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
           console.error('❌ [PDF Export] jsPDF failed to load:', err)
           return null
         }),
-        import('file-saver').catch((err) => {
+        import('file-saver').then(module => module.saveAs).catch((err) => {
           console.error('❌ [PDF Export] file-saver failed to load:', err)
           return null
         })
       ])
       
       if (!html2canvas || !jsPDF || !fileSaver) {
-        console.error('❌ [PDF Export] Libraries failed to load')
+        console.error('❌ [PDF Export] Libraries failed to load', {
+          html2canvas: !!html2canvas,
+          jsPDF: !!jsPDF,
+          fileSaver: !!fileSaver
+        })
         throw new Error('Required libraries failed to load. Please check your internet connection and try again.')
       }
       
@@ -566,7 +570,22 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
         }
         
         console.log('⬇️ [PDF Export] Starting file download:', fileName)
-        fileSaver.saveAs(pdfBlob, fileName)
+        
+        // Use file-saver properly - fileSaver is now the saveAs function directly
+        if (fileSaver && typeof fileSaver === 'function') {
+          fileSaver(pdfBlob, fileName)
+        } else {
+          // Manual download fallback
+          const url = window.URL.createObjectURL(pdfBlob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = fileName
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+        }
+        
         console.log('✅ [PDF Export] Download initiated successfully')
         
       } catch (pdfGenerationError) {
