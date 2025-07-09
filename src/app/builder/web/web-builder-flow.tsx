@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { StaticTemplateGallery } from './components/static-template-gallery'
 import { SimpleMultiStepForm } from './components/simple-multi-step-form'
 import { SimpleSplitView } from './components/simple-split-view'
@@ -38,6 +38,41 @@ export function WebBuilderFlow() {
   
   // Get estimated page count
   const estimatedPageCount = useCVPageCount(selectedTemplate || undefined)
+  
+  // Optimize template selection callback
+  const handleTemplateSelect = useCallback((templateId: string) => {
+    console.log('🎯 Template selected:', templateId)
+    
+    // Validate the selected template before applying it
+    const success = templateManager.selectTemplate(templateId)
+    if (success) {
+      setSelectedTemplate(templateId)
+      setCurrentStep('form')
+      sessionStorage.setItem('selectedTemplate', templateId)
+      // Update CV template to match selection
+      setTemplate(templateId)
+      // Update session state
+      updateSessionState({ selectedTemplateId: templateId })
+      // Clear any error state on successful selection
+      setTemplateError({ hasError: false })
+      console.log('✅ Template selection applied successfully:', templateId)
+    } else {
+      console.error('❌ Template selection failed:', templateId)
+      setTemplateError({
+        hasError: true,
+        title: 'Template Selection Failed',
+        message: `Unable to load the "${templateId}" template. Please try a different template.`,
+        canRetry: false
+      })
+    }
+  }, [templateManager, setTemplate, updateSessionState])
+  
+  // Optimize back handler
+  const handleBackToTemplates = useCallback(() => {
+    setSelectedTemplate(null)
+    setCurrentStep('template')
+    sessionStorage.removeItem('selectedTemplate')
+  }, [])
   
   // Initialize - restore session state or determine from CV data
   useEffect(() => {
@@ -143,8 +178,7 @@ export function WebBuilderFlow() {
       setSelectedTemplate(null)
       setCurrentStep('template')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCV, sessionState.selectedTemplateId])
+  }, [currentCV, sessionState.selectedTemplateId, templateManager, setTemplate, updateSessionState])
   
   // Update session state when template selection changes
   useEffect(() => {
@@ -154,17 +188,20 @@ export function WebBuilderFlow() {
         builderMode: 'form'
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTemplate])
+  }, [selectedTemplate, updateSessionState])
   
-  // Debug: Her render'da state'i logla
-  console.log('🟡 WebBuilderFlow RENDER:', { 
-    selectedTemplate, 
-    currentStep,
-    willShowGallery: !selectedTemplate,
-    sessionState: sessionState.selectedTemplateId,
-    hasExistingData: !!(currentCV && (currentCV.personal.fullName || currentCV.experience.length > 0))
-  })
+  // Debug: Only log significant state changes
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🟡 WebBuilderFlow RENDER:', { 
+        selectedTemplate, 
+        currentStep,
+        willShowGallery: !selectedTemplate,
+        sessionState: sessionState.selectedTemplateId,
+        hasExistingData: !!(currentCV && (currentCV.personal?.fullName || currentCV.experience?.length > 0))
+      })
+    }
+  }, [selectedTemplate, currentStep, sessionState.selectedTemplateId])
   
   // Update preview when CV data changes
   useEffect(() => {
@@ -235,7 +272,7 @@ export function WebBuilderFlow() {
       setPreviewHtml('')
       setPreviewCss('')
     }
-  }, [currentCV, selectedTemplate, templateManager])
+  }, [currentCV, selectedTemplate])
 
   // Show error state when there's a template error
   if (templateError.hasError) {
@@ -276,32 +313,7 @@ export function WebBuilderFlow() {
     console.log('🎨 Rendering template gallery because selectedTemplate is:', selectedTemplate)
     return (
       <StaticTemplateGallery 
-        onSelectTemplate={(templateId) => {
-          console.log('🎯 Template selected from gallery:', templateId)
-          
-          // Validate the selected template before applying it
-          const success = templateManager.selectTemplate(templateId)
-          if (success) {
-            setSelectedTemplate(templateId)
-            setCurrentStep('form')
-            sessionStorage.setItem('selectedTemplate', templateId)
-            // Update CV template to match selection
-            setTemplate(templateId)
-            // Update session state
-            updateSessionState({ selectedTemplateId: templateId })
-            // Clear any error state on successful selection
-            setTemplateError({ hasError: false })
-            console.log('✅ Template gallery selection applied successfully:', templateId)
-          } else {
-            console.error('❌ Template gallery selection failed:', templateId)
-            setTemplateError({
-              hasError: true,
-              title: 'Template Selection Failed',
-              message: `Unable to load the "${templateId}" template. Please try a different template.`,
-              canRetry: false
-            })
-          }
-        }}
+        onSelectTemplate={handleTemplateSelect}
       />
     )
   }
@@ -313,29 +325,7 @@ export function WebBuilderFlow() {
     console.log('🚨 Safety check: No valid template, redirecting to gallery')
     return (
       <StaticTemplateGallery 
-        onSelectTemplate={(templateId) => {
-          console.log('🎯 Template selected from safety gallery:', templateId)
-          
-          const success = templateManager.selectTemplate(templateId)
-          if (success) {
-            setSelectedTemplate(templateId)
-            setCurrentStep('form')
-            sessionStorage.setItem('selectedTemplate', templateId)
-            setTemplate(templateId)
-            updateSessionState({ selectedTemplateId: templateId })
-            // Clear any error state on successful selection
-            setTemplateError({ hasError: false })
-            console.log('✅ Safety template selection applied:', templateId)
-          } else {
-            console.error('❌ Safety template selection failed:', templateId)
-            setTemplateError({
-              hasError: true,
-              title: 'Template Selection Failed',
-              message: `Unable to load the "${templateId}" template. Please try a different template.`,
-              canRetry: false
-            })
-          }
-        }}
+        onSelectTemplate={handleTemplateSelect}
       />
     )
   }
@@ -369,11 +359,7 @@ export function WebBuilderFlow() {
               ) : (
                 <SimpleMultiStepForm 
                   templateId={selectedTemplate || 'classic'}
-                  onBack={() => {
-                    setSelectedTemplate(null)
-                    setCurrentStep('template')
-                    sessionStorage.removeItem('selectedTemplate')
-                  }}
+                  onBack={handleBackToTemplates}
                 />
               )}
             </div>

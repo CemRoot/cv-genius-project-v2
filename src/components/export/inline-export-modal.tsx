@@ -97,6 +97,8 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
         fileSaver: results[2],
         allAvailable: results.every(r => r)
       })
+    }).catch(error => {
+      console.error('📦 [PDF Export] Library check failed:', error)
     })
   }
   
@@ -168,7 +170,7 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
       setProcessingProgress(20)
       
       // Dynamic imports with fallback handling
-      const [html2canvas, jsPDF, fileSaver] = await Promise.all([
+      const [html2canvas, jsPDF, fileSaverModule] = await Promise.all([
         import('html2canvas').catch((err) => {
           console.error('❌ [PDF Export] html2canvas failed to load:', err)
           return null
@@ -177,17 +179,21 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
           console.error('❌ [PDF Export] jsPDF failed to load:', err)
           return null
         }),
-        import('file-saver').then(module => module.saveAs).catch((err) => {
+        import('file-saver').catch((err) => {
           console.error('❌ [PDF Export] file-saver failed to load:', err)
           return null
         })
       ])
       
+      // Extract saveAs function from file-saver module
+      const fileSaver = fileSaverModule?.saveAs || fileSaverModule?.default?.saveAs || null
+      
       if (!html2canvas || !jsPDF || !fileSaver) {
         console.error('❌ [PDF Export] Libraries failed to load', {
           html2canvas: !!html2canvas,
           jsPDF: !!jsPDF,
-          fileSaver: !!fileSaver
+          fileSaver: !!fileSaver,
+          fileSaverModule: !!fileSaverModule
         })
         throw new Error('Required libraries failed to load. Please check your internet connection and try again.')
       }
