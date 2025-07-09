@@ -1,36 +1,25 @@
-import { Font } from '@react-pdf/renderer'
+// PDF font utilities for React-PDF
+// Standard PDF fonts (Helvetica, Times-Roman) don't need registration
 
 let fontsRegistered = false
 
 export const registerPDFFonts = async () => {
   if (fontsRegistered) return
   
-  try {
-    // Use simpler, more reliable font registration
-    // These fonts are built into most PDF viewers
-    Font.register({
-      family: 'Times-Roman',
-      src: 'data:font/truetype;charset=utf-8;base64,', // Fallback
-    })
-    
-    Font.register({
-      family: 'Helvetica',
-      src: 'data:font/truetype;charset=utf-8;base64,', // Fallback
-    })
-    
-    fontsRegistered = true
-    console.log('PDF fonts registered successfully')
-  } catch (error) {
-    console.warn('Font registration skipped, using system fonts')
-    fontsRegistered = true // Continue anyway
-  }
+  // Standard PDF fonts are available by default in React-PDF:
+  // - Helvetica (sans-serif)
+  // - Times-Roman (serif)
+  // - Courier (monospace)
+  // No registration needed for these fonts
+  
+  fontsRegistered = true
+  console.log('PDF fonts ready - using standard PDF fonts')
 }
 
-// Map font family names to PDF-compatible names
+// Map font family names to PDF-compatible standard fonts
 export const getFontFamilyForPDF = (fontFamily: string): string => {
-  // Simple and reliable font mapping
   const fontMap: { [key: string]: string } = {
-    // Serif fonts
+    // Serif fonts -> Times-Roman
     'Times New Roman': 'Times-Roman',
     'Georgia': 'Times-Roman',
     'Source Serif Pro': 'Times-Roman',
@@ -38,7 +27,7 @@ export const getFontFamilyForPDF = (fontFamily: string): string => {
     'Merriweather': 'Times-Roman',
     'Playfair Display': 'Times-Roman',
     
-    // Sans-serif fonts  
+    // Sans-serif fonts -> Helvetica
     'Arial': 'Helvetica',
     'Calibri': 'Helvetica',
     'Inter': 'Helvetica',
@@ -46,8 +35,14 @@ export const getFontFamilyForPDF = (fontFamily: string): string => {
     'Open Sans': 'Helvetica',
     'Lato': 'Helvetica',
     'Montserrat': 'Helvetica',
-    'Rubik': 'Helvetica'
+    'Rubik': 'Helvetica',
+    
+    // Monospace fonts -> Courier
+    'Courier New': 'Courier',
+    'Consolas': 'Courier',
+    'Monaco': 'Courier'
   }
   
+  // Default to Helvetica for unmapped fonts
   return fontMap[fontFamily] || 'Helvetica'
 }

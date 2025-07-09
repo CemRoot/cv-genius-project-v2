@@ -73,7 +73,8 @@ const commonStyles = StyleSheet.create({
   description: {
     fontSize: 11,  // Match live preview
     lineHeight: 1.3,  // Match live preview line-height
-    color: '#000000'  // Black like live preview
+    color: '#000000',  // Black like live preview
+    textAlign: 'justify'  // Justify text like live preview
   },
   skillsContainer: {
     flexDirection: 'row',
@@ -177,8 +178,9 @@ const classicStyles = StyleSheet.create({
     ...commonStyles.name,
     fontSize: 18,  // Match live preview 18pt
     textAlign: 'center',
-    color: '#166534',  // Irish Finance green color
-    fontWeight: 700
+    color: '#000000',  // Black color to match live preview
+    fontWeight: 700,
+    textTransform: 'uppercase'  // Make name uppercase like live preview
   },
   contact: {
     ...commonStyles.contact,
@@ -308,7 +310,11 @@ interface PDFTemplateProps {
 
 export function ModernTemplate({ data }: { data: CVData }) {
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
-  registerPDFFonts()
+  try {
+    registerPDFFonts()
+  } catch (error) {
+    console.warn('Font registration failed, using system fonts:', error)
+  }
   
   // Get font family from design settings
   const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Helvetica')
@@ -487,7 +493,11 @@ export function ModernTemplate({ data }: { data: CVData }) {
 
 export function ClassicTemplate({ data }: { data: CVData }) {
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
-  registerPDFFonts()
+  try {
+    registerPDFFonts()
+  } catch (error) {
+    console.warn('Font registration failed, using system fonts:', error)
+  }
   
   // Get font family from design settings - Irish Finance uses serif fonts
   const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Times-Roman')
@@ -498,7 +508,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
         {/* Header */}
         <View style={classicStyles.header}>
           <Text style={classicStyles.name}>
-            {data.personal.fullName}
+            {data.personal.fullName?.toUpperCase()}
           </Text>
           {data.personal.title && (
             <Text style={{
@@ -512,17 +522,31 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             </Text>
           )}
           <View style={classicStyles.contact}>
-            {data.personal.phone && <Text>{formatIrishPhone(data.personal.phone)}</Text>}
-            {data.personal.email && <Text>{data.personal.email}</Text>}
-            {data.personal.address && <Text>{data.personal.address}</Text>}
-            {data.personal.linkedin && <Text>{data.personal.linkedin}</Text>}
+            <Text>
+              {[
+                data.personal.email,
+                data.personal.phone && formatIrishPhone(data.personal.phone),
+                data.personal.address,
+                data.personal.stamp
+              ].filter(Boolean).join(' • ')}
+            </Text>
           </View>
+          {(data.personal.github || data.personal.linkedin) && (
+            <View style={{...classicStyles.contact, marginTop: 4}}>
+              <Text>
+                {[
+                  data.personal.github,
+                  data.personal.linkedin
+                ].filter(Boolean).join(' • ')}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Professional Profile/Summary */}
         {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={classicStyles.section}>
-            <Text style={classicStyles.sectionTitle}>PROFESSIONAL PROFILE</Text>
+            <Text style={classicStyles.sectionTitle}>SUMMARY</Text>
             <Text style={classicStyles.description}>{data.personal.summary}</Text>
           </View>
         )}
@@ -530,14 +554,15 @@ export function ClassicTemplate({ data }: { data: CVData }) {
         {/* Professional Experience */}
         {data.experience.length > 0 && isSectionVisible(data.sections, 'experience') && (
           <View style={classicStyles.section}>
-            <Text style={classicStyles.sectionTitle}>PROFESSIONAL EXPERIENCE</Text>
+            <Text style={classicStyles.sectionTitle}>EXPERIENCE</Text>
             {data.experience.map((exp, index) => (
               <View key={index} style={classicStyles.experienceItem}>
-                <Text style={classicStyles.jobTitle}>{exp.position}</Text>
-                <Text style={classicStyles.company}>{exp.company}</Text>
-                <Text style={classicStyles.dates}>
-                  {exp.startDate ? formatIrishDate(exp.startDate) : ''} - {exp.current ? 'Present' : (exp.endDate ? formatIrishDate(exp.endDate) : '')}
-                </Text>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline'}}>
+                  <Text style={classicStyles.jobTitle}>{exp.position} at {exp.company}</Text>
+                  <Text style={classicStyles.dates}>
+                    {exp.location && `${exp.location} • `}{exp.startDate ? formatIrishDate(exp.startDate) : ''} - {exp.current ? 'Present' : (exp.endDate ? formatIrishDate(exp.endDate) : '')}
+                  </Text>
+                </View>
                 <Text style={classicStyles.description}>{exp.description}</Text>
                 {exp.achievements?.map((achievement, idx) => (
                   <Text key={idx} style={{
@@ -556,12 +581,17 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             <Text style={classicStyles.sectionTitle}>EDUCATION</Text>
             {data.education.map((edu, index) => (
               <View key={index} style={classicStyles.experienceItem}>
-                <Text style={classicStyles.jobTitle}>{edu.degree}</Text>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline'}}>
+                  <Text style={classicStyles.jobTitle}>{edu.degree} in {edu.field || edu.institution}</Text>
+                  <View style={{alignItems: 'flex-end'}}>
+                    <Text style={classicStyles.dates}>{edu.location || 'Dublin, Ireland'}</Text>
+                    <Text style={classicStyles.dates}>
+                      {edu.startDate ? formatIrishDate(edu.startDate) : ''} - {edu.endDate ? formatIrishDate(edu.endDate) : 'Present'}
+                    </Text>
+                  </View>
+                </View>
                 <Text style={classicStyles.company}>{edu.institution}</Text>
-                <Text style={classicStyles.dates}>
-                  {edu.startDate ? formatIrishDate(edu.startDate) : ''} - {edu.endDate ? formatIrishDate(edu.endDate) : ''}
-                  {edu.grade && ` • ${edu.grade}`}
-                </Text>
+                {edu.grade && <Text style={classicStyles.description}>Grade: {edu.grade}</Text>}
                 {edu.description && <Text style={classicStyles.description}>{edu.description}</Text>}
               </View>
             ))}
@@ -611,6 +641,23 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             </View>
           </View>
         )}
+
+        {/* References */}
+        {isSectionVisible(data.sections, 'references') && (
+          <View style={classicStyles.section}>
+            <Text style={classicStyles.sectionTitle}>REFERENCES</Text>
+            <Text style={{
+              fontSize: 11,
+              lineHeight: 1.3,
+              color: '#000000',
+              fontStyle: 'italic',
+              textAlign: 'center',
+              marginTop: 8
+            }}>
+              Available upon request
+            </Text>
+          </View>
+        )}
       </Page>
     </Document>
   )
@@ -618,7 +665,11 @@ export function ClassicTemplate({ data }: { data: CVData }) {
 
 export function CreativeTemplate({ data }: { data: CVData }) {
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
-  registerPDFFonts()
+  try {
+    registerPDFFonts()
+  } catch (error) {
+    console.warn('Font registration failed, using system fonts:', error)
+  }
   
   // Get font family from design settings
   const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Times New Roman')
