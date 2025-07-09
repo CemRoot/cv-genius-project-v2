@@ -6,147 +6,220 @@ import { registerPDFFonts, getFontFamilyForPDF } from '@/lib/pdf-fonts'
 // Using web-safe fonts to avoid CORS issues
 // No font registration needed for Helvetica, Times-Roman
 
-// Common styles for all templates with proper margins
+// Common styles matched with live preview (IrishCVTemplateManager)
 const commonStyles = StyleSheet.create({
   page: {
-    fontFamily: 'Helvetica',
-    fontSize: 9,  // Reduced from 10
-    lineHeight: 1.2,  // Reduced from 1.4
-    // Use 15mm (42.5pt) margins for consistency with CSS @page rules
-    paddingTop: 42.5,
+    fontFamily: 'Helvetica', // Closest to Arial in PDF
+    fontSize: 11,  // Match live preview base 11pt
+    lineHeight: 1.3,  // Match live preview line-height
+    // Use 15mm margins to match live preview padding
+    paddingTop: 42.5,  // 15mm = 42.5pt
     paddingBottom: 42.5,
-    paddingLeft: 42.5,
+    paddingLeft: 42.5, 
     paddingRight: 42.5,
     backgroundColor: '#ffffff'
   },
   header: {
-    marginBottom: 8,  // Reduced from 20
-    borderBottom: '1px solid #333',  // Thinner border
-    paddingBottom: 6  // Reduced from 15
+    marginBottom: 16,  // Match live preview spacing
+    borderBottom: '2px solid #000000',  // Match live preview border
+    paddingBottom: 8
   },
   name: {
-    fontSize: 20,  // Reduced from 24
-    fontWeight: 500,  // Reduced from 600 (normal ATS font weight)
-    color: '#333',
-    marginBottom: 2  // Reduced from 5
+    fontSize: 18,  // Match live preview 18pt
+    fontWeight: 700,  // Match live preview font-weight: 700
+    color: '#000000',  // Pure black like live preview
+    marginBottom: 4
   },
   contact: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    fontSize: 8,  // Reduced from 9
-    color: '#666',
-    marginTop: 2  // Reduced from 5
+    fontSize: 11,  // Match live preview 11pt
+    color: '#000000',  // Black for ATS like live preview
+    marginTop: 8
   },
   section: {
-    marginBottom: 6  // Reduced from 15 (approximately 1.5mm)
+    marginBottom: 16  // Match live preview section spacing (1rem = 16pt)
   },
   sectionTitle: {
-    fontSize: 11,  // Reduced from 14
-    fontWeight: 500,  // Reduced from 600 (ATS friendly)
-    color: '#333',
-    marginBottom: 3,  // Reduced from 8 (approximately 1mm)
-    borderBottom: '0.5px solid #ddd',  // Thinner border
-    paddingBottom: 1  // Reduced from 3
+    fontSize: 14,  // Match live preview 14pt section headers
+    fontWeight: 'bold',  // Match live preview font-weight: bold
+    color: '#000000',  // Black like live preview
+    marginBottom: 8,
+    borderBottom: '2px solid #000000',  // Match live preview border
+    paddingBottom: 4,
+    textTransform: 'uppercase'  // Match live preview uppercase
   },
   experienceItem: {
-    marginBottom: 5  // Reduced from 12
+    marginBottom: 12  // Better spacing for readability
   },
   jobTitle: {
-    fontSize: 10,  // Reduced from 12
-    fontWeight: 500,  // Reduced from 600 (ATS friendly)
-    color: '#333'
+    fontSize: 11,  // Match live preview base size
+    fontWeight: 600,  // Match live preview font-weight
+    color: '#000000'  // Black like live preview
   },
   company: {
-    fontSize: 9,  // Reduced from 11
-    color: '#666',
-    marginBottom: 1  // Reduced from 2
+    fontSize: 11,  // Match live preview
+    color: '#000000',  // Black for ATS like live preview
+    marginBottom: 4
   },
   dates: {
-    fontSize: 8,  // Reduced from 9
-    color: '#888',
-    marginBottom: 2  // Reduced from 4
+    fontSize: 11,  // Match live preview
+    color: '#000000',  // Black for ATS like live preview
+    marginBottom: 4
   },
   description: {
-    fontSize: 9,  // Reduced from 10
-    lineHeight: 1.2,  // Reduced from 1.3
-    color: '#555'
+    fontSize: 11,  // Match live preview
+    lineHeight: 1.3,  // Match live preview line-height
+    color: '#000000'  // Black like live preview
   },
   skillsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4  // Reduced from 8
+    gap: 8  // Better spacing
   },
   skillItem: {
-    backgroundColor: '#f0f0f0',
-    padding: '2 4',  // Reduced from '4 8'
-    borderRadius: 2,  // Reduced from 3
-    fontSize: 8,  // Reduced from 9
-    color: '#333'
+    backgroundColor: '#e5e7eb',  // Match live preview skill bar background
+    padding: '4 8',  // Better padding
+    borderRadius: 2,
+    fontSize: 11,  // Match live preview
+    color: '#000000'  // Black like live preview
   },
   achievement: {
-    marginBottom: 2,  // Reduced from 3
-    paddingLeft: 8,  // Reduced from 10
-    fontSize: 9,  // Reduced from 10
-    color: '#555'
+    marginBottom: 4,
+    paddingLeft: 12,
+    fontSize: 11,  // Match live preview
+    color: '#000000'  // Black like live preview
   }
 })
 
-// Modern template styles
+// Modern template styles - matching Dublin Tech live preview
 const modernStyles = StyleSheet.create({
   ...commonStyles,
   page: {
     ...commonStyles.page,
-    backgroundColor: '#fafafa'
+    backgroundColor: '#ffffff',  // White background like live preview
+    flexDirection: 'row'  // Two-column layout like live preview
+  },
+  // Sidebar (left column) - matching live preview sidebar
+  sidebar: {
+    width: '35%',
+    backgroundColor: '#f8f9fa',  // Light gray like live preview
+    padding: 16,  // 2rem = 16pt
+    borderRight: '2px solid #000000'  // Black border like live preview
+  },
+  // Main content (right column)
+  mainContent: {
+    width: '65%',
+    padding: 16  // 2rem = 16pt
   },
   header: {
     ...commonStyles.header,
-    backgroundColor: '#2563eb',
-    color: 'white',
-    padding: 10,  // Reduced from 20
-    margin: -42.5,  // Adjusted to match page padding
-    marginBottom: 8,  // Reduced from 20
-    borderBottom: 'none'
+    backgroundColor: 'transparent',  // No background in sidebar
+    borderBottom: 'none',  // No border in sidebar
+    marginBottom: 16,
+    padding: 0,
+    margin: 0
   },
   name: {
     ...commonStyles.name,
-    color: 'white',
-    fontSize: 22  // Reduced from 28
+    color: '#000000',  // Black like live preview
+    fontSize: 18,  // Match live preview 18pt
+    fontWeight: 700
   },
   contact: {
     ...commonStyles.contact,
-    color: '#e5e7eb'
+    color: '#000000',  // Black like live preview
+    fontSize: 11,  // Match live preview 11pt
+    fontWeight: 500,
+    flexDirection: 'column',  // Stack vertically in sidebar
+    justifyContent: 'flex-start',
+    gap: 4
   },
   sectionTitle: {
     ...commonStyles.sectionTitle,
-    color: '#2563eb',
-    borderBottom: '2px solid #2563eb'
+    color: '#000000',  // Black like live preview
+    borderBottom: '2px solid #000000'  // Black border like live preview
+  },
+  // Sidebar specific styles
+  sidebarSection: {
+    marginBottom: 16  // 1rem = 16pt
+  },
+  sidebarSectionTitle: {
+    fontSize: 14,  // Match live preview 14pt
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 8,
+    borderBottom: '2px solid #000000',
+    paddingBottom: 4,
+    textTransform: 'uppercase'
   }
 })
 
-// Classic template styles
+// Classic template styles - matching Irish Finance live preview
 const classicStyles = StyleSheet.create({
   ...commonStyles,
+  page: {
+    ...commonStyles.page,
+    fontFamily: 'Times-Roman', // Closest to Georgia serif in PDF
+    lineHeight: 1.6,  // Match Irish Finance line height
+    backgroundColor: '#ffffff'
+  },
   header: {
     ...commonStyles.header,
     textAlign: 'center',
-    borderBottom: '1px solid #333'  // Reduced from 3px double
+    borderBottom: '2px solid #166534',  // Green border like Irish Finance
+    marginBottom: 20  // Match Irish Finance 2rem spacing
   },
   name: {
     ...commonStyles.name,
-    fontSize: 20,  // Reduced from 26
-    textAlign: 'center'
+    fontSize: 18,  // Match live preview 18pt
+    textAlign: 'center',
+    color: '#166534',  // Irish Finance green color
+    fontWeight: 700
   },
   contact: {
     ...commonStyles.contact,
     justifyContent: 'center',
-    gap: 10  // Reduced from 20
+    gap: 8,
+    fontSize: 11,  // Match live preview
+    color: '#111827'  // Irish Finance text color
+  },
+  section: {
+    ...commonStyles.section,
+    marginBottom: 20  // Match Irish Finance 2rem spacing
   },
   sectionTitle: {
-    ...commonStyles.sectionTitle,
-    textAlign: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 2,  // Reduced from 5
-    borderBottom: 'none'
+    fontSize: 14,  // Match live preview
+    fontWeight: 'bold',
+    color: '#166534',  // Irish Finance green
+    marginBottom: 12,  // Match Irish Finance 1.2rem
+    textAlign: 'left',  // Left align like live preview
+    backgroundColor: '#f0fdf4',  // Light green background like Irish Finance
+    padding: 8,  // Better padding
+    borderLeft: '4px solid #166534',  // Left border accent
+    textTransform: 'uppercase'
+  },
+  experienceItem: {
+    ...commonStyles.experienceItem,
+    marginBottom: 12  // Match Irish Finance 1.2rem spacing
+  },
+  jobTitle: {
+    ...commonStyles.jobTitle,
+    color: '#166534',  // Green for job titles
+    fontWeight: 600
+  },
+  company: {
+    ...commonStyles.company,
+    color: '#111827'  // Irish Finance text color
+  },
+  dates: {
+    ...commonStyles.dates,
+    color: '#111827'  // Irish Finance text color
+  },
+  description: {
+    ...commonStyles.description,
+    color: '#111827',  // Irish Finance text color
+    lineHeight: 1.6  // Match Irish Finance line height
   }
 })
 
@@ -232,136 +305,175 @@ export function ModernTemplate({ data }: { data: CVData }) {
   registerPDFFonts()
   
   // Get font family from design settings
-  const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Times New Roman')
+  const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Helvetica')
   
   return (
     <Document>
       <Page size="A4" style={{...modernStyles.page, fontFamily}}>
-        {/* Header */}
-        <View style={modernStyles.header}>
-          <Text style={modernStyles.name}>
-            {data.personal.fullName}
-          </Text>
-          <View style={modernStyles.contact}>
-            <Text>{formatIrishPhone(data.personal.phone)}</Text>
-            <Text>{data.personal.email}</Text>
-            <Text>{data.personal.address}</Text>
-          </View>
-        </View>
-
-        {/* Professional Summary */}
-        {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
-          <View style={modernStyles.section}>
-            <Text style={modernStyles.sectionTitle}>Professional Summary</Text>
-            <Text style={modernStyles.description}>{data.personal.summary}</Text>
-          </View>
-        )}
-
-        {/* Experience */}
-        {data.experience.length > 0 && (
-          <View style={modernStyles.section}>
-            <Text style={modernStyles.sectionTitle}>Professional Experience</Text>
-            {data.experience.map((exp, index) => (
-              <View key={index} style={modernStyles.experienceItem}>
-                <Text style={modernStyles.jobTitle}>{exp.position}</Text>
-                <Text style={modernStyles.company}>{exp.company}</Text>
-                <Text style={modernStyles.dates}>
-                  {formatIrishDate(exp.startDate)} - {exp.current ? 'Present' : formatIrishDate(exp.endDate)}
-                </Text>
-                <Text style={modernStyles.description}>{exp.description}</Text>
-                {exp.achievements?.map((achievement, idx) => (
-                  <Text key={idx} style={modernStyles.achievement}>• {achievement}</Text>
-                ))}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Education */}
-        {data.education.length > 0 && (
-          <View style={modernStyles.section}>
-            <Text style={modernStyles.sectionTitle}>Education</Text>
-            {data.education.map((edu, index) => (
-              <View key={index} style={modernStyles.experienceItem}>
-                <Text style={modernStyles.jobTitle}>{edu.degree}</Text>
-                <Text style={modernStyles.company}>{edu.institution}</Text>
-                <Text style={modernStyles.dates}>
-                  {formatIrishDate(edu.startDate)} - {formatIrishDate(edu.endDate)}
-                  {edu.grade && ` • ${edu.grade}`}
-                </Text>
-                {edu.description && <Text style={modernStyles.description}>{edu.description}</Text>}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Skills */}
-        {data.skills.length > 0 && isSectionVisible(data.sections, 'skills') && (
-          <View style={modernStyles.section}>
-            <Text style={modernStyles.sectionTitle}>Skills</Text>
-            <View style={modernStyles.skillsContainer}>
-              {data.skills.map((skill, index) => (
-                <Text key={index} style={modernStyles.skillItem}>
-                  {skill.name} {skill.level && `(${skill.level}/4)`}
-                </Text>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* References */}
-        {(() => {
-          const isReferencesVisible = isSectionVisible(data.sections, 'references')
-          const referencesDisplay = data.referencesDisplay || 'available-on-request'
-          const hasReferences = data.references && data.references.length > 0
+        
+        {/* SIDEBAR - Left Column (35%) - matching Dublin Tech live preview */}
+        <View style={modernStyles.sidebar}>
           
-          const shouldShowReferencesSection = isReferencesVisible && (
-            (referencesDisplay === 'detailed' && hasReferences) ||
-            (referencesDisplay === 'available-on-request')
-          )
-          
-          return shouldShowReferencesSection
-        })() && (
-          <View style={modernStyles.section}>
-            <Text style={modernStyles.sectionTitle}>References</Text>
-            {data.referencesDisplay === 'detailed' && data.references && data.references.length > 0 ? (
-              <View>
-                {data.references.map((reference, index) => (
-                  <View key={index} style={{ marginBottom: 8 }}>
-                    <Text style={modernStyles.jobTitle}>{reference.name}</Text>
-                    <Text style={modernStyles.company}>{reference.position}</Text>
-                    {reference.company && (
-                      <Text style={modernStyles.company}>{reference.company}</Text>
-                    )}
-                    <Text style={modernStyles.dates}>{reference.email}{reference.phone ? ` • ${formatIrishPhone(reference.phone)}` : ''}</Text>
-                    {reference.relationship && (
-                      <Text style={{ fontSize: 9, color: '#888888', fontStyle: 'italic' }}>
-                        ({reference.relationship})
-                      </Text>
-                    )}
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <Text style={modernStyles.description}>References available upon request</Text>
+          {/* Header - Name & Title */}
+          <View style={modernStyles.header}>
+            <Text style={modernStyles.name}>
+              {data.personal.fullName}
+            </Text>
+            {data.personal.title && (
+              <Text style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#000000',
+                marginBottom: 16
+              }}>
+                {data.personal.title}
+              </Text>
             )}
           </View>
-        )}
 
-        {/* Footer - Only show if references section is not visible or user hasn't explicitly set preference */}
-        {(!isSectionVisible(data.sections, 'references') || !data.referencesDisplay) && (
-          <View style={{
-            textAlign: 'center',
-            marginTop: 20,
-            paddingTop: 10,
-            borderTop: '1pt solid #cccccc'
-          }}>
-            <Text style={{
-              fontSize: 8,
-              color: '#666666'
-            }}>References available upon request</Text>
+          {/* Contact Information */}
+          <View style={modernStyles.sidebarSection}>
+            <Text style={modernStyles.sidebarSectionTitle}>CONTACT</Text>
+            <View style={modernStyles.contact}>
+              {data.personal.phone && <Text>{formatIrishPhone(data.personal.phone)}</Text>}
+              {data.personal.email && <Text>{data.personal.email}</Text>}
+              {data.personal.address && <Text>{data.personal.address}</Text>}
+              {data.personal.linkedin && <Text>{data.personal.linkedin}</Text>}
+            </View>
           </View>
-        )}
+
+          {/* Skills - with progress bars like live preview */}
+          {data.skills.length > 0 && isSectionVisible(data.sections, 'skills') && (
+            <View style={modernStyles.sidebarSection}>
+              <Text style={modernStyles.sidebarSectionTitle}>SKILLS</Text>
+              {data.skills.map((skill, index) => (
+                <View key={index} style={{ marginBottom: 8 }}>
+                  <Text style={{
+                    fontSize: 11,
+                    color: '#000000',
+                    fontWeight: 600,
+                    marginBottom: 3
+                  }}>
+                    {skill.name}
+                  </Text>
+                  {/* Skill level bar representation */}
+                  {skill.level && (
+                    <View style={{
+                      width: '100%',
+                      height: 6,
+                      backgroundColor: '#e5e7eb',
+                      borderRadius: 2,
+                      border: '1px solid #000000'
+                    }}>
+                      <View style={{
+                        width: `${(Number(skill.level) / 4) * 100}%`,
+                        height: '100%',
+                        backgroundColor: '#000000',
+                        borderRadius: 2
+                      }} />
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Languages */}
+          {data.languages && data.languages.length > 0 && isSectionVisible(data.sections, 'languages') && (
+            <View style={modernStyles.sidebarSection}>
+              <Text style={modernStyles.sidebarSectionTitle}>LANGUAGES</Text>
+              {data.languages.map((language, index) => (
+                <View key={index} style={{ marginBottom: 4 }}>
+                  <Text style={{
+                    fontSize: 11,
+                    color: '#000000',
+                    fontWeight: 500
+                  }}>
+                    {language.name} {language.level && `(${language.level})`}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+        </View>
+
+        {/* MAIN CONTENT - Right Column (65%) */}
+        <View style={modernStyles.mainContent}>
+
+          {/* Professional Summary */}
+          {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
+            <View style={modernStyles.section}>
+              <Text style={modernStyles.sectionTitle}>SUMMARY</Text>
+              <Text style={modernStyles.description}>{data.personal.summary}</Text>
+            </View>
+          )}
+
+          {/* Experience */}
+          {data.experience.length > 0 && (
+            <View style={modernStyles.section}>
+              <Text style={modernStyles.sectionTitle}>EXPERIENCE</Text>
+              {data.experience.map((exp, index) => (
+                <View key={index} style={modernStyles.experienceItem}>
+                  <Text style={modernStyles.jobTitle}>{exp.position}</Text>
+                  <Text style={modernStyles.company}>{exp.company}</Text>
+                  <Text style={modernStyles.dates}>
+                    {formatIrishDate(exp.startDate)} - {exp.current ? 'Present' : formatIrishDate(exp.endDate)}
+                  </Text>
+                  <Text style={modernStyles.description}>{exp.description}</Text>
+                  {exp.achievements?.map((achievement, idx) => (
+                    <Text key={idx} style={modernStyles.achievement}>• {achievement}</Text>
+                  ))}
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Education */}
+          {data.education.length > 0 && (
+            <View style={modernStyles.section}>
+              <Text style={modernStyles.sectionTitle}>EDUCATION</Text>
+              {data.education.map((edu, index) => (
+                <View key={index} style={modernStyles.experienceItem}>
+                  <Text style={modernStyles.jobTitle}>{edu.degree}</Text>
+                  <Text style={modernStyles.company}>{edu.institution}</Text>
+                  <Text style={modernStyles.dates}>
+                    {formatIrishDate(edu.startDate)} - {formatIrishDate(edu.endDate)}
+                    {edu.grade && ` • ${edu.grade}`}
+                  </Text>
+                  {edu.description && <Text style={modernStyles.description}>{edu.description}</Text>}
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Projects */}
+          {data.projects && data.projects.length > 0 && isSectionVisible(data.sections, 'projects') && (
+            <View style={modernStyles.section}>
+              <Text style={modernStyles.sectionTitle}>PROJECTS</Text>
+              {data.projects.map((project, index) => (
+                <View key={index} style={modernStyles.experienceItem}>
+                  <Text style={modernStyles.jobTitle}>{project.name}</Text>
+                  {project.url && <Text style={modernStyles.company}>{project.url}</Text>}
+                  <Text style={modernStyles.dates}>
+                    {project.startDate ? formatIrishDate(project.startDate) : ''} - {project.endDate ? formatIrishDate(project.endDate) : 'Present'}
+                  </Text>
+                  <Text style={modernStyles.description}>{project.description}</Text>
+                                     {project.technologies && project.technologies.length > 0 && (
+                     <Text style={{
+                       fontSize: 10,
+                       color: '#666666',
+                       marginTop: 4
+                     }}>
+                       Technologies: {project.technologies.join(', ')}
+                     </Text>
+                   )}
+                </View>
+              ))}
+            </View>
+          )}
+
+        </View>
       </Page>
     </Document>
   )
@@ -371,8 +483,8 @@ export function ClassicTemplate({ data }: { data: CVData }) {
   // Register fonts synchronously (PDF rendering doesn't support useEffect)
   registerPDFFonts()
   
-  // Get font family from design settings
-  const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Times New Roman')
+  // Get font family from design settings - Irish Finance uses serif fonts
+  const fontFamily = getFontFamilyForPDF(data.designSettings?.fontFamily || 'Times-Roman')
   
   return (
     <Document>
@@ -382,22 +494,34 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           <Text style={classicStyles.name}>
             {data.personal.fullName}
           </Text>
+          {data.personal.title && (
+            <Text style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#166534',
+              textAlign: 'center',
+              marginTop: 4
+            }}>
+              {data.personal.title}
+            </Text>
+          )}
           <View style={classicStyles.contact}>
-            <Text>{formatIrishPhone(data.personal.phone)}</Text>
-            <Text>{data.personal.email}</Text>
-            <Text>{data.personal.address}</Text>
+            {data.personal.phone && <Text>{formatIrishPhone(data.personal.phone)}</Text>}
+            {data.personal.email && <Text>{data.personal.email}</Text>}
+            {data.personal.address && <Text>{data.personal.address}</Text>}
+            {data.personal.linkedin && <Text>{data.personal.linkedin}</Text>}
           </View>
         </View>
 
-        {/* Professional Summary */}
+        {/* Professional Profile/Summary */}
         {data.personal.summary && isSectionVisible(data.sections, 'summary') && (
           <View style={classicStyles.section}>
-            <Text style={classicStyles.sectionTitle}>PROFESSIONAL SUMMARY</Text>
+            <Text style={classicStyles.sectionTitle}>PROFESSIONAL PROFILE</Text>
             <Text style={classicStyles.description}>{data.personal.summary}</Text>
           </View>
         )}
 
-        {/* Experience */}
+        {/* Professional Experience */}
         {data.experience.length > 0 && isSectionVisible(data.sections, 'experience') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>PROFESSIONAL EXPERIENCE</Text>
@@ -406,11 +530,14 @@ export function ClassicTemplate({ data }: { data: CVData }) {
                 <Text style={classicStyles.jobTitle}>{exp.position}</Text>
                 <Text style={classicStyles.company}>{exp.company}</Text>
                 <Text style={classicStyles.dates}>
-                  {formatIrishDate(exp.startDate)} - {exp.current ? 'Present' : formatIrishDate(exp.endDate)}
+                  {exp.startDate ? formatIrishDate(exp.startDate) : ''} - {exp.current ? 'Present' : (exp.endDate ? formatIrishDate(exp.endDate) : '')}
                 </Text>
                 <Text style={classicStyles.description}>{exp.description}</Text>
                 {exp.achievements?.map((achievement, idx) => (
-                  <Text key={idx} style={classicStyles.achievement}>• {achievement}</Text>
+                  <Text key={idx} style={{
+                    ...classicStyles.achievement,
+                    color: '#111827'
+                  }}>• {achievement}</Text>
                 ))}
               </View>
             ))}
@@ -426,7 +553,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
                 <Text style={classicStyles.jobTitle}>{edu.degree}</Text>
                 <Text style={classicStyles.company}>{edu.institution}</Text>
                 <Text style={classicStyles.dates}>
-                  {formatIrishDate(edu.startDate)} - {formatIrishDate(edu.endDate)}
+                  {edu.startDate ? formatIrishDate(edu.startDate) : ''} - {edu.endDate ? formatIrishDate(edu.endDate) : ''}
                   {edu.grade && ` • ${edu.grade}`}
                 </Text>
                 {edu.description && <Text style={classicStyles.description}>{edu.description}</Text>}
@@ -435,13 +562,43 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           </View>
         )}
 
+        {/* Qualifications/Certifications */}
+        {data.certifications && data.certifications.length > 0 && isSectionVisible(data.sections, 'certifications') && (
+          <View style={classicStyles.section}>
+            <Text style={classicStyles.sectionTitle}>QUALIFICATIONS</Text>
+            {data.certifications.map((cert, index) => (
+              <View key={index} style={classicStyles.experienceItem}>
+                <Text style={classicStyles.jobTitle}>{cert.name}</Text>
+                <Text style={classicStyles.company}>{cert.issuer}</Text>
+                <Text style={classicStyles.dates}>
+                  {cert.issueDate ? formatIrishDate(cert.issueDate) : ''}
+                  {cert.expiryDate && ` • Expires: ${formatIrishDate(cert.expiryDate)}`}
+                </Text>
+                {cert.description && <Text style={classicStyles.description}>{cert.description}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Skills */}
-        {data.skills.length > 0 && (
+        {data.skills.length > 0 && isSectionVisible(data.sections, 'skills') && (
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>SKILLS</Text>
-            <View style={classicStyles.skillsContainer}>
+            <View style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: 8
+            }}>
               {data.skills.map((skill, index) => (
-                <Text key={index} style={classicStyles.skillItem}>
+                <Text key={index} style={{
+                  backgroundColor: '#f0fdf4',
+                  padding: '4 8',
+                  borderRadius: 2,
+                  fontSize: 11,
+                  color: '#166534',
+                  fontWeight: 600,
+                  border: '1px solid #166534'
+                }}>
                   {skill.name}
                 </Text>
               ))}
@@ -1062,8 +1219,8 @@ export const DublinTechTemplate: React.FC<{ data: CVData }> = ({ data }) => (
 )
 
 export const IrishFinanceTemplate: React.FC<{ data: CVData }> = ({ data }) => (
-  /* Finance template is closest to Harvard (classic professional look) */
-  <HarvardTemplate data={data} />
+  /* Finance template uses ClassicTemplate with Irish Finance styling */
+  <ClassicTemplate data={data} />
 )
 
 export const DublinPharmaTemplate: React.FC<{ data: CVData }> = ({ data }) => (
