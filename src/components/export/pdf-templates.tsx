@@ -194,12 +194,14 @@ const classicStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,  // Match live preview
     fontWeight: 'bold',
-    color: '#166534',  // Irish Finance green
-    marginBottom: 12,  // Match Irish Finance 1.2rem
+    color: '#000000',  // SİYAH: live preview ile aynı (#166534 -> #000000)
+    marginBottom: 12,  // Match live preview spacing
     textAlign: 'left',  // Left align like live preview
-    backgroundColor: '#f0fdf4',  // Light green background like Irish Finance
-    padding: 8,  // Better padding
-    borderLeft: '4px solid #166534',  // Left border accent
+    backgroundColor: 'transparent',  // ARKA PLAN KALDIR: live preview ile aynı
+    padding: 0,  // PADDING KALDIR: live preview ile aynı
+    borderLeft: 'none',  // SOL BORDER KALDIR: live preview ile aynı
+    borderBottom: '2px solid #000000',  // KALIN ÇİZGİ: live preview ile aynı
+    paddingBottom: 2,  // LIVE PREVIEW İLE AYNI: 2px
     textTransform: 'uppercase'
   },
   experienceItem: {
