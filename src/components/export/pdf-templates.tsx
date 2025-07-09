@@ -10,13 +10,13 @@ import { registerPDFFonts, getFontFamilyForPDF } from '@/lib/pdf-fonts'
 const commonStyles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica', // Closest to Arial in PDF
-    fontSize: 11,  // Match live preview base 11pt
-    lineHeight: 1.3,  // Match live preview line-height
+    fontSize: 10,  // Küçült: 11pt -> 10pt (tek sayfaya sığsın)
+    lineHeight: 1.2,  // Azalt: 1.3 -> 1.2 (daha sıkışık)
     // Use 15mm margins to match live preview padding
-    paddingTop: 42.5,  // 15mm = 42.5pt
-    paddingBottom: 42.5,
-    paddingLeft: 42.5, 
-    paddingRight: 42.5,
+    paddingTop: 40,  // Azalt: 42.5 -> 40
+    paddingBottom: 40,  // Azalt: 42.5 -> 40
+    paddingLeft: 40,  // Azalt: 42.5 -> 40
+    paddingRight: 40,  // Azalt: 42.5 -> 40
     backgroundColor: '#ffffff'
   },
   header: {
@@ -25,29 +25,32 @@ const commonStyles = StyleSheet.create({
     paddingBottom: 8
   },
   name: {
-    fontSize: 18,  // Match live preview 18pt
-    fontWeight: 700,  // Match live preview font-weight: 700
-    color: '#000000',  // Pure black like live preview
-    marginBottom: 4
+    fontSize: 16,  // Küçült: 18pt -> 16pt
+    fontWeight: 600,  // Azalt: 700 -> 600
+    color: '#000000',
+    marginBottom: 6  // Azalt: 4 -> 6
   },
   contact: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    fontSize: 11,  // Match live preview 11pt
-    color: '#000000',  // Black for ATS like live preview
-    marginTop: 8
+    fontSize: 9,  // Küçült: 11pt -> 9pt
+    color: '#000000',
+    marginTop: 6  // Azalt: 8 -> 6
   },
   section: {
     marginBottom: 16  // Match live preview section spacing (1rem = 16pt)
   },
   sectionTitle: {
-    fontSize: 14,  // Match live preview 14pt section headers
-    fontWeight: 'bold',  // Match live preview font-weight: bold
-    color: '#000000',  // Black like live preview
-    marginBottom: 8,
-    borderBottom: '2px solid #000000',  // Match live preview border
-    paddingBottom: 4,
-    textTransform: 'uppercase'  // Match live preview uppercase
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#000000',
+    marginBottom: 6,
+    borderBottom: '1px solid #000000',
+    paddingBottom: 3,
+    textTransform: 'uppercase',
+    backgroundColor: 'transparent',  // Arka plan kaldır
+    padding: 0,  // Padding kaldır
+    textAlign: 'left'  // Sol hizala
   },
   experienceItem: {
     marginBottom: 12  // Better spacing for readability
@@ -145,12 +148,12 @@ const modernStyles = StyleSheet.create({
     marginBottom: 16  // 1rem = 16pt
   },
   sidebarSectionTitle: {
-    fontSize: 14,  // Match live preview 14pt
-    fontWeight: 'bold',
+    fontSize: 11,  // Küçült: 14 -> 11
+    fontWeight: 600,  // Azalt: bold -> 600
     color: '#000000',
-    marginBottom: 8,
-    borderBottom: '2px solid #000000',
-    paddingBottom: 4,
+    marginBottom: 6,  // Azalt: 8 -> 6
+    borderBottom: '1px solid #000000',  // İncelten: 2px -> 1px
+    paddingBottom: 3,  // Azalt: 4 -> 3
     textTransform: 'uppercase'
   }
 })
@@ -167,8 +170,8 @@ const classicStyles = StyleSheet.create({
   header: {
     ...commonStyles.header,
     textAlign: 'center',
-    borderBottom: '2px solid #166534',  // Green border like Irish Finance
-    marginBottom: 20  // Match Irish Finance 2rem spacing
+    borderBottom: '1px solid #000000',  // Siyah border, ince: 2px -> 1px
+    marginBottom: 12  // Azalt: 20 -> 12
   },
   name: {
     ...commonStyles.name,
@@ -180,13 +183,13 @@ const classicStyles = StyleSheet.create({
   contact: {
     ...commonStyles.contact,
     justifyContent: 'center',
-    gap: 8,
-    fontSize: 11,  // Match live preview
-    color: '#111827'  // Irish Finance text color
+    gap: 6,  // Azalt: 8 -> 6
+    fontSize: 9,  // Küçült: 11 -> 9
+    color: '#000000'  // Siyah yap: #111827 -> #000000
   },
   section: {
     ...commonStyles.section,
-    marginBottom: 20  // Match Irish Finance 2rem spacing
+    marginBottom: 12  // Azalt: 20 -> 12 (tek sayfaya sığsın)
   },
   sectionTitle: {
     fontSize: 14,  // Match live preview
@@ -201,12 +204,13 @@ const classicStyles = StyleSheet.create({
   },
   experienceItem: {
     ...commonStyles.experienceItem,
-    marginBottom: 12  // Match Irish Finance 1.2rem spacing
+    marginBottom: 8  // Azalt: 12 -> 8
   },
   jobTitle: {
     ...commonStyles.jobTitle,
-    color: '#166534',  // Green for job titles
-    fontWeight: 600
+    color: '#000000',  // Siyah yap: #166534 -> #000000
+    fontWeight: 500,  // Azalt: 600 -> 500
+    fontSize: 10  // Küçült
   },
   company: {
     ...commonStyles.company,
@@ -349,9 +353,9 @@ export function ModernTemplate({ data }: { data: CVData }) {
               {data.skills.map((skill, index) => (
                 <View key={index} style={{ marginBottom: 8 }}>
                   <Text style={{
-                    fontSize: 11,
+                    fontSize: 10,  // Küçült: 11 -> 10
                     color: '#000000',
-                    fontWeight: 600,
+                    fontWeight: 500,  // Azalt: 600 -> 500
                     marginBottom: 3
                   }}>
                     {skill.name}
@@ -496,11 +500,11 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           </Text>
           {data.personal.title && (
             <Text style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#166534',
+              fontSize: 12,  // Küçült: 14 -> 12
+              fontWeight: 500,  // Azalt: 600 -> 500
+              color: '#000000',  // Siyah yap: #166534 -> #000000
               textAlign: 'center',
-              marginTop: 4
+              marginTop: 3  // Azalt: 4 -> 3
             }}>
               {data.personal.title}
             </Text>
@@ -591,13 +595,13 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             }}>
               {data.skills.map((skill, index) => (
                 <Text key={index} style={{
-                  backgroundColor: '#f0fdf4',
-                  padding: '4 8',
+                  backgroundColor: '#f5f5f5',  // Gri yap: #f0fdf4 -> #f5f5f5
+                  padding: '3 6',  // Küçült: 4 8 -> 3 6
                   borderRadius: 2,
-                  fontSize: 11,
-                  color: '#166534',
-                  fontWeight: 600,
-                  border: '1px solid #166534'
+                  fontSize: 10,  // Küçült: 11 -> 10
+                  color: '#000000',  // Siyah yap: #166534 -> #000000
+                  fontWeight: 500,  // Azalt: 600 -> 500
+                  border: '1px solid #cccccc'  // Gri border: #166534 -> #cccccc
                 }}>
                   {skill.name}
                 </Text>
