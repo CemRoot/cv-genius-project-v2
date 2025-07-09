@@ -176,24 +176,32 @@ export function CVBuilderPageContent({ initialIsMobile }: CVBuilderPageContentPr
   const generatePdf = async () => {
     try {
       // Show loading toast
-      const loadingToast = toast.loading('Generating PDF...', 'Please wait while we create your CV PDF.');
+      toast.info('Generating PDF...', 'Please wait while we create your CV PDF.');
+      
+      // Debug template information
+      console.log('🎯 CV Builder - Current template:', currentCV.template);
+      console.log('🎯 CV Builder - Session template:', sessionState.selectedTemplateId);
       
       // Validate CV data before export
-      const validation = validateCVForPDF(currentCV);
+      const validation = await validateCVForPDF(currentCV);
       if (!validation.isValid) {
         toast.error('Export Error', `Please fix the following issues:\n${validation.errors.join('\n')}`);
         return;
       }
 
-      // Export CV to PDF using React-PDF renderer
+      // Get the actual template ID being used
+      const templateId = currentCV.template || sessionState.selectedTemplateId || 'classic';
+      console.log('🎯 CV Builder - Using template for PDF:', templateId);
+
+      // Export CV to PDF using React-PDF renderer with explicit template
       await exportCVToPDF(currentCV, {
         filename: `${currentCV.personal.fullName || 'cv'}-export.pdf`,
         quality: 'high',
-        enableOptimization: true
+        enableOptimization: true,
+        templateId: templateId  // Explicit template ID
       });
 
-      // Close loading toast and show success
-      toast.dismiss(loadingToast);
+      // Show success
       toast.success('Success', 'CV has been exported as PDF.');
     } catch (error) {
       console.error('PDF export failed:', error);

@@ -2,12 +2,13 @@ import { pdf } from '@react-pdf/renderer'
 import { PDFTemplate } from '@/components/export/pdf-templates'
 import type { CVData } from '@/types/cv'
 import { saveAs } from 'file-saver'
-import { createElement } from 'react'
+import React from 'react'
 
 export interface PDFExportOptions {
   filename?: string
   quality?: 'high' | 'medium' | 'low'
   enableOptimization?: boolean
+  templateId?: string
 }
 
 export class PDFExportService {
@@ -28,19 +29,31 @@ export class PDFExportService {
     const {
       filename = `${cvData.personal.fullName || 'cv'}-export.pdf`,
       quality = 'high',
-      enableOptimization = true
+      enableOptimization = true,
+      templateId: optionsTemplateId
     } = options
 
     try {
-      // Create PDF document using React-PDF renderer
-      const document = createElement(PDFTemplate, { data: cvData })
+      // Get template ID from options, CV data, or use classic as fallback
+      const templateId = optionsTemplateId || cvData.template || 'classic'
+      
+      console.log('🎯 PDF Export: Using template:', templateId)
+      
+      // Create PDF document using React-PDF renderer with template ID
+      // Pass template directly to PDFTemplate - it will handle the mapping internally
+      const documentElement = React.createElement(PDFTemplate, { 
+        data: cvData,
+        template: templateId
+      })
       
       // Generate PDF blob
-      const pdfBlob = await pdf(document).toBlob()
+      const pdfBlob = await pdf(documentElement as any).toBlob()
+      
+      console.log('✅ PDF Export: Generated successfully with template:', templateId)
       
       return pdfBlob
     } catch (error) {
-      console.error('PDF generation failed:', error)
+      console.error('❌ PDF generation failed:', error)
       throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }

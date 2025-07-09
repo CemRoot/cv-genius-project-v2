@@ -1253,8 +1253,12 @@ const templateIdMap: Record<string, string> = {
   'irish-executive': 'classic'
 }
 
-export const PDFTemplate: React.FC<{ data: CVData }> = ({ data }) => {
-  const resolved = templateIdMap[data.template] || 'harvard'
+export const PDFTemplate: React.FC<{ data: CVData; template?: string }> = ({ data, template }) => {
+  // Use provided template parameter or fallback to data.template
+  const templateToUse = template || data.template || 'classic'
+  const resolved = templateIdMap[templateToUse] || 'harvard'
+  
+  console.log('🎯 PDFTemplate rendering:', { templateToUse, resolved })
 
   switch (resolved) {
     case 'classic':
