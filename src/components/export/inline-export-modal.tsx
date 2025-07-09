@@ -116,8 +116,11 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
       console.log('🎯 [InlineExportModal] Using template:', templateId)
       
       // Use React-PDF export service for consistent rendering
+      const fileName = (currentCV.personal.fullName || 'CV').replace(/\s+/g, '_')
+      console.log('📄 [InlineExportModal] Filename:', `${fileName}_CV.pdf`)
+      
       await exportCVToPDF(currentCV, {
-        filename: `${currentCV.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`,
+        filename: `${fileName}_CV.pdf`,
         quality: 'high',
         enableOptimization: true,
         templateId: templateId  // Explicit template ID
@@ -128,19 +131,27 @@ export function InlineExportModal({ isOpen, onClose, onComplete }: InlineExportM
       
     } catch (error) {
       console.error('❌ [PDF Export] Complete export process failed:', error)
+      console.error('❌ [PDF Export] Error type:', typeof error)
+      console.error('❌ [PDF Export] Error stack:', error instanceof Error ? error.stack : 'No stack')
       
       // Enhanced error messages based on error type
       let errorMessage = 'Failed to generate PDF. Please try again.'
       
       if (error instanceof Error) {
+        console.error('❌ [PDF Export] Error message:', error.message)
+        
         if (error.message.includes('libraries failed to load')) {
           errorMessage = 'Required libraries failed to load. Please check your internet connection and try again.'
         } else if (error.message.includes('not found')) {
           errorMessage = 'CV content not found. Please refresh the page and try again.'
         } else if (error.message.includes('timeout')) {
           errorMessage = 'PDF generation timed out. Please try again.'
+        } else if (error.message.includes('Cannot read properties')) {
+          errorMessage = 'CV data is incomplete. Please check all required fields are filled.'
+        } else if (error.message.includes('template')) {
+          errorMessage = 'Template rendering failed. Please try a different template.'
         } else {
-          errorMessage = error.message
+          errorMessage = `Export failed: ${error.message}`
         }
       }
       

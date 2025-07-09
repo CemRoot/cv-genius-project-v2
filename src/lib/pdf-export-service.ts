@@ -34,10 +34,20 @@ export class PDFExportService {
     } = options
 
     try {
+      // Validate CV data first
+      if (!cvData || !cvData.personal) {
+        throw new Error('CV data is missing or incomplete')
+      }
+      
       // Get template ID from options, CV data, or use classic as fallback
       const templateId = optionsTemplateId || cvData.template || 'classic'
       
       console.log('🎯 PDF Export: Using template:', templateId)
+      console.log('🎯 PDF Export: CV personal data:', {
+        fullName: cvData.personal.fullName || 'Not provided',
+        email: cvData.personal.email || 'Not provided',
+        template: cvData.template || 'Not set'
+      })
       
       // Create PDF document using React-PDF renderer with template ID
       // Pass template directly to PDFTemplate - it will handle the mapping internally
@@ -46,14 +56,23 @@ export class PDFExportService {
         template: templateId
       })
       
+      console.log('🔄 PDF Export: Starting PDF generation...')
+      
       // Generate PDF blob
       const pdfBlob = await pdf(documentElement as any).toBlob()
       
       console.log('✅ PDF Export: Generated successfully with template:', templateId)
+      console.log('✅ PDF Export: PDF size:', pdfBlob.size, 'bytes')
       
       return pdfBlob
     } catch (error) {
       console.error('❌ PDF generation failed:', error)
+      console.error('❌ PDF generation error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        cvDataExists: !!cvData,
+        personalExists: !!(cvData && cvData.personal)
+      })
       throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
