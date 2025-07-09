@@ -72,6 +72,14 @@ export function BannerAds({ className = '', size = 'large', position = 'header' 
   const isDevelopment = process.env.NODE_ENV === 'development'
   const isProduction = process.env.NODE_ENV === 'production'
   
+  // Check for 408 timeout errors
+  const has408Error = error && (
+    error.includes('timeout') || 
+    error.includes('408') || 
+    error.includes('Request Timeout') ||
+    error.includes('ERR_NETWORK_TIMEOUT')
+  )
+  
   if (bannerAds.length === 0) {
     console.log('🚫 [BannerAds] No banner ads configured')
     return null // Reklam gösterme

@@ -10,8 +10,8 @@ import { registerPDFFonts, getFontFamilyForPDF } from '@/lib/pdf-fonts'
 const commonStyles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    fontSize: 10,
-    lineHeight: 1.4,
+    fontSize: 9,  // Reduced from 10
+    lineHeight: 1.2,  // Reduced from 1.4
     // Use 15mm (42.5pt) margins for consistency with CSS @page rules
     paddingTop: 42.5,
     paddingBottom: 42.5,
@@ -20,73 +20,73 @@ const commonStyles = StyleSheet.create({
     backgroundColor: '#ffffff'
   },
   header: {
-    marginBottom: 20,
-    borderBottom: '2px solid #333',
-    paddingBottom: 15
+    marginBottom: 8,  // Reduced from 20
+    borderBottom: '1px solid #333',  // Thinner border
+    paddingBottom: 6  // Reduced from 15
   },
   name: {
-    fontSize: 24,
-    fontWeight: 600,
+    fontSize: 20,  // Reduced from 24
+    fontWeight: 500,  // Reduced from 600 (normal ATS font weight)
     color: '#333',
-    marginBottom: 5
+    marginBottom: 2  // Reduced from 5
   },
   contact: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    fontSize: 9,
+    fontSize: 8,  // Reduced from 9
     color: '#666',
-    marginTop: 5
+    marginTop: 2  // Reduced from 5
   },
   section: {
-    marginBottom: 15
+    marginBottom: 6  // Reduced from 15 (approximately 1.5mm)
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: 600,
+    fontSize: 11,  // Reduced from 14
+    fontWeight: 500,  // Reduced from 600 (ATS friendly)
     color: '#333',
-    marginBottom: 8,
-    borderBottom: '1px solid #ddd',
-    paddingBottom: 3
+    marginBottom: 3,  // Reduced from 8 (approximately 1mm)
+    borderBottom: '0.5px solid #ddd',  // Thinner border
+    paddingBottom: 1  // Reduced from 3
   },
   experienceItem: {
-    marginBottom: 12
+    marginBottom: 5  // Reduced from 12
   },
   jobTitle: {
-    fontSize: 12,
-    fontWeight: 600,
+    fontSize: 10,  // Reduced from 12
+    fontWeight: 500,  // Reduced from 600 (ATS friendly)
     color: '#333'
   },
   company: {
-    fontSize: 11,
+    fontSize: 9,  // Reduced from 11
     color: '#666',
-    marginBottom: 2
+    marginBottom: 1  // Reduced from 2
   },
   dates: {
-    fontSize: 9,
+    fontSize: 8,  // Reduced from 9
     color: '#888',
-    marginBottom: 4
+    marginBottom: 2  // Reduced from 4
   },
   description: {
-    fontSize: 10,
-    lineHeight: 1.3,
+    fontSize: 9,  // Reduced from 10
+    lineHeight: 1.2,  // Reduced from 1.3
     color: '#555'
   },
   skillsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8
+    gap: 4  // Reduced from 8
   },
   skillItem: {
     backgroundColor: '#f0f0f0',
-    padding: '4 8',
-    borderRadius: 3,
-    fontSize: 9,
+    padding: '2 4',  // Reduced from '4 8'
+    borderRadius: 2,  // Reduced from 3
+    fontSize: 8,  // Reduced from 9
     color: '#333'
   },
   achievement: {
-    marginBottom: 3,
-    paddingLeft: 10,
-    fontSize: 10,
+    marginBottom: 2,  // Reduced from 3
+    paddingLeft: 8,  // Reduced from 10
+    fontSize: 9,  // Reduced from 10
     color: '#555'
   }
 })
@@ -102,15 +102,15 @@ const modernStyles = StyleSheet.create({
     ...commonStyles.header,
     backgroundColor: '#2563eb',
     color: 'white',
-    padding: 20,
-    margin: -40,
-    marginBottom: 20,
+    padding: 10,  // Reduced from 20
+    margin: -42.5,  // Adjusted to match page padding
+    marginBottom: 8,  // Reduced from 20
     borderBottom: 'none'
   },
   name: {
     ...commonStyles.name,
     color: 'white',
-    fontSize: 28
+    fontSize: 22  // Reduced from 28
   },
   contact: {
     ...commonStyles.contact,
@@ -129,23 +129,23 @@ const classicStyles = StyleSheet.create({
   header: {
     ...commonStyles.header,
     textAlign: 'center',
-    borderBottom: '3px double #333'
+    borderBottom: '1px solid #333'  // Reduced from 3px double
   },
   name: {
     ...commonStyles.name,
-    fontSize: 26,
+    fontSize: 20,  // Reduced from 26
     textAlign: 'center'
   },
   contact: {
     ...commonStyles.contact,
     justifyContent: 'center',
-    gap: 20
+    gap: 10  // Reduced from 20
   },
   sectionTitle: {
     ...commonStyles.sectionTitle,
     textAlign: 'center',
     backgroundColor: '#f5f5f5',
-    padding: 5,
+    padding: 2,  // Reduced from 5
     borderBottom: 'none'
   }
 })
@@ -161,30 +161,30 @@ const creativeStyles = StyleSheet.create({
     ...commonStyles.header,
     backgroundColor: '#10b981',
     color: 'white',
-    padding: 25,
-    margin: -40,
-    marginBottom: 25,
+    padding: 10,  // Reduced from 25
+    margin: -42.5,
+    marginBottom: 8,  // Reduced from 25
     borderBottom: 'none',
-    transform: 'skewY(-2deg)',
-    marginTop: -50
+    transform: 'skewY(-1deg)',  // Reduced from -2deg
+    marginTop: -42.5
   },
   name: {
     ...commonStyles.name,
     color: 'white',
-    fontSize: 26,
-    transform: 'skewY(2deg)'
+    fontSize: 20,  // Reduced from 26
+    transform: 'skewY(1deg)'  // Reduced from 2deg
   },
   contact: {
     ...commonStyles.contact,
     color: '#d1fae5',
-    transform: 'skewY(2deg)'
+    transform: 'skewY(1deg)'  // Reduced from 2deg
   },
   sectionTitle: {
     ...commonStyles.sectionTitle,
     color: '#10b981',
-    borderBottom: '2px solid #10b981',
-    borderLeft: '4px solid #10b981',
-    paddingLeft: 8
+    borderBottom: '1px solid #10b981',  // Reduced from 2px
+    borderLeft: '2px solid #10b981',  // Reduced from 4px
+    paddingLeft: 4  // Reduced from 8
   }
 })
 
@@ -581,16 +581,16 @@ export function HarvardTemplate({ data }: { data: CVData }) {
   
   // Convert spacing settings to points (PDF unit) - Ultra-tight spacing
   const spacingMap = {
-    tight: 4,      // 8 -> 4 (half again)
-    normal: 6,     // 12 -> 6 (half again)
-    relaxed: 8,    // 16 -> 8 (half again)
-    spacious: 10   // 20 -> 10 (half again)
+    tight: 2,      // Approximately 0.7mm
+    normal: 3,     // Approximately 1mm
+    relaxed: 4,    // Approximately 1.4mm
+    spacious: 5    // Approximately 1.7mm
   }
   
   const headerSpacingMap = {
-    compact: 10,   // 20 -> 10 (half again)
-    normal: 12,    // 25 -> 12 (much tighter)
-    generous: 16   // 35 -> 16 (much tighter)
+    compact: 4,    // Approximately 1.4mm
+    normal: 6,     // Approximately 2mm
+    generous: 8    // Approximately 2.8mm
   }
   
   const sectionSpacing = spacingMap[settings.sectionSpacing as keyof typeof spacingMap] || spacingMap.normal
@@ -695,13 +695,13 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {experience.length > 0 && isSectionVisible(sections, 'experience') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 11,      // 12 -> 11 (smaller)
-              fontWeight: 'bold',
+              fontSize: 10,      // Reduced from 11
+              fontWeight: 500,   // Reduced from 'bold' (ATS friendly)
               textAlign: 'left',
-              marginBottom: 3,    // 6 -> 3 (much less)
+              marginBottom: 2,    // Reduced from 3
               textTransform: 'uppercase',
-              borderBottom: '1px solid #333333',
-              paddingBottom: 2
+              borderBottom: '0.5px solid #333333',  // Thinner border
+              paddingBottom: 1  // Reduced from 2
             }}>PROFESSIONAL EXPERIENCE</Text>
             {experience.map((exp, index) => (
               <View key={index} style={{ marginBottom: 8 }}> {/* 24 -> 8 (huge reduction) */}
@@ -750,13 +750,13 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {education.length > 0 && isSectionVisible(sections, 'education') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 11,      // 12 -> 11 (smaller)
-              fontWeight: 'bold',
+              fontSize: 10,      // Reduced from 11
+              fontWeight: 500,   // Reduced from 'bold' (ATS friendly)
               textAlign: 'left',
-              marginBottom: 3,    // 12 -> 3 (much less)
+              marginBottom: 2,    // Reduced from 3
               textTransform: 'uppercase',
-              borderBottom: '1px solid #333333',
-              paddingBottom: 2
+              borderBottom: '0.5px solid #333333',  // Thinner border
+              paddingBottom: 1  // Reduced from 2
             }}>EDUCATION</Text>
             {education.map((edu, index) => (
               <View key={index} style={{ marginBottom: 6 }}> {/* 20 -> 6 (much less) */}
@@ -871,7 +871,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
               paddingBottom: 2
             }}>PROJECTS</Text>
             {data.projects.map((project, index) => (
-              <View key={index} style={{ marginBottom: 6 }}>
+              <View key={index} style={{ marginBottom: 4 }}>  {/* Reduced from 6 to 4 (~1mm) */}
                 <View style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
@@ -907,23 +907,23 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {data.certifications && data.certifications.length > 0 && isSectionVisible(sections, 'certifications') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 11,
-              fontWeight: 'bold',
+              fontSize: 10,  // Reduced from 11
+              fontWeight: 500,  // Reduced from 'bold' (ATS friendly)
               textAlign: 'left',
-              marginBottom: 2,
+              marginBottom: 1,  // Reduced from 2
               textTransform: 'uppercase',
-              borderBottom: '1px solid #333333',
-              paddingBottom: 2
+              borderBottom: '0.5px solid #333333',  // Thinner border
+              paddingBottom: 1  // Reduced from 2
             }}>CERTIFICATIONS</Text>
             {data.certifications.map((cert, index) => (
-              <View key={index} style={{ marginBottom: 4 }}>
+              <View key={index} style={{ marginBottom: 3 }}>  {/* Reduced from 4 to 3 (~1mm) */}
                 <View style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   marginBottom: 1
                 }}>
                   <View>
-                    <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{cert.name}</Text>
+                    <Text style={{ fontWeight: 500, fontSize: 10 }}>{cert.name}</Text>
                     <Text style={{ fontStyle: 'italic', fontSize: 9 }}>{cert.issuer}</Text>
                   </View>
                   <Text style={{ fontSize: 8, textAlign: 'right' }}>
@@ -948,13 +948,13 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {data.interests && data.interests.length > 0 && isSectionVisible(sections, 'interests') && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 11,
-              fontWeight: 'bold',
+              fontSize: 10,  // Reduced from 11
+              fontWeight: 500,  // Reduced from 'bold' (ATS friendly)
               textAlign: 'left',
-              marginBottom: 2,
+              marginBottom: 1,  // Reduced from 2
               textTransform: 'uppercase',
-              borderBottom: '1px solid #333333',
-              paddingBottom: 2
+              borderBottom: '0.5px solid #333333',  // Thinner border
+              paddingBottom: 1  // Reduced from 2
             }}>INTERESTS</Text>
             <View style={{ 
               flexDirection: 'row',
@@ -989,20 +989,20 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         })() && (
           <View style={{ marginBottom: sectionSpacing }}>
             <Text style={{
-              fontSize: 11,
-              fontWeight: 'bold',
+              fontSize: 10,  // Reduced from 11
+              fontWeight: 500,  // Reduced from 'bold' (ATS friendly)
               textAlign: 'left',
-              marginBottom: 2,
+              marginBottom: 1,  // Reduced from 2
               textTransform: 'uppercase',
-              borderBottom: '1px solid #333333',
-              paddingBottom: 2
+              borderBottom: '0.5px solid #333333',  // Thinner border
+              paddingBottom: 1  // Reduced from 2
             }}>REFERENCES</Text>
             {data.referencesDisplay === 'detailed' && data.references && data.references.length > 0 ? (
               <View>
                 {data.references.map((reference, index) => (
-                  <View key={index} style={{ marginBottom: 4 }}>
+                  <View key={index} style={{ marginBottom: 3 }}>  {/* Reduced from 4 to 3 (~1mm) */}
                     <View style={{ marginBottom: 1 }}>
-                      <Text style={{ fontWeight: 'bold', fontSize: 10 }}>{reference.name}</Text>
+                      <Text style={{ fontWeight: 500, fontSize: 10 }}>{reference.name}</Text>
                       <Text style={{ fontSize: 9, color: '#666666' }}>{reference.position}</Text>
                       {reference.company && (
                         <Text style={{ fontSize: 9, color: '#666666' }}>{reference.company}</Text>
@@ -1038,9 +1038,9 @@ export function HarvardTemplate({ data }: { data: CVData }) {
         {(!isSectionVisible(sections, 'references') || !data.referencesDisplay) && (
           <View style={{
             textAlign: 'left',
-            marginTop: 8,
-            paddingTop: 6,
-            borderTop: '1pt solid #cccccc'
+            marginTop: 4,  // Reduced from 8
+            paddingTop: 3,  // Reduced from 6
+            borderTop: '0.5pt solid #cccccc'  // Thinner border
           }}>
             <Text style={{
               fontSize: 8,

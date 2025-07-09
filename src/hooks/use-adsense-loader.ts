@@ -28,25 +28,39 @@ export function useAdSenseLoader(clientId?: string) {
       return false
     }
 
+    // Check for development mode
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' || 
+                         window.location.port === '3000'
+    
+    if (isDevelopment) {
+      console.log('🔍 [AdSense Loader] Development mode - AdSense disabled')
+      return false
+    }
+
     // Check if script exists in DOM
     const scriptExists = !!document.querySelector(`script[src*="adsbygoogle.js"]`)
     
     // Check if adsbygoogle global is available
     const adsbygoogleAvailable = !!(window as any).adsbygoogle
     
-    // Check global state from layout script
+    // Check global state from enhanced layout script
     const globalLoadState = (window as any).adSenseLoaded
     const globalError = (window as any).adSenseError
+    const loadTime = (window as any).adSenseLoadTime
     
-    console.log('🔍 [AdSense Loader] Availability check:', {
+    console.log('🔍 [AdSense Loader] Enhanced availability check:', {
       scriptExists,
       adsbygoogleAvailable,
       globalLoadState,
       globalError,
-      adsbygoogleLength: (window as any).adsbygoogle ? (window as any).adsbygoogle.length : 'N/A'
+      loadTime: loadTime ? loadTime + 'ms' : 'N/A',
+      adsbygoogleLength: (window as any).adsbygoogle ? (window as any).adsbygoogle.length : 'N/A',
+      isDevelopment
     })
     
-    return scriptExists && adsbygoogleAvailable
+    // Enhanced check - consider it available if global state confirms loading
+    return (scriptExists && adsbygoogleAvailable) || globalLoadState === true
   }, [])
 
   // Initialize adsbygoogle array if not available

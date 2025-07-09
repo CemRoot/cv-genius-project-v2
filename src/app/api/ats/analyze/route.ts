@@ -396,6 +396,14 @@ export async function POST(request: NextRequest) {
               keywordScore: 0,
               formatScore: enhancedResult.enhancedFormatAnalysis?.parsingSuccessRate || 0,
               structureScore: 0,
+              // Include keywords object to prevent frontend errors
+              keywords: {
+                total: 0,
+                matched: 0,
+                found: [],
+                missing: [],
+                density: 0
+              },
               suggestions: enhancedResult.rejection.recommendations,
               warnings: enhancedResult.rejection.reasons,
               report: {

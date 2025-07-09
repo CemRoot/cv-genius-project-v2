@@ -171,8 +171,19 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
       }
 
       // Check if the response has the expected analysis data structure
-      if (data.overallScore !== undefined && data.keywordScore !== undefined) {
-        setAnalysis(data)
+      if (data.overallScore !== undefined) {
+        // Ensure keywords object exists with default values if missing
+        const analysisData = {
+          ...data,
+          keywords: data.keywords || {
+            total: 0,
+            matched: 0,
+            found: [],
+            missing: [],
+            density: 0
+          }
+        }
+        setAnalysis(analysisData)
       } else {
         throw new Error('ATS analysis failed')
       }
@@ -649,8 +660,10 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className={`text-2xl font-bold ${getScoreColor(analysis.keywords.matched / analysis.keywords.total * 100)}`}>
-                      {Math.round(analysis.keywords.matched / analysis.keywords.total * 100)}%
+                    <div className={`text-2xl font-bold ${getScoreColor(analysis.keywords && analysis.keywords.total > 0 ? (analysis.keywords.matched / analysis.keywords.total * 100) : 0)}`}>
+                      {analysis.keywords && analysis.keywords.total > 0 
+                        ? Math.round((analysis.keywords.matched / analysis.keywords.total) * 100) 
+                        : 0}%
                     </div>
                     <div className="text-sm text-muted-foreground">Keywords</div>
                   </div>
@@ -933,15 +946,15 @@ export function ATSAnalyzer({ isMobile = false }: ATSAnalyzerProps) {
                     <div>
                       <h4 className="font-medium text-green-700 mb-2">Matched Keywords</h4>
                       <div className="flex flex-wrap gap-2">
-                        {analysis.keywords.found.map((keyword: string, index: number) => (
+                        {analysis.keywords?.found?.map((keyword: string, index: number) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {keyword}
                           </Badge>
-                        ))}
+                        )) || <span className="text-sm text-muted-foreground">No keywords found</span>}
                       </div>
                     </div>
                     
-                    {analysis.keywords.missing.length > 0 && (
+                    {analysis.keywords?.missing && analysis.keywords.missing.length > 0 && (
                       <div>
                         <h4 className="font-medium text-red-700 mb-2">Missing Keywords</h4>
                         <div className="flex flex-wrap gap-2">

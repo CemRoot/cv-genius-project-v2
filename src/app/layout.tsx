@@ -147,17 +147,142 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
-        {/* AdSense Performance */}
+        {/* AdSense Performance & Loading */}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
           <>
-            <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+            <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+            <link rel="preconnect" href="https://googleads.g.doubleclick.net" crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
           </>
         )}
         
-        {/* Google AdSense */}
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1742989559393752"
-             crossOrigin="anonymous"></script>
+        {/* Enhanced AdSense Script Loading with 408 Timeout Protection */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              if (typeof window === 'undefined') return;
+              
+              // Skip in development mode
+              const isDevelopment = window.location.hostname === 'localhost' || 
+                                  window.location.hostname === '127.0.0.1' || 
+                                  window.location.port === '3000';
+              if (isDevelopment) {
+                console.log('🔍 [AdSense] Development mode detected - AdSense loading disabled');
+                return;
+              }
+              
+              const clientId = 'ca-pub-1742989559393752';
+              const scriptUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + clientId;
+              
+              console.log('🚀 [AdSense] Starting enhanced script loading...');
+              
+              let attempts = 0;
+              const maxAttempts = 3;
+              const timeoutMs = 15000; // 15 seconds timeout
+              
+              function loadAdSenseScript() {
+                return new Promise((resolve, reject) => {
+                  attempts++;
+                  console.log('📡 [AdSense] Attempt ' + attempts + '/' + maxAttempts + ' - Creating script element...');
+                  
+                  const script = document.createElement('script');
+                  script.async = true;
+                  script.src = scriptUrl;
+                  script.crossOrigin = 'anonymous';
+                  script.defer = true;
+                  
+                  const timeout = setTimeout(() => {
+                    console.error('⏰ [AdSense] Script timeout after ' + timeoutMs + 'ms');
+                    script.remove();
+                    reject(new Error('AdSense script timeout'));
+                  }, timeoutMs);
+                  
+                  script.onload = function() {
+                    clearTimeout(timeout);
+                    console.log('✅ [AdSense] Script loaded successfully in ' + (Date.now() - startTime) + 'ms');
+                    window.adSenseLoaded = true;
+                    window.adSenseError = null;
+                    window.adSenseLoadTime = Date.now() - startTime;
+                    
+                    // Initialize adsbygoogle if not already done
+                    if (!window.adsbygoogle) {
+                      window.adsbygoogle = [];
+                      console.log('🔧 [AdSense] Initialized adsbygoogle array');
+                    }
+                    
+                    resolve();
+                  };
+                  
+                  script.onerror = function(error) {
+                    clearTimeout(timeout);
+                    console.error('❌ [AdSense] Script load error after ' + (Date.now() - startTime) + 'ms:', error);
+                    script.remove();
+                    reject(error);
+                  };
+                  
+                  const startTime = Date.now();
+                  document.head.appendChild(script);
+                });
+              }
+              
+              async function retryLoadAdSense() {
+                for (let i = 0; i < maxAttempts; i++) {
+                  try {
+                    await loadAdSenseScript();
+                    return; // Success
+                  } catch (error) {
+                    console.warn('⚠️ [AdSense] Attempt ' + (i + 1) + ' failed:', error.message);
+                    
+                    if (i === maxAttempts - 1) {
+                      console.error('❌ [AdSense] All attempts failed. AdSense will not be available.');
+                      window.adSenseLoaded = false;
+                      window.adSenseError = error.message;
+                      return;
+                    }
+                    
+                    // Wait before retry (exponential backoff)
+                    const delay = Math.min(1000 * Math.pow(2, i), 5000);
+                    console.log('⏳ [AdSense] Retrying in ' + delay + 'ms...');
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                  }
+                }
+              }
+              
+              // Global debug helper
+              window.adSenseDebug = {
+                getInfo: function() {
+                  return {
+                    loaded: window.adSenseLoaded,
+                    error: window.adSenseError,
+                    loadTime: window.adSenseLoadTime,
+                    adsbygoogleAvailable: !!window.adsbygoogle,
+                    adsbygoogleLength: window.adsbygoogle ? window.adsbygoogle.length : 0,
+                    attempts: attempts
+                  };
+                },
+                logInfo: function() {
+                  console.log('📊 [AdSense Debug]', this.getInfo());
+                },
+                retry: function() {
+                  console.log('🔄 [AdSense] Manual retry requested...');
+                  retryLoadAdSense();
+                },
+                checkScript: function() {
+                  const scripts = document.querySelectorAll('script[src*="adsbygoogle"]');
+                  console.log('🔍 [AdSense] Script check:', {
+                    scriptsFound: scripts.length,
+                    scripts: Array.from(scripts).map(s => s.src)
+                  });
+                  return scripts.length > 0;
+                }
+              };
+              
+              // Start loading
+              retryLoadAdSense();
+            })();
+          `
+        }} />
         
         {/* Monetag - Only Banner Zone (No Popups) */}
         
