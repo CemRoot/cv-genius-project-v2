@@ -237,7 +237,7 @@ const classicStyles = StyleSheet.create({
     lineHeight: 1.3,  // Match leading-snug from live preview
     color: '#000000',
     textAlign: 'justify',  // Match text-justify from live preview
-    marginTop: 2
+    marginTop: 1  // Reduce spacing for education descriptions
   },
   achievement: {
     fontSize: 11,
@@ -254,12 +254,12 @@ const classicStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 500,  // Match font-medium from live preview
     color: '#000000',
-    marginTop: 2
+    marginTop: 0  // Remove extra spacing
   },
   grade: {
     fontSize: 10,  // Match text-sm from live preview
     color: '#000000',
-    marginTop: 4
+    marginTop: 1  // Reduce spacing
   },
   skillsContainer: {
     marginBottom: 4  // Match space-y-1 from live preview
