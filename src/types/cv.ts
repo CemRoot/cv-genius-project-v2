@@ -10,6 +10,7 @@ export interface PersonalInfo {
   summary?: string
   title?: string
   nationality?: string
+  stamp?: string  // Irish work authorization stamp (e.g., "Stamp 4", "EU Citizen")
 }
 
 export interface Experience {
