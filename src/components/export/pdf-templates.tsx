@@ -199,8 +199,7 @@ const classicStyles = StyleSheet.create({
     justifyContent: 'center'
   },
   section: {
-    marginBottom: 16,  // Match mb-4 from live preview
-    breakInside: 'avoid'  // Prevent section breaks
+    marginBottom: 16  // Match mb-4 from live preview
   },
   sectionTitle: {
     fontSize: 14,  // Match text-xl from live preview
@@ -213,8 +212,7 @@ const classicStyles = StyleSheet.create({
     textTransform: 'uppercase'
   },
   experienceItem: {
-    marginBottom: 12,  // Match space-y-3 from live preview
-    breakInside: 'avoid'  // Prevent item breaks
+    marginBottom: 12  // Match space-y-3 from live preview
   },
   experienceHeader: {
     flexDirection: 'row',
@@ -247,8 +245,7 @@ const classicStyles = StyleSheet.create({
     marginTop: 2
   },
   educationItem: {
-    marginBottom: 8,  // Match space-y-2 from live preview
-    breakInside: 'avoid'
+    marginBottom: 8  // Match space-y-2 from live preview
   },
   institutionName: {
     fontSize: 11,
@@ -569,7 +566,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
                 data.personal.email,
                 data.personal.phone && formatIrishPhone(data.personal.phone),
                 data.personal.address,
-                data.personal.nationality || data.personal.stamp
+                data.personal.nationality || ''
               ].filter(Boolean).join('   ')}
             </Text>
           </View>
@@ -628,7 +625,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
           <View style={classicStyles.section}>
             <Text style={classicStyles.sectionTitle}>EDUCATION</Text>
             {data.education.map((edu, index) => (
-              <View key={index} style={{marginBottom: 8, breakInside: 'avoid'}}>
+              <View key={index} style={{ marginBottom: 8 }}>
                 <View style={classicStyles.experienceHeader}>
                   <Text style={classicStyles.jobTitle}>
                     {edu.degree} in {edu.field || 'studies'}
@@ -908,8 +905,8 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             {/* Third line: Address, Status */}
             <Text style={{ textAlign: 'left' }}>
               {personal.address}
-              {personal.address && (personal.nationality || "STAMP2 | Master Student") && ' • '}
-              {personal.nationality || "STAMP2 | Master Student"}
+              {personal.address && personal.nationality && ' • '}
+              {personal.nationality}
             </Text>
           </View>
         </View>
