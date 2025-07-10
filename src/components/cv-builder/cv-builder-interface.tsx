@@ -34,7 +34,7 @@ export function CvBuilderInterface() {
   const router = useRouter()
   const { error, hasUnsavedChanges, isSaving } = useCvBuilder()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeSection, setActiveSection] = useState<'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'references'>('personal')
+  const [activeSection, setActiveSection] = useState<'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'certifications' | 'languages' | 'volunteer' | 'awards' | 'publications' | 'references'>('personal')
 
   const handleBack = () => {
     // If there are unsaved changes, ask for confirmation

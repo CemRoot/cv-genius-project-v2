@@ -357,6 +357,250 @@ export function CvBuilderPreview() {
                     </div>
                   )}
 
+                  {/* Certifications */}
+                  {section.type === 'certifications' && (
+                    <div className="certifications-section">
+                      <h3 className="section-heading text-black font-semibold" style={{
+                        fontSize: '12pt',
+                        lineHeight: '1.3',
+                        margin: '0 0 3mm 0',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        borderBottom: '1pt solid #000',
+                        paddingBottom: '1mm'
+                      }}>
+                        Certifications
+                      </h3>
+                      
+                      {section.items.length > 0 ? (
+                        <div className="certifications-list" style={{ margin: '3mm 0 0 0' }}>
+                          {section.items.map((cert, certIndex) => (
+                            <div key={certIndex} style={{
+                              marginBottom: certIndex < section.items.length - 1 ? '2mm' : '0',
+                              fontSize: '10pt',
+                              lineHeight: '1.4'
+                            }}>
+                              <div style={{ fontWeight: '600' }}>{cert.name}</div>
+                              <div style={{ fontSize: '9pt', color: '#333' }}>
+                                {cert.issuer} • {cert.date.replace(/(\d{4})-(\d{2})/, '$2/$1')}
+                                {cert.expiryDate && ` - ${cert.expiryDate.replace(/(\d{4})-(\d{2})/, '$2/$1')}`}
+                                {cert.credentialId && ` • ID: ${cert.credentialId}`}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          color: '#666', 
+                          fontStyle: 'italic',
+                          fontSize: '10pt',
+                          margin: '3mm 0 0 0'
+                        }}>
+                          Add your certifications...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Languages */}
+                  {section.type === 'languages' && (
+                    <div className="languages-section">
+                      <h3 className="section-heading text-black font-semibold" style={{
+                        fontSize: '12pt',
+                        lineHeight: '1.3',
+                        margin: '0 0 3mm 0',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        borderBottom: '1pt solid #000',
+                        paddingBottom: '1mm'
+                      }}>
+                        Languages
+                      </h3>
+                      
+                      {section.items.length > 0 ? (
+                        <div className="languages-grid" style={{
+                          margin: '3mm 0 0 0',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '2mm'
+                        }}>
+                          {section.items.map((lang, langIndex) => (
+                            <div key={langIndex} style={{
+                              fontSize: '10pt',
+                              lineHeight: '1.4'
+                            }}>
+                              <span style={{ fontWeight: '600' }}>{lang.name}</span>
+                              <span style={{ color: '#555' }}> - {
+                                lang.proficiency === 'native' ? 'Native' :
+                                lang.proficiency === 'fluent' ? 'Fluent' :
+                                lang.proficiency === 'professional' ? 'Professional' :
+                                lang.proficiency === 'intermediate' ? 'Intermediate' :
+                                'Basic'
+                              }</span>
+                              {lang.certification && (
+                                <span style={{ fontSize: '9pt', color: '#666' }}> ({lang.certification})</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          color: '#666', 
+                          fontStyle: 'italic',
+                          fontSize: '10pt',
+                          margin: '3mm 0 0 0'
+                        }}>
+                          Add your language skills...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Volunteer Experience */}
+                  {section.type === 'volunteer' && (
+                    <div className="volunteer-section">
+                      <h3 className="section-heading text-black font-semibold" style={{
+                        fontSize: '12pt',
+                        lineHeight: '1.3',
+                        margin: '0 0 3mm 0',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        borderBottom: '1pt solid #000',
+                        paddingBottom: '1mm'
+                      }}>
+                        Volunteer Experience
+                      </h3>
+                      
+                      {section.items.length > 0 ? (
+                        <div className="volunteer-items" style={{ margin: '3mm 0 0 0' }}>
+                          {section.items.map((vol, volIndex) => (
+                            <div key={volIndex} style={{
+                              marginBottom: volIndex < section.items.length - 1 ? '3mm' : '0',
+                              breakInside: 'avoid'
+                            }}>
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: '2fr 1fr',
+                                gap: '4mm',
+                                marginBottom: '1mm'
+                              }}>
+                                <div>
+                                  <div style={{ fontSize: '11pt', fontWeight: '600' }}>{vol.role}</div>
+                                  <div style={{ fontSize: '10pt' }}>{vol.organization}</div>
+                                </div>
+                                <div style={{ fontSize: '10pt', textAlign: 'right' }}>
+                                  {vol.start} – {vol.end || 'Present'}
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '10pt', lineHeight: '1.4' }}>
+                                {vol.description}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          color: '#666', 
+                          fontStyle: 'italic',
+                          fontSize: '10pt',
+                          margin: '3mm 0 0 0'
+                        }}>
+                          Add your volunteer experience...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Awards */}
+                  {section.type === 'awards' && (
+                    <div className="awards-section">
+                      <h3 className="section-heading text-black font-semibold" style={{
+                        fontSize: '12pt',
+                        lineHeight: '1.3',
+                        margin: '0 0 3mm 0',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        borderBottom: '1pt solid #000',
+                        paddingBottom: '1mm'
+                      }}>
+                        Awards & Achievements
+                      </h3>
+                      
+                      {section.items.length > 0 ? (
+                        <div className="awards-list" style={{ margin: '3mm 0 0 0' }}>
+                          {section.items.map((award, awardIndex) => (
+                            <div key={awardIndex} style={{
+                              marginBottom: awardIndex < section.items.length - 1 ? '2mm' : '0',
+                              fontSize: '10pt',
+                              lineHeight: '1.4'
+                            }}>
+                              <div style={{ fontWeight: '600' }}>
+                                {award.name} • {award.issuer} • {award.date.replace(/(\d{4})-(\d{2})/, '$2/$1')}
+                              </div>
+                              {award.description && (
+                                <div style={{ fontSize: '9pt', color: '#555', marginTop: '0.5mm' }}>
+                                  {award.description}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          color: '#666', 
+                          fontStyle: 'italic',
+                          fontSize: '10pt',
+                          margin: '3mm 0 0 0'
+                        }}>
+                          Add your awards...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Publications */}
+                  {section.type === 'publications' && (
+                    <div className="publications-section">
+                      <h3 className="section-heading text-black font-semibold" style={{
+                        fontSize: '12pt',
+                        lineHeight: '1.3',
+                        margin: '0 0 3mm 0',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        borderBottom: '1pt solid #000',
+                        paddingBottom: '1mm'
+                      }}>
+                        Publications
+                      </h3>
+                      
+                      {section.items.length > 0 ? (
+                        <div className="publications-list" style={{ margin: '3mm 0 0 0' }}>
+                          {section.items.map((pub, pubIndex) => (
+                            <div key={pubIndex} style={{
+                              marginBottom: pubIndex < section.items.length - 1 ? '2mm' : '0',
+                              fontSize: '10pt',
+                              lineHeight: '1.4'
+                            }}>
+                              {pub.authors && <span style={{ fontSize: '9pt' }}>{pub.authors}. </span>}
+                              <span style={{ fontWeight: '600' }}>"{pub.title}"</span>
+                              <span style={{ fontStyle: 'italic' }}> {pub.publication}</span>
+                              <span>, {pub.date.replace(/(\d{4})-(\d{2})/, '$2/$1')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          color: '#666', 
+                          fontStyle: 'italic',
+                          fontSize: '10pt',
+                          margin: '3mm 0 0 0'
+                        }}>
+                          Add your publications...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* References */}
                   {section.type === 'references' && (
                     <div className="references-section">

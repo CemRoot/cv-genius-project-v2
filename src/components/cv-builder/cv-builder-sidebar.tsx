@@ -6,20 +6,32 @@ import { SummaryForm } from './forms/summary-form'
 import { ExperienceForm } from './forms/experience-form'
 import { EducationForm } from './forms/education-form'
 import { SkillsForm } from './forms/skills-form'
+import { CertificationsForm } from './forms/certifications-form'
+import { LanguagesForm } from './forms/languages-form'
+import { VolunteerForm } from './forms/volunteer-form'
+import { AwardsForm } from './forms/awards-form'
+import { PublicationsForm } from './forms/publications-form'
 import { ReferencesForm } from './forms/references-form'
 
+type SectionKey = 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'certifications' | 'languages' | 'volunteer' | 'awards' | 'publications' | 'references'
+
 interface CvBuilderSidebarProps {
-  activeSection: 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'references'
-  onSectionChange: (section: 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'references') => void
+  activeSection: SectionKey
+  onSectionChange: (section: SectionKey) => void
 }
 
 const sections = [
-  { key: 'personal' as const, label: 'Personal Info', icon: '👤', description: 'Contact details and basic information' },
-  { key: 'summary' as const, label: 'Professional Summary', icon: '📝', description: 'Brief overview of your career' },
-  { key: 'experience' as const, label: 'Work Experience', icon: '💼', description: 'Your professional background' },
-  { key: 'education' as const, label: 'Education', icon: '🎓', description: 'Academic qualifications' },
-  { key: 'skills' as const, label: 'Skills', icon: '🔧', description: 'Technical and soft skills' },
-  { key: 'references' as const, label: 'References', icon: '📞', description: 'Professional references' }
+  { key: 'personal' as const, label: 'Personal Info', icon: '👤', description: 'Contact details' },
+  { key: 'summary' as const, label: 'Summary', icon: '📝', description: 'Career overview' },
+  { key: 'experience' as const, label: 'Experience', icon: '💼', description: 'Work history' },
+  { key: 'education' as const, label: 'Education', icon: '🎓', description: 'Academic background' },
+  { key: 'skills' as const, label: 'Skills', icon: '🔧', description: 'Technical skills' },
+  { key: 'certifications' as const, label: 'Certifications', icon: '📜', description: 'Professional certs' },
+  { key: 'languages' as const, label: 'Languages', icon: '🌍', description: 'Language skills' },
+  { key: 'volunteer' as const, label: 'Volunteer', icon: '🤝', description: 'Community service' },
+  { key: 'awards' as const, label: 'Awards', icon: '🏆', description: 'Achievements' },
+  { key: 'publications' as const, label: 'Publications', icon: '📚', description: 'Published works' },
+  { key: 'references' as const, label: 'References', icon: '📞', description: 'Professional refs' }
 ]
 
 export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSidebarProps) {
@@ -63,6 +75,11 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
         {activeSection === 'experience' && <ExperienceForm />}
         {activeSection === 'education' && <EducationForm />}
         {activeSection === 'skills' && <SkillsForm />}
+        {activeSection === 'certifications' && <CertificationsForm />}
+        {activeSection === 'languages' && <LanguagesForm />}
+        {activeSection === 'volunteer' && <VolunteerForm />}
+        {activeSection === 'awards' && <AwardsForm />}
+        {activeSection === 'publications' && <PublicationsForm />}
         {activeSection === 'references' && <ReferencesForm />}
       </div>
     </div>

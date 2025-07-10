@@ -36,11 +36,53 @@ export interface CvBuilderReference {
   relationship?: string
 }
 
+export interface CvBuilderLanguage {
+  name: string
+  proficiency: 'native' | 'fluent' | 'professional' | 'intermediate' | 'basic'
+  certification?: string
+}
+
+export interface CvBuilderCertification {
+  name: string
+  issuer: string
+  date: string // YYYY-MM
+  expiryDate?: string // YYYY-MM
+  credentialId?: string
+}
+
+export interface CvBuilderVolunteer {
+  organization: string
+  role: string
+  start: string // YYYY-MM
+  end?: string // YYYY-MM | 'Present'
+  description: string
+}
+
+export interface CvBuilderPublication {
+  title: string
+  publication: string
+  date: string // YYYY-MM
+  url?: string
+  authors?: string
+}
+
+export interface CvBuilderAward {
+  name: string
+  issuer: string
+  date: string // YYYY-MM
+  description?: string
+}
+
 export type CvBuilderSection =
   | { type: 'summary'; markdown: string }
   | { type: 'experience'; items: CvBuilderExperience[] }
   | { type: 'education'; items: CvBuilderEducation[] }
   | { type: 'skills'; items: string[] }
+  | { type: 'certifications'; items: CvBuilderCertification[] }
+  | { type: 'languages'; items: CvBuilderLanguage[] }
+  | { type: 'volunteer'; items: CvBuilderVolunteer[] }
+  | { type: 'awards'; items: CvBuilderAward[] }
+  | { type: 'publications'; items: CvBuilderPublication[] }
   | { type: 'references'; mode: 'on-request' | 'detailed'; items: CvBuilderReference[] }
 
 export interface CvBuilderDocument {
@@ -159,6 +201,99 @@ export const CvBuilderReferenceSchema = z.object({
     .optional()
 })
 
+export const CvBuilderLanguageSchema = z.object({
+  name: z.string()
+    .min(2, 'Language name must be at least 2 characters')
+    .max(50, 'Language name must be less than 50 characters'),
+  
+  proficiency: z.enum(['native', 'fluent', 'professional', 'intermediate', 'basic']),
+  
+  certification: z.string()
+    .max(100, 'Certification must be less than 100 characters')
+    .optional()
+})
+
+export const CvBuilderCertificationSchema = z.object({
+  name: z.string()
+    .min(2, 'Certification name must be at least 2 characters')
+    .max(150, 'Certification name must be less than 150 characters'),
+  
+  issuer: z.string()
+    .min(2, 'Issuer name must be at least 2 characters')
+    .max(100, 'Issuer name must be less than 100 characters'),
+  
+  date: z.string()
+    .regex(yearMonthRegex, 'Date must be in YYYY-MM format'),
+  
+  expiryDate: z.string()
+    .regex(yearMonthRegex, 'Expiry date must be in YYYY-MM format')
+    .optional(),
+  
+  credentialId: z.string()
+    .max(100, 'Credential ID must be less than 100 characters')
+    .optional()
+})
+
+export const CvBuilderVolunteerSchema = z.object({
+  organization: z.string()
+    .min(2, 'Organization name must be at least 2 characters')
+    .max(100, 'Organization name must be less than 100 characters'),
+  
+  role: z.string()
+    .min(2, 'Role must be at least 2 characters')
+    .max(100, 'Role must be less than 100 characters'),
+  
+  start: z.string()
+    .regex(yearMonthRegex, 'Start date must be in YYYY-MM format'),
+  
+  end: z.string()
+    .regex(/^(\d{4}-\d{2}|Present)$/, 'End date must be in YYYY-MM format or "Present"')
+    .optional(),
+  
+  description: z.string()
+    .min(10, 'Description must be at least 10 characters')
+    .max(300, 'Description must be less than 300 characters')
+})
+
+export const CvBuilderPublicationSchema = z.object({
+  title: z.string()
+    .min(2, 'Title must be at least 2 characters')
+    .max(200, 'Title must be less than 200 characters'),
+  
+  publication: z.string()
+    .min(2, 'Publication name must be at least 2 characters')
+    .max(150, 'Publication name must be less than 150 characters'),
+  
+  date: z.string()
+    .regex(yearMonthRegex, 'Date must be in YYYY-MM format'),
+  
+  url: z.string()
+    .url('Must be a valid URL')
+    .max(200, 'URL must be less than 200 characters')
+    .optional(),
+  
+  authors: z.string()
+    .max(200, 'Authors must be less than 200 characters')
+    .optional()
+})
+
+export const CvBuilderAwardSchema = z.object({
+  name: z.string()
+    .min(2, 'Award name must be at least 2 characters')
+    .max(150, 'Award name must be less than 150 characters'),
+  
+  issuer: z.string()
+    .min(2, 'Issuer name must be at least 2 characters')
+    .max(100, 'Issuer name must be less than 100 characters'),
+  
+  date: z.string()
+    .regex(yearMonthRegex, 'Date must be in YYYY-MM format'),
+  
+  description: z.string()
+    .max(200, 'Description must be less than 200 characters')
+    .optional()
+})
+
 export const CvBuilderSectionSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('summary'),
@@ -185,6 +320,31 @@ export const CvBuilderSectionSchema = z.discriminatedUnion('type', [
       .max(50, 'Skill must be less than 50 characters'))
       .min(3, 'At least 3 skills are required')
       .max(20, 'Maximum 20 skills for ATS compliance')
+  }),
+  z.object({
+    type: z.literal('certifications'),
+    items: z.array(CvBuilderCertificationSchema)
+      .max(10, 'Maximum 10 certifications allowed')
+  }),
+  z.object({
+    type: z.literal('languages'),
+    items: z.array(CvBuilderLanguageSchema)
+      .max(8, 'Maximum 8 languages allowed')
+  }),
+  z.object({
+    type: z.literal('volunteer'),
+    items: z.array(CvBuilderVolunteerSchema)
+      .max(5, 'Maximum 5 volunteer experiences allowed')
+  }),
+  z.object({
+    type: z.literal('awards'),
+    items: z.array(CvBuilderAwardSchema)
+      .max(6, 'Maximum 6 awards allowed')
+  }),
+  z.object({
+    type: z.literal('publications'),
+    items: z.array(CvBuilderPublicationSchema)
+      .max(10, 'Maximum 10 publications allowed')
   }),
   z.object({
     type: z.literal('references'),
@@ -249,7 +409,18 @@ export const formatIrishPhone = (phone: string): string => {
 }
 
 // ATS compliance utilities
-export const atsCompliantSectionOrder = ['summary', 'experience', 'education', 'skills', 'references'] as const
+export const atsCompliantSectionOrder = [
+  'summary', 
+  'experience', 
+  'education', 
+  'skills', 
+  'certifications',
+  'languages',
+  'volunteer',
+  'awards',
+  'publications',
+  'references'
+] as const
 
 export const isAtsCompliant = (document: CvBuilderDocument): { compliant: boolean; issues: string[] } => {
   const issues: string[] = []
@@ -304,6 +475,8 @@ export const createDefaultCvBuilderDocument = (): CvBuilderDocument => ({
     { type: 'experience', items: [] },
     { type: 'education', items: [] },
     { type: 'skills', items: [] },
+    { type: 'certifications', items: [] },
+    { type: 'languages', items: [] },
     { type: 'references', mode: 'on-request', items: [] }
   ]
 })
