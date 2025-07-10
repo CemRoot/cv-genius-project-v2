@@ -72,7 +72,7 @@ export function PersonalInfoForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Personal Information
@@ -82,7 +82,7 @@ export function PersonalInfoForm() {
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Full Name */}
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">

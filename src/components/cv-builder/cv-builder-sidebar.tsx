@@ -24,14 +24,14 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
   return (
     <div className="h-full overflow-y-auto bg-white">
       {/* Section Navigation */}
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900 mb-5">CV Sections</h3>
-        <nav className="space-y-3">
+      <div className="px-8 py-8 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">CV Sections</h3>
+        <nav className="space-y-4">
           {sections.map((section) => (
             <button
               key={section.key}
               onClick={() => onSectionChange(section.key)}
-              className={`w-full text-left px-4 py-4 rounded-lg transition-colors ${
+              className={`w-full text-left px-5 py-4 rounded-md transition-colors ${
                 activeSection === section.key
                   ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
                   : 'hover:bg-gray-50 text-gray-700'
@@ -50,7 +50,7 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
       </div>
 
       {/* Active Section Content */}
-      <div className="p-6">
+      <div className="px-8 py-8 space-y-8">
         {activeSection === 'personal' && <PersonalInfoForm />}
         {activeSection === 'summary' && <SummaryForm />}
         {activeSection === 'experience' && <ExperienceForm />}
