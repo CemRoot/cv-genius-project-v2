@@ -1,5 +1,6 @@
 import { isMobileDevice } from '@/lib/mobile-detect'
 import { ReactNode } from 'react'
+import { MainLayout } from '@/components/layout/main-layout'
 
 export default async function BuilderLayout({
   children,
@@ -9,8 +10,10 @@ export default async function BuilderLayout({
   const isMobile = await isMobileDevice()
   
   return (
-    <div data-mobile={isMobile ? 'true' : 'false'}>
-      {children}
-    </div>
+    <MainLayout>
+      <div data-mobile={isMobile ? 'true' : 'false'}>
+        {children}
+      </div>
+    </MainLayout>
   )
 }
