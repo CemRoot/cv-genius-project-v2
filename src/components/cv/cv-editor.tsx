@@ -11,7 +11,7 @@ import { ProjectsForm } from "@/components/forms/projects-form"
 import { CertificationsForm } from "@/components/forms/certifications-form"
 import { InterestsForm } from "@/components/forms/interests-form"
 import { ReferencesForm } from "@/components/forms/references-form"
-import { DesignControls } from "@/components/cv-builder/design-controls/design-controls"
+import { CVToolbar } from "@/components/cv/cv-toolbar"
 import { Button } from "@/components/ui/button"
 import { AutoSaveIndicator } from "@/components/ui/auto-save-indicator"
 import { Switch } from "@/components/ui/switch"
@@ -80,10 +80,12 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
     }
   }, [activeSection, expandedSections])
   
-  const { isSaving, lastSaved, saveCount, scheduleAutoSave } = useAutoSave({
-    onSave: performAutoSave,
-    delay: autoSaveInterval,
-    enabled: autoSaveEnabled
+  const { isAutoSaveEnabled } = useAutoSave({
+    enabled: autoSaveEnabled,
+    interval: autoSaveInterval,
+    onSave: () => {
+      performAutoSave()
+    }
   })
 
   // Close section manager when clicking outside
@@ -192,7 +194,7 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
     {
       id: 'design',
       title: 'Design Controls',
-      component: DesignControls,
+      component: CVToolbar,
       required: false
     }
   ]
@@ -204,12 +206,10 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
           <h2 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold text-gray-900`}>
             {isMobile ? 'Edit Your CV' : 'Edit Your CV'}
           </h2>
-          {!isMobile && (
-            <AutoSaveIndicator
-              isSaving={isSaving}
-              lastSaved={lastSaved}
-              saveCount={saveCount}
-            />
+          {!isMobile && lastAutoSave && (
+            <span className="text-xs text-green-600">
+              Auto-saved
+            </span>
           )}
         </div>
         
@@ -433,13 +433,13 @@ export function CVEditor({ isMobile = false }: CVEditorProps) {
               ></motion.div>
               <span className="text-sm font-medium text-green-800">Auto-save active</span>
             </div>
-            <AutoSaveIndicator
-              isSaving={isSaving}
-              lastSaved={lastSaved}
-              saveCount={saveCount}
-            />
+            {lastAutoSave && (
+              <span className="text-xs text-green-600">
+                Auto-saved
+              </span>
+            )}
           </div>
-          {isSaving && (
+          {isAutoSaveEnabled && (
             <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
               <div className="w-1 h-1 bg-green-400 rounded-full animate-bounce"></div>
               <div className="w-1 h-1 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
