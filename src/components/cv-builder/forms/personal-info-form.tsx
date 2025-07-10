@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useCvBuilder } from '@/contexts/cv-builder-context'
 import { 
   CvBuilderPersonalSchema, 
@@ -22,8 +22,22 @@ export function PersonalInfoForm() {
   const { document, updatePersonal } = useCvBuilder()
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const emailInputRef = useRef<HTMLInputElement>(null)
 
   const personal = document.personal
+
+  // Fix hydration mismatch caused by browser extensions
+  useEffect(() => {
+    if (emailInputRef.current) {
+      // Remove browser extension attributes that cause hydration mismatch
+      emailInputRef.current.removeAttribute('data-temp-mail-org')
+      emailInputRef.current.style.backgroundImage = ''
+      emailInputRef.current.style.backgroundRepeat = ''
+      emailInputRef.current.style.backgroundSize = ''
+      emailInputRef.current.style.backgroundPosition = ''
+      emailInputRef.current.style.cursor = ''
+    }
+  }, [])
 
   const validateField = (field: keyof typeof personal, value: string): string | undefined => {
     try {
@@ -74,18 +88,18 @@ export function PersonalInfoForm() {
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">
           Personal Information
         </h3>
-        <p className="text-sm text-gray-600 mb-6">
-          Enter your contact details using Dublin/Irish formatting conventions.
+        <p className="text-base text-gray-600 mb-8 leading-relaxed">
+          Enter your contact details using Dublin/Irish formatting conventions for optimal ATS compatibility.
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Full Name */}
         <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="fullName" className="block text-base font-semibold text-gray-700 mb-3">
             Full Name *
           </label>
           <input
@@ -95,23 +109,23 @@ export function PersonalInfoForm() {
             onChange={(e) => handleFieldChange('fullName', e.target.value)}
             onBlur={() => handleBlur('fullName')}
             placeholder="e.g., John O'Connor"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-3 focus:ring-blue-500/20 text-base transition-all duration-200 ${
               getFieldError('fullName') 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                : 'border-gray-300 focus:border-blue-500'
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+                : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
             }`}
           />
           {getFieldError('fullName') && (
-            <p className="mt-1 text-sm text-red-600">{getFieldError('fullName')}</p>
+            <p className="mt-2 text-sm text-red-600 font-medium">{getFieldError('fullName')}</p>
           )}
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-2 text-sm text-gray-500">
             Your full legal name as it appears on official documents
           </p>
         </div>
 
         {/* Professional Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="title" className="block text-base font-semibold text-gray-700 mb-3">
             Professional Title *
           </label>
           <input
@@ -121,49 +135,51 @@ export function PersonalInfoForm() {
             onChange={(e) => handleFieldChange('title', e.target.value)}
             onBlur={() => handleBlur('title')}
             placeholder="e.g., Senior Software Developer"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-3 focus:ring-blue-500/20 text-base transition-all duration-200 ${
               getFieldError('title') 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                : 'border-gray-300 focus:border-blue-500'
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+                : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
             }`}
           />
           {getFieldError('title') && (
-            <p className="mt-1 text-sm text-red-600">{getFieldError('title')}</p>
+            <p className="mt-2 text-sm text-red-600 font-medium">{getFieldError('title')}</p>
           )}
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-2 text-sm text-gray-500">
             Your current job title or the position you're targeting
           </p>
         </div>
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-base font-semibold text-gray-700 mb-3">
             Email Address *
           </label>
           <input
+            ref={emailInputRef}
             type="email"
             id="email"
             value={personal.email}
             onChange={(e) => handleFieldChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
             placeholder="e.g., john.oconnor@email.com"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-3 focus:ring-blue-500/20 text-base transition-all duration-200 ${
               getFieldError('email') 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                : 'border-gray-300 focus:border-blue-500'
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+                : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
             }`}
+            suppressHydrationWarning
           />
           {getFieldError('email') && (
-            <p className="mt-1 text-sm text-red-600">{getFieldError('email')}</p>
+            <p className="mt-2 text-sm text-red-600 font-medium">{getFieldError('email')}</p>
           )}
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-2 text-sm text-gray-500">
             Use a professional email address
           </p>
         </div>
 
         {/* Irish Phone Number */}
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="phone" className="block text-base font-semibold text-gray-700 mb-3">
             Phone Number *
           </label>
           <div className="relative">
@@ -174,24 +190,24 @@ export function PersonalInfoForm() {
               onChange={(e) => handleFieldChange('phone', e.target.value)}
               onBlur={() => handleBlur('phone')}
               placeholder="+353 87 123 4567"
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-3 focus:ring-blue-500/20 text-base transition-all duration-200 ${
                 getFieldError('phone') 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                  : 'border-gray-300 focus:border-blue-500'
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+                  : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
               }`}
             />
             {validateIrishPhone(personal.phone) && (
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                <svg className="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
             )}
           </div>
           {getFieldError('phone') && (
-            <p className="mt-1 text-sm text-red-600">{getFieldError('phone')}</p>
+            <p className="mt-2 text-sm text-red-600 font-medium">{getFieldError('phone')}</p>
           )}
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-2 text-sm text-gray-500">
             <p>Irish format: +353 XX XXX XXXX</p>
             <p>• Mobile: +353 8X XXX XXXX or +353 9X XXX XXXX</p>
             <p>• Dublin landline: +353 1 XXX XXXX</p>
@@ -200,26 +216,26 @@ export function PersonalInfoForm() {
 
         {/* Dublin Address */}
         <div>
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="address" className="block text-base font-semibold text-gray-700 mb-3">
             Address *
           </label>
           <textarea
             id="address"
-            rows={3}
+            rows={4}
             value={personal.address}
             onChange={(e) => handleFieldChange('address', e.target.value)}
             onBlur={() => handleBlur('address')}
             placeholder="e.g., 123 Main Street, Dublin 2, Ireland"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
+            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-3 focus:ring-blue-500/20 text-base transition-all duration-200 resize-none ${
               getFieldError('address') 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                : 'border-gray-300 focus:border-blue-500'
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+                : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
             }`}
           />
           {getFieldError('address') && (
-            <p className="mt-1 text-sm text-red-600">{getFieldError('address')}</p>
+            <p className="mt-2 text-sm text-red-600 font-medium">{getFieldError('address')}</p>
           )}
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-2 text-sm text-gray-500">
             <p>Must include Dublin and Ireland for ATS compliance</p>
             <p>Examples:</p>
             <ul className="list-disc list-inside ml-2 space-y-1">
@@ -274,14 +290,28 @@ export function PersonalInfoForm() {
         </div>
       )}
 
-      {/* Tips */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <h4 className="text-sm font-medium text-blue-800 mb-2">💡 Dublin CV Tips</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Use your full legal name, including Irish prefixes (O', Mc, etc.)</li>
-          <li>• Include your Dublin postal code (Dublin 1, Dublin 2, etc.)</li>
-          <li>• Phone numbers should use the +353 international format</li>
-          <li>• Consider adding your LinkedIn profile for Irish recruiters</li>
+      {/* Enhanced Tips */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+        <h4 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
+          💡 Dublin CV Tips
+        </h4>
+        <ul className="text-base text-blue-700 space-y-3">
+          <li className="flex items-start">
+            <span className="mr-3 text-blue-500">•</span>
+            Use your full legal name, including Irish prefixes (O', Mc, etc.)
+          </li>
+          <li className="flex items-start">
+            <span className="mr-3 text-blue-500">•</span>
+            Include your Dublin postal code (Dublin 1, Dublin 2, etc.)
+          </li>
+          <li className="flex items-start">
+            <span className="mr-3 text-blue-500">•</span>
+            Phone numbers should use the +353 international format
+          </li>
+          <li className="flex items-start">
+            <span className="mr-3 text-blue-500">•</span>
+            Consider adding your LinkedIn profile for Irish recruiters
+          </li>
         </ul>
       </div>
     </div>

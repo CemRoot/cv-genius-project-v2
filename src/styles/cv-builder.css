@@ -1,0 +1,52 @@
+/* CV Builder Specific Styles */
+
+/* Remove page header sticky behavior for CV builder */
+.cv-builder-page .sticky-header {
+  position: relative !important;
+  top: auto !important;
+  z-index: auto !important;
+}
+
+/* Ensure proper scrolling behavior */
+.cv-builder-page {
+  overflow-x: hidden;
+}
+
+/* Mobile adjustments */
+@media (max-width: 1023px) {
+  .cv-builder-main-mobile {
+    padding: 0;
+  }
+}
+
+/* Print styles */
+@media print {
+  .cv-builder-header,
+  .cv-builder-sidebar,
+  .cv-builder-toolbar {
+    display: none !important;
+  }
+  
+  .cv-builder-preview {
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .cv-template-classic {
+    transform: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Remove breakInside for better compatibility */
+.cv-section {
+  page-break-inside: avoid;
+}
+
+/* Ensure proper A4 sizing in print */
+@page {
+  size: A4;
+  margin: 0;
+}

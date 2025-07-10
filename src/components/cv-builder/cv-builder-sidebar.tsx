@@ -23,15 +23,15 @@ const sections = [
 export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSidebarProps) {
   return (
     <div className="h-full overflow-y-auto bg-white">
-      {/* Section Navigation */}
-      <div className="px-8 py-8 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">CV Sections</h3>
-        <nav className="space-y-4">
+      {/* Section Navigation - Compact */}
+      <div className="px-6 py-6 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">CV Sections</h3>
+        <nav className="space-y-2">
           {sections.map((section) => (
             <button
               key={section.key}
               onClick={() => onSectionChange(section.key)}
-              className={`w-full text-left px-5 py-4 rounded-md transition-colors ${
+              className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
                 activeSection === section.key
                   ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
                   : 'hover:bg-gray-50 text-gray-700'
@@ -40,17 +40,22 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
               <div className="flex items-center">
                 <span className="text-lg mr-3">{section.icon}</span>
                 <div className="flex-1">
-                  <div className="font-medium">{section.label}</div>
-                  <div className="text-sm text-gray-500">{section.description}</div>
+                  <div className="font-medium text-sm">{section.label}</div>
+                  <div className="text-xs text-gray-500">{section.description}</div>
                 </div>
+                {activeSection === section.key && (
+                  <div className="flex items-center">
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                  </div>
+                )}
               </div>
             </button>
           ))}
         </nav>
       </div>
 
-      {/* Active Section Content */}
-      <div className="px-8 py-8 space-y-8">
+      {/* Active Section Content - Compact */}
+      <div className="px-6 py-6">
         {activeSection === 'personal' && <PersonalInfoForm />}
         {activeSection === 'summary' && <SummaryForm />}
         {activeSection === 'experience' && <ExperienceForm />}

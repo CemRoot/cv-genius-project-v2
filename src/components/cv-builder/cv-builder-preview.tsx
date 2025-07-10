@@ -6,31 +6,52 @@ import { useCvBuilder } from '@/contexts/cv-builder-context'
 export function CvBuilderPreview() {
   const { document } = useCvBuilder()
   const [scale, setScale] = React.useState(1)
+  const containerRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
     function handleResize() {
-      // A4 width in pixels at 96dpi ≈ 794px. Leave small margin (16px on each side)
-      const available = window.innerWidth - 32
-      const newScale = available < 794 ? available / 794 : 1
+      if (!containerRef.current) return
+      
+      const container = containerRef.current
+      const containerWidth = container.clientWidth - 64 // 32px padding on each side
+      const containerHeight = container.clientHeight - 64
+      
+      // A4 dimensions in pixels at 96dpi
+      const a4Width = 794
+      const a4Height = 1123
+      
+      // Calculate scale to fit width and height
+      const scaleX = containerWidth / a4Width
+      const scaleY = containerHeight / a4Height
+      const newScale = Math.min(scaleX, scaleY, 1) // Never scale up beyond 100%
+      
       setScale(parseFloat(newScale.toFixed(3)))
     }
+    
     handleResize()
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    const resizeObserver = new ResizeObserver(handleResize)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+    
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      resizeObserver.disconnect()
+    }
   }, [])
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-8 bg-gray-100">
-      <div className="max-w-4xl mx-auto">
+    <div ref={containerRef} className="h-full overflow-y-auto flex items-start justify-center p-8 bg-gray-100">
+      <div className="relative">
         {/* A4 Page Container - ATS-Optimized Black & White Template */}
         <div 
-          className="bg-white shadow-lg overflow-hidden print:shadow-none print:overflow-visible"
+          className="bg-white shadow-xl overflow-hidden print:shadow-none print:overflow-visible"
           style={{ 
             width: '210mm',
             minHeight: '297mm',
-            margin: '0 auto',
             transform: `scale(${scale})`,
-            transformOrigin: 'top left'
+            transformOrigin: 'top center'
           }}
         >
           {/* Main CV Content Grid */}
@@ -361,19 +382,16 @@ export function CvBuilderPreview() {
           </div>
         </div>
 
-        {/* ATS Compliance Indicator */}
-        <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-          <div className="flex items-center">
-            <svg className="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        {/* ATS Compliance Indicator - Compact */}
+        <div className="mt-4 flex items-center justify-center">
+          <div className="inline-flex items-center px-3 py-1.5 bg-green-50 rounded-lg border border-green-200">
+            <svg className="h-4 w-4 text-green-500 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <span className="text-sm font-medium text-green-800">
-              ATS-Optimized Template
+            <span className="text-xs font-medium text-green-700">
+              ATS-Optimized • Dublin Standards
             </span>
           </div>
-          <p className="text-sm text-green-700 mt-1">
-            Black & white design • CSS Grid layout • A4 format • 20mm margins • Dublin standards compliant
-          </p>
         </div>
       </div>
     </div>
