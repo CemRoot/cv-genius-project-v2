@@ -25,13 +25,13 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
     <div className="h-full overflow-y-auto bg-white">
       {/* Section Navigation */}
       <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">CV Sections</h3>
-        <nav className="space-y-2">
+        <h3 className="text-lg font-medium text-gray-900 mb-5">CV Sections</h3>
+        <nav className="space-y-3">
           {sections.map((section) => (
             <button
               key={section.key}
               onClick={() => onSectionChange(section.key)}
-              className={`w-full text-left p-3 rounded-lg transition-colors ${
+              className={`w-full text-left px-4 py-4 rounded-lg transition-colors ${
                 activeSection === section.key
                   ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
                   : 'hover:bg-gray-50 text-gray-700'

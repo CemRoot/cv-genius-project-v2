@@ -84,13 +84,21 @@ export function CvBuilderInterface() {
         </div>
 
         {/* Main Content */}
-        <div className="flex h-[calc(100vh-200px)]">
+        <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-200px)]">
           {/* Sidebar */}
-          <div className={`${sidebarOpen ? 'w-96' : 'w-0'} lg:w-96 transition-all duration-300 border-r border-gray-200 overflow-hidden`}>
-            <CvBuilderSidebar 
-              activeSection={activeSection}
-              onSectionChange={setActiveSection}
-            />
+          <div
+            className={`transition-all duration-300 border-gray-200 overflow-y-auto overflow-x-hidden
+              ${sidebarOpen ? 'border-b lg:border-b-0 lg:border-r' : ''}
+              ${sidebarOpen ? 'max-h-[70vh] lg:max-h-none' : 'h-0 lg:h-auto'}
+              ${sidebarOpen ? 'w-full lg:w-96' : 'w-0 lg:w-96'}`}
+          >
+            {/* Render sidebar content only when width is visible to avoid tab order issues */}
+            {sidebarOpen && (
+              <CvBuilderSidebar
+                activeSection={activeSection}
+                onSectionChange={setActiveSection}
+              />
+            )}
           </div>
 
           {/* Preview Area */}

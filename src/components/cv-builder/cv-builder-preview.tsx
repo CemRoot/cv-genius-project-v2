@@ -5,22 +5,37 @@ import { useCvBuilder } from '@/contexts/cv-builder-context'
 
 export function CvBuilderPreview() {
   const { document } = useCvBuilder()
+  const [scale, setScale] = React.useState(1)
+
+  React.useEffect(() => {
+    function handleResize() {
+      // A4 width in pixels at 96dpi ≈ 794px. Leave small margin (16px on each side)
+      const available = window.innerWidth - 32
+      const newScale = available < 794 ? available / 794 : 1
+      setScale(parseFloat(newScale.toFixed(3)))
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   return (
-    <div className="h-full overflow-y-auto p-8 bg-gray-100">
+    <div className="h-full overflow-y-auto p-4 md:p-8 bg-gray-100">
       <div className="max-w-4xl mx-auto">
         {/* A4 Page Container - ATS-Optimized Black & White Template */}
         <div 
-          className="bg-white shadow-lg overflow-hidden print:shadow-none print:overflow-visible" 
+          className="bg-white shadow-lg overflow-hidden print:shadow-none print:overflow-visible"
           style={{ 
             width: '210mm',
             minHeight: '297mm',
-            margin: '0 auto'
+            margin: '0 auto',
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left'
           }}
         >
           {/* Main CV Content Grid */}
           <div 
-            className="cv-template-classic h-full font-lato text-black bg-white"
+            className="cv-template-classic h-full font-lato text-black bg-white overflow-x-auto"
             style={{
               padding: '20mm',
               display: 'grid',
