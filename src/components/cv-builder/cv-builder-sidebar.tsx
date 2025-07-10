@@ -6,10 +6,11 @@ import { SummaryForm } from './forms/summary-form'
 import { ExperienceForm } from './forms/experience-form'
 import { EducationForm } from './forms/education-form'
 import { SkillsForm } from './forms/skills-form'
+import { ReferencesForm } from './forms/references-form'
 
 interface CvBuilderSidebarProps {
-  activeSection: 'personal' | 'summary' | 'experience' | 'education' | 'skills'
-  onSectionChange: (section: 'personal' | 'summary' | 'experience' | 'education' | 'skills') => void
+  activeSection: 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'references'
+  onSectionChange: (section: 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'references') => void
 }
 
 const sections = [
@@ -17,7 +18,8 @@ const sections = [
   { key: 'summary' as const, label: 'Professional Summary', icon: '📝', description: 'Brief overview of your career' },
   { key: 'experience' as const, label: 'Work Experience', icon: '💼', description: 'Your professional background' },
   { key: 'education' as const, label: 'Education', icon: '🎓', description: 'Academic qualifications' },
-  { key: 'skills' as const, label: 'Skills', icon: '🔧', description: 'Technical and soft skills' }
+  { key: 'skills' as const, label: 'Skills', icon: '🔧', description: 'Technical and soft skills' },
+  { key: 'references' as const, label: 'References', icon: '📞', description: 'Professional references' }
 ]
 
 export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSidebarProps) {
@@ -61,6 +63,7 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
         {activeSection === 'experience' && <ExperienceForm />}
         {activeSection === 'education' && <EducationForm />}
         {activeSection === 'skills' && <SkillsForm />}
+        {activeSection === 'references' && <ReferencesForm />}
       </div>
     </div>
   )

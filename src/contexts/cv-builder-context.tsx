@@ -42,7 +42,7 @@ interface CvBuilderState {
 
 interface CvBuilderContextType extends CvBuilderState {
   updatePersonal: (personal: Partial<CvBuilderPersonal>) => void
-  updateSection: (index: number, section: CvBuilderSection) => void
+  updateSection: (type: string, section: CvBuilderSection) => void
   addSection: (section: CvBuilderSection) => void
   removeSection: (index: number) => void
   reorderSections: (fromIndex: number, toIndex: number) => void
@@ -393,9 +393,14 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_PERSONAL', payload: personal })
   }, [])
 
-  const updateSection = useCallback((index: number, section: CvBuilderSection) => {
-    dispatch({ type: 'UPDATE_SECTION', payload: { index, section } })
-  }, [])
+  const updateSection = useCallback((type: string, section: CvBuilderSection) => {
+    const index = state.document.sections.findIndex(s => s.type === type)
+    if (index !== -1) {
+      dispatch({ type: 'UPDATE_SECTION', payload: { index, section } })
+    } else {
+      dispatch({ type: 'ADD_SECTION', payload: section })
+    }
+  }, [state.document.sections])
 
   const addSection = useCallback((section: CvBuilderSection) => {
     dispatch({ type: 'ADD_SECTION', payload: section })

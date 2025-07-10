@@ -356,6 +356,79 @@ export function CvBuilderPreview() {
                       )}
                     </div>
                   )}
+
+                  {/* References */}
+                  {section.type === 'references' && (
+                    <div className="references-section">
+                      <h3 className="section-heading text-black font-semibold" style={{
+                        fontSize: '12pt',
+                        lineHeight: '1.3',
+                        margin: '0 0 3mm 0',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        borderBottom: '1pt solid #000',
+                        paddingBottom: '1mm'
+                      }}>
+                        References
+                      </h3>
+                      
+                      {section.mode === 'on-request' ? (
+                        <div style={{
+                          margin: '3mm 0 0 0',
+                          fontSize: '10pt',
+                          lineHeight: '1.4',
+                          fontStyle: 'italic'
+                        }}>
+                          References available upon request
+                        </div>
+                      ) : section.items.length > 0 ? (
+                        <div className="references-grid" style={{
+                          margin: '3mm 0 0 0',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '4mm'
+                        }}>
+                          {section.items.map((ref, refIndex) => (
+                            <div key={refIndex} className="reference-item" style={{
+                              fontSize: '10pt',
+                              lineHeight: '1.4',
+                              breakInside: 'avoid'
+                            }}>
+                              <div style={{ fontWeight: '600', marginBottom: '1mm' }}>
+                                {ref.name}
+                              </div>
+                              <div style={{ fontSize: '9pt', color: '#333' }}>
+                                {ref.title}
+                              </div>
+                              <div style={{ fontSize: '9pt', color: '#333' }}>
+                                {ref.company}
+                              </div>
+                              <div style={{ fontSize: '9pt', marginTop: '1mm' }}>
+                                {ref.email}
+                              </div>
+                              <div style={{ fontSize: '9pt' }}>
+                                {ref.phone}
+                              </div>
+                              {ref.relationship && (
+                                <div style={{ fontSize: '9pt', fontStyle: 'italic', marginTop: '1mm' }}>
+                                  {ref.relationship}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          color: '#666', 
+                          fontStyle: 'italic',
+                          fontSize: '10pt',
+                          margin: '3mm 0 0 0'
+                        }}>
+                          Add your references...
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </section>
               ))}
 

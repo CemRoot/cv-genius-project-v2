@@ -27,11 +27,21 @@ export interface CvBuilderEducation {
   grade?: string
 }
 
+export interface CvBuilderReference {
+  name: string
+  title: string
+  company: string
+  email: string
+  phone: string
+  relationship?: string
+}
+
 export type CvBuilderSection =
   | { type: 'summary'; markdown: string }
   | { type: 'experience'; items: CvBuilderExperience[] }
   | { type: 'education'; items: CvBuilderEducation[] }
   | { type: 'skills'; items: string[] }
+  | { type: 'references'; mode: 'on-request' | 'detailed'; items: CvBuilderReference[] }
 
 export interface CvBuilderDocument {
   id: string        // uuid
@@ -124,6 +134,31 @@ export const CvBuilderEducationSchema = z.object({
     .optional()
 })
 
+export const CvBuilderReferenceSchema = z.object({
+  name: z.string()
+    .min(2, 'Reference name must be at least 2 characters')
+    .max(100, 'Reference name must be less than 100 characters'),
+  
+  title: z.string()
+    .min(2, 'Reference title must be at least 2 characters')
+    .max(100, 'Reference title must be less than 100 characters'),
+  
+  company: z.string()
+    .min(1, 'Company name is required')
+    .max(100, 'Company name must be less than 100 characters'),
+  
+  email: z.string()
+    .email('Please enter a valid email address')
+    .max(100, 'Email must be less than 100 characters'),
+  
+  phone: z.string()
+    .regex(irishPhoneRegex, 'Please enter a valid Irish phone number in format +353 XX XXX XXXX'),
+  
+  relationship: z.string()
+    .max(100, 'Relationship must be less than 100 characters')
+    .optional()
+})
+
 export const CvBuilderSectionSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('summary'),
@@ -150,6 +185,12 @@ export const CvBuilderSectionSchema = z.discriminatedUnion('type', [
       .max(50, 'Skill must be less than 50 characters'))
       .min(3, 'At least 3 skills are required')
       .max(20, 'Maximum 20 skills for ATS compliance')
+  }),
+  z.object({
+    type: z.literal('references'),
+    mode: z.enum(['on-request', 'detailed']),
+    items: z.array(CvBuilderReferenceSchema)
+      .max(4, 'Maximum 4 references allowed')
   })
 ])
 
@@ -208,7 +249,7 @@ export const formatIrishPhone = (phone: string): string => {
 }
 
 // ATS compliance utilities
-export const atsCompliantSectionOrder = ['summary', 'experience', 'education', 'skills'] as const
+export const atsCompliantSectionOrder = ['summary', 'experience', 'education', 'skills', 'references'] as const
 
 export const isAtsCompliant = (document: CvBuilderDocument): { compliant: boolean; issues: string[] } => {
   const issues: string[] = []
@@ -262,6 +303,7 @@ export const createDefaultCvBuilderDocument = (): CvBuilderDocument => ({
     { type: 'summary', markdown: '' },
     { type: 'experience', items: [] },
     { type: 'education', items: [] },
-    { type: 'skills', items: [] }
+    { type: 'skills', items: [] },
+    { type: 'references', mode: 'on-request', items: [] }
   ]
 })
