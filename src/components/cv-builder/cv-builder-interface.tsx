@@ -90,7 +90,7 @@ export function CvBuilderInterface() {
             className={`transition-all duration-300 border-gray-200 overflow-y-auto overflow-x-hidden
               ${sidebarOpen ? 'border-b lg:border-b-0 lg:border-r' : ''}
               ${sidebarOpen ? 'max-h-[70vh] lg:max-h-none' : 'h-0 lg:h-auto'}
-              ${sidebarOpen ? 'w-full lg:w-96' : 'w-0 lg:w-96'}`}
+              ${sidebarOpen ? 'w-full lg:w-[28rem]' : 'w-0 lg:w-[28rem]'}`}
           >
             {/* Render sidebar content only when width is visible to avoid tab order issues */}
             {sidebarOpen && (
