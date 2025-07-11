@@ -56,13 +56,14 @@ export function CvBuilderPreview() {
         >
           {/* Main CV Content Grid */}
           <div 
-            className="cv-template-classic h-full font-lato text-black bg-white overflow-x-auto"
+            className="cv-template-classic h-full font-lato text-black bg-white"
             style={{
               padding: '20mm',
               display: 'grid',
               gridTemplateRows: 'auto 1fr',
               gap: '6mm',
-              minHeight: 'calc(297mm - 40mm)' // A4 height minus top/bottom margins
+              minHeight: 'calc(297mm - 40mm)', // A4 height minus top/bottom margins
+              overflow: 'visible'
             }}
           >
             {/* Header Section */}
