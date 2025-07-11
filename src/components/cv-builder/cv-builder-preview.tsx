@@ -6,9 +6,16 @@ import { useCvBuilder } from '@/contexts/cv-builder-context'
 export function CvBuilderPreview() {
   const { document } = useCvBuilder()
   const [scale, setScale] = React.useState(1)
+  const [mounted, setMounted] = React.useState(false)
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  React.useEffect(() => {
+    if (!mounted) return
+
     function handleResize() {
       if (!containerRef.current) return
       
@@ -39,7 +46,7 @@ export function CvBuilderPreview() {
       window.removeEventListener('resize', handleResize)
       resizeObserver.disconnect()
     }
-  }, [])
+  }, [mounted])
 
   return (
     <div ref={containerRef} className="h-full overflow-hidden flex items-start justify-center p-8 bg-gray-100">
