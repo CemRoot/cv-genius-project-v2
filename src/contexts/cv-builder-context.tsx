@@ -10,11 +10,13 @@ import {
   CvBuilderExperience,
   CvBuilderEducation
 } from '@/types/cv-builder'
+import { CvTemplate } from '@/lib/cv-templates/templates-data'
 import { useGeneratePdf } from '@/hooks/use-generate-pdf'
 
 // Action types for CV builder state management
 type CvBuilderAction = 
   | { type: 'LOAD_DOCUMENT'; payload: CvBuilderDocument }
+  | { type: 'SET_TEMPLATE'; payload: CvTemplate }
   | { type: 'UPDATE_PERSONAL'; payload: Partial<CvBuilderPersonal> }
   | { type: 'UPDATE_SECTION'; payload: { index: number; section: CvBuilderSection } }
   | { type: 'ADD_SECTION'; payload: CvBuilderSection }
@@ -35,6 +37,7 @@ type CvBuilderAction =
 
 interface CvBuilderState {
   document: CvBuilderDocument
+  template: CvTemplate | null
   isSaving: boolean
   hasUnsavedChanges: boolean
   error: string | null
@@ -42,6 +45,7 @@ interface CvBuilderState {
 }
 
 interface CvBuilderContextType extends CvBuilderState {
+  setTemplate: (template: CvTemplate) => void
   updatePersonal: (personal: Partial<CvBuilderPersonal>) => void
   updateSection: (type: string, section: CvBuilderSection) => void
   addSection: (section: CvBuilderSection) => void
@@ -85,6 +89,13 @@ function cvBuilderReducer(state: CvBuilderState, action: CvBuilderAction): CvBui
         document: action.payload,
         hasUnsavedChanges: false,
         error: null
+      }
+
+    case 'SET_TEMPLATE':
+      return {
+        ...state,
+        template: action.payload,
+        hasUnsavedChanges: true
       }
 
     case 'UPDATE_PERSONAL':
@@ -281,7 +292,7 @@ function cvBuilderReducer(state: CvBuilderState, action: CvBuilderAction): CvBui
 
     case 'UPDATE_SKILLS':
       const skillsSection = state.document.sections.find(s => s.type === 'skills')
-      if (skillsSection && skillsSection.type === 'skills') {
+      if (skillsSection) {
         const sectionIndex = state.document.sections.indexOf(skillsSection)
         const updatedSkillsSections = [...state.document.sections]
         updatedSkillsSections[sectionIndex] = {
@@ -302,7 +313,7 @@ function cvBuilderReducer(state: CvBuilderState, action: CvBuilderAction): CvBui
 
     case 'UPDATE_SUMMARY':
       const summarySection = state.document.sections.find(s => s.type === 'summary')
-      if (summarySection && summarySection.type === 'summary') {
+      if (summarySection) {
         const sectionIndex = state.document.sections.indexOf(summarySection)
         const updatedSummarySections = [...state.document.sections]
         updatedSummarySections[sectionIndex] = {
@@ -339,118 +350,63 @@ function cvBuilderReducer(state: CvBuilderState, action: CvBuilderAction): CvBui
       return {
         ...state,
         document: createDefaultCvBuilderDocument(),
+        template: null,
         hasUnsavedChanges: false,
         error: null
       }
 
     case 'SET_SAVING':
-      return { ...state, isSaving: action.payload }
+      return {
+        ...state,
+        isSaving: action.payload
+      }
 
     case 'SET_ERROR':
-      return { ...state, error: action.payload }
+      return {
+        ...state,
+        error: action.payload
+      }
 
     default:
       return state
   }
 }
 
-export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
+export function CvBuilderProvider({ 
+  children, 
+  initialData,
+  template
+}: { 
+  children: React.ReactNode
+  initialData?: Partial<CvBuilderDocument>
+  template?: CvTemplate
+}) {
   const [state, dispatch] = useReducer(cvBuilderReducer, {
-    document: createDefaultCvBuilderDocument(),
+    document: initialData ? { ...createDefaultCvBuilderDocument(), ...initialData } : createDefaultCvBuilderDocument(),
+    template: template || null,
     isSaving: false,
     hasUnsavedChanges: false,
     error: null,
     lastSaved: null
   })
 
-  // PDF generation hook
-  const {
-    isGenerating: pdfIsGenerating,
-    progress: pdfProgress,
-    error: pdfError,
-    stage: pdfStage,
-    generatePdf,
-    downloadPdf: downloadPdfHook,
-    reset: resetPdfState
-  } = useGeneratePdf()
+  const { generatePdf, downloadPdf: downloadPdfHook, ...pdfGeneration } = useGeneratePdf()
 
-  // Auto-save to localStorage
-  useEffect(() => {
-    if (state.hasUnsavedChanges) {
-      const timeoutId = setTimeout(() => {
-        try {
-          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state.document))
-        } catch (error) {
-          console.error('Failed to auto-save to localStorage:', error)
-        }
-      }, 1000) // Auto-save after 1 second of inactivity
-
-      return () => clearTimeout(timeoutId)
-    }
-  }, [state.document, state.hasUnsavedChanges])
-
-  // Load document from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedDocument = localStorage.getItem(AUTOSAVE_KEY)
-      if (savedDocument) {
-        const parsed = JSON.parse(savedDocument)
-        
-        // Ensure sectionVisibility exists
-        if (!parsed.sectionVisibility) {
-          parsed.sectionVisibility = {
-            summary: true,
-            experience: true,
-            education: true,
-            skills: true,
-            certifications: false,
-            languages: false,
-            volunteer: false,
-            awards: false,
-            publications: false,
-            references: true
-          }
-        }
-        
-        // Don't validate empty documents - just load them
-        if (parsed.personal && Object.keys(parsed.personal).length > 0) {
-          // Only validate if there's actual data
-          const hasPersonalData = parsed.personal.fullName || parsed.personal.title || parsed.personal.email
-          if (hasPersonalData) {
-            try {
-              const validated = CvBuilderDocumentSchema.parse(parsed)
-              dispatch({ type: 'LOAD_DOCUMENT', payload: validated })
-            } catch (validationError) {
-              // If validation fails, load without validation
-              console.warn('Document validation failed, loading anyway:', validationError)
-              dispatch({ type: 'LOAD_DOCUMENT', payload: parsed })
-            }
-          } else {
-            // Load empty document without validation
-            dispatch({ type: 'LOAD_DOCUMENT', payload: parsed })
-          }
-        } else {
-          // Load empty document without validation
-          dispatch({ type: 'LOAD_DOCUMENT', payload: parsed })
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load auto-saved document:', error)
-      // Clear corrupted data
-      localStorage.removeItem(AUTOSAVE_KEY)
-    }
+  // Set template
+  const setTemplate = useCallback((template: CvTemplate) => {
+    dispatch({ type: 'SET_TEMPLATE', payload: template })
   }, [])
 
+  // Personal info actions
   const updatePersonal = useCallback((personal: Partial<CvBuilderPersonal>) => {
     dispatch({ type: 'UPDATE_PERSONAL', payload: personal })
   }, [])
 
+  // Section actions
   const updateSection = useCallback((type: string, section: CvBuilderSection) => {
-    const index = state.document.sections.findIndex(s => s.type === type)
-    if (index !== -1) {
-      dispatch({ type: 'UPDATE_SECTION', payload: { index, section } })
-    } else {
-      dispatch({ type: 'ADD_SECTION', payload: section })
+    const sectionIndex = state.document.sections.findIndex(s => s.type === type)
+    if (sectionIndex >= 0) {
+      dispatch({ type: 'UPDATE_SECTION', payload: { index: sectionIndex, section } })
     }
   }, [state.document.sections])
 
@@ -466,6 +422,7 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'REORDER_SECTIONS', payload: { fromIndex, toIndex } })
   }, [])
 
+  // Experience actions
   const addExperience = useCallback((experience: CvBuilderExperience) => {
     dispatch({ type: 'ADD_EXPERIENCE', payload: experience })
   }, [])
@@ -478,6 +435,7 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'REMOVE_EXPERIENCE', payload: index })
   }, [])
 
+  // Education actions
   const addEducation = useCallback((education: CvBuilderEducation) => {
     dispatch({ type: 'ADD_EDUCATION', payload: education })
   }, [])
@@ -490,52 +448,63 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'REMOVE_EDUCATION', payload: index })
   }, [])
 
+  // Skills actions
   const updateSkills = useCallback((skills: string[]) => {
     dispatch({ type: 'UPDATE_SKILLS', payload: skills })
   }, [])
 
+  // Summary actions
   const updateSummary = useCallback((summary: string) => {
     dispatch({ type: 'UPDATE_SUMMARY', payload: summary })
   }, [])
 
+  // Section visibility
+  const toggleSectionVisibility = useCallback((section: string, visible: boolean) => {
+    dispatch({ type: 'TOGGLE_SECTION_VISIBILITY', payload: { section, visible } })
+  }, [])
+
+  // Document persistence
   const saveDocument = useCallback(async () => {
-    dispatch({ type: 'SET_SAVING', payload: true })
     try {
-      // Validate document before saving
-      CvBuilderDocumentSchema.parse(state.document)
-      
-      // Save to localStorage (in future: API call)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.document))
-      
-      // Clear autosave since we have a manual save
-      localStorage.removeItem(AUTOSAVE_KEY)
-      
+      dispatch({ type: 'SET_SAVING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
+      
+      // Validate document
+      const validatedDocument = CvBuilderDocumentSchema.parse(state.document)
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedDocument))
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+        document: validatedDocument,
+        timestamp: new Date().toISOString()
+      }))
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      dispatch({ type: 'SET_SAVING', payload: false })
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save document'
-      dispatch({ type: 'SET_ERROR', payload: errorMessage })
-    } finally {
+      console.error('Failed to save document:', error)
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to save document' })
       dispatch({ type: 'SET_SAVING', payload: false })
     }
   }, [state.document])
 
   const loadDocument = useCallback(async (documentId?: string) => {
     try {
-      // For now, load from localStorage (in future: API call)
-      const savedDocument = localStorage.getItem(STORAGE_KEY)
-      if (savedDocument) {
-        const parsed = JSON.parse(savedDocument)
-        const validated = CvBuilderDocumentSchema.parse(parsed)
-        dispatch({ type: 'LOAD_DOCUMENT', payload: validated })
+      dispatch({ type: 'SET_ERROR', payload: null })
+      
+      // Load from localStorage
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const document = JSON.parse(saved)
+        const validatedDocument = CvBuilderDocumentSchema.parse(document)
+        dispatch({ type: 'LOAD_DOCUMENT', payload: validatedDocument })
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load document'
-      dispatch({ type: 'SET_ERROR', payload: errorMessage })
+      console.error('Failed to load document:', error)
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to load document' })
     }
-  }, [])
-
-  const toggleSectionVisibility = useCallback((section: string, visible: boolean) => {
-    dispatch({ type: 'TOGGLE_SECTION_VISIBILITY', payload: { section, visible } })
   }, [])
 
   const resetDocument = useCallback(() => {
@@ -544,31 +513,45 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(AUTOSAVE_KEY)
   }, [])
 
+  // PDF export
   const exportToPdf = useCallback(async (): Promise<boolean> => {
     try {
       const result = await generatePdf(state.document)
       return result.success
     } catch (error) {
-      console.error('PDF export error:', error)
+      console.error('Failed to generate PDF:', error)
       return false
     }
   }, [generatePdf, state.document])
 
   const downloadPdf = useCallback(async (filename?: string): Promise<boolean> => {
     try {
-      // Generate filename based on CV data
-      const defaultFilename = `${state.document.personal.fullName.replace(/\s+/g, '_')}_CV.pdf`
-      const finalFilename = filename || defaultFilename
-      
-      return await downloadPdfHook(state.document, finalFilename)
+      return await downloadPdfHook(state.document, filename)
     } catch (error) {
-      console.error('PDF download error:', error)
+      console.error('Failed to download PDF:', error)
       return false
     }
   }, [downloadPdfHook, state.document])
 
+  // Auto-save effect
+  useEffect(() => {
+    if (state.hasUnsavedChanges && !state.isSaving) {
+      const timer = setTimeout(() => {
+        saveDocument()
+      }, 2000) // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(timer)
+    }
+  }, [state.hasUnsavedChanges, state.isSaving, saveDocument])
+
+  // Load document on mount
+  useEffect(() => {
+    loadDocument()
+  }, [loadDocument])
+
   const contextValue: CvBuilderContextType = {
     ...state,
+    setTemplate,
     updatePersonal,
     updateSection,
     addSection,
@@ -588,12 +571,7 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     resetDocument,
     exportToPdf,
     downloadPdf,
-    pdfGeneration: {
-      isGenerating: pdfIsGenerating,
-      progress: pdfProgress,
-      error: pdfError,
-      stage: pdfStage
-    }
+    pdfGeneration
   }
 
   return (

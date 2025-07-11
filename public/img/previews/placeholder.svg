@@ -1,0 +1,31 @@
+<svg width="600" height="800" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="800" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Header section -->
+  <rect x="40" y="40" width="300" height="30" fill="#64748b" rx="4"/>
+  <rect x="40" y="80" width="200" height="16" fill="#94a3b8" rx="2"/>
+  <rect x="40" y="105" width="250" height="16" fill="#cbd5e1" rx="2"/>
+  
+  <!-- Content blocks -->
+  <rect x="40" y="160" width="520" height="2" fill="#e2e8f0"/>
+  <rect x="40" y="180" width="120" height="20" fill="#64748b" rx="3"/>
+  <rect x="40" y="210" width="480" height="12" fill="#cbd5e1" rx="2"/>
+  <rect x="40" y="230" width="450" height="12" fill="#cbd5e1" rx="2"/>
+  <rect x="40" y="250" width="520" height="12" fill="#cbd5e1" rx="2"/>
+  
+  <rect x="40" y="290" width="520" height="2" fill="#e2e8f0"/>
+  <rect x="40" y="310" width="140" height="20" fill="#64748b" rx="3"/>
+  <rect x="40" y="340" width="400" height="12" fill="#cbd5e1" rx="2"/>
+  <rect x="40" y="360" width="380" height="12" fill="#cbd5e1" rx="2"/>
+  <rect x="40" y="380" width="420" height="12" fill="#cbd5e1" rx="2"/>
+  <rect x="40" y="400" width="350" height="12" fill="#cbd5e1" rx="2"/>
+  
+  <rect x="40" y="440" width="520" height="2" fill="#e2e8f0"/>
+  <rect x="40" y="460" width="100" height="20" fill="#64748b" rx="3"/>
+  <rect x="40" y="490" width="300" height="12" fill="#cbd5e1" rx="2"/>
+  <rect x="40" y="510" width="280" height="12" fill="#cbd5e1" rx="2"/>
+  
+  <!-- CV Template text -->
+  <text x="300" y="720" text-anchor="middle" fill="#94a3b8" font-family="Arial, sans-serif" font-size="24" font-weight="500">CV Template</text>
+  <text x="300" y="750" text-anchor="middle" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="16">Preview Image</text>
+</svg>

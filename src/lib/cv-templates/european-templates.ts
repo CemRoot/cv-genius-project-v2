@@ -1,5 +1,11 @@
 import { CvTemplate } from './templates-data'
 
+// Utility function to provide fallback preview images
+function getPreviewImage(templateId: string, size: 'small' | 'large'): string {
+  // For now, return placeholder - can be updated to real images later
+  return '/img/previews/placeholder.svg'
+}
+
 export const europeanTemplates: CvTemplate[] = [
   {
     id: 'french-professional',
@@ -7,6 +13,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Elegant format following French CV conventions. Includes photo placeholder and personal details section.',
     category: 'european',
     tags: ['French', 'Professional', 'Elegant', 'Photo'],
+    previewSmall: getPreviewImage('french-professional', 'small'),
+    previewLarge: getPreviewImage('french-professional', 'large'),
     styling: {
       fontFamily: 'Libre Baskerville',
       primaryColor: '#002395',
@@ -62,6 +70,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Contemporary Spanish CV format with emphasis on competencies and achievements. Barcelona-style design.',
     category: 'european',
     tags: ['Spanish', 'Modern', 'Competencies', 'Mediterranean'],
+    previewSmall: getPreviewImage('spanish-modern', 'small'),
+    previewLarge: getPreviewImage('spanish-modern', 'large'),
     styling: {
       fontFamily: 'Raleway',
       primaryColor: '#aa151b',
@@ -95,6 +105,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Sophisticated Italian CV design popular in Milan. Clean lines with attention to typography.',
     category: 'european',
     tags: ['Italian', 'Elegant', 'Milan', 'Design-Forward'],
+    previewSmall: getPreviewImage('italian-elegant', 'small'),
+    previewLarge: getPreviewImage('italian-elegant', 'large'),
     styling: {
       fontFamily: 'Playfair Display',
       primaryColor: '#009246',
@@ -128,6 +140,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Clean Scandinavian design focusing on clarity and efficiency. Popular in Sweden, Norway, and Denmark.',
     category: 'european',
     tags: ['Nordic', 'Minimal', 'Scandinavian', 'Clean'],
+    previewSmall: getPreviewImage('nordic-minimal', 'small'),
+    previewLarge: getPreviewImage('nordic-minimal', 'large'),
     styling: {
       fontFamily: 'Helvetica Neue',
       primaryColor: '#003f88',
@@ -161,6 +175,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Ultra-clean Swiss format emphasizing precision and professionalism. Ideal for finance and consulting.',
     category: 'european',
     tags: ['Swiss', 'Precision', 'Finance', 'Consulting'],
+    previewSmall: getPreviewImage('swiss-precision', 'small'),
+    previewLarge: getPreviewImage('swiss-precision', 'large'),
     styling: {
       fontFamily: 'Helvetica',
       primaryColor: '#ff0000',
@@ -194,6 +210,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Detailed format preferred by Polish employers. Includes comprehensive education and skills sections.',
     category: 'european',
     tags: ['Polish', 'Comprehensive', 'Detailed', 'Traditional'],
+    previewSmall: getPreviewImage('polish-comprehensive', 'small'),
+    previewLarge: getPreviewImage('polish-comprehensive', 'large'),
     styling: {
       fontFamily: 'Lato',
       primaryColor: '#dc143c',
@@ -227,6 +245,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Modern Portuguese format suitable for Lisbon and Porto markets. Clean with ocean-inspired colors.',
     category: 'european',
     tags: ['Portuguese', 'Modern', 'Lisbon', 'Porto'],
+    previewSmall: getPreviewImage('portuguese-atlantic', 'small'),
+    previewLarge: getPreviewImage('portuguese-atlantic', 'large'),
     styling: {
       fontFamily: 'Source Sans Pro',
       primaryColor: '#006600',
@@ -260,6 +280,8 @@ export const europeanTemplates: CvTemplate[] = [
     description: 'Professional Austrian format combining German precision with modern design elements.',
     category: 'european',
     tags: ['Austrian', 'Professional', 'German-Style', 'Modern'],
+    previewSmall: getPreviewImage('austrian-alpine', 'small'),
+    previewLarge: getPreviewImage('austrian-alpine', 'large'),
     styling: {
       fontFamily: 'Roboto',
       primaryColor: '#ed2939',

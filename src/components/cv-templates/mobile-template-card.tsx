@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { CvTemplate } from '@/lib/cv-templates/templates-data'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +25,12 @@ export function MobileTemplateCard({
   categoryIcon: Icon,
   categoryColor
 }: MobileTemplateCardProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -86,11 +92,11 @@ export function MobileTemplateCard({
           <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
             <div className="flex items-center gap-1">
               <Users className="w-3 h-3" />
-              <span>{Math.floor(Math.random() * 1000 + 500)}</span>
+              <span>{mounted ? Math.floor(500 + (index * 137) % 500) : '...'}</span>
             </div>
             <div className="flex items-center gap-1">
               <Star className="w-3 h-3 fill-current text-yellow-500" />
-              <span>{(Math.random() * 0.5 + 4.5).toFixed(1)}</span>
+              <span>{mounted ? (4.5 + (index * 0.07) % 0.5).toFixed(1) : '...'}</span>
             </div>
           </div>
           

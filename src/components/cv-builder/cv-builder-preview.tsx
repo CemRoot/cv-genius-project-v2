@@ -4,7 +4,7 @@ import React from 'react'
 import { useCvBuilder } from '@/contexts/cv-builder-context'
 
 export function CvBuilderPreview() {
-  const { document } = useCvBuilder()
+  const { document, template } = useCvBuilder()
   const [scale, setScale] = React.useState(1)
   const [mounted, setMounted] = React.useState(false)
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -48,10 +48,362 @@ export function CvBuilderPreview() {
     }
   }, [mounted])
 
+  // Get template styling or use defaults
+  const templateStyle = template?.styling || {
+    fontFamily: 'Inter',
+    primaryColor: '#1f2937',
+    secondaryColor: '#4b5563',
+    layout: 'single-column',
+    headerStyle: 'classic'
+  }
+
+  // Render template-specific design
+  const renderTemplateDesign = () => {
+    if (template?.id === 'stockholm') {
+      return (
+        <div className="h-full flex flex-col p-6" style={{ fontFamily: templateStyle.fontFamily }}>
+          {/* Stockholm Header */}
+          <div className="border-l-4 pl-6 mb-6" style={{ borderColor: templateStyle.primaryColor }}>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: templateStyle.primaryColor }}>
+              {document.personal.fullName || 'Your Name'}
+            </h1>
+            <p className="text-lg text-gray-600 mb-3">{document.personal.title || 'Professional Title'}</p>
+            <div className="text-sm text-gray-500 space-y-1">
+              <p>{document.personal.email || 'your.email@example.com'} • {document.personal.phone || '+353 XX XXX XXXX'}</p>
+              <p>{document.personal.address || 'Dublin, Ireland'}</p>
+            </div>
+          </div>
+
+          {/* Stockholm Two Column Layout */}
+          <div className="grid grid-cols-3 gap-8 flex-1">
+            {/* Main content */}
+            <div className="col-span-2 space-y-6">
+              {document.sections.map((section, index) => {
+                const sectionVisibility = document.sectionVisibility || {}
+                const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+                if (!isVisible) return null
+
+                if (section.type === 'summary' && section.markdown) {
+                  return (
+                    <div key={index}>
+                      <h2 className="text-base font-semibold mb-3 uppercase tracking-wide" 
+                          style={{ color: templateStyle.primaryColor }}>
+                        Professional Summary
+                      </h2>
+                      <p className="text-sm leading-relaxed text-gray-700">{section.markdown}</p>
+                    </div>
+                  )
+                }
+
+                if (section.type === 'experience' && section.items.length > 0) {
+                  return (
+                    <div key={index}>
+                      <h2 className="text-base font-semibold mb-3 uppercase tracking-wide" 
+                          style={{ color: templateStyle.primaryColor }}>
+                        Work Experience
+                      </h2>
+                      {section.items.map((exp, expIdx) => (
+                        <div key={expIdx} className="mb-4">
+                          <div className="flex justify-between items-start mb-1">
+                            <div className="text-sm font-medium">{exp.role}</div>
+                            <div className="text-sm text-gray-500">{exp.start} - {exp.end || 'Present'}</div>
+                          </div>
+                          <div className="text-sm text-gray-600 mb-2">{exp.company}</div>
+                          <ul className="text-sm space-y-1 text-gray-700">
+                            {exp.bullets.map((bullet, bIdx) => (
+                              <li key={bIdx} className="flex items-start">
+                                <span className="w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0" 
+                                      style={{ backgroundColor: templateStyle.primaryColor }}></span>
+                                <span>{bullet}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                }
+
+                return null
+              })}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {document.sections.map((section, index) => {
+                const sectionVisibility = document.sectionVisibility || {}
+                const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+                if (!isVisible) return null
+
+                if (section.type === 'skills' && section.items.length > 0) {
+                  return (
+                    <div key={index}>
+                      <h2 className="text-base font-semibold mb-3 uppercase tracking-wide" 
+                          style={{ color: templateStyle.primaryColor }}>
+                        Skills
+                      </h2>
+                      <div className="space-y-2">
+                        {section.items.slice(0, 8).map((skill, idx) => (
+                          <div key={idx} className="text-sm">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-gray-700">{skill}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div className="h-2 rounded-full" 
+                                   style={{ 
+                                     backgroundColor: templateStyle.primaryColor,
+                                     width: `${85 + (idx * 2)}%` 
+                                   }}></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+
+                if (section.type === 'education' && section.items.length > 0) {
+                  return (
+                    <div key={index}>
+                      <h2 className="text-base font-semibold mb-3 uppercase tracking-wide" 
+                          style={{ color: templateStyle.primaryColor }}>
+                        Education
+                      </h2>
+                      {section.items.slice(0, 2).map((edu, idx) => (
+                        <div key={idx} className="text-sm mb-3">
+                          <div className="font-medium text-gray-800">{edu.degree}</div>
+                          <div className="text-gray-600">{edu.institution}</div>
+                          <div className="text-gray-500">{edu.start} - {edu.end || 'Present'}</div>
+                          {edu.grade && <div className="text-gray-500">{edu.grade}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                }
+
+                return null
+              })}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (template?.id === 'dublin-professional') {
+      return (
+        <div className="h-full flex flex-col p-6" style={{ fontFamily: templateStyle.fontFamily }}>
+          {/* Dublin Professional Header */}
+          <div className="text-center border-b-2 pb-4 mb-6" style={{ borderColor: templateStyle.primaryColor }}>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: templateStyle.primaryColor }}>
+              {document.personal.fullName || 'Your Name'}
+            </h1>
+            <p className="text-lg text-gray-600 mb-3">{document.personal.title || 'Professional Title'}</p>
+            <div className="text-sm text-gray-500">
+              {document.personal.email || 'your.email@example.com'} • {document.personal.phone || '+353 XX XXX XXXX'} • {document.personal.address || 'Dublin, Ireland'}
+            </div>
+          </div>
+
+          {/* Single column layout */}
+          <div className="space-y-6 flex-1">
+            {document.sections.map((section, index) => {
+              const sectionVisibility = document.sectionVisibility || {}
+              const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+              if (!isVisible) return null
+
+              if (section.type === 'summary' && section.markdown) {
+                return (
+                  <div key={index}>
+                    <h2 className="text-base font-semibold mb-3" style={{ color: templateStyle.primaryColor }}>
+                      Professional Summary
+                    </h2>
+                    <p className="text-sm leading-relaxed text-gray-700">{section.markdown}</p>
+                  </div>
+                )
+              }
+
+              if (section.type === 'experience' && section.items.length > 0) {
+                return (
+                  <div key={index}>
+                    <h2 className="text-base font-semibold mb-3" style={{ color: templateStyle.primaryColor }}>
+                      Work Experience
+                    </h2>
+                    {section.items.map((exp, expIdx) => (
+                      <div key={expIdx} className="mb-4">
+                        <div className="text-sm font-medium">{exp.role}</div>
+                        <div className="text-sm text-gray-600">{exp.company} • {exp.start} - {exp.end || 'Present'}</div>
+                        <ul className="text-sm mt-2 space-y-1 text-gray-700">
+                          {exp.bullets.map((bullet, bIdx) => (
+                            <li key={bIdx} className="ml-4">• {bullet}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+
+              if (section.type === 'education' && section.items.length > 0) {
+                return (
+                  <div key={index}>
+                    <h2 className="text-base font-semibold mb-3" style={{ color: templateStyle.primaryColor }}>
+                      Education
+                    </h2>
+                    {section.items.map((edu, idx) => (
+                      <div key={idx} className="text-sm mb-3">
+                        <div className="font-medium">{edu.degree}</div>
+                        <div className="text-gray-600">{edu.institution}</div>
+                        <div className="text-gray-500">{edu.start} - {edu.end || 'Present'}</div>
+                        {edu.grade && <div className="text-gray-500">{edu.grade}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+
+              if (section.type === 'skills' && section.items.length > 0) {
+                return (
+                  <div key={index}>
+                    <h2 className="text-base font-semibold mb-3" style={{ color: templateStyle.primaryColor }}>
+                      Skills
+                    </h2>
+                    <div className="grid grid-cols-3 gap-2">
+                      {section.items.map((skill, idx) => (
+                        <span key={idx} className="text-sm text-gray-700">{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+
+              return null
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    if (template?.id === 'london') {
+      return (
+        <div className="h-full flex flex-col p-6" style={{ fontFamily: templateStyle.fontFamily }}>
+          {/* London Minimal Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2" style={{ color: templateStyle.primaryColor }}>
+              {document.personal.fullName || 'Your Name'}
+            </h1>
+            <p className="text-lg text-gray-600 mb-3">{document.personal.title || 'Professional Title'}</p>
+            <div className="text-sm text-gray-500">
+              {document.personal.email || 'your.email@example.com'} • {document.personal.phone || '+353 XX XXX XXXX'} • {document.personal.address || 'Dublin, Ireland'}
+            </div>
+          </div>
+
+          {/* Content with minimal styling */}
+          <div className="space-y-6 flex-1">
+            {document.sections.map((section, index) => {
+              const sectionVisibility = document.sectionVisibility || {}
+              const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+              if (!isVisible) return null
+
+              if (section.type === 'summary' && section.markdown) {
+                return (
+                  <div key={index}>
+                    <h2 className="text-base font-medium mb-3 border-l-2 pl-3" style={{ borderColor: templateStyle.primaryColor, color: templateStyle.primaryColor }}>
+                      About
+                    </h2>
+                    <p className="text-sm leading-relaxed text-gray-700">{section.markdown}</p>
+                  </div>
+                )
+              }
+
+              if (section.type === 'experience' && section.items.length > 0) {
+                return (
+                  <div key={index}>
+                    <h2 className="text-base font-medium mb-3 border-l-2 pl-3" style={{ borderColor: templateStyle.primaryColor, color: templateStyle.primaryColor }}>
+                      Experience
+                    </h2>
+                    {section.items.map((exp, expIdx) => (
+                      <div key={expIdx} className="mb-4 pl-3">
+                        <div className="text-sm font-medium">{exp.role}</div>
+                        <div className="text-sm text-gray-600">{exp.company} • {exp.start} - {exp.end || 'Present'}</div>
+                        <ul className="text-sm mt-2 space-y-1 text-gray-700">
+                          {exp.bullets.map((bullet, bIdx) => (
+                            <li key={bIdx} className="ml-4">• {bullet}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+
+              return null
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    // Default template design (fallback)
+    return (
+      <div className="h-full flex flex-col p-6" style={{ fontFamily: templateStyle.fontFamily }}>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: templateStyle.primaryColor }}>
+            {document.personal.fullName || 'Your Name'}
+          </h1>
+          <p className="text-lg text-gray-600 mb-3">{document.personal.title || 'Professional Title'}</p>
+          <div className="text-sm text-gray-500">
+            {document.personal.email || 'your.email@example.com'} • {document.personal.phone || '+353 XX XXX XXXX'} • {document.personal.address || 'Dublin, Ireland'}
+          </div>
+        </div>
+
+        <div className="space-y-6 flex-1">
+          {document.sections.map((section, index) => {
+            const sectionVisibility = document.sectionVisibility || {}
+            const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+            if (!isVisible) return null
+
+            if (section.type === 'summary' && section.markdown) {
+              return (
+                <div key={index}>
+                  <h2 className="text-base font-semibold mb-3" style={{ color: templateStyle.primaryColor }}>
+                    Summary
+                  </h2>
+                  <p className="text-sm leading-relaxed text-gray-700">{section.markdown}</p>
+                </div>
+              )
+            }
+
+            if (section.type === 'experience' && section.items.length > 0) {
+              return (
+                <div key={index}>
+                  <h2 className="text-base font-semibold mb-3" style={{ color: templateStyle.primaryColor }}>
+                    Experience
+                  </h2>
+                  {section.items.map((exp, expIdx) => (
+                    <div key={expIdx} className="mb-4">
+                      <div className="text-sm font-medium">{exp.role}</div>
+                      <div className="text-sm text-gray-600">{exp.company} • {exp.start} - {exp.end || 'Present'}</div>
+                      <ul className="text-sm mt-2 space-y-1 text-gray-700">
+                        {exp.bullets.map((bullet, bIdx) => (
+                          <li key={bIdx}>• {bullet}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+
+            return null
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div ref={containerRef} className="h-full overflow-hidden flex items-start justify-center p-8 bg-gray-100">
       <div className="relative">
-        {/* A4 Page Container - ATS-Optimized Black & White Template */}
+        {/* A4 Page Container with Template Design */}
         <div 
           className="bg-white shadow-xl overflow-hidden print:shadow-none print:overflow-visible"
           style={{ 
@@ -61,684 +413,7 @@ export function CvBuilderPreview() {
             transformOrigin: 'top center'
           }}
         >
-          {/* Main CV Content Grid */}
-          <div 
-            className="cv-template-classic font-lato text-black bg-white"
-            style={{
-              padding: '20mm',
-              display: 'grid',
-              gridTemplateRows: 'auto auto',  // Changed from 'auto 1fr' to prevent stretching
-              gap: '6mm',
-              minHeight: 'calc(297mm - 40mm)', // A4 height minus top/bottom margins
-              overflow: 'visible',
-              alignContent: 'start'  // Pack content to top
-            }}
-          >
-            {/* Header Section */}
-            <header className="cv-header" style={{ gridRow: '1' }}>
-              <div className="header-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr',
-                gap: '8mm',
-                alignItems: 'start'
-              }}>
-                {/* Personal Info - Left Column */}
-                <div className="personal-info">
-                  <h1 className="cv-name text-black font-bold" style={{
-                    fontSize: '24pt',
-                    lineHeight: '1.2',
-                    margin: '0 0 3mm 0',
-                    letterSpacing: '0.5px'
-                  }}>
-                    {document.personal.fullName || 'Your Name'}
-                  </h1>
-                  
-                  <h2 className="cv-title text-black font-medium" style={{
-                    fontSize: '14pt',
-                    lineHeight: '1.3',
-                    margin: '0 0 6mm 0',
-                    fontWeight: '500'
-                  }}>
-                    {document.personal.title || 'Professional Title'}
-                  </h2>
-                </div>
-
-                {/* Contact Info - Right Column */}
-                <div className="contact-info" style={{
-                  fontSize: '10pt',
-                  lineHeight: '1.4',
-                  textAlign: 'right'
-                }}>
-                  <div className="contact-item" style={{ marginBottom: '2mm' }}>
-                    {document.personal.email || 'your.email@example.com'}
-                  </div>
-                  <div className="contact-item" style={{ marginBottom: '2mm' }}>
-                    {document.personal.phone || '+353 XX XXX XXXX'}
-                  </div>
-                  <div className="contact-item">
-                    {document.personal.address || 'Dublin, Ireland'}
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            {/* Main Content Section */}
-            <main className="cv-content" style={{ 
-              gridRow: '2',
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: '6mm',
-              alignContent: 'start'  // Prevent stretching, pack content to top
-            }}>
-              {document.sections.map((section, index) => {
-                // Check if section is visible
-                const sectionVisibility = document.sectionVisibility || {}
-                const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
-                
-                // Skip non-visible sections or empty sections
-                if (!isVisible) return null
-                
-                // Skip empty sections (except references in on-request mode)
-                if (section.type === 'summary' && !section.markdown) return null
-                if (section.type === 'experience' && section.items.length === 0) return null
-                if (section.type === 'education' && section.items.length === 0) return null
-                if (section.type === 'skills' && section.items.length === 0) return null
-                if (section.type === 'certifications' && section.items.length === 0) return null
-                if (section.type === 'languages' && section.items.length === 0) return null
-                if (section.type === 'volunteer' && section.items.length === 0) return null
-                if (section.type === 'awards' && section.items.length === 0) return null
-                if (section.type === 'publications' && section.items.length === 0) return null
-                if (section.type === 'references' && section.mode === 'detailed' && section.items.length === 0) return null
-                
-                return (
-                <section key={index} className="cv-section" style={{ 
-                  breakInside: 'avoid'
-                }}>
-                  
-                  {/* Professional Summary */}
-                  {section.type === 'summary' && (
-                    <div className="summary-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Professional Summary
-                      </h3>
-                      <div className="summary-content" style={{
-                        fontSize: '11pt',
-                        lineHeight: '1.5',
-                        textAlign: 'justify',
-                        margin: '3mm 0 0 0'
-                      }}>
-                        {section.markdown || (
-                          <span style={{ color: '#666', fontStyle: 'italic' }}>
-                            Your professional summary will appear here...
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Work Experience */}
-                  {section.type === 'experience' && (
-                    <div className="experience-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Work Experience
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="experience-items" style={{ margin: '3mm 0 0 0' }}>
-                          {section.items.map((exp, expIndex) => (
-                            <div key={expIndex} className="experience-item" style={{
-                              marginBottom: expIndex < section.items.length - 1 ? '5mm' : '0',
-                              breakInside: 'avoid'
-                            }}>
-                              {/* Experience Header */}
-                              <div className="experience-header" style={{
-                                display: 'grid',
-                                gridTemplateColumns: '2fr 1fr',
-                                gap: '4mm',
-                                marginBottom: '2mm',
-                                alignItems: 'baseline'
-                              }}>
-                                <div className="position-company">
-                                  <h4 className="position-title text-black font-semibold" style={{
-                                    fontSize: '11pt',
-                                    lineHeight: '1.3',
-                                    margin: '0 0 1mm 0'
-                                  }}>
-                                    {exp.role}
-                                  </h4>
-                                  <div className="company-name" style={{
-                                    fontSize: '10pt',
-                                    lineHeight: '1.3',
-                                    margin: '0'
-                                  }}>
-                                    {exp.company}
-                                  </div>
-                                </div>
-                                <div className="dates" style={{
-                                  fontSize: '10pt',
-                                  lineHeight: '1.3',
-                                  textAlign: 'right',
-                                  fontWeight: '500'
-                                }}>
-                                  {exp.start} – {exp.end || 'Present'}
-                                </div>
-                              </div>
-
-                              {/* Achievements List */}
-                              <ul className="achievements-list" style={{
-                                margin: '0',
-                                paddingLeft: '4mm',
-                                listStyle: 'disc'
-                              }}>
-                                {exp.bullets.map((bullet, bulletIndex) => (
-                                  <li key={bulletIndex} style={{
-                                    fontSize: '10pt',
-                                    lineHeight: '1.4',
-                                    marginBottom: '1mm',
-                                    textAlign: 'justify'
-                                  }}>
-                                    {bullet}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your work experience...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Education */}
-                  {section.type === 'education' && (
-                    <div className="education-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Education
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="education-items" style={{ margin: '3mm 0 0 0' }}>
-                          {section.items.map((edu, eduIndex) => (
-                            <div key={eduIndex} className="education-item" style={{
-                              marginBottom: eduIndex < section.items.length - 1 ? '3mm' : '0',
-                              breakInside: 'avoid'
-                            }}>
-                              <div className="education-header" style={{
-                                display: 'grid',
-                                gridTemplateColumns: '2fr 1fr',
-                                gap: '4mm',
-                                alignItems: 'baseline'
-                              }}>
-                                <div className="degree-institution">
-                                  <h4 className="degree-title text-black font-semibold" style={{
-                                    fontSize: '11pt',
-                                    lineHeight: '1.3',
-                                    margin: '0 0 1mm 0'
-                                  }}>
-                                    {edu.degree}
-                                  </h4>
-                                  <div className="institution-name" style={{
-                                    fontSize: '10pt',
-                                    lineHeight: '1.3',
-                                    margin: '0 0 1mm 0'
-                                  }}>
-                                    {edu.institution}
-                                  </div>
-                                  <div className="field-grade" style={{
-                                    fontSize: '10pt',
-                                    lineHeight: '1.3',
-                                    margin: '0'
-                                  }}>
-                                    {edu.field}
-                                    {edu.grade && ` • ${edu.grade}`}
-                                  </div>
-                                </div>
-                                <div className="dates" style={{
-                                  fontSize: '10pt',
-                                  lineHeight: '1.3',
-                                  textAlign: 'right',
-                                  fontWeight: '500'
-                                }}>
-                                  {edu.start} – {edu.end || 'Present'}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your education...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Skills */}
-                  {section.type === 'skills' && (
-                    <div className="skills-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Skills
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="skills-content" style={{
-                          margin: '3mm 0 0 0',
-                          fontSize: '10pt',
-                          lineHeight: '1.4'
-                        }}>
-                          {section.items.join(' • ')}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your skills...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Certifications */}
-                  {section.type === 'certifications' && (
-                    <div className="certifications-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Certifications
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="certifications-list" style={{ margin: '3mm 0 0 0' }}>
-                          {section.items.map((cert, certIndex) => (
-                            <div key={certIndex} style={{
-                              marginBottom: certIndex < section.items.length - 1 ? '2mm' : '0',
-                              fontSize: '10pt',
-                              lineHeight: '1.4'
-                            }}>
-                              <div style={{ fontWeight: '600' }}>{cert.name}</div>
-                              <div style={{ fontSize: '9pt', color: '#333' }}>
-                                {cert.issuer} • {cert.date.replace(/(\d{4})-(\d{2})/, '$2/$1')}
-                                {cert.expiryDate && ` - ${cert.expiryDate.replace(/(\d{4})-(\d{2})/, '$2/$1')}`}
-                                {cert.credentialId && ` • ID: ${cert.credentialId}`}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your certifications...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Languages */}
-                  {section.type === 'languages' && (
-                    <div className="languages-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Languages
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="languages-grid" style={{
-                          margin: '3mm 0 0 0',
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: '2mm'
-                        }}>
-                          {section.items.map((lang, langIndex) => (
-                            <div key={langIndex} style={{
-                              fontSize: '10pt',
-                              lineHeight: '1.4'
-                            }}>
-                              <span style={{ fontWeight: '600' }}>{lang.name}</span>
-                              <span style={{ color: '#555' }}> - {
-                                lang.proficiency === 'native' ? 'Native' :
-                                lang.proficiency === 'fluent' ? 'Fluent' :
-                                lang.proficiency === 'professional' ? 'Professional' :
-                                lang.proficiency === 'intermediate' ? 'Intermediate' :
-                                'Basic'
-                              }</span>
-                              {lang.certification && (
-                                <span style={{ fontSize: '9pt', color: '#666' }}> ({lang.certification})</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your language skills...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Volunteer Experience */}
-                  {section.type === 'volunteer' && (
-                    <div className="volunteer-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Volunteer Experience
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="volunteer-items" style={{ margin: '3mm 0 0 0' }}>
-                          {section.items.map((vol, volIndex) => (
-                            <div key={volIndex} style={{
-                              marginBottom: volIndex < section.items.length - 1 ? '3mm' : '0',
-                              breakInside: 'avoid'
-                            }}>
-                              <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: '2fr 1fr',
-                                gap: '4mm',
-                                marginBottom: '1mm'
-                              }}>
-                                <div>
-                                  <div style={{ fontSize: '11pt', fontWeight: '600' }}>{vol.role}</div>
-                                  <div style={{ fontSize: '10pt' }}>{vol.organization}</div>
-                                </div>
-                                <div style={{ fontSize: '10pt', textAlign: 'right' }}>
-                                  {vol.start} – {vol.end || 'Present'}
-                                </div>
-                              </div>
-                              <div style={{ fontSize: '10pt', lineHeight: '1.4' }}>
-                                {vol.description}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your volunteer experience...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Awards */}
-                  {section.type === 'awards' && (
-                    <div className="awards-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Awards & Achievements
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="awards-list" style={{ margin: '3mm 0 0 0' }}>
-                          {section.items.map((award, awardIndex) => (
-                            <div key={awardIndex} style={{
-                              marginBottom: awardIndex < section.items.length - 1 ? '2mm' : '0',
-                              fontSize: '10pt',
-                              lineHeight: '1.4'
-                            }}>
-                              <div style={{ fontWeight: '600' }}>
-                                {award.name} • {award.issuer} • {award.date.replace(/(\d{4})-(\d{2})/, '$2/$1')}
-                              </div>
-                              {award.description && (
-                                <div style={{ fontSize: '9pt', color: '#555', marginTop: '0.5mm' }}>
-                                  {award.description}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your awards...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Publications */}
-                  {section.type === 'publications' && (
-                    <div className="publications-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        Publications
-                      </h3>
-                      
-                      {section.items.length > 0 ? (
-                        <div className="publications-list" style={{ margin: '3mm 0 0 0' }}>
-                          {section.items.map((pub, pubIndex) => (
-                            <div key={pubIndex} style={{
-                              marginBottom: pubIndex < section.items.length - 1 ? '2mm' : '0',
-                              fontSize: '10pt',
-                              lineHeight: '1.4'
-                            }}>
-                              {pub.authors && <span style={{ fontSize: '9pt' }}>{pub.authors}. </span>}
-                              <span style={{ fontWeight: '600' }}>"{pub.title}"</span>
-                              <span style={{ fontStyle: 'italic' }}> {pub.publication}</span>
-                              <span>, {pub.date.replace(/(\d{4})-(\d{2})/, '$2/$1')}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your publications...
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* References */}
-                  {section.type === 'references' && (
-                    <div className="references-section">
-                      <h3 className="section-heading text-black font-semibold" style={{
-                        fontSize: '12pt',
-                        lineHeight: '1.3',
-                        margin: '0 0 3mm 0',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        borderBottom: '1pt solid #000',
-                        paddingBottom: '1mm'
-                      }}>
-                        References
-                      </h3>
-                      
-                      {section.mode === 'on-request' ? (
-                        <div style={{
-                          margin: '3mm 0 0 0',
-                          fontSize: '10pt',
-                          lineHeight: '1.4',
-                          fontStyle: 'italic'
-                        }}>
-                          References available upon request
-                        </div>
-                      ) : section.items.length > 0 ? (
-                        <div className="references-grid" style={{
-                          margin: '3mm 0 0 0',
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: '4mm'
-                        }}>
-                          {section.items.map((ref, refIndex) => (
-                            <div key={refIndex} className="reference-item" style={{
-                              fontSize: '10pt',
-                              lineHeight: '1.4',
-                              breakInside: 'avoid'
-                            }}>
-                              <div style={{ fontWeight: '600', marginBottom: '1mm' }}>
-                                {ref.name}
-                              </div>
-                              <div style={{ fontSize: '9pt', color: '#333' }}>
-                                {ref.title}
-                              </div>
-                              <div style={{ fontSize: '9pt', color: '#333' }}>
-                                {ref.company}
-                              </div>
-                              <div style={{ fontSize: '9pt', marginTop: '1mm' }}>
-                                {ref.email}
-                              </div>
-                              <div style={{ fontSize: '9pt' }}>
-                                {ref.phone}
-                              </div>
-                              {ref.relationship && (
-                                <div style={{ fontSize: '9pt', fontStyle: 'italic', marginTop: '1mm' }}>
-                                  {ref.relationship}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ 
-                          color: '#666', 
-                          fontStyle: 'italic',
-                          fontSize: '10pt',
-                          margin: '3mm 0 0 0'
-                        }}>
-                          Add your references...
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </section>
-                )
-              })}
-
-              {/* Empty State */}
-              {document.sections.length === 0 && (
-                <div className="empty-state" style={{
-                  textAlign: 'center',
-                  color: '#666',
-                  fontSize: '12pt',
-                  margin: '20mm 0'
-                }}>
-                  <p style={{ marginBottom: '4mm' }}>
-                    Your CV preview will appear here as you add information.
-                  </p>
-                  <p style={{ 
-                    fontSize: '10pt',
-                    fontStyle: 'italic' 
-                  }}>
-                    Start by filling out your personal information in the sidebar.
-                  </p>
-                </div>
-              )}
-            </main>
-          </div>
-        </div>
-
-        {/* ATS Compliance Indicator - Compact */}
-        <div className="mt-4 flex items-center justify-center">
-          <div className="inline-flex items-center px-3 py-1.5 bg-green-50 rounded-lg border border-green-200">
-            <svg className="h-4 w-4 text-green-500 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="text-xs font-medium text-green-700">
-              ATS-Optimized • Dublin Standards
-            </span>
-          </div>
+          {renderTemplateDesign()}
         </div>
       </div>
     </div>

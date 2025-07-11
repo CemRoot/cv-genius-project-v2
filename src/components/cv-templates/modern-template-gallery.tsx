@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { cvTemplates, CvTemplate } from '@/lib/cv-templates/templates-data'
 import { TemplatePreview } from './template-preview'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,7 @@ import {
   FileText,
   Zap
 } from 'lucide-react'
+import { TemplateColorPicker } from './template-color-picker'
 
 interface ModernTemplateGalleryProps {
   onSelectTemplate: (template: CvTemplate) => void
@@ -38,7 +39,11 @@ const categoryIcons = {
   tech: Zap,
   creative: Palette,
   academic: GraduationCap,
-  executive: Briefcase
+  executive: Briefcase,
+  modern: TrendingUp,
+  simple: FileText,
+  professional: Users,
+  ats: CheckCircle
 }
 
 const categoryColors = {
@@ -47,7 +52,11 @@ const categoryColors = {
   tech: 'bg-purple-500',
   creative: 'bg-pink-500',
   academic: 'bg-indigo-500',
-  executive: 'bg-gray-800'
+  executive: 'bg-gray-800',
+  modern: 'bg-cyan-500',
+  simple: 'bg-slate-500',
+  professional: 'bg-blue-600',
+  ats: 'bg-green-600'
 }
 
 export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGalleryProps) {
@@ -55,6 +64,14 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
   const [searchQuery, setSearchQuery] = useState('')
   const [previewTemplate, setPreviewTemplate] = useState<CvTemplate | null>(null)
   const [showFilters, setShowFilters] = useState(false)
+  const [atsOnly, setAtsOnly] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null)
+  const [selectedColors, setSelectedColors] = useState<Record<string, { primary: string, secondary: string }>>({})
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Filter templates based on category and search
   const filteredTemplates = useMemo(() => {
@@ -62,6 +79,13 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
       ? cvTemplates 
       : cvTemplates.filter(t => t.category === selectedCategory)
     
+    if (atsOnly) {
+      templates = templates.filter(t =>
+        t.tags.some(tag =>
+          /ats-friendly|ats-compatible/i.test(tag)
+        )
+      )
+    }
     if (searchQuery) {
       templates = templates.filter(t => 
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,14 +95,18 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
     }
     
     return templates
-  }, [selectedCategory, searchQuery])
+  }, [selectedCategory, searchQuery, atsOnly])
 
   const categories = [
     { id: 'all', label: 'All Templates', count: cvTemplates.length },
+    { id: 'ats', label: 'ATS Optimized', count: cvTemplates.filter(t => t.category === 'ats').length },
+    { id: 'modern', label: 'Modern', count: cvTemplates.filter(t => t.category === 'modern').length },
+    { id: 'creative', label: 'Creative', count: cvTemplates.filter(t => t.category === 'creative').length },
+    { id: 'simple', label: 'Simple & Classic', count: cvTemplates.filter(t => t.category === 'simple').length },
+    { id: 'professional', label: 'Professional', count: cvTemplates.filter(t => t.category === 'professional').length },
     { id: 'irish', label: 'Irish Market', count: cvTemplates.filter(t => t.category === 'irish').length },
     { id: 'european', label: 'European', count: cvTemplates.filter(t => t.category === 'european').length },
     { id: 'tech', label: 'Technology', count: cvTemplates.filter(t => t.category === 'tech').length },
-    { id: 'creative', label: 'Creative', count: cvTemplates.filter(t => t.category === 'creative').length },
     { id: 'academic', label: 'Academic', count: cvTemplates.filter(t => t.category === 'academic').length },
     { id: 'executive', label: 'Executive', count: cvTemplates.filter(t => t.category === 'executive').length }
   ]
@@ -119,6 +147,20 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
                   <X className="w-4 h-4 text-gray-500" />
                 </button>
               )}
+            </div>
+
+            {/* ATS Friendly Toggle */}
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <label htmlFor="ats-toggle" className="flex items-center gap-2 cursor-pointer">
+                <input
+                  id="ats-toggle"
+                  type="checkbox"
+                  checked={atsOnly}
+                  onChange={() => setAtsOnly(!atsOnly)}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">Show ATS‑Friendly Only</span>
+              </label>
             </div>
 
             {/* Features */}
@@ -239,6 +281,7 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
         <div className="mb-6 text-center">
           <p className="text-gray-600">
             Showing <span className="font-semibold text-gray-900">{filteredTemplates.length}</span> templates
+            {atsOnly && <span> (ATS‑friendly)</span>}
             {searchQuery && <span> for "{searchQuery}"</span>}
           </p>
         </div>
@@ -246,7 +289,7 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
         {/* Template Grid */}
         <motion.div 
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
         >
           <AnimatePresence mode="popLayout">
             {filteredTemplates.map((template, index) => {
@@ -263,34 +306,75 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
                   transition={{ delay: index * 0.05 }}
                   whileHover={{ y: -8 }}
                   className="group"
+                  onMouseEnter={() => setHoveredTemplate(template.id)}
+                  onMouseLeave={() => setHoveredTemplate(null)}
                 >
                   <Card className="h-full overflow-hidden border-gray-200 hover:border-gray-300 hover:shadow-2xl transition-all duration-300">
                     {/* Template Preview */}
-                    <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-                      <div className="absolute inset-0 scale-[0.35] origin-top-left">
-                        <TemplatePreview template={template} />
-                      </div>
+                    <div className="relative h-96 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+                      <TemplatePreview 
+                        template={{
+                          ...template,
+                          styling: {
+                            ...template.styling,
+                            primaryColor: selectedColors[template.id]?.primary || template.styling.primaryColor,
+                            secondaryColor: selectedColors[template.id]?.secondary || template.styling.secondaryColor
+                          }
+                        }} 
+                        className="w-full h-full" 
+                      />
                       
                       {/* Overlay Actions */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => setPreviewTemplate(template)}
-                            className="flex-1 backdrop-blur-sm bg-white/90 hover:bg-white"
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Preview
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => onSelectTemplate(template)}
-                            className="flex-1 backdrop-blur-sm"
-                          >
-                            Use Template
-                            <ChevronRight className="w-4 h-4 ml-1" />
-                          </Button>
+                        <div className="absolute bottom-4 left-4 right-4 space-y-3">
+                          {/* Color Picker */}
+                          {template.styling.colorVariants && template.styling.colorVariants.length > 0 && (
+                            <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3">
+                              <TemplateColorPicker
+                                template={template}
+                                selectedColor={selectedColors[template.id]?.primary}
+                                onColorSelect={(primary, secondary) => {
+                                  setSelectedColors(prev => ({
+                                    ...prev,
+                                    [template.id]: { primary, secondary }
+                                  }))
+                                }}
+                              />
+                            </div>
+                          )}
+                          
+                          {/* Action Buttons */}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => setPreviewTemplate(template)}
+                              className="flex-1 backdrop-blur-sm bg-white/90 hover:bg-white"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const templateToSelect = selectedColors[template.id] 
+                                  ? {
+                                      ...template,
+                                      styling: {
+                                        ...template.styling,
+                                        primaryColor: selectedColors[template.id].primary,
+                                        secondaryColor: selectedColors[template.id].secondary
+                                      }
+                                    }
+                                  : template
+                                onSelectTemplate(templateToSelect)
+                              }}
+                              className="flex-1 backdrop-blur-sm bg-blue-600 hover:bg-blue-700 text-white border-0"
+                            >
+                              Use Template
+                              <ChevronRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                       
@@ -336,11 +420,11 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
                       <div className="flex items-center gap-4 text-xs text-gray-500">
                         <div className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5" />
-                          <span>{Math.floor(Math.random() * 1000 + 500)} uses</span>
+                          <span>{mounted ? Math.floor(500 + (index * 137) % 500) : '...'} uses</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="w-3.5 h-3.5 fill-current text-yellow-500" />
-                          <span>{(Math.random() * 0.5 + 4.5).toFixed(1)}</span>
+                          <span>{mounted ? (4.5 + (index * 0.07) % 0.5).toFixed(1) : '...'}</span>
                         </div>
                       </div>
                     </div>

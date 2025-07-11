@@ -18,7 +18,11 @@ const categoryLabels = {
   tech: 'Technology',
   creative: 'Creative',
   academic: 'Academic',
-  executive: 'Executive'
+  executive: 'Executive',
+  modern: 'Modern',
+  simple: 'Simple & Classic',
+  professional: 'Professional',
+  ats: 'ATS Optimized'
 }
 
 export function EnhancedTemplateGallery({ onSelectTemplate }: EnhancedTemplateGalleryProps) {
@@ -132,7 +136,7 @@ export function EnhancedTemplateGallery({ onSelectTemplate }: EnhancedTemplateGa
               
               <CardFooter className="p-4 pt-0 gap-2">
                 <Button 
-                  className="flex-1"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white border-0"
                   onClick={() => onSelectTemplate(template)}
                 >
                   Use Template
@@ -210,6 +214,7 @@ export function EnhancedTemplateGallery({ onSelectTemplate }: EnhancedTemplateGa
               <div className="mt-6 flex gap-4 justify-center">
                 <Button 
                   size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
                   onClick={() => {
                     onSelectTemplate(previewTemplate)
                     setPreviewTemplate(null)
