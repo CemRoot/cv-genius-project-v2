@@ -55,40 +55,39 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
             const isVisible = section.key === 'personal' ? true : (sectionVisibility[section.key as keyof typeof sectionVisibility] ?? true)
             
             return (
-              <button
+              <div
                 key={section.key}
-                onClick={() => onSectionChange(section.key)}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                   activeSection === section.key
                     ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
                     : 'hover:bg-gray-50 text-gray-700'
                 } ${!isVisible && section.key !== 'personal' ? 'opacity-60' : ''}`}
               >
                 <div className="flex items-center">
-                  <span className="text-lg mr-3">{section.icon}</span>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{section.label}</div>
-                    <div className="text-xs text-gray-500">{section.description}</div>
-                  </div>
+                  <button
+                    onClick={() => onSectionChange(section.key)}
+                    className="flex-1 text-left flex items-center"
+                  >
+                    <span className="text-lg mr-3">{section.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{section.label}</div>
+                      <div className="text-xs text-gray-500">{section.description}</div>
+                    </div>
+                  </button>
                   
                   {/* Toggle switch for non-personal sections */}
                   {section.key !== 'personal' && (
                     <div className="flex items-center ml-2">
-                      <button
-                        onClick={(e) => handleToggleVisibility(section.key, e)}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          isVisible ? 'bg-blue-600' : 'bg-gray-300'
-                        }`}
-                        role="switch"
-                        aria-checked={isVisible}
-                        aria-label={`Toggle ${section.label} visibility`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                            isVisible ? 'translate-x-4' : 'translate-x-1'
-                          }`}
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={isVisible}
+                          onChange={() => toggleSectionVisibility(section.key, !isVisible)}
+                          aria-label={`Toggle ${section.label} visibility`}
                         />
-                      </button>
+                        <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
                     </div>
                   )}
                   
@@ -98,7 +97,7 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
                     </div>
                   )}
                 </div>
-              </button>
+              </div>
             )
           })}
         </nav>

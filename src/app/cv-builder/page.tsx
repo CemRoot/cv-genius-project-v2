@@ -6,10 +6,23 @@ import { CvBuilderProvider } from '@/contexts/cv-builder-context'
 import { CvBuilderInterface } from '@/components/cv-builder/cv-builder-interface'
 import { CvBuilderLoading } from '@/components/cv-builder/cv-builder-loading'
 import { ArrowLeft, Home, Settings } from 'lucide-react'
+import { clearCvBuilderStorage } from '@/utils/clear-cv-storage'
 import '@/styles/cv-builder.css'
 
 export default function CvBuilderPage() {
   const router = useRouter()
+
+  // Check for storage clear flag
+  useEffect(() => {
+    const shouldClear = new URLSearchParams(window.location.search).get('clear') === 'true'
+    if (shouldClear) {
+      clearCvBuilderStorage()
+      // Remove the clear parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+      // Reload to ensure fresh state
+      window.location.reload()
+    }
+  }, [])
 
   // Enhanced sticky header with robust scroll detection
   useEffect(() => {

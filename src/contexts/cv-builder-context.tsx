@@ -395,13 +395,49 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
       const savedDocument = localStorage.getItem(AUTOSAVE_KEY)
       if (savedDocument) {
         const parsed = JSON.parse(savedDocument)
-        // Validate the document structure
-        const validated = CvBuilderDocumentSchema.parse(parsed)
-        dispatch({ type: 'LOAD_DOCUMENT', payload: validated })
+        
+        // Ensure sectionVisibility exists
+        if (!parsed.sectionVisibility) {
+          parsed.sectionVisibility = {
+            summary: true,
+            experience: true,
+            education: true,
+            skills: true,
+            certifications: false,
+            languages: false,
+            volunteer: false,
+            awards: false,
+            publications: false,
+            references: true
+          }
+        }
+        
+        // Don't validate empty documents - just load them
+        if (parsed.personal && Object.keys(parsed.personal).length > 0) {
+          // Only validate if there's actual data
+          const hasPersonalData = parsed.personal.fullName || parsed.personal.title || parsed.personal.email
+          if (hasPersonalData) {
+            try {
+              const validated = CvBuilderDocumentSchema.parse(parsed)
+              dispatch({ type: 'LOAD_DOCUMENT', payload: validated })
+            } catch (validationError) {
+              // If validation fails, load without validation
+              console.warn('Document validation failed, loading anyway:', validationError)
+              dispatch({ type: 'LOAD_DOCUMENT', payload: parsed })
+            }
+          } else {
+            // Load empty document without validation
+            dispatch({ type: 'LOAD_DOCUMENT', payload: parsed })
+          }
+        } else {
+          // Load empty document without validation
+          dispatch({ type: 'LOAD_DOCUMENT', payload: parsed })
+        }
       }
     } catch (error) {
       console.error('Failed to load auto-saved document:', error)
-      // Don't show error to user for auto-save failures
+      // Clear corrupted data
+      localStorage.removeItem(AUTOSAVE_KEY)
     }
   }, [])
 
