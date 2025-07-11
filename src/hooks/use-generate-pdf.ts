@@ -250,6 +250,25 @@ export function useGeneratePdf() {
     updateProgress(40, 'Adding CV sections')
     
     for (const section of cvData.sections) {
+      // Check section visibility
+      const sectionVisibility = cvData.sectionVisibility || {}
+      const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+      
+      // Skip non-visible sections
+      if (!isVisible) continue
+      
+      // Skip empty sections (except references in on-request mode)
+      if (section.type === 'summary' && !section.markdown) continue
+      if (section.type === 'experience' && section.items.length === 0) continue
+      if (section.type === 'education' && section.items.length === 0) continue
+      if (section.type === 'skills' && section.items.length === 0) continue
+      if (section.type === 'certifications' && section.items.length === 0) continue
+      if (section.type === 'languages' && section.items.length === 0) continue
+      if (section.type === 'volunteer' && section.items.length === 0) continue
+      if (section.type === 'awards' && section.items.length === 0) continue
+      if (section.type === 'publications' && section.items.length === 0) continue
+      if (section.type === 'references' && section.mode === 'detailed' && section.items.length === 0) continue
+      
       if (currentY < 100) {
         // Add new page if needed
         updateProgress(60, 'Adding new page')
@@ -257,9 +276,9 @@ export function useGeneratePdf() {
         currentY = height - margin
         
         // Continue with new page
-        currentY = await addSectionToPage(newPage, section, fonts, options, margin, contentWidth, currentY)
+        currentY = await addSectionToPage(newPage, section, fonts, options, margin, contentWidth, currentY, cvData)
       } else {
-        currentY = await addSectionToPage(page, section, fonts, options, margin, contentWidth, currentY)
+        currentY = await addSectionToPage(page, section, fonts, options, margin, contentWidth, currentY, cvData)
       }
     }
   }, [drawText, formatIrishPhone, updateProgress])
@@ -271,7 +290,8 @@ export function useGeneratePdf() {
     options: PDFGenerationOptions,
     margin: number,
     contentWidth: number,
-    currentY: number
+    currentY: number,
+    cvData: CvBuilderDocument
   ): Promise<number> => {
     const { width } = page.getSize()
     
@@ -389,11 +409,181 @@ export function useGeneratePdf() {
           lineHeight: 1.3
         })
         break
+        
+      case 'certifications':
+        for (const cert of section.items) {
+          currentY = drawText(page, cert.name, margin, currentY, {
+            font: fonts.bold,
+            size: options.fontSize!.body,
+            color: options.colors!.text
+          })
+          
+          const certDetails = `${cert.issuer} • ${formatDate(cert.date)}${cert.expiryDate ? ` - ${formatDate(cert.expiryDate)}` : ''}`
+          currentY = drawText(page, certDetails, margin, currentY, {
+            font: fonts.regular,
+            size: options.fontSize!.small,
+            color: options.colors!.accent
+          })
+          
+          if (cert.credentialId) {
+            currentY = drawText(page, `ID: ${cert.credentialId}`, margin, currentY, {
+              font: fonts.regular,
+              size: options.fontSize!.small,
+              color: options.colors!.accent
+            })
+          }
+          
+          currentY -= 8
+        }
+        break
+        
+      case 'languages':
+        const languageLines: string[] = []
+        for (const lang of section.items) {
+          const proficiencyMap = {
+            'native': 'Native',
+            'fluent': 'Fluent',
+            'professional': 'Professional',
+            'intermediate': 'Intermediate',
+            'basic': 'Basic'
+          }
+          const langText = `${lang.name} - ${proficiencyMap[lang.proficiency]}${lang.certification ? ` (${lang.certification})` : ''}`
+          languageLines.push(langText)
+        }
+        currentY = drawText(page, languageLines.join(' • '), margin, currentY, {
+          font: fonts.regular,
+          size: options.fontSize!.body,
+          color: options.colors!.text,
+          maxWidth: contentWidth,
+          lineHeight: 1.3
+        })
+        break
+        
+      case 'volunteer':
+        for (const vol of section.items) {
+          currentY = drawText(page, `${vol.role} at ${vol.organization}`, margin, currentY, {
+            font: fonts.bold,
+            size: options.fontSize!.body,
+            color: options.colors!.text
+          })
+          
+          const dates = `${formatDate(vol.start)} - ${vol.end ? formatDate(vol.end) : 'Present'}`
+          currentY += options.fontSize!.body + 2
+          currentY = drawText(page, dates, width - margin - 100, currentY, {
+            font: fonts.regular,
+            size: options.fontSize!.small,
+            color: options.colors!.accent
+          })
+          
+          currentY -= options.fontSize!.body + 2
+          currentY -= 4
+          
+          currentY = drawText(page, vol.description, margin, currentY, {
+            font: fonts.regular,
+            size: options.fontSize!.body,
+            color: options.colors!.text,
+            maxWidth: contentWidth,
+            lineHeight: 1.3
+          })
+          
+          currentY -= 8
+        }
+        break
+        
+      case 'awards':
+        for (const award of section.items) {
+          const awardText = `${award.name} • ${award.issuer} • ${formatDate(award.date)}`
+          currentY = drawText(page, awardText, margin, currentY, {
+            font: fonts.bold,
+            size: options.fontSize!.body,
+            color: options.colors!.text
+          })
+          
+          if (award.description) {
+            currentY = drawText(page, award.description, margin, currentY, {
+              font: fonts.regular,
+              size: options.fontSize!.small,
+              color: options.colors!.text,
+              maxWidth: contentWidth,
+              lineHeight: 1.3
+            })
+          }
+          
+          currentY -= 8
+        }
+        break
+        
+      case 'publications':
+        for (const pub of section.items) {
+          let pubText = ''
+          if (pub.authors) {
+            pubText += `${pub.authors}. `
+          }
+          pubText += `"${pub.title}" ${pub.publication}, ${formatDate(pub.date)}`
+          
+          currentY = drawText(page, pubText, margin, currentY, {
+            font: fonts.regular,
+            size: options.fontSize!.body,
+            color: options.colors!.text,
+            maxWidth: contentWidth,
+            lineHeight: 1.3
+          })
+          
+          currentY -= 8
+        }
+        break
+        
+      case 'references':
+        if (section.mode === 'on-request') {
+          currentY = drawText(page, 'References available upon request', margin, currentY, {
+            font: fonts.regular,
+            size: options.fontSize!.body,
+            color: options.colors!.text,
+            maxWidth: contentWidth
+          })
+        } else {
+          for (const ref of section.items) {
+            currentY = drawText(page, ref.name, margin, currentY, {
+              font: fonts.bold,
+              size: options.fontSize!.body,
+              color: options.colors!.text
+            })
+            
+            currentY = drawText(page, `${ref.title} at ${ref.company}`, margin, currentY, {
+              font: fonts.regular,
+              size: options.fontSize!.body,
+              color: options.colors!.text
+            })
+            
+            currentY = drawText(page, ref.email, margin, currentY, {
+              font: fonts.regular,
+              size: options.fontSize!.small,
+              color: options.colors!.accent
+            })
+            
+            currentY = drawText(page, formatIrishPhone(ref.phone), margin, currentY, {
+              font: fonts.regular,
+              size: options.fontSize!.small,
+              color: options.colors!.accent
+            })
+            
+            if (ref.relationship) {
+              currentY = drawText(page, ref.relationship, margin, currentY, {
+                font: fonts.regular,
+                size: options.fontSize!.small,
+                color: options.colors!.text
+              })
+            }
+            
+            currentY -= 8
+          }
+        }
+        break
     }
     
     currentY -= 20
     return currentY
-  }, [drawText, formatDate])
+  }, [drawText, formatDate, formatIrishPhone])
 
   const getSectionTitle = useCallback((type: string): string => {
     switch (type) {
@@ -401,6 +591,12 @@ export function useGeneratePdf() {
       case 'experience': return 'Work Experience'
       case 'education': return 'Education'
       case 'skills': return 'Skills'
+      case 'certifications': return 'Certifications'
+      case 'languages': return 'Languages'
+      case 'volunteer': return 'Volunteer Experience'
+      case 'awards': return 'Awards & Achievements'
+      case 'publications': return 'Publications'
+      case 'references': return 'References'
       default: return type.charAt(0).toUpperCase() + type.slice(1)
     }
   }, [])
