@@ -90,6 +90,18 @@ export interface CvBuilderDocument {
   updatedAt: string // ISO
   personal: CvBuilderPersonal
   sections: CvBuilderSection[]
+  sectionVisibility?: {
+    summary?: boolean
+    experience?: boolean
+    education?: boolean
+    skills?: boolean
+    certifications?: boolean
+    languages?: boolean
+    volunteer?: boolean
+    awards?: boolean
+    publications?: boolean
+    references?: boolean
+  }
 }
 
 // Dublin/Irish specific validations
@@ -478,5 +490,17 @@ export const createDefaultCvBuilderDocument = (): CvBuilderDocument => ({
     { type: 'certifications', items: [] },
     { type: 'languages', items: [] },
     { type: 'references', mode: 'on-request', items: [] }
-  ]
+  ],
+  sectionVisibility: {
+    summary: true,
+    experience: true,
+    education: true,
+    skills: true,
+    certifications: false,
+    languages: false,
+    volunteer: false,
+    awards: false,
+    publications: false,
+    references: true
+  }
 })

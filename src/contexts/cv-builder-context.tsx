@@ -28,6 +28,7 @@ type CvBuilderAction =
   | { type: 'REMOVE_EDUCATION'; payload: number }
   | { type: 'UPDATE_SKILLS'; payload: string[] }
   | { type: 'UPDATE_SUMMARY'; payload: string }
+  | { type: 'TOGGLE_SECTION_VISIBILITY'; payload: { section: string; visible: boolean } }
   | { type: 'RESET_DOCUMENT' }
   | { type: 'SET_SAVING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
@@ -54,6 +55,7 @@ interface CvBuilderContextType extends CvBuilderState {
   removeEducation: (index: number) => void
   updateSkills: (skills: string[]) => void
   updateSummary: (summary: string) => void
+  toggleSectionVisibility: (section: string, visible: boolean) => void
   saveDocument: () => Promise<void>
   loadDocument: (documentId?: string) => Promise<void>
   resetDocument: () => void
@@ -319,6 +321,20 @@ function cvBuilderReducer(state: CvBuilderState, action: CvBuilderAction): CvBui
       }
       return state
 
+    case 'TOGGLE_SECTION_VISIBILITY':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          sectionVisibility: {
+            ...state.document.sectionVisibility,
+            [action.payload.section]: action.payload.visible
+          },
+          updatedAt: new Date().toISOString()
+        },
+        hasUnsavedChanges: true
+      }
+
     case 'RESET_DOCUMENT':
       return {
         ...state,
@@ -482,6 +498,10 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const toggleSectionVisibility = useCallback((section: string, visible: boolean) => {
+    dispatch({ type: 'TOGGLE_SECTION_VISIBILITY', payload: { section, visible } })
+  }, [])
+
   const resetDocument = useCallback(() => {
     dispatch({ type: 'RESET_DOCUMENT' })
     localStorage.removeItem(STORAGE_KEY)
@@ -526,6 +546,7 @@ export function CvBuilderProvider({ children }: { children: React.ReactNode }) {
     removeEducation,
     updateSkills,
     updateSummary,
+    toggleSectionVisibility,
     saveDocument,
     loadDocument,
     resetDocument,

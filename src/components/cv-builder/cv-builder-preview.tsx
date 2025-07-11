@@ -120,7 +120,27 @@ export function CvBuilderPreview() {
               gridTemplateColumns: '1fr',
               gap: '6mm'
             }}>
-              {document.sections.map((section, index) => (
+              {document.sections.map((section, index) => {
+                // Check if section is visible
+                const sectionVisibility = document.sectionVisibility || {}
+                const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
+                
+                // Skip non-visible sections or empty sections
+                if (!isVisible) return null
+                
+                // Skip empty sections (except references in on-request mode)
+                if (section.type === 'summary' && !section.markdown) return null
+                if (section.type === 'experience' && section.items.length === 0) return null
+                if (section.type === 'education' && section.items.length === 0) return null
+                if (section.type === 'skills' && section.items.length === 0) return null
+                if (section.type === 'certifications' && section.items.length === 0) return null
+                if (section.type === 'languages' && section.items.length === 0) return null
+                if (section.type === 'volunteer' && section.items.length === 0) return null
+                if (section.type === 'awards' && section.items.length === 0) return null
+                if (section.type === 'publications' && section.items.length === 0) return null
+                if (section.type === 'references' && section.mode === 'detailed' && section.items.length === 0) return null
+                
+                return (
                 <section key={index} className="cv-section" style={{ 
                   breakInside: 'avoid',
                   marginBottom: index < document.sections.length - 1 ? '6mm' : '0'
@@ -674,7 +694,8 @@ export function CvBuilderPreview() {
                     </div>
                   )}
                 </section>
-              ))}
+                )
+              })}
 
               {/* Empty State */}
               {document.sections.length === 0 && (
