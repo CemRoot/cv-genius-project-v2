@@ -159,7 +159,7 @@ export const CvBuilderExperienceSchema = z.object({
   bullets: z.array(z.string()
     .min(10, 'Achievement/responsibility must be at least 10 characters')
     .max(500, 'Achievement/responsibility must be less than 500 characters'))
-    .min(1, 'At least one achievement or responsibility is required')
+    .min(0)
     .max(8, 'Maximum 8 achievements/responsibilities allowed for ATS compliance')
 })
 

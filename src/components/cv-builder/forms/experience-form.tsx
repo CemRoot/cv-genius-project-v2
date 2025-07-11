@@ -18,7 +18,7 @@ const createEmptyExperience = (): ExperienceFormState => ({
   role: '',
   start: '',
   end: '',
-  bullets: ['']
+  bullets: []
 })
 
 export function ExperienceForm() {
@@ -288,7 +288,7 @@ export function ExperienceForm() {
             {/* Achievements/Responsibilities */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Key Achievements & Responsibilities *
+                Key Achievements & Responsibilities
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 Use bullet points to describe your achievements. Start with action verbs and quantify results when possible.
@@ -304,7 +304,7 @@ export function ExperienceForm() {
                       rows={2}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                     />
-                    {formData.bullets.length > 1 && (
+                    {formData.bullets.length > 0 && (
                       <button
                         type="button"
                         onClick={() => removeBulletPoint(index)}
@@ -319,7 +319,7 @@ export function ExperienceForm() {
                 ))}
               </div>
 
-              {formData.bullets.length < 6 && (
+              {formData.bullets.length < 8 && (
                 <button
                   type="button"
                   onClick={addBulletPoint}
