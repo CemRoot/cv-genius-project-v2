@@ -201,6 +201,10 @@ export function useGeneratePdf() {
     
     let currentY = height - margin
     
+    // Debug: Log section visibility
+    console.log('PDF Generation - Section Visibility:', cvData.sectionVisibility)
+    console.log('PDF Generation - Sections:', cvData.sections.map(s => ({ type: s.type, hasItems: 'items' in s ? s.items.length : 'N/A' })))
+    
     // Header - Name and Title
     updateProgress(20, 'Adding header information')
     currentY = drawText(page, cvData.personal.fullName.toUpperCase(), margin, currentY, {
@@ -244,30 +248,72 @@ export function useGeneratePdf() {
       color: rgb(0, 0, 0)
     })
     
-    currentY -= 15
+    currentY -= 12
     
     // Sections
     updateProgress(40, 'Adding CV sections')
     
-    for (const section of cvData.sections) {
+    // Filter visible sections first
+    const visibleSections = cvData.sections.filter(section => {
       // Check section visibility
       const sectionVisibility = cvData.sectionVisibility || {}
       const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
       
       // Skip non-visible sections
-      if (!isVisible) continue
+      if (!isVisible) {
+        console.log(`PDF Generation - Skipping ${section.type} (visibility: false)`)
+        return false
+      }
       
       // Skip empty sections (except references in on-request mode)
-      if (section.type === 'summary' && !section.markdown) continue
-      if (section.type === 'experience' && section.items.length === 0) continue
-      if (section.type === 'education' && section.items.length === 0) continue
-      if (section.type === 'skills' && section.items.length === 0) continue
-      if (section.type === 'certifications' && section.items.length === 0) continue
-      if (section.type === 'languages' && section.items.length === 0) continue
-      if (section.type === 'volunteer' && section.items.length === 0) continue
-      if (section.type === 'awards' && section.items.length === 0) continue
-      if (section.type === 'publications' && section.items.length === 0) continue
-      if (section.type === 'references' && section.mode === 'detailed' && section.items.length === 0) continue
+      if (section.type === 'summary' && (!section.markdown || section.markdown.trim() === '')) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'experience' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'education' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'skills' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'certifications' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'languages' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'volunteer' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'awards' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'publications' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty)`)
+        return false
+      }
+      if (section.type === 'references' && section.mode === 'detailed' && (!section.items || section.items.length === 0)) {
+        console.log(`PDF Generation - Skipping ${section.type} (empty detailed mode)`)
+        return false
+      }
+      
+      console.log(`PDF Generation - Including ${section.type}`)
+      return true
+    })
+    
+    console.log(`PDF Generation - Total visible sections: ${visibleSections.length}`)
+    
+    for (const section of visibleSections) {
       
       if (currentY < 100) {
         // Add new page if needed
@@ -312,7 +358,7 @@ export function useGeneratePdf() {
       color: rgb(0, 0, 0)
     })
     
-    currentY -= 12
+    currentY -= 10
     
     // Section content
     switch (section.type) {
@@ -345,7 +391,7 @@ export function useGeneratePdf() {
           })
           
           currentY -= options.fontSize!.body + 2
-          currentY -= 8
+          currentY -= 6
           
           // Bullets
           for (const bullet of exp.bullets) {
@@ -356,10 +402,10 @@ export function useGeneratePdf() {
               maxWidth: contentWidth - 12,
               lineHeight: 1.3
             })
-            currentY -= 4
+            currentY -= 3
           }
           
-          currentY -= 8
+          currentY -= 6
         }
         break
         
@@ -395,7 +441,7 @@ export function useGeneratePdf() {
             })
           }
           
-          currentY -= 12
+          currentY -= 8
         }
         break
         
@@ -581,7 +627,7 @@ export function useGeneratePdf() {
         break
     }
     
-    currentY -= 20
+    currentY -= 15  // Reduced spacing between sections
     return currentY
   }, [drawText, formatDate, formatIrishPhone])
 
