@@ -42,7 +42,7 @@ export function CvBuilderPreview() {
   }, [])
 
   return (
-    <div ref={containerRef} className="h-full overflow-y-auto flex items-start justify-center p-8 bg-gray-100">
+    <div ref={containerRef} className="h-full overflow-hidden flex items-start justify-center p-8 bg-gray-100">
       <div className="relative">
         {/* A4 Page Container - ATS-Optimized Black & White Template */}
         <div 
