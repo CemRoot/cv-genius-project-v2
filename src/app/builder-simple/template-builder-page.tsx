@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { CvTemplate } from '@/lib/cv-templates/templates-data'
 import { CvBuilderProvider } from '@/contexts/cv-builder-context'
-import { CvBuilderInterface } from '@/app/cv-builder/cv-builder-interface'
+import { CvBuilderInterface } from '@/components/cv-builder/cv-builder-interface'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Wand2 } from 'lucide-react'
 

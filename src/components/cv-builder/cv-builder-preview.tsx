@@ -63,14 +63,15 @@ export function CvBuilderPreview() {
         >
           {/* Main CV Content Grid */}
           <div 
-            className="cv-template-classic h-full font-lato text-black bg-white"
+            className="cv-template-classic font-lato text-black bg-white"
             style={{
               padding: '20mm',
               display: 'grid',
-              gridTemplateRows: 'auto 1fr',
+              gridTemplateRows: 'auto auto',  // Changed from 'auto 1fr' to prevent stretching
               gap: '6mm',
               minHeight: 'calc(297mm - 40mm)', // A4 height minus top/bottom margins
-              overflow: 'visible'
+              overflow: 'visible',
+              alignContent: 'start'  // Pack content to top
             }}
           >
             {/* Header Section */}
@@ -126,7 +127,8 @@ export function CvBuilderPreview() {
               gridRow: '2',
               display: 'grid',
               gridTemplateColumns: '1fr',
-              gap: '6mm'
+              gap: '6mm',
+              alignContent: 'start'  // Prevent stretching, pack content to top
             }}>
               {document.sections.map((section, index) => {
                 // Check if section is visible
@@ -150,8 +152,7 @@ export function CvBuilderPreview() {
                 
                 return (
                 <section key={index} className="cv-section" style={{ 
-                  breakInside: 'avoid',
-                  marginBottom: index < document.sections.length - 1 ? '6mm' : '0'
+                  breakInside: 'avoid'
                 }}>
                   
                   {/* Professional Summary */}
