@@ -101,6 +101,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Font Weight Normalization */
+@layer base {
+  body {
+    font-weight: 400;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+  }
+  
+  /* Ensure minimum readability for all text */
+  p, span, div, li, td, th {
+    font-weight: inherit;
+  }
+  
+  /* Darker default text colors */
+  .text-gray-400 {
+    @apply text-gray-600;
+  }
+  
+  .text-gray-500 {
+    @apply text-gray-700;
+  }
+  
+  /* Ensure headers are bold enough */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+  }
+}
+
 :root {
   --foreground-rgb: 15, 23, 42;
   --background-start-rgb: 139, 92, 246;
@@ -120,7 +148,7 @@
   --background: 255 255 255;
   --foreground: 15 23 42;
   --muted: 248 250 252;
-  --muted-foreground: 100 116 139;
+  --muted-foreground: 51 65 85; /* Darker gray for better readability */
   
   /* Primary colors for Tailwind */
   --primary: 139 92 246;
@@ -300,7 +328,7 @@ body {
 }
 
 /* Google Fonts Import - Lato Font Family */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;900&display=swap');
 
 /* Mobile-Optimized Variables */
 @media (max-width: 768px) {

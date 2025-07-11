@@ -438,7 +438,7 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className={`${inter.className} min-h-screen h-full flex flex-col antialiased touch-manipulation overscroll-none`} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen h-full flex flex-col touch-manipulation overscroll-none`} suppressHydrationWarning>
         {/* Skip to main content link */}
         <a href="#main-content" className="skip-link">
           Skip to main content
