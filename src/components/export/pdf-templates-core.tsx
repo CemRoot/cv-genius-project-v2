@@ -297,7 +297,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             {(data.personal.linkedin || data.personal.website) && (
               <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' }}>
                 {data.personal.linkedin && (
-                  <Link style={styles.link} src={data.personal.linkedin}>
+                  <Link style={styles.link} src={data.personal.linkedin.startsWith('http') ? data.personal.linkedin : `https://${data.personal.linkedin}`}>
                     LinkedIn: {data.personal.linkedin.replace('https://www.linkedin.com/in/', '').replace('/', '')}/
                   </Link>
                 )}
@@ -305,7 +305,7 @@ export function ClassicTemplate({ data }: { data: CVData }) {
                   <Text style={styles.contactLine}> • </Text>
                 )}
                 {data.personal.website && (
-                  <Link style={styles.link} src={data.personal.website}>
+                  <Link style={styles.link} src={data.personal.website.startsWith('http') ? data.personal.website : `https://${data.personal.website}`}>
                     Portfolio: {data.personal.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}/
                   </Link>
                 )}
