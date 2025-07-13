@@ -19,7 +19,9 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCw,
-  X
+  X,
+  Plus,
+  Menu
 } from 'lucide-react'
 
 // Import existing components
@@ -68,6 +70,7 @@ export function CvBuilderInterface() {
   const [targetIndustry, setTargetIndustry] = useState('technology')
   const [previewZoom, setPreviewZoom] = useState(100)
   const [isMobilePreviewOpen, setMobilePreviewOpen] = useState(false)
+  const [isFabMenuOpen, setFabMenuOpen] = useState(false)
 
   // Handle ATS optimization suggestions
   const handleATSOptimizationChange = (suggestions: string[]) => {
@@ -107,6 +110,23 @@ export function CvBuilderInterface() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  // Close FAB menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isFabMenuOpen) {
+        const target = event.target as Element
+        const fabContainer = document.querySelector('[data-fab-container]')
+        
+        if (fabContainer && !fabContainer.contains(target)) {
+          setFabMenuOpen(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isFabMenuOpen])
 
   // Generate and download PDF using React-PDF templates
   const handleATSOptimizedDownload = async () => {
@@ -313,7 +333,7 @@ export function CvBuilderInterface() {
       <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col p-4 overflow-hidden">
         {/* Header */}
         <div className="mb-4 flex-shrink-0">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-2xl font-bold text-foreground">CV Builder</h1>
               <p className="text-sm text-muted-foreground">Create an ATS-optimized professional CV</p>
@@ -368,7 +388,7 @@ export function CvBuilderInterface() {
               </CardHeader>
               <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
                 {/* Section Navigation - Scrollable */}
-                <div className="overflow-y-auto p-6 pt-0 flex-1 min-h-0">
+                <div className="overflow-y-auto p-6 pt-0 pb-20 lg:pb-6 flex-1 min-h-0">
                   <div className="space-y-1 mb-4">
                     {/* Essential Sections */}
                     <div className="mb-3">
@@ -651,14 +671,65 @@ export function CvBuilderInterface() {
         </div>
       </div>
 
-      {/* Mobile Preview FAB - Floating Action Button */}
-      <button
-        onClick={() => setMobilePreviewOpen(true)}
-        className="lg:hidden fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg z-50 transition-colors"
-        aria-label="Preview CV"
-      >
-        <Eye className="h-6 w-6" />
-      </button>
+      {/* Speed Dial FAB - Mobile Actions */}
+      <div className="lg:hidden fixed bottom-4 right-4 z-50" data-fab-container>
+        {/* Speed Dial Menu Items */}
+        {isFabMenuOpen && (
+          <div className="absolute bottom-16 right-0 flex flex-col space-y-3 mb-2">
+            {/* Preview Button */}
+            <button
+              onClick={() => {
+                setMobilePreviewOpen(true)
+                setFabMenuOpen(false)
+              }}
+              className="bg-white text-gray-700 p-3 rounded-full shadow-lg border hover:bg-gray-50 transition-all transform hover:scale-105"
+              aria-label="Preview CV"
+            >
+              <Eye className="h-5 w-5" />
+            </button>
+            
+            {/* Download Button */}
+            <button
+              onClick={() => {
+                handleATSOptimizedDownload()
+                setFabMenuOpen(false)
+              }}
+              disabled={isGenerating}
+              className="bg-white text-gray-700 p-3 rounded-full shadow-lg border hover:bg-gray-50 transition-all transform hover:scale-105 disabled:opacity-50"
+              aria-label="Download CV"
+            >
+              <Download className="h-5 w-5" />
+            </button>
+            
+            {/* ATS Check Button */}
+            <button
+              onClick={() => {
+                setShowATSPanel(!showATSPanel)
+                setFabMenuOpen(false)
+              }}
+              className={`p-3 rounded-full shadow-lg border transition-all transform hover:scale-105 ${
+                showATSPanel 
+                  ? 'bg-blue-50 text-blue-700 border-blue-300' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+              aria-label="ATS Check"
+            >
+              <Bot className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+        
+        {/* Main FAB Button */}
+        <button
+          onClick={() => setFabMenuOpen(!isFabMenuOpen)}
+          className={`bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all transform ${
+            isFabMenuOpen ? 'rotate-45' : 'rotate-0'
+          }`}
+          aria-label="Actions Menu"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      </div>
 
       {/* Mobile Preview Modal */}
       {isMobilePreviewOpen && (
