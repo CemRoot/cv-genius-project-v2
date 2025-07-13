@@ -123,6 +123,57 @@ export function CvBuilderInterface() {
       const { exportCVToPDF } = await import('@/lib/pdf-export-service')
       
       // Convert CV Builder data to CVData format for React-PDF
+      const experienceSection = cvData.sections.find(s => s.type === 'experience')
+      const educationSection = cvData.sections.find(s => s.type === 'education')
+      const skillsSection = cvData.sections.find(s => s.type === 'skills')
+      const languagesSection = cvData.sections.find(s => s.type === 'languages')
+      const referencesSection = cvData.sections.find(s => s.type === 'references')
+      
+      // Transform experience items to match CV type
+      const transformedExperience = experienceSection?.items?.map((exp: any) => ({
+        id: exp.id || `exp-${Math.random()}`,
+        company: exp.company,
+        position: exp.role, // Map role to position
+        location: exp.location || '',
+        startDate: exp.start, // Keep as-is, PDF template will handle formatting
+        endDate: exp.end || '',
+        current: exp.end === 'Present' || !exp.end,
+        description: exp.bullets?.join(' • ') || '',
+        achievements: exp.bullets || [],
+        // Also include original fields for backward compatibility
+        role: exp.role,
+        start: exp.start,
+        end: exp.end,
+        bullets: exp.bullets
+      })) || []
+      
+      // Transform education items to match CV type
+      const transformedEducation = educationSection?.items?.map((edu: any) => ({
+        id: edu.id || `edu-${Math.random()}`,
+        institution: edu.institution,
+        degree: edu.degree,
+        field: edu.field,
+        location: edu.location || '',
+        startDate: edu.start, // Keep as-is, PDF template will handle formatting
+        endDate: edu.end || '',
+        current: edu.end === 'Present' || !edu.end,
+        grade: edu.grade,
+        description: edu.description,
+        // Also include original fields for backward compatibility
+        start: edu.start,
+        end: edu.end
+      })) || []
+      
+      // Transform languages to match CV type
+      const transformedLanguages = languagesSection?.items?.map((lang: any) => ({
+        id: lang.id || `lang-${Math.random()}`,
+        name: lang.name,
+        level: lang.proficiency, // Map proficiency to level
+        certification: lang.certification,
+        // Also include original field for backward compatibility
+        proficiency: lang.proficiency
+      })) || []
+      
       const cvDataForPDF = {
         id: cvData.id,
         personal: {
@@ -133,16 +184,17 @@ export function CvBuilderInterface() {
           linkedin: cvData.personal.linkedin,
           website: cvData.personal.website,
           title: cvData.personal.title,
-          summary: cvData.sections.find(s => s.type === 'summary')?.markdown
+          summary: cvData.sections.find(s => s.type === 'summary')?.markdown,
+          stamp: cvData.personal.workPermit // Map workPermit to stamp for PDF
         },
-        experience: cvData.sections.find(s => s.type === 'experience')?.items || [],
-        education: cvData.sections.find(s => s.type === 'education')?.items || [],
-        skills: cvData.sections.find(s => s.type === 'skills')?.items || [],
-        languages: cvData.sections.find(s => s.type === 'languages')?.items || [],
+        experience: transformedExperience,
+        education: transformedEducation,
+        skills: skillsSection?.items || [],
+        languages: transformedLanguages,
         certifications: cvData.sections.find(s => s.type === 'certifications')?.items || [],
         projects: [],
         interests: [],
-        references: cvData.sections.find(s => s.type === 'references')?.items || [],
+        references: referencesSection?.items || [],
         sections: cvData.sections,
         sectionVisibility: cvData.sectionVisibility || {}, // Include section visibility
         template: template?.id || 'classic', // Use selected template ID
