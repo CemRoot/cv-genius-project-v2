@@ -18,7 +18,8 @@ import {
   AlertTriangle,
   ZoomIn,
   ZoomOut,
-  RotateCw
+  RotateCw,
+  X
 } from 'lucide-react'
 
 // Import existing components
@@ -66,6 +67,7 @@ export function CvBuilderInterface() {
   const [jobDescription, setJobDescription] = useState('')
   const [targetIndustry, setTargetIndustry] = useState('technology')
   const [previewZoom, setPreviewZoom] = useState(100)
+  const [isMobilePreviewOpen, setMobilePreviewOpen] = useState(false)
 
   // Handle ATS optimization suggestions
   const handleATSOptimizationChange = (suggestions: string[]) => {
@@ -543,8 +545,8 @@ export function CvBuilderInterface() {
             </Card>
           </div>
 
-          {/* Center - CV Preview */}
-          <div className={`${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'} overflow-hidden`}>
+          {/* Center - CV Preview - Desktop Only */}
+          <div className={`hidden lg:block ${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'} overflow-hidden`}>
             <Card className="h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0 flex items-center justify-between">
                 <CardTitle className="flex items-center text-lg">
@@ -648,6 +650,133 @@ export function CvBuilderInterface() {
           )}
         </div>
       </div>
+
+      {/* Mobile Preview FAB - Floating Action Button */}
+      <button
+        onClick={() => setMobilePreviewOpen(true)}
+        className="lg:hidden fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg z-50 transition-colors"
+        aria-label="Preview CV"
+      >
+        <Eye className="h-6 w-6" />
+      </button>
+
+      {/* Mobile Preview Modal */}
+      {isMobilePreviewOpen && (
+        <div className="lg:hidden fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex flex-col">
+          <div className="bg-white p-4 flex justify-between items-center shadow-lg">
+            <h2 className="text-lg font-semibold text-gray-900">CV Preview</h2>
+            <button
+              onClick={() => setMobilePreviewOpen(false)}
+              className="text-gray-700 hover:text-gray-900 transition-colors p-1"
+              aria-label="Close preview"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          <div className="flex-1 bg-white">
+            {(() => {
+              // Dynamic import for PDFViewer to ensure client-side rendering
+              const [PDFViewer, setPDFViewer] = useState<any>(null)
+              const [PDFTemplate, setPDFTemplate] = useState<any>(null)
+              
+              useEffect(() => {
+                if (typeof window !== 'undefined') {
+                  Promise.all([
+                    import('@react-pdf/renderer').then(mod => mod.PDFViewer),
+                    import('@/components/export/pdf-templates-core').then(mod => mod.PDFTemplate)
+                  ]).then(([viewer, template]) => {
+                    setPDFViewer(() => viewer)
+                    setPDFTemplate(() => template)
+                  }).catch(error => {
+                    console.error('Failed to load PDF components:', error)
+                  })
+                }
+              }, [])
+
+              if (!PDFViewer || !PDFTemplate) {
+                return (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-gray-600">Loading preview...</p>
+                    </div>
+                  </div>
+                )
+              }
+
+              // Convert CV Builder data to PDF format
+              const experienceSection = cvData.sections.find(s => s.type === 'experience')
+              const educationSection = cvData.sections.find(s => s.type === 'education')
+              const skillsSection = cvData.sections.find(s => s.type === 'skills')
+              const languagesSection = cvData.sections.find(s => s.type === 'languages')
+              
+              const transformedExperience = experienceSection?.items?.map((exp: any) => ({
+                id: exp.id || `exp-${Math.random()}`,
+                company: exp.company,
+                position: exp.role,
+                location: exp.location || '',
+                startDate: exp.start,
+                endDate: exp.end || '',
+                current: exp.end === 'Present' || !exp.end,
+                description: exp.bullets?.join(' • ') || '',
+                role: exp.role,
+                start: exp.start,
+                end: exp.end
+              })) || []
+              
+              const transformedEducation = educationSection?.items?.map((edu: any) => ({
+                id: edu.id || `edu-${Math.random()}`,
+                institution: edu.institution,
+                degree: edu.degree,
+                field: edu.field,
+                location: edu.location || '',
+                startDate: edu.start,
+                endDate: edu.end || '',
+                current: edu.end === 'Present' || !edu.end,
+                grade: edu.grade,
+                start: edu.start,
+                end: edu.end
+              })) || []
+              
+              const transformedLanguages = languagesSection?.items?.map((lang: any) => ({
+                id: lang.id || `lang-${Math.random()}`,
+                name: lang.name,
+                level: lang.proficiency,
+                certification: lang.certification,
+                proficiency: lang.proficiency
+              })) || []
+
+              const cvDataForPDF = {
+                id: cvData.id,
+                personal: {
+                  fullName: cvData.personal.fullName,
+                  email: cvData.personal.email,
+                  phone: cvData.personal.phone,
+                  address: cvData.personal.address,
+                  linkedin: cvData.personal.linkedin,
+                  website: cvData.personal.website,
+                  title: cvData.personal.title,
+                  summary: cvData.sections.find(s => s.type === 'summary')?.markdown,
+                  stamp: cvData.personal.workPermit
+                },
+                experience: transformedExperience,
+                education: transformedEducation,
+                skills: skillsSection?.items || [],
+                languages: transformedLanguages,
+                sections: cvData.sections,
+                sectionVisibility: cvData.sectionVisibility || {},
+                template: template?.id || 'classic'
+              }
+
+              return (
+                <PDFViewer width="100%" height="100%" showToolbar={true}>
+                  <PDFTemplate data={cvDataForPDF} />
+                </PDFViewer>
+              )
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
