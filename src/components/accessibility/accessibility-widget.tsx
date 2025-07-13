@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +22,17 @@ interface AccessibilityWidgetProps {
 
 export default function AccessibilityWidget({ className }: AccessibilityWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
+  
+  // Hide accessibility widget on CV Builder pages to avoid conflicts with Speed Dial FAB
+  const isHiddenPage = pathname?.startsWith('/cv-builder') || 
+                       pathname?.startsWith('/builder') ||
+                       pathname?.includes('cv-builder')
+  
+  // Don't render on CV Builder pages
+  if (isHiddenPage) {
+    return null
+  }
   const {
     preferences,
     togglePreference,
