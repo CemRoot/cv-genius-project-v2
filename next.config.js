@@ -22,6 +22,9 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'framer-motion'],
   },
   
+  // Transpile ESM packages to fix build issues
+  transpilePackages: ['@react-pdf/renderer'],
+  
   // Turbopack configuration (now stable)
   turbopack: {
     rules: {

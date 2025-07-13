@@ -41,6 +41,7 @@ import { AutoSaveStatus } from './auto-save-status'
 
 // Import new ATS components
 import { ATSOptimizationPanel } from './ats-optimization-panel'
+import MobilePDFPreviewModal from './mobile-pdf-preview'
 
 // Context and hooks
 import { useCvBuilder } from '@/contexts/cv-builder-context'
@@ -377,8 +378,398 @@ export function CvBuilderInterface() {
 
         {/* Main Content */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
-          {/* Left Sidebar - CV Builder */}
-          <div className="lg:col-span-4 overflow-hidden">
+          {/* Mobile Tabs */}
+          <div className="lg:hidden col-span-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-[calc(100vh-12rem)]">
+              <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+                <TabsTrigger value="builder">CV Builder</TabsTrigger>
+                <TabsTrigger value="preview">Live Preview</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="builder" className="flex-1 mt-4 data-[state=active]:flex data-[state=active]:flex-col">
+                <Card className="flex-1 flex flex-col">
+                  <CardHeader className="pb-3 flex-shrink-0">
+                    <CardTitle className="flex items-center text-lg">
+                      <FileText className="h-5 w-5 mr-2" />
+                      CV Builder
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 p-0 flex flex-col min-h-0">
+                    {/* Section Navigation - Scrollable */}
+                    <div className="flex-1 overflow-y-auto p-6 pt-0 pb-24">
+                      <div className="space-y-1 mb-4">
+                        {/* Essential Sections */}
+                        <div className="mb-3">
+                          <div className="flex items-center mb-2">
+                            <div className="h-2 w-2 bg-red-500 rounded-full mr-2"></div>
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Essential</span>
+                          </div>
+                          {sectionGroups.essential.map((section) => {
+                            const completeness = getSectionCompleteness(section.id)
+                            const isVisible = cvData.sectionVisibility?.[section.id as keyof typeof cvData.sectionVisibility] ?? section.defaultVisible
+                            
+                            return (
+                              <div key={section.id} className="mb-1">
+                                <div className={`flex items-center justify-between p-2 rounded-lg border-2 transition-all ${
+                                  selectedSection === section.id 
+                                    ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                    : 'hover:bg-muted border-red-200 hover:border-red-300'
+                                }`}>
+                                  <button
+                                    onClick={() => setSelectedSection(section.id)}
+                                    className="flex items-center flex-1"
+                                  >
+                                    <FileText className="h-4 w-4 mr-2 text-red-600" />
+                                    <span className="font-semibold text-sm text-foreground">{section.label}</span>
+                                  </button>
+                                  
+                                  <div className="flex items-center space-x-2">
+                                    {completeness === 100 ? (
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                    ) : completeness > 0 ? (
+                                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                    ) : (
+                                      <div className="h-4 w-4 rounded-full border-2 border-red-300" />
+                                    )}
+                                    <Badge variant="outline" className="text-xs px-1.5 font-medium">
+                                      {completeness}%
+                                    </Badge>
+                                    
+                                    <button
+                                      onClick={() => toggleSectionVisibility(section.id as any, !isVisible)}
+                                      className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                                        isVisible 
+                                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                          : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                      }`}
+                                    >
+                                      {isVisible ? 'ON' : 'OFF'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+
+                        {/* Important Sections */}
+                        <div className="mb-3">
+                          <div className="flex items-center mb-2">
+                            <div className="h-2 w-2 bg-orange-500 rounded-full mr-2"></div>
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Important</span>
+                          </div>
+                          {sectionGroups.important.map((section) => {
+                            const completeness = getSectionCompleteness(section.id)
+                            const isVisible = cvData.sectionVisibility?.[section.id as keyof typeof cvData.sectionVisibility] ?? section.defaultVisible
+                            
+                            return (
+                              <div key={section.id} className="mb-1">
+                                <div className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
+                                  selectedSection === section.id 
+                                    ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                    : 'hover:bg-muted border-orange-200 hover:border-orange-300'
+                                }`}>
+                                  <button
+                                    onClick={() => setSelectedSection(section.id)}
+                                    className="flex items-center flex-1"
+                                  >
+                                    <FileText className="h-4 w-4 mr-2 text-orange-600" />
+                                    <span className="font-medium text-sm text-gray-800">{section.label}</span>
+                                  </button>
+                                  
+                                  <div className="flex items-center space-x-2">
+                                    {completeness === 100 ? (
+                                      <CheckCircle className="h-3 w-3 text-green-600" />
+                                    ) : completeness > 0 ? (
+                                      <AlertTriangle className="h-3 w-3 text-yellow-600" />
+                                    ) : (
+                                      <div className="h-3 w-3 rounded-full border-2 border-orange-300" />
+                                    )}
+                                    <Badge variant="outline" className="text-xs px-1">
+                                      {completeness}%
+                                    </Badge>
+                                    
+                                    <button
+                                      onClick={() => toggleSectionVisibility(section.id as any, !isVisible)}
+                                      className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                                        isVisible 
+                                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                      }`}
+                                    >
+                                      {isVisible ? 'ON' : 'OFF'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+
+                        {/* Optional Sections */}
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <div className="h-2 w-2 bg-gray-400 rounded-full mr-2"></div>
+                            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Optional</span>
+                          </div>
+                          {[...sectionGroups.optional, ...sectionGroups.academic].map((section) => {
+                            const completeness = getSectionCompleteness(section.id)
+                            const isVisible = cvData.sectionVisibility?.[section.id as keyof typeof cvData.sectionVisibility] ?? section.defaultVisible
+                            
+                            return (
+                              <div key={section.id} className="mb-1">
+                                <div className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
+                                  selectedSection === section.id 
+                                    ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                    : 'hover:bg-muted border-gray-200 hover:border-gray-300'
+                                }`}>
+                                  <button
+                                    onClick={() => setSelectedSection(section.id)}
+                                    className="flex items-center flex-1"
+                                  >
+                                    <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                                    <span className="font-medium text-sm text-muted-foreground">{section.label}</span>
+                                    {section.priority === 'academic' && (
+                                      <span className="ml-1 text-xs text-purple-600 font-medium">(Academic)</span>
+                                    )}
+                                  </button>
+                                  
+                                  <div className="flex items-center space-x-2">
+                                    {completeness === 100 ? (
+                                      <CheckCircle className="h-3 w-3 text-green-600" />
+                                    ) : completeness > 0 ? (
+                                      <AlertTriangle className="h-3 w-3 text-yellow-600" />
+                                    ) : (
+                                      <div className="h-3 w-3 rounded-full border-2 border-gray-300" />
+                                    )}
+                                    <Badge variant="outline" className="text-xs px-1">
+                                      {completeness}%
+                                    </Badge>
+                                    
+                                    <button
+                                      onClick={() => toggleSectionVisibility(section.id as any, !isVisible)}
+                                      className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                                        isVisible 
+                                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                      }`}
+                                    >
+                                      {isVisible ? 'ON' : 'OFF'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Section Form - Also Scrollable */}
+                      <div className="border-t pt-4">
+                        {renderBuilderContent()}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="preview" className="flex-1 mt-4 data-[state=active]:flex data-[state=active]:flex-col">
+                {/* Mobile Optimized Live Preview */}
+                <div className="flex-1 flex flex-col bg-white rounded-lg border">
+                  {/* Mobile Preview Header */}
+                  <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Eye className="h-5 w-5 mr-2 text-blue-600" />
+                      <span className="font-semibold text-gray-900">Live Preview</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleZoomOut}
+                        disabled={previewZoom <= 75}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm font-medium text-gray-600 min-w-[45px] text-center">
+                        {previewZoom}%
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleZoomIn}
+                        disabled={previewZoom >= 150}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile Preview Content */}
+                  <div className="flex-1 overflow-auto bg-gray-100 p-4 pb-24">
+                    <div className="max-w-sm mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+                      {/* Mobile CV Preview */}
+                      <div className="p-4 space-y-4" style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                        {/* Header */}
+                        <div className="text-center border-b pb-3">
+                          <h1 className="text-lg font-bold text-gray-900">
+                            {cvData.personal.fullName || 'Your Name'}
+                          </h1>
+                          {cvData.personal.title && (
+                            <p className="text-sm text-blue-600 font-medium mt-1">
+                              {cvData.personal.title}
+                            </p>
+                          )}
+                          <div className="text-xs text-gray-600 mt-2 space-y-1">
+                            {cvData.personal.email && (
+                              <div>{cvData.personal.email}</div>
+                            )}
+                            {cvData.personal.phone && (
+                              <div>{cvData.personal.phone}</div>
+                            )}
+                            {cvData.personal.address && (
+                              <div>{cvData.personal.address}</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Summary */}
+                        {(() => {
+                          const summarySection = cvData.sections.find(s => s.type === 'summary')
+                          const isVisible = cvData.sectionVisibility?.summary ?? true
+                          if (summarySection && 'markdown' in summarySection && summarySection.markdown && isVisible) {
+                            return (
+                              <div>
+                                <h3 className="text-sm font-bold text-gray-900 mb-2 border-b">Summary</h3>
+                                <p className="text-xs text-gray-700 leading-relaxed">
+                                  {summarySection.markdown}
+                                </p>
+                              </div>
+                            )
+                          }
+                        })()}
+
+                        {/* Experience */}
+                        {(() => {
+                          const experienceSection = cvData.sections.find(s => s.type === 'experience')
+                          const isVisible = cvData.sectionVisibility?.experience ?? true
+                          if (experienceSection && 'items' in experienceSection && experienceSection.items.length > 0 && isVisible) {
+                            return (
+                              <div>
+                                <h3 className="text-sm font-bold text-gray-900 mb-2 border-b">Experience</h3>
+                                <div className="space-y-3">
+                                  {experienceSection.items.slice(0, 2).map((exp: any, index: number) => (
+                                    <div key={index} className="text-xs">
+                                      <div className="font-semibold text-gray-900">{exp.role}</div>
+                                      <div className="text-blue-600">{exp.company}</div>
+                                      <div className="text-gray-500">{exp.start} - {exp.end || 'Present'}</div>
+                                      {exp.bullets && exp.bullets.length > 0 && (
+                                        <ul className="mt-1 space-y-1">
+                                          {exp.bullets.slice(0, 2).map((bullet: string, i: number) => (
+                                            <li key={i} className="text-gray-700">• {bullet}</li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {experienceSection.items.length > 2 && (
+                                    <div className="text-xs text-gray-500 italic">
+                                      +{experienceSection.items.length - 2} more experience{experienceSection.items.length > 3 ? 's' : ''}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          }
+                        })()}
+
+                        {/* Education */}
+                        {(() => {
+                          const educationSection = cvData.sections.find(s => s.type === 'education')
+                          const isVisible = cvData.sectionVisibility?.education ?? true
+                          if (educationSection && 'items' in educationSection && educationSection.items.length > 0 && isVisible) {
+                            return (
+                              <div>
+                                <h3 className="text-sm font-bold text-gray-900 mb-2 border-b">Education</h3>
+                                <div className="space-y-2">
+                                  {educationSection.items.slice(0, 2).map((edu: any, index: number) => (
+                                    <div key={index} className="text-xs">
+                                      <div className="font-semibold text-gray-900">{edu.degree}</div>
+                                      <div className="text-blue-600">{edu.institution}</div>
+                                      <div className="text-gray-500">{edu.start} - {edu.end || 'Present'}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          }
+                        })()}
+
+                        {/* Skills */}
+                        {(() => {
+                          const skillsSection = cvData.sections.find(s => s.type === 'skills')
+                          const isVisible = cvData.sectionVisibility?.skills ?? true
+                          if (skillsSection && 'items' in skillsSection && skillsSection.items.length > 0 && isVisible) {
+                            return (
+                              <div>
+                                <h3 className="text-sm font-bold text-gray-900 mb-2 border-b">Skills</h3>
+                                <div className="flex flex-wrap gap-1">
+                                  {skillsSection.items.slice(0, 8).map((skill: any, index: number) => (
+                                    <span 
+                                      key={index} 
+                                      className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
+                                    >
+                                      {typeof skill === 'string' ? skill : skill.name}
+                                    </span>
+                                  ))}
+                                  {skillsSection.items.length > 8 && (
+                                    <span className="text-xs text-gray-500">
+                                      +{skillsSection.items.length - 8} more
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          }
+                        })()}
+                      </div>
+                    </div>
+                    
+                    {/* Preview Actions */}
+                    <div className="text-center mt-4 space-y-3">
+                      <div className="text-xs text-gray-500">
+                        This is a simplified mobile preview.
+                      </div>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          size="sm"
+                          onClick={() => setMobilePreviewOpen(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          PDF Preview
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleATSOptimizedDownload}
+                          disabled={isGenerating}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Desktop Layout - Left Sidebar - CV Builder */}
+          <div className="hidden lg:block lg:col-span-4 overflow-hidden">
             <Card className="h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="flex items-center text-lg">
@@ -565,7 +956,7 @@ export function CvBuilderInterface() {
             </Card>
           </div>
 
-          {/* Center - CV Preview - Desktop Only */}
+          {/* Center - CV Preview */}
           <div className={`hidden lg:block ${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'} overflow-hidden`}>
             <Card className="h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0 flex items-center justify-between">
@@ -732,122 +1123,12 @@ export function CvBuilderInterface() {
       </div>
 
       {/* Mobile Preview Modal */}
-      {isMobilePreviewOpen && (
-        <div className="lg:hidden fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex flex-col">
-          <div className="bg-white p-4 flex justify-between items-center shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-900">CV Preview</h2>
-            <button
-              onClick={() => setMobilePreviewOpen(false)}
-              className="text-gray-700 hover:text-gray-900 transition-colors p-1"
-              aria-label="Close preview"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="flex-1 bg-white">
-            {(() => {
-              // Dynamic import for PDFViewer to ensure client-side rendering
-              const [PDFViewer, setPDFViewer] = useState<any>(null)
-              const [PDFTemplate, setPDFTemplate] = useState<any>(null)
-              
-              useEffect(() => {
-                if (typeof window !== 'undefined') {
-                  Promise.all([
-                    import('@react-pdf/renderer').then(mod => mod.PDFViewer),
-                    import('@/components/export/pdf-templates-core').then(mod => mod.PDFTemplate)
-                  ]).then(([viewer, template]) => {
-                    setPDFViewer(() => viewer)
-                    setPDFTemplate(() => template)
-                  }).catch(error => {
-                    console.error('Failed to load PDF components:', error)
-                  })
-                }
-              }, [])
-
-              if (!PDFViewer || !PDFTemplate) {
-                return (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                      <p className="text-gray-600">Loading preview...</p>
-                    </div>
-                  </div>
-                )
-              }
-
-              // Convert CV Builder data to PDF format
-              const experienceSection = cvData.sections.find(s => s.type === 'experience')
-              const educationSection = cvData.sections.find(s => s.type === 'education')
-              const skillsSection = cvData.sections.find(s => s.type === 'skills')
-              const languagesSection = cvData.sections.find(s => s.type === 'languages')
-              
-              const transformedExperience = experienceSection?.items?.map((exp: any) => ({
-                id: exp.id || `exp-${Math.random()}`,
-                company: exp.company,
-                position: exp.role,
-                location: exp.location || '',
-                startDate: exp.start,
-                endDate: exp.end || '',
-                current: exp.end === 'Present' || !exp.end,
-                description: exp.bullets?.join(' • ') || '',
-                role: exp.role,
-                start: exp.start,
-                end: exp.end
-              })) || []
-              
-              const transformedEducation = educationSection?.items?.map((edu: any) => ({
-                id: edu.id || `edu-${Math.random()}`,
-                institution: edu.institution,
-                degree: edu.degree,
-                field: edu.field,
-                location: edu.location || '',
-                startDate: edu.start,
-                endDate: edu.end || '',
-                current: edu.end === 'Present' || !edu.end,
-                grade: edu.grade,
-                start: edu.start,
-                end: edu.end
-              })) || []
-              
-              const transformedLanguages = languagesSection?.items?.map((lang: any) => ({
-                id: lang.id || `lang-${Math.random()}`,
-                name: lang.name,
-                level: lang.proficiency,
-                certification: lang.certification,
-                proficiency: lang.proficiency
-              })) || []
-
-              const cvDataForPDF = {
-                id: cvData.id,
-                personal: {
-                  fullName: cvData.personal.fullName,
-                  email: cvData.personal.email,
-                  phone: cvData.personal.phone,
-                  address: cvData.personal.address,
-                  linkedin: cvData.personal.linkedin,
-                  website: cvData.personal.website,
-                  title: cvData.personal.title,
-                  summary: cvData.sections.find(s => s.type === 'summary')?.markdown,
-                  stamp: cvData.personal.workPermit
-                },
-                experience: transformedExperience,
-                education: transformedEducation,
-                skills: skillsSection?.items || [],
-                languages: transformedLanguages,
-                sections: cvData.sections,
-                sectionVisibility: cvData.sectionVisibility || {},
-                template: template?.id || 'classic'
-              }
-
-              return (
-                <PDFViewer width="100%" height="100%" showToolbar={true}>
-                  <PDFTemplate data={cvDataForPDF} />
-                </PDFViewer>
-              )
-            })()}
-          </div>
-        </div>
-      )}
+      <MobilePDFPreviewModal
+        isOpen={isMobilePreviewOpen}
+        onClose={() => setMobilePreviewOpen(false)}
+        cvData={cvData}
+        template={template}
+      />
     </div>
   )
 }

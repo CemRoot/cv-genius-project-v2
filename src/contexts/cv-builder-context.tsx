@@ -10,7 +10,7 @@ import {
   CvBuilderExperience,
   CvBuilderEducation
 } from '@/types/cv-builder'
-import { CvTemplate } from '@/lib/cv-templates/templates-data'
+import { CvTemplate, cvTemplates, getTemplateById } from '@/lib/cv-templates/templates-data'
 import { useGeneratePdf } from '@/hooks/use-generate-pdf'
 
 // Action types for CV builder state management
@@ -351,7 +351,7 @@ function cvBuilderReducer(state: CvBuilderState, action: CvBuilderAction): CvBui
       return {
         ...state,
         document: createDefaultCvBuilderDocument(),
-        template: null,
+        template: cvTemplates[0] || null, // Use first available template as default
         hasUnsavedChanges: false,
         error: null
       }
@@ -407,7 +407,7 @@ export function CvBuilderProvider({
 
   const [state, dispatch] = useReducer(cvBuilderReducer, {
     document: createInitialDocument(),
-    template: template || null,
+    template: template || cvTemplates[0] || null, // Use first available template as default
     isSaving: false,
     hasUnsavedChanges: false,
     error: null,

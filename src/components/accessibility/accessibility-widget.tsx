@@ -23,16 +23,6 @@ interface AccessibilityWidgetProps {
 export default function AccessibilityWidget({ className }: AccessibilityWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
-  
-  // Hide accessibility widget on CV Builder pages to avoid conflicts with Speed Dial FAB
-  const isHiddenPage = pathname?.startsWith('/cv-builder') || 
-                       pathname?.startsWith('/builder') ||
-                       pathname?.includes('cv-builder')
-  
-  // Don't render on CV Builder pages
-  if (isHiddenPage) {
-    return null
-  }
   const {
     preferences,
     togglePreference,
@@ -42,6 +32,16 @@ export default function AccessibilityWidget({ className }: AccessibilityWidgetPr
     shouldUseHighContrast,
     isUsingScreenReader
   } = useAccessibility()
+  
+  // Hide accessibility widget on CV Builder pages to avoid conflicts with Speed Dial FAB
+  const isHiddenPage = pathname?.startsWith('/cv-builder') || 
+                       pathname?.startsWith('/builder') ||
+                       pathname?.includes('cv-builder')
+  
+  // Don't render on CV Builder pages (after all hooks are called)
+  if (isHiddenPage) {
+    return null
+  }
 
   const handleToggle = (key: keyof typeof preferences, label: string) => {
     togglePreference(key)
