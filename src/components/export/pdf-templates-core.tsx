@@ -540,7 +540,7 @@ export function ModernTemplate({ data }: { data: CVData }) {
                     {edu.degree} in {edu.field}
                   </Text>
                   <Text style={modernStyles.jobMeta}>
-                    {edu.school} • {formatIrishDate(edu.startDate)} - {edu.current ? 'Present' : formatIrishDate(edu.endDate)}
+                    {edu.institution} • {formatIrishDate(edu.startDate)} - {edu.current ? 'Present' : formatIrishDate(edu.endDate)}
                   </Text>
                 </View>
                 {edu.description && (
@@ -571,8 +571,8 @@ export function ModernTemplate({ data }: { data: CVData }) {
             <Text style={modernStyles.sectionTitle}>Languages</Text>
             {data.languages.map((lang, index) => (
               <View key={index} style={modernStyles.languageItem}>
-                <Text style={modernStyles.languageName}>{lang.language}</Text>
-                <Text style={modernStyles.languageLevel}>{lang.proficiency}</Text>
+                <Text style={modernStyles.languageName}>{lang.name}</Text>
+                <Text style={modernStyles.languageLevel}>{lang.level}</Text>
               </View>
             ))}
           </View>
@@ -718,8 +718,8 @@ export function ClassicTemplate({ data }: { data: CVData }) {
             <Text style={classicStyles.sectionTitle}>LANGUAGES</Text>
             {data.languages.map((lang, index) => (
               <View key={index} style={classicStyles.languageItem}>
-                <Text style={classicStyles.languageName}>{lang.language}</Text>
-                <Text style={classicStyles.languageLevel}>{lang.proficiency}</Text>
+                <Text style={classicStyles.languageName}>{lang.name}</Text>
+                <Text style={classicStyles.languageLevel}>{lang.level}</Text>
               </View>
             ))}
           </View>
@@ -821,7 +821,7 @@ export function CreativeTemplate({ data }: { data: CVData }) {
                     {edu.degree} in {edu.field}
                   </Text>
                   <Text style={creativeStyles.jobMeta}>
-                    {edu.school} • {formatIrishDate(edu.startDate)} - {edu.current ? 'Present' : formatIrishDate(edu.endDate)}
+                    {edu.institution} • {formatIrishDate(edu.startDate)} - {edu.current ? 'Present' : formatIrishDate(edu.endDate)}
                   </Text>
                 </View>
                 {edu.description && (
@@ -852,8 +852,8 @@ export function CreativeTemplate({ data }: { data: CVData }) {
             <Text style={creativeStyles.sectionTitle}>Languages</Text>
             {data.languages.map((lang, index) => (
               <View key={index} style={creativeStyles.languageItem}>
-                <Text style={creativeStyles.languageName}>{lang.language}</Text>
-                <Text style={creativeStyles.languageLevel}>{lang.proficiency}</Text>
+                <Text style={creativeStyles.languageName}>{lang.name}</Text>
+                <Text style={creativeStyles.languageLevel}>{lang.level}</Text>
               </View>
             ))}
           </View>
@@ -951,7 +951,7 @@ export function HarvardTemplate({ data }: { data: CVData }) {
                     {edu.degree} in {edu.field}
                   </Text>
                   <Text style={harvardStyles.jobMeta}>
-                    {edu.school} • {formatIrishDate(edu.startDate)} - {edu.current ? 'Present' : formatIrishDate(edu.endDate)}
+                    {edu.institution} • {formatIrishDate(edu.startDate)} - {edu.current ? 'Present' : formatIrishDate(edu.endDate)}
                   </Text>
                 </View>
                 {edu.description && (
@@ -982,8 +982,8 @@ export function HarvardTemplate({ data }: { data: CVData }) {
             <Text style={harvardStyles.sectionTitle}>Languages</Text>
             {data.languages.map((lang, index) => (
               <View key={index} style={harvardStyles.languageItem}>
-                <Text style={harvardStyles.languageName}>{lang.language}</Text>
-                <Text style={harvardStyles.languageLevel}>{lang.proficiency}</Text>
+                <Text style={harvardStyles.languageName}>{lang.name}</Text>
+                <Text style={harvardStyles.languageLevel}>{lang.level}</Text>
               </View>
             ))}
           </View>
