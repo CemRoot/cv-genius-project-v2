@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { PDFDocument, PDFPage, StandardFonts, rgb, PDFFont } from 'pdf-lib'
 import { CvBuilderDocument } from '@/types/cv-builder'
+import { getOrderedSections, getSectionLabel } from '@/lib/cv-section-utils'
 
 interface PDFGenerationOptions {
   template?: 'classic' | 'modern' | 'minimal'
@@ -205,12 +206,19 @@ export function useGeneratePdf() {
     console.log('PDF Generation - Section Visibility:', cvData.sectionVisibility)
     console.log('PDF Generation - Sections:', cvData.sections.map(s => ({ type: s.type, hasItems: 'items' in s ? s.items.length : 'N/A' })))
     
-    // Header - Name and Title
+    // ATS-friendly metadata
+    doc.setTitle(`${cvData.personal.fullName} - CV`)
+    doc.setAuthor(cvData.personal.fullName)
+    doc.setSubject('Curriculum Vitae - ATS Optimized')
+    doc.setCreator('CVGenius - ATS Optimized Export')
+    doc.setProducer('CVGenius Dublin CV Builder')
+    
+    // Header - Name and Title (ATS Priority)
     updateProgress(20, 'Adding header information')
     currentY = drawText(page, cvData.personal.fullName.toUpperCase(), margin, currentY, {
       font: fonts.bold,
       size: options.fontSize!.name,
-      color: options.colors!.primary
+      color: [0, 0, 0] // Pure black for ATS compatibility
     })
     
     currentY -= 8
@@ -219,13 +227,13 @@ export function useGeneratePdf() {
       currentY = drawText(page, cvData.personal.title, margin, currentY, {
         font: fonts.regular,
         size: options.fontSize!.title,
-        color: options.colors!.text
+        color: [0, 0, 0] // Pure black for ATS compatibility
       })
     }
     
     currentY -= 15
     
-    // Contact Information
+    // Contact Information - ATS-friendly format
     const contactInfo = [
       cvData.personal.email,
       cvData.personal.phone ? formatIrishPhone(cvData.personal.phone) : '',
@@ -235,16 +243,31 @@ export function useGeneratePdf() {
     currentY = drawText(page, contactInfo, margin, currentY, {
       font: fonts.regular,
       size: options.fontSize!.small,
-      color: options.colors!.text
+      color: [0, 0, 0] // Pure black for ATS compatibility
     })
+    
+    // Add LinkedIn and website if available
+    const additionalInfo = [
+      cvData.personal.linkedin,
+      cvData.personal.website
+    ].filter(Boolean).join('  •  ')
+    
+    if (additionalInfo) {
+      currentY -= 10
+      currentY = drawText(page, additionalInfo, margin, currentY, {
+        font: fonts.regular,
+        size: options.fontSize!.small,
+        color: [0, 0, 0]
+      })
+    }
     
     currentY -= 20
     
-    // Draw header line
+    // Simple separator line (ATS-friendly)
     page.drawLine({
       start: { x: margin, y: currentY },
       end: { x: width - margin, y: currentY },
-      thickness: 2,
+      thickness: 1,
       color: rgb(0, 0, 0)
     })
     
@@ -253,17 +276,12 @@ export function useGeneratePdf() {
     // Sections
     updateProgress(40, 'Adding CV sections')
     
-    // Filter visible sections first
-    const visibleSections = cvData.sections.filter(section => {
-      // Check section visibility
-      const sectionVisibility = cvData.sectionVisibility || {}
-      const isVisible = sectionVisibility[section.type as keyof typeof sectionVisibility] ?? true
-      
-      // Skip non-visible sections
-      if (!isVisible) {
-        console.log(`PDF Generation - Skipping ${section.type} (visibility: false)`)
-        return false
-      }
+    // Get ordered and visible sections using new utility
+    const orderedSectionConfigs = getOrderedSections(cvData.sectionVisibility)
+    const visibleSections = orderedSectionConfigs.map(config => {
+      return cvData.sections.find(section => section.type === config.id)
+    }).filter(section => {
+      if (!section) return false
       
       // Skip empty sections (except references in on-request mode)
       if (section.type === 'summary' && (!section.markdown || section.markdown.trim() === '')) {
@@ -327,7 +345,7 @@ export function useGeneratePdf() {
         currentY = await addSectionToPage(page, section, fonts, options, margin, contentWidth, currentY, cvData)
       }
     }
-  }, [drawText, formatIrishPhone, updateProgress])
+  }, [drawText, formatIrishPhone, updateProgress, getOrderedSections, getSectionLabel])
 
   const addSectionToPage = useCallback(async (
     page: PDFPage,
@@ -342,7 +360,7 @@ export function useGeneratePdf() {
     const { width } = page.getSize()
     
     // Section title
-    const sectionTitle = getSectionTitle(section.type)
+    const sectionTitle = getSectionLabel(section.type)
     currentY = drawText(page, sectionTitle.toUpperCase(), margin, currentY, {
       font: fonts.bold,
       size: options.fontSize!.section,
@@ -486,14 +504,14 @@ export function useGeneratePdf() {
       case 'languages':
         const languageLines: string[] = []
         for (const lang of section.items) {
-          const proficiencyMap = {
+          const proficiencyMap: Record<string, string> = {
             'native': 'Native',
             'fluent': 'Fluent',
             'professional': 'Professional',
             'intermediate': 'Intermediate',
             'basic': 'Basic'
           }
-          const langText = `${lang.name} - ${proficiencyMap[lang.proficiency]}${lang.certification ? ` (${lang.certification})` : ''}`
+          const langText = `${lang.name} - ${proficiencyMap[lang.proficiency] || lang.proficiency}${lang.certification ? ` (${lang.certification})` : ''}`
           languageLines.push(langText)
         }
         currentY = drawText(page, languageLines.join(' • '), margin, currentY, {
@@ -607,11 +625,13 @@ export function useGeneratePdf() {
               color: options.colors!.accent
             })
             
-            currentY = drawText(page, formatIrishPhone(ref.phone), margin, currentY, {
-              font: fonts.regular,
-              size: options.fontSize!.small,
-              color: options.colors!.accent
-            })
+            if (ref.phone) {
+              currentY = drawText(page, formatIrishPhone(ref.phone), margin, currentY, {
+                font: fonts.regular,
+                size: options.fontSize!.small,
+                color: options.colors!.accent
+              })
+            }
             
             if (ref.relationship) {
               currentY = drawText(page, ref.relationship, margin, currentY, {
@@ -629,28 +649,14 @@ export function useGeneratePdf() {
     
     currentY -= 15  // Reduced spacing between sections
     return currentY
-  }, [drawText, formatDate, formatIrishPhone])
-
-  const getSectionTitle = useCallback((type: string): string => {
-    switch (type) {
-      case 'summary': return 'Professional Summary'
-      case 'experience': return 'Work Experience'
-      case 'education': return 'Education'
-      case 'skills': return 'Skills'
-      case 'certifications': return 'Certifications'
-      case 'languages': return 'Languages'
-      case 'volunteer': return 'Volunteer Experience'
-      case 'awards': return 'Awards & Achievements'
-      case 'publications': return 'Publications'
-      case 'references': return 'References'
-      default: return type.charAt(0).toUpperCase() + type.slice(1)
-    }
-  }, [])
+  }, [drawText, formatDate, formatIrishPhone, getSectionLabel])
 
   const generatePdf = useCallback(async (
     cvData: CvBuilderDocument,
     options: Partial<PDFGenerationOptions> = {}
   ): Promise<GeneratePDFResult> => {
+    console.log('generatePdf called with:', { cvData, options })
+    
     setState({
       isGenerating: true,
       progress: 0,
@@ -663,12 +669,14 @@ export function useGeneratePdf() {
       
       updateProgress(10, 'Creating PDF document')
       const pdfDoc = await PDFDocument.create()
+      console.log('PDF document created')
       
       updateProgress(15, 'Loading fonts')
       const fonts: FontSet = {
         regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
         bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold)
       }
+      console.log('Fonts loaded')
       
       switch (mergedOptions.template) {
         case 'classic':
@@ -676,13 +684,16 @@ export function useGeneratePdf() {
           await generateClassicTemplate(pdfDoc, cvData, fonts, mergedOptions)
           break
       }
+      console.log('Template generated')
       
       updateProgress(80, 'Generating PDF bytes')
       const pdfBytes = await pdfDoc.save()
+      console.log('PDF bytes generated, size:', pdfBytes.length)
       
       updateProgress(90, 'Creating download blob')
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
+      console.log('Blob URL created:', url)
       
       updateProgress(100, 'Complete')
       
@@ -701,6 +712,7 @@ export function useGeneratePdf() {
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'PDF generation failed'
+      console.error('PDF generation error:', error)
       
       setState({
         isGenerating: false,

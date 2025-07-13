@@ -46,7 +46,7 @@ export function TemplatePreview({ template, className = '' }: TemplatePreviewPro
                       style={{ color: styling.primaryColor }}>
                     {summarySection.title}
                   </h2>
-                  <p className="text-xs leading-relaxed text-gray-700">
+                  <p className="text-xs leading-relaxed text-gray-700" style={{ textAlign: 'justify', hyphens: 'auto', WebkitHyphens: 'auto' }}>
                     {typeof summarySection.content === 'string' ? 
                       summarySection.content : ''}
                   </p>
@@ -254,7 +254,7 @@ export function TemplatePreview({ template, className = '' }: TemplatePreviewPro
                 <h2 className="text-sm font-semibold mb-1" style={{ color: styling.primaryColor }}>
                   {summarySection.title}
                 </h2>
-                <p className="text-xs leading-relaxed">
+                <p className="text-xs leading-relaxed" style={{ textAlign: 'justify', hyphens: 'auto', WebkitHyphens: 'auto' }}>
                   {typeof summarySection.content === 'string' ? 
                     summarySection.content : ''}
                 </p>

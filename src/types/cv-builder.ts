@@ -8,6 +8,9 @@ export interface CvBuilderPersonal {
   email: string
   phone: string   // +353 format
   address: string // Dublin, Ireland format
+  workPermit?: string // e.g., "Stamp 1", "Stamp 2", "Stamp 3", "Stamp 4", "EU Citizen"
+  linkedin?: string // LinkedIn profile URL
+  website?: string // Personal website URL
 }
 
 export interface CvBuilderExperience {
@@ -32,7 +35,7 @@ export interface CvBuilderReference {
   title: string
   company: string
   email: string
-  phone: string
+  phone?: string
   relationship?: string
 }
 
@@ -137,7 +140,55 @@ export const CvBuilderPersonalSchema = z.object({
   address: z.string()
     .min(5, 'Address must be at least 5 characters')
     .max(200, 'Address must be less than 200 characters')
-    .regex(dublinAddressRegex, 'Address must include Dublin and Ireland (e.g., "Dublin 2, Ireland")')
+    .regex(dublinAddressRegex, 'Address must include Dublin and Ireland (e.g., "Dublin 2, Ireland")'),
+  
+  workPermit: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string()
+      .max(50, 'Work permit status must be less than 50 characters')
+      .optional()
+  ),
+  
+  linkedin: z.preprocess(
+    (val) => {
+      if (val === '' || val === undefined || val === null) return undefined;
+      // Auto-prepend https:// if not present
+      let url = val as string;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      // Auto-prepend www. if not present
+      if (url.startsWith('https://linkedin.com') || url.startsWith('http://linkedin.com')) {
+        url = url.replace('://linkedin.com', '://www.linkedin.com');
+      }
+      // Auto-add /in/ if not present
+      if (!url.includes('/in/') && url.includes('linkedin.com/')) {
+        url = url.replace('linkedin.com/', 'linkedin.com/in/');
+      }
+      return url;
+    },
+    z.string()
+      .url('Please enter a valid LinkedIn URL')
+      .regex(/^https:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/, 'Please enter a valid LinkedIn profile URL (e.g., linkedin.com/in/yourname)')
+      .max(200, 'LinkedIn URL must be less than 200 characters')
+      .optional()
+  ),
+  
+  website: z.preprocess(
+    (val) => {
+      if (val === '' || val === undefined || val === null) return undefined;
+      // Auto-prepend https:// if not present
+      let url = val as string;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      return url;
+    },
+    z.string()
+      .url('Please enter a valid website URL')
+      .max(200, 'Website URL must be less than 200 characters')
+      .optional()
+  )
 })
 
 export const CvBuilderExperienceSchema = z.object({
@@ -206,7 +257,8 @@ export const CvBuilderReferenceSchema = z.object({
     .max(100, 'Email must be less than 100 characters'),
   
   phone: z.string()
-    .regex(irishPhoneRegex, 'Please enter a valid Irish phone number in format +353 XX XXX XXXX'),
+    .regex(irishPhoneRegex, 'Please enter a valid Irish phone number in format +353 XX XXX XXXX')
+    .optional(),
   
   relationship: z.string()
     .max(100, 'Relationship must be less than 100 characters')
@@ -367,20 +419,28 @@ export const CvBuilderSectionSchema = z.discriminatedUnion('type', [
 ])
 
 export const CvBuilderDocumentSchema = z.object({
-  id: z.string().uuid('Invalid document ID format'),
+  id: z.string(),
   
-  updatedAt: z.string()
-    .datetime('Invalid timestamp format'),
+  updatedAt: z.string(),
   
   personal: CvBuilderPersonalSchema,
   
   sections: z.array(CvBuilderSectionSchema)
-    .min(3, 'CV must include at least 3 sections (summary, experience, education)')
-    .max(6, 'Maximum 6 sections allowed for ATS compliance')
-    .refine((sections) => {
-      const types = sections.map(s => s.type)
-      return types.includes('summary') && types.includes('experience') && types.includes('education')
-    }, 'CV must include summary, experience, and education sections')
+    .min(3, 'CV must include at least 3 sections')
+    .max(12, 'Maximum 12 sections allowed'),
+  
+  sectionVisibility: z.object({
+    summary: z.boolean().optional(),
+    experience: z.boolean().optional(),
+    education: z.boolean().optional(),
+    skills: z.boolean().optional(),
+    certifications: z.boolean().optional(),
+    languages: z.boolean().optional(),
+    volunteer: z.boolean().optional(),
+    awards: z.boolean().optional(),
+    publications: z.boolean().optional(),
+    references: z.boolean().optional()
+  }).optional()
 })
 
 // Dublin/Irish specific validation helpers

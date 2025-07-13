@@ -1,172 +1,601 @@
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCvBuilder } from '@/contexts/cv-builder-context'
-import { CvBuilderSidebar } from './cv-builder-sidebar'
+import React, { useState, useEffect } from 'react'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { 
+  FileText, 
+  Eye, 
+  Download, 
+  Settings, 
+  Zap,
+  Bot,
+  Target,
+  CheckCircle,
+  AlertTriangle,
+  ZoomIn,
+  ZoomOut,
+  RotateCw
+} from 'lucide-react'
+
+// Import existing components
 import { CvBuilderPreview } from './cv-builder-preview'
-import { CvBuilderToolbar } from './cv-builder-toolbar'
+import { PersonalInfoForm } from './forms/personal-info-form'
+import { ExperienceForm } from './forms/experience-form'
+import { EducationForm } from './forms/education-form'
+import { SkillsForm } from './forms/skills-form'
+import { SummaryForm } from './forms/summary-form'
+import { LanguagesForm } from './forms/languages-form'
+import { CertificationsForm } from './forms/certifications-form'
+import { ReferencesForm } from './forms/references-form'
+import { AwardsForm } from './forms/awards-form'
+import { PublicationsForm } from './forms/publications-form'
+import { VolunteerForm } from './forms/volunteer-form'
 import { AutoSaveStatus } from './auto-save-status'
-import { ErrorBoundary } from 'react-error-boundary'
 
-function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
-  return (
-    <div className="flex items-center justify-center min-h-[400px] bg-red-50 rounded-lg border border-red-200">
-      <div className="text-center p-6">
-        <h2 className="text-lg font-semibold text-red-900 mb-2">
-          Something went wrong
-        </h2>
-        <p className="text-red-700 mb-4 max-w-md">
-          {error.message || 'An unexpected error occurred while building your CV.'}
-        </p>
-        <button
-          onClick={resetErrorBoundary}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  )
-}
+// Import new ATS components
+import { ATSOptimizationPanel } from './ats-optimization-panel'
+
+// Context and hooks
+import { useCvBuilder } from '@/contexts/cv-builder-context'
+import { useGeneratePdf } from '@/hooks/use-generate-pdf'
+import { groupSectionsByPriority, getSectionConfig } from '@/lib/cv-section-utils'
 
 export function CvBuilderInterface() {
-  const router = useRouter()
-  const { error, hasUnsavedChanges, isSaving } = useCvBuilder()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeSection, setActiveSection] = useState<'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'certifications' | 'languages' | 'volunteer' | 'awards' | 'publications' | 'references'>('personal')
+  const { 
+    document: cvData, 
+    updatePersonal, 
+    updateSection,
+    toggleSectionVisibility,
+    template,
+    hasUnsavedChanges,
+    isSaving,
+    lastSaved 
+  } = useCvBuilder()
 
-  const handleBack = () => {
-    // If there are unsaved changes, ask for confirmation
-    if (hasUnsavedChanges) {
-      const confirmLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?')
-      if (!confirmLeave) return
+  const { generatePdf, downloadPdf, isGenerating, progress, error: pdfError } = useGeneratePdf()
+
+  // State for interface
+  const [activeTab, setActiveTab] = useState('builder')
+  const [selectedSection, setSelectedSection] = useState('personal')
+  const [showATSPanel, setShowATSPanel] = useState(false)
+  const [atsOptimizationSuggestions, setATSOptimizationSuggestions] = useState<string[]>([])
+  const [jobDescription, setJobDescription] = useState('')
+  const [targetIndustry, setTargetIndustry] = useState('technology')
+  const [previewZoom, setPreviewZoom] = useState(100)
+
+  // Handle ATS optimization suggestions
+  const handleATSOptimizationChange = (suggestions: string[]) => {
+    setATSOptimizationSuggestions(suggestions)
+  }
+
+  // Handle zoom controls
+  const handleZoomIn = () => {
+    setPreviewZoom(prev => Math.min(prev + 10, 200))
+  }
+
+  const handleZoomOut = () => {
+    setPreviewZoom(prev => Math.max(prev - 10, 50))
+  }
+
+  const handleZoomReset = () => {
+    setPreviewZoom(100)
+  }
+
+  // Add keyboard shortcuts for zoom
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === '+' || e.key === '=') {
+          e.preventDefault()
+          setPreviewZoom(prev => Math.min(prev + 10, 200))
+        } else if (e.key === '-') {
+          e.preventDefault()
+          setPreviewZoom(prev => Math.max(prev - 10, 50))
+        } else if (e.key === '0') {
+          e.preventDefault()
+          setPreviewZoom(100)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Generate and download PDF using React-PDF templates
+  const handleATSOptimizedDownload = async () => {
+    // Ensure this only runs on client-side
+    if (typeof window === 'undefined') {
+      console.error('PDF download attempted on server-side')
+      return
     }
     
-    // Try to go back in history, or fallback to home page
-    if (window.history.length > 1) {
-      router.back()
-    } else {
-      router.push('/')
+    console.log('Starting PDF download...')
+    console.log('CV Data:', cvData)
+    console.log('Selected Template:', template?.id || 'classic')
+    
+    try {
+      // Dynamic import with proper client-side check
+      const { exportCVToPDF } = await import('@/lib/pdf-export-service')
+      
+      // Convert CV Builder data to CVData format for React-PDF
+      const cvDataForPDF = {
+        id: cvData.id,
+        personal: {
+          fullName: cvData.personal.fullName,
+          email: cvData.personal.email,
+          phone: cvData.personal.phone,
+          address: cvData.personal.address,
+          linkedin: cvData.personal.linkedin,
+          website: cvData.personal.website,
+          title: cvData.personal.title,
+          summary: cvData.sections.find(s => s.type === 'summary')?.markdown
+        },
+        experience: cvData.sections.find(s => s.type === 'experience')?.items || [],
+        education: cvData.sections.find(s => s.type === 'education')?.items || [],
+        skills: cvData.sections.find(s => s.type === 'skills')?.items || [],
+        languages: cvData.sections.find(s => s.type === 'languages')?.items || [],
+        certifications: cvData.sections.find(s => s.type === 'certifications')?.items || [],
+        projects: [],
+        interests: [],
+        references: cvData.sections.find(s => s.type === 'references')?.items || [],
+        sections: cvData.sections,
+        sectionVisibility: cvData.sectionVisibility || {}, // Include section visibility
+        template: template?.id || 'classic', // Use selected template ID
+        lastModified: cvData.updatedAt || new Date().toISOString(),
+        version: 1
+      } as any // Type assertion for compatibility
+      
+      console.log('🎯 Using Template ID for PDF:', template?.id || 'classic')
+      
+      // Use React-PDF export service with correct template
+      await exportCVToPDF(cvDataForPDF, {
+        filename: `${cvData.personal.fullName || 'CV'}_${template?.id || 'classic'}.pdf`,
+        quality: 'high',
+        enableOptimization: true,
+        templateId: template?.id || 'classic'
+      })
+      
+      console.log('✅ PDF downloaded successfully with template:', template?.id || 'classic')
+      
+    } catch (error) {
+      console.error('❌ PDF generation failed:', error)
+      alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  // Show error state if there's an error
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">
-              Error
-            </h3>
-            <div className="mt-2 text-sm text-red-700">
-              <p>{error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  const renderBuilderContent = () => {
+    switch (selectedSection) {
+      case 'personal':
+        return <PersonalInfoForm />
+      case 'summary':
+        return <SummaryForm />
+      case 'experience':
+        return <ExperienceForm />
+      case 'education':
+        return <EducationForm />
+      case 'skills':
+        return <SkillsForm />
+      case 'languages':
+        return <LanguagesForm />
+      case 'certifications':
+        return <CertificationsForm />
+      case 'references':
+        return <ReferencesForm />
+      case 'awards':
+        return <AwardsForm />
+      case 'publications':
+        return <PublicationsForm />
+      case 'volunteer':
+        return <VolunteerForm />
+      default:
+        return <PersonalInfoForm />
+    }
   }
 
-  return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Compact Header Bar */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              {/* Left Section - Navigation & Title */}
-              <div className="flex items-center space-x-3">
-                {/* Back Button */}
-                <button
-                  onClick={handleBack}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors text-sm"
-                  title="Go back"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span className="hidden sm:inline">Back</span>
-                </button>
-                
-                {/* Mobile Sidebar Toggle */}
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                  title="Toggle sidebar"
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-                
-                <div className="flex items-center space-x-2.5">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Dublin CV Builder
-                    </h2>
-                    <p className="text-xs text-gray-500 hidden sm:block">
-                      ATS-optimized professional CV
-                    </p>
-                  </div>
-                </div>
-              </div>
+  const getSectionCompleteness = (sectionType: string) => {
+    switch (sectionType) {
+      case 'personal':
+        const personal = cvData.personal
+        const requiredFields = ['fullName', 'email', 'phone', 'address']
+        const filledFields = requiredFields.filter(field => personal[field as keyof typeof personal])
+        return Math.round((filledFields.length / requiredFields.length) * 100)
+      
+      case 'summary':
+        const summarySection = cvData.sections.find(s => s.type === 'summary')
+        return summarySection && 'markdown' in summarySection && summarySection.markdown ? 100 : 0
+      
+      case 'experience':
+        const experienceSection = cvData.sections.find(s => s.type === 'experience')
+        return experienceSection && 'items' in experienceSection && experienceSection.items.length > 0 ? 100 : 0
+      
+      case 'education':
+        const educationSection = cvData.sections.find(s => s.type === 'education')
+        return educationSection && 'items' in educationSection && educationSection.items.length > 0 ? 100 : 0
+      
+      case 'skills':
+        const skillsSection = cvData.sections.find(s => s.type === 'skills')
+        return skillsSection && 'items' in skillsSection && skillsSection.items.length >= 3 ? 100 : 0
+      
+      case 'languages':
+        const languagesSection = cvData.sections.find(s => s.type === 'languages')
+        return languagesSection && 'items' in languagesSection && languagesSection.items.length > 0 ? 100 : 0
+      
+      case 'certifications':
+        const certificationsSection = cvData.sections.find(s => s.type === 'certifications')
+        return certificationsSection && 'items' in certificationsSection && certificationsSection.items.length > 0 ? 100 : 0
+      
+      case 'references':
+        const referencesSection = cvData.sections.find(s => s.type === 'references')
+        return referencesSection && 'items' in referencesSection && referencesSection.items.length > 0 ? 100 : 0
+      
+      case 'awards':
+        const awardsSection = cvData.sections.find(s => s.type === 'awards')
+        return awardsSection && 'items' in awardsSection && awardsSection.items.length > 0 ? 100 : 0
+      
+      case 'publications':
+        const publicationsSection = cvData.sections.find(s => s.type === 'publications')
+        return publicationsSection && 'items' in publicationsSection && publicationsSection.items.length > 0 ? 100 : 0
+      
+      case 'volunteer':
+        const volunteerSection = cvData.sections.find(s => s.type === 'volunteer')
+        return volunteerSection && 'items' in volunteerSection && volunteerSection.items.length > 0 ? 100 : 0
+      
+      default:
+        return 0
+    }
+  }
 
-              {/* Right Section - Status & Actions */}
-              <div className="flex items-center space-x-2">
-                {/* Auto-save Status */}
-                <div className="hidden sm:block">
-                  <AutoSaveStatus isSaving={isSaving} hasUnsavedChanges={hasUnsavedChanges} />
-                </div>
-                
-                {/* Action Buttons */}
-                <CvBuilderToolbar />
-              </div>
+  // Get sections organized by priority
+  const sectionGroups = groupSectionsByPriority()
+  const allSections = [...sectionGroups.essential, ...sectionGroups.important, ...sectionGroups.optional, ...sectionGroups.academic]
+
+  return (
+    <div className="h-screen bg-muted flex flex-col overflow-hidden">
+      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col p-4 overflow-hidden">
+        {/* Header */}
+        <div className="mb-4 flex-shrink-0">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">CV Builder</h1>
+              <p className="text-sm text-muted-foreground">Create an ATS-optimized professional CV</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <AutoSaveStatus 
+                hasUnsavedChanges={hasUnsavedChanges}
+                isSaving={isSaving}
+              />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowATSPanel(!showATSPanel)}
+                className={showATSPanel ? 'bg-blue-50 border-blue-300' : ''}
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                ATS Check
+              </Button>
+              <Button size="sm" onClick={handleATSOptimizedDownload} disabled={isGenerating}>
+                <Download className="h-4 w-4 mr-2" />
+                {isGenerating ? 'Generating...' : 'Download'}
+              </Button>
             </div>
           </div>
-          
-          {/* Mobile Status Bar */}
-          <div className="sm:hidden px-4 pb-2">
-            <AutoSaveStatus isSaving={isSaving} hasUnsavedChanges={hasUnsavedChanges} />
-          </div>
+
+          {/* ATS Optimization Suggestions */}
+          {atsOptimizationSuggestions.length > 0 && (
+            <Alert className="mb-4 border-blue-200 bg-blue-50">
+              <Target className="h-4 w-4" />
+              <AlertDescription>
+                <strong>ATS Tips:</strong>
+                <ul className="mt-1 space-y-1">
+                  {atsOptimizationSuggestions.slice(0, 2).map((suggestion, index) => (
+                    <li key={index} className="text-xs">• {suggestion}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
-        {/* Main Content - Two Column Layout */}
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)]">
-          {/* Sidebar - Optimized Width */}
-          <div
-            className={`transition-all duration-300 border-gray-200 overflow-y-auto overflow-x-hidden bg-gray-50
-              ${sidebarOpen ? 'border-b lg:border-b-0 lg:border-r' : ''}
-              ${sidebarOpen ? 'max-h-[50vh] lg:max-h-none' : 'h-0 lg:h-auto'}
-              ${sidebarOpen ? 'w-full lg:w-[480px] xl:w-[520px]' : 'w-0'}`}
-          >
-            {/* Render sidebar content only when width is visible to avoid tab order issues */}
-            {sidebarOpen && (
-              <CvBuilderSidebar
-                activeSection={activeSection}
-                onSectionChange={setActiveSection}
-              />
-            )}
+        {/* Main Content */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
+          {/* Left Sidebar - CV Builder */}
+          <div className="lg:col-span-4 overflow-hidden">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="pb-3 flex-shrink-0">
+                <CardTitle className="flex items-center text-lg">
+                  <FileText className="h-5 w-5 mr-2" />
+                  CV Builder
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
+                {/* Section Navigation - Scrollable */}
+                <div className="overflow-y-auto p-6 pt-0 flex-1 min-h-0">
+                  <div className="space-y-1 mb-4">
+                    {/* Essential Sections */}
+                    <div className="mb-3">
+                      <div className="flex items-center mb-2">
+                        <div className="h-2 w-2 bg-red-500 rounded-full mr-2"></div>
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Essential</span>
+                      </div>
+                      {sectionGroups.essential.map((section) => {
+                        const completeness = getSectionCompleteness(section.id)
+                        const isVisible = cvData.sectionVisibility?.[section.id as keyof typeof cvData.sectionVisibility] ?? section.defaultVisible
+                        
+                        return (
+                          <div key={section.id} className="mb-1">
+                            <div className={`flex items-center justify-between p-2 rounded-lg border-2 transition-all ${
+                              selectedSection === section.id 
+                                ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                : 'hover:bg-muted border-red-200 hover:border-red-300'
+                            }`}>
+                              <button
+                                onClick={() => setSelectedSection(section.id)}
+                                className="flex items-center flex-1"
+                              >
+                                <FileText className="h-4 w-4 mr-2 text-red-600" />
+                                <span className="font-semibold text-sm text-foreground">{section.label}</span>
+                              </button>
+                              
+                              <div className="flex items-center space-x-2">
+                                {completeness === 100 ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                ) : completeness > 0 ? (
+                                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                ) : (
+                                  <div className="h-4 w-4 rounded-full border-2 border-red-300" />
+                                )}
+                                <Badge variant="outline" className="text-xs px-1.5 font-medium">
+                                  {completeness}%
+                                </Badge>
+                                
+                                <button
+                                  onClick={() => toggleSectionVisibility(section.id as any, !isVisible)}
+                                  className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                                    isVisible 
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                      : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                  }`}
+                                >
+                                  {isVisible ? 'ON' : 'OFF'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Important Sections */}
+                    <div className="mb-3">
+                      <div className="flex items-center mb-2">
+                        <div className="h-2 w-2 bg-orange-500 rounded-full mr-2"></div>
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Important</span>
+                      </div>
+                      {sectionGroups.important.map((section) => {
+                        const completeness = getSectionCompleteness(section.id)
+                        const isVisible = cvData.sectionVisibility?.[section.id as keyof typeof cvData.sectionVisibility] ?? section.defaultVisible
+                        
+                        return (
+                          <div key={section.id} className="mb-1">
+                            <div className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
+                              selectedSection === section.id 
+                                ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                : 'hover:bg-muted border-orange-200 hover:border-orange-300'
+                            }`}>
+                              <button
+                                onClick={() => setSelectedSection(section.id)}
+                                className="flex items-center flex-1"
+                              >
+                                <FileText className="h-4 w-4 mr-2 text-orange-600" />
+                                <span className="font-medium text-sm text-gray-800">{section.label}</span>
+                              </button>
+                              
+                              <div className="flex items-center space-x-2">
+                                {completeness === 100 ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : completeness > 0 ? (
+                                  <AlertTriangle className="h-3 w-3 text-yellow-600" />
+                                ) : (
+                                  <div className="h-3 w-3 rounded-full border-2 border-orange-300" />
+                                )}
+                                <Badge variant="outline" className="text-xs px-1">
+                                  {completeness}%
+                                </Badge>
+                                
+                                <button
+                                  onClick={() => toggleSectionVisibility(section.id as any, !isVisible)}
+                                  className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                                    isVisible 
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {isVisible ? 'ON' : 'OFF'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Optional Sections */}
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <div className="h-2 w-2 bg-gray-400 rounded-full mr-2"></div>
+                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Optional</span>
+                      </div>
+                      {[...sectionGroups.optional, ...sectionGroups.academic].map((section) => {
+                        const completeness = getSectionCompleteness(section.id)
+                        const isVisible = cvData.sectionVisibility?.[section.id as keyof typeof cvData.sectionVisibility] ?? section.defaultVisible
+                        
+                        return (
+                          <div key={section.id} className="mb-1">
+                            <div className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
+                              selectedSection === section.id 
+                                ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                : 'hover:bg-muted border-gray-200 hover:border-gray-300'
+                            }`}>
+                              <button
+                                onClick={() => setSelectedSection(section.id)}
+                                className="flex items-center flex-1"
+                              >
+                                <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                                <span className="font-medium text-sm text-muted-foreground">{section.label}</span>
+                                {section.priority === 'academic' && (
+                                  <span className="ml-1 text-xs text-purple-600 font-medium">(Academic)</span>
+                                )}
+                              </button>
+                              
+                              <div className="flex items-center space-x-2">
+                                {completeness === 100 ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : completeness > 0 ? (
+                                  <AlertTriangle className="h-3 w-3 text-yellow-600" />
+                                ) : (
+                                  <div className="h-3 w-3 rounded-full border-2 border-gray-300" />
+                                )}
+                                <Badge variant="outline" className="text-xs px-1">
+                                  {completeness}%
+                                </Badge>
+                                
+                                <button
+                                  onClick={() => toggleSectionVisibility(section.id as any, !isVisible)}
+                                  className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                                    isVisible 
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {isVisible ? 'ON' : 'OFF'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Section Form - Also Scrollable */}
+                  <div className="border-t pt-4">
+                    {renderBuilderContent()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Preview Area - Centered and Properly Scaled */}
-          <div className="flex-1 bg-gray-100 overflow-hidden">
-            <CvBuilderPreview />
+          {/* Center - CV Preview */}
+          <div className={`${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'} overflow-hidden`}>
+            <Card className="h-full flex flex-col">
+              <CardHeader className="pb-3 flex-shrink-0 flex items-center justify-between">
+                <CardTitle className="flex items-center text-lg">
+                  <Eye className="h-5 w-5 mr-2" />
+                  Live Preview
+                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleZoomOut}
+                    disabled={previewZoom <= 50}
+                    className="h-8 w-8"
+                    title="Zoom Out (Ctrl/⌘ -)"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <div className="px-2 py-1 text-sm font-medium bg-muted rounded-md min-w-[60px] text-center">
+                    {previewZoom}%
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleZoomIn}
+                    disabled={previewZoom >= 200}
+                    className="h-8 w-8"
+                    title="Zoom In (Ctrl/⌘ +)"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleZoomReset}
+                    className="h-8 w-8"
+                    title="Reset Zoom (Ctrl/⌘ 0)"
+                  >
+                    <RotateCw className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 flex-1 overflow-hidden">
+                <CvBuilderPreview zoom={previewZoom} />
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Right Sidebar - ATS Optimization */}
+          {showATSPanel && (
+            <div className="lg:col-span-3 overflow-hidden">
+              <div className="h-full flex flex-col space-y-3">
+                {/* Job Description Input */}
+                <Card className="flex-shrink-0">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Target Job</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                        Industry
+                      </label>
+                      <select 
+                        value={targetIndustry}
+                        onChange={(e) => setTargetIndustry(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded text-xs"
+                      >
+                        <option value="technology">Technology</option>
+                        <option value="finance">Finance</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="sales">Sales</option>
+                        <option value="education">Education</option>
+                        <option value="consulting">Consulting</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                        Job Description
+                      </label>
+                      <textarea
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Paste job description here for targeted optimization..."
+                        className="w-full p-2 border border-gray-300 rounded text-xs h-16 resize-none"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* ATS Optimization Panel */}
+                <div className="flex-1 overflow-hidden">
+                  <ATSOptimizationPanel
+                    cvData={cvData}
+                    jobDescription={jobDescription}
+                    industry={targetIndustry}
+                    onOptimizationChange={handleATSOptimizationChange}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </ErrorBoundary>
+    </div>
   )
 }

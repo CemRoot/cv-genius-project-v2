@@ -28,10 +28,9 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     if (stored !== null) {
       setDarkMode(JSON.parse(stored))
     } else if (autoModeEnabled) {
-      // Auto mode based on system preference and time
+      // Auto mode based on system preference only
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      const isNightTime = isCurrentTimeNight()
-      setDarkMode(prefersDark || isNightTime)
+      setDarkMode(prefersDark)
     } else {
       setDarkMode(false)
     }
@@ -44,8 +43,7 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = () => {
       if (autoModeEnabled) {
-        const isNightTime = isCurrentTimeNight()
-        setDarkMode(mediaQuery.matches || isNightTime)
+        setDarkMode(mediaQuery.matches)
       }
     }
 
@@ -53,23 +51,6 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [autoModeEnabled])
 
-  // Auto dark mode based on time
-  useEffect(() => {
-    if (!autoModeEnabled) return
-
-    const checkTime = () => {
-      const isNightTime = isCurrentTimeNight()
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      
-      if (autoModeEnabled) {
-        setDarkMode(prefersDark || isNightTime)
-      }
-    }
-
-    // Check every hour
-    const interval = setInterval(checkTime, 60 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [autoModeEnabled])
 
   // Battery API monitoring
   useEffect(() => {
@@ -166,8 +147,7 @@ export function useDarkMode(options: DarkModeOptions = {}) {
   const enableAutoMode = () => {
     setAutoModeEnabled(true)
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const isNightTime = isCurrentTimeNight()
-    setDarkMode(prefersDark || isNightTime)
+    setDarkMode(prefersDark)
   }
 
   const disableAutoMode = () => {
@@ -186,11 +166,6 @@ export function useDarkMode(options: DarkModeOptions = {}) {
   }
 }
 
-// Helper function to determine if it's night time
-function isCurrentTimeNight(): boolean {
-  const hour = new Date().getHours()
-  return hour >= 20 || hour <= 6 // 8 PM to 6 AM
-}
 
 // Hook for theme-aware colors
 export function useThemeColors() {

@@ -103,6 +103,14 @@
 
 /* Global Font Weight Normalization */
 @layer base {
+  html {
+    color-scheme: light;
+  }
+  
+  html.dark {
+    color-scheme: dark;
+  }
+  
   body {
     font-weight: 400;
     -webkit-font-smoothing: subpixel-antialiased;
@@ -130,6 +138,7 @@
 }
 
 :root {
+  color-scheme: light;
   --foreground-rgb: 15, 23, 42;
   --background-start-rgb: 139, 92, 246;
   --background-end-rgb: 99, 102, 241;
@@ -181,8 +190,54 @@
   --radius: 0.5rem;
 }
 
+:root.dark {
+  color-scheme: dark;
+  --foreground-rgb: 241, 245, 249;
+  --background-start-rgb: 30, 41, 59;
+  --background-end-rgb: 15, 23, 42;
+  
+  /* Dark mode colors */
+  --background: 15 23 42;
+  --foreground: 241 245 249;
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  --card: 30 41 59;
+  --card-foreground: 241 245 249;
+  --border: 51 65 85;
+  --input: 51 65 85;
+  --accent: 30 41 59;
+  --accent-foreground: 241 245 249;
+  --popover: 30 41 59;
+  --popover-foreground: 241 245 249;
+  
+  /* Destructive colors */
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  
+  /* Primary colors */
+  --primary: 167 139 250;
+  --primary-foreground: 255 255 255;
+  --secondary: 30 41 59;
+  --secondary-foreground: 241 245 249;
+  
+  /* Ring color */
+  --ring: 167 139 250;
+}
+
+/* Dark mode background */
+html.dark body {
+  background: linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.1) 0%,
+      rgba(99, 102, 241, 0.1) 25%,
+      rgba(30, 41, 59, 0.95) 50%,
+      rgba(15, 23, 42, 1) 100%
+    ) !important;
+  color: rgb(var(--foreground-rgb));
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --foreground-rgb: 241, 245, 249;
     --background-start-rgb: 30, 41, 59;
     --background-end-rgb: 15, 23, 42;
@@ -215,6 +270,11 @@
 
 body {
   color: rgb(var(--foreground-rgb));
+  min-height: 100vh;
+}
+
+/* Default light mode background */
+body {
   background: linear-gradient(
       135deg,
       rgba(139, 92, 246, 0.05) 0%,
@@ -222,7 +282,87 @@ body {
       rgba(255, 255, 255, 0.95) 50%,
       rgba(248, 250, 252, 1) 100%
     );
-  min-height: 100vh;
+}
+
+/* Section backgrounds */
+section {
+  background-color: transparent;
+}
+
+/* Dark mode specific styles */
+html.dark {
+  background-color: rgb(15 23 42);
+  color: rgb(241 245 249);
+}
+
+html.dark .bg-background {
+  background-color: rgb(15 23 42);
+}
+
+html.dark .bg-card {
+  background-color: rgb(30 41 59);
+}
+
+html.dark .text-foreground {
+  color: rgb(241 245 249);
+}
+
+html.dark .text-muted-foreground {
+  color: rgb(148 163 184);
+}
+
+html.dark .border-border {
+  border-color: rgb(51 65 85);
+}
+
+/* Dark mode utility overrides */
+html.dark .bg-muted {
+  background-color: rgb(30 41 59);
+}
+
+html.dark .bg-muted\/30 {
+  background-color: rgba(30, 41, 59, 0.3);
+}
+
+html.dark .bg-muted\/20 {
+  background-color: rgba(30, 41, 59, 0.2);
+}
+
+html.dark nav,
+html.dark header,
+html.dark footer {
+  background-color: rgb(15 23 42) !important;
+  color: rgb(241 245 249) !important;
+}
+
+/* Footer specific dark mode */
+html.dark footer {
+  background-color: rgb(15 23 42) !important;
+  border-top-color: rgb(51 65 85) !important;
+}
+
+html.dark footer .border-t {
+  border-top-color: rgb(51 65 85) !important;
+}
+
+/* Override any background classes in footer */
+html.dark footer .bg-background\/95,
+html.dark footer .bg-background\/90,
+html.dark footer[class*="bg-"] {
+  background-color: rgb(15 23 42) !important;
+}
+
+/* Fix white backgrounds in dark mode */
+html.dark .bg-white {
+  background-color: rgb(30 41 59) !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: rgb(30 41 59) !important;
+}
+
+html.dark .bg-gray-100 {
+  background-color: rgb(51 65 85) !important;
 }
 
 @layer utilities {
@@ -897,6 +1037,29 @@ html {
   }
 }
 
+/* Force text justification for CV summaries */
+.text-justify,
+p[class*="text-gray-700"] {
+  text-align: justify !important;
+  hyphens: auto !important;
+  -webkit-hyphens: auto !important;
+  -moz-hyphens: auto !important;
+  -ms-hyphens: auto !important;
+  word-spacing: -0.05em !important;
+  text-justify: inter-word !important;
+}
+
+/* Specific targeting for CV preview paragraphs */
+.cv-preview p,
+.cv-template p,
+[class*="cv-builder"] p[class*="text-gray-700"] {
+  text-align: justify !important;
+  hyphens: auto !important;
+  -webkit-hyphens: auto !important;
+  word-spacing: normal !important;
+  text-justify: inter-word !important;
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -1553,10 +1716,9 @@ body {
 /* CV Builder page container fixes */
 .cv-builder-page {
   position: relative;
-  min-height: 100vh;
-  overflow-x: hidden;
-  /* Critical: never use overflow: hidden on y-axis for sticky parent */
-  overflow-y: visible;
+  height: 100vh;
+  overflow: hidden;
+  /* Fixed height container - no page scroll */
 }
 
 /* Container that contains sticky header */

@@ -393,6 +393,16 @@ export function MobileTemplateBuilder({ template, onBack }: MobileTemplateBuilde
             font-family: var(--cv-font-family);
           }
           
+          /* Force text justification for summaries */
+          p[class*="text-gray-700"] {
+            text-align: justify !important;
+            hyphens: auto !important;
+            -webkit-hyphens: auto !important;
+            -moz-hyphens: auto !important;
+            -ms-hyphens: auto !important;
+            word-spacing: -0.05em !important;
+          }
+          
           .cv-preview .section-title {
             color: var(--cv-primary-color);
             ${template.styling.headerStyle === 'bold' ? 'font-weight: 700;' : ''}

@@ -1,7 +1,4 @@
-import { pdf } from '@react-pdf/renderer'
-import { PDFTemplate } from '@/components/export/pdf-templates'
 import type { CVData } from '@/types/cv'
-import { saveAs } from 'file-saver'
 import React from 'react'
 
 export interface PDFExportOptions {
@@ -26,6 +23,11 @@ export class PDFExportService {
    * This ensures consistency between live preview and PDF output
    */
   async generatePDF(cvData: CVData, options: PDFExportOptions = {}): Promise<Blob> {
+    // Ensure this only runs on client-side
+    if (typeof window === 'undefined') {
+      throw new Error('PDF generation can only be performed on the client side')
+    }
+    
     const {
       filename = `${cvData.personal.fullName || 'cv'}-export.pdf`,
       quality = 'high',
@@ -48,6 +50,12 @@ export class PDFExportService {
         email: cvData.personal.email || 'Not provided',
         template: cvData.template || 'Not set'
       })
+      
+      // Dynamic imports for client-side only - use the core templates
+      const [{ pdf }, { PDFTemplate }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/export/pdf-templates-core')
+      ])
       
       // Create PDF document using React-PDF renderer with template ID
       // Pass template directly to PDFTemplate - it will handle the mapping internally
@@ -88,8 +96,19 @@ export class PDFExportService {
     try {
       const pdfBlob = await this.generatePDF(cvData, options)
       
-      // Download the PDF
-      saveAs(pdfBlob, filename)
+      // Dynamic import for client-side only
+      const fileSaver = await import('file-saver')
+      
+      // Download the PDF - handle different import formats
+      if (fileSaver.saveAs) {
+        fileSaver.saveAs(pdfBlob, filename)
+      } else if (fileSaver.default?.saveAs) {
+        fileSaver.default.saveAs(pdfBlob, filename)
+      } else if (fileSaver.default) {
+        fileSaver.default(pdfBlob, filename)
+      } else {
+        throw new Error('saveAs function not found in file-saver library')
+      }
     } catch (error) {
       console.error('PDF export failed:', error)
       throw error

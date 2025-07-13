@@ -12,6 +12,7 @@ import { formatIrishPhone } from "@/lib/utils"
 import { useEffect, useCallback, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { AiSummaryGenerator } from "./ai-summary-generator"
 
 const personalInfoSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -342,7 +343,7 @@ export function PersonalInfoForm({ isMobile = false }: PersonalInfoFormProps) {
           </CardContent>
         </Card>
 
-        {/* Professional Summary Card */}
+        {/* Professional Summary Card with AI */}
         <Card className="border-gray-200 shadow-sm">
           <CardContent className="p-6 space-y-6">
             <div className="flex items-center gap-3 mb-4">
@@ -351,27 +352,26 @@ export function PersonalInfoForm({ isMobile = false }: PersonalInfoFormProps) {
               <Badge variant="secondary" className="text-xs ml-auto">Optional</Badge>
             </div>
             
-            <div className="space-y-3">
-              <Label htmlFor="summary" className="text-sm font-medium text-gray-700">
-                Summary
-              </Label>
-              <Textarea
-                id="summary"
-                {...register("summary")}
-                placeholder="Brief overview of your professional background and key achievements..."
-                rows={4}
-                className={`transition-colors resize-none ${errors.summary ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"}`}
-              />
-              {errors.summary && (
-                <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                  <span>⚠</span>
-                  {errors.summary.message}
-                </p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                💡 2-3 sentences highlighting your experience and value proposition
+            <AiSummaryGenerator
+              currentValue={watch("summary") || ""}
+              onValueChange={(value) => setValue("summary", value, { shouldDirty: true })}
+              personalData={{
+                fullName: watch("fullName"),
+                title: watch("title"),
+                email: watch("email"),
+                phone: watch("phone"),
+                address: watch("address"),
+                linkedin: watch("linkedin"),
+                website: watch("website")
+              }}
+            />
+            
+            {errors.summary && (
+              <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                <span>⚠</span>
+                {errors.summary.message}
               </p>
-            </div>
+            )}
           </CardContent>
         </Card>
 

@@ -15,7 +15,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <Navigation />
       
       {/* Header Banner Ad - Desktop (Below Navigation) */}
-      <div className="hidden md:block pt-16 lg:pt-20 bg-white border-b relative z-30">
+      <div className="hidden md:block pt-16 lg:pt-20 bg-background dark:bg-background border-b dark:border-border relative z-30">
         <div className="container mx-auto px-4">
           <AdSection type="banner" size="large" className="py-3" />
         </div>

@@ -6,7 +6,7 @@ import { CvBuilderSectionSchema } from '@/types/cv-builder'
 import { z } from 'zod'
 import { Plus, X, Sparkles, Code, Users, Briefcase, TrendingUp, Check } from 'lucide-react'
 
-type SkillCategory = 'all' | 'technical' | 'soft' | 'industry' | 'languages'
+type SkillCategory = 'all' | 'technical' | 'soft' | 'industry'
 
 export function SkillsForm() {
   const { document, updateSkills } = useCvBuilder()
@@ -137,19 +137,11 @@ export function SkillsForm() {
     'Warehouse Management', 'Demand Planning', 'Vendor Management'
   ]
 
-  const getLanguageSkillSuggestions = () => [
-    'English (Native)', 'English (Fluent)', 'English (Professional)', 'English (Conversational)',
-    'Irish (Native)', 'Irish (Fluent)', 'Irish (Professional)', 'Irish (Conversational)',
-    'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Polish', 'Romanian',
-    'Chinese (Mandarin)', 'Japanese', 'Korean', 'Arabic', 'Russian', 'Hindi'
-  ]
-
   const getAllSuggestions = () => {
     const allSkills = [
       ...getTechnicalSkillSuggestions(),
       ...getSoftSkillSuggestions(),
-      ...getIndustrySkillSuggestions(),
-      ...getLanguageSkillSuggestions()
+      ...getIndustrySkillSuggestions()
     ]
     return allSkills.filter(skill => !skills.includes(skill)).sort()
   }
@@ -169,9 +161,6 @@ export function SkillsForm() {
       case 'industry':
         categorySkills = getIndustrySkillSuggestions()
         break
-      case 'languages':
-        categorySkills = getLanguageSkillSuggestions()
-        break
     }
     
     return categorySkills.filter(skill => !skills.includes(skill)).sort()
@@ -185,8 +174,6 @@ export function SkillsForm() {
         return <Users className="w-4 h-4" />
       case 'industry':
         return <Briefcase className="w-4 h-4" />
-      case 'languages':
-        return <TrendingUp className="w-4 h-4" />
       default:
         return <Sparkles className="w-4 h-4" />
     }
@@ -376,19 +363,6 @@ export function SkillsForm() {
                 <span className="flex items-center gap-1.5">
                   {getCategoryIcon('industry')}
                   Industry
-                </span>
-              </button>
-              <button
-                onClick={() => setSelectedCategory('languages')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  selectedCategory === 'languages'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  {getCategoryIcon('languages')}
-                  Languages
                 </span>
               </button>
             </div>

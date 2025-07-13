@@ -57,7 +57,7 @@ export default function HomePage() {
       <MainLayout>
       <div className="flex flex-col">
       {/* Enhanced Hero Section - Mobile Optimized */}
-      <section className="py-12 md:py-20 lg:py-32 bg-gradient-to-br from-background via-muted/20 to-cvgenius-purple/10 relative overflow-hidden">
+      <section className="py-12 md:py-20 lg:py-32 relative overflow-hidden">
         {/* Background decoration - Reduced on mobile */}
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px] md:bg-[size:50px_50px]" />
         <div className="absolute top-0 right-0 -mt-20 -mr-20 md:-mt-40 md:-mr-40 w-40 h-40 md:w-80 md:h-80 cvgenius-gradient rounded-full blur-2xl md:blur-3xl opacity-20" />
@@ -148,14 +148,14 @@ export default function HomePage() {
 
 
       {/* Header Banner Ad - Below Hero */}
-      <div className="py-4 bg-muted/20 relative z-30">
+      <div className="py-4 relative z-30">
         <div className="container mx-auto px-4">
           <AdSection type="banner" size="large" />
         </div>
       </div>
 
       {/* Quick Tools Section - Mobile Optimized */}
-      <section className="py-12 md:py-16 bg-muted/30">
+      <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Main Content */}
@@ -247,7 +247,7 @@ export default function HomePage() {
 
 
       {/* Community Section - Mobile Optimized */}
-      <section className="py-12 md:py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <section className="py-12 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div 
             {...fadeInUp}
@@ -256,7 +256,7 @@ export default function HomePage() {
             <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-4">
               Join Ireland's Leading Career Community
             </h2>
-            <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto px-4">
+            <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 max-w-3xl mx-auto px-4">
               Connect with job seekers, share insights, and accelerate your career journey with Ireland's most supportive professional network.
             </p>
           </motion.div>
@@ -267,7 +267,7 @@ export default function HomePage() {
             className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto mb-8 md:mb-12"
           >
             {/* WhatsApp Community */}
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+            <div className="bg-card dark:bg-card p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-border">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
                   <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
@@ -275,23 +275,23 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900">WhatsApp Community</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-foreground">WhatsApp Community</h3>
                   <p className="text-green-600 font-medium text-sm md:text-base">Instant Networking</p>
                 </div>
               </div>
-              <p className="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
+              <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">
                 Join our active WhatsApp group for real-time job alerts, quick networking, and immediate support from fellow professionals.
               </p>
               <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-2 text-green-500 flex-shrink-0" />
                   Real-time job postings & alerts
                 </div>
-                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground">
                   <Users className="h-3 w-3 md:h-4 md:w-4 mr-2 text-green-500 flex-shrink-0" />
                   Active community discussions
                 </div>
-                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground">
                   <Award className="h-3 w-3 md:h-4 md:w-4 mr-2 text-green-500 flex-shrink-0" />
                   Quick interview tips & advice
                 </div>
@@ -305,7 +305,7 @@ export default function HomePage() {
             </div>
 
             {/* Slack Community */}
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+            <div className="bg-card dark:bg-card p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-border">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
                   <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
@@ -313,23 +313,23 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900">Slack Workspace</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-foreground">Slack Workspace</h3>
                   <p className="text-purple-600 font-medium text-sm md:text-base">Professional Hub</p>
                 </div>
               </div>
-              <p className="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
+              <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">
                 Access our comprehensive Slack workspace with dedicated channels for different industries, CV reviews, and structured networking.
               </p>
               <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground">
                   <FileText className="h-3 w-3 md:h-4 md:w-4 mr-2 text-purple-500 flex-shrink-0" />
                   Structured CV feedback & reviews
                 </div>
-                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground">
                   <Target className="h-3 w-3 md:h-4 md:w-4 mr-2 text-purple-500 flex-shrink-0" />
                   Industry-specific job channels
                 </div>
-                <div className="flex items-center text-xs md:text-sm text-gray-600">
+                <div className="flex items-center text-xs md:text-sm text-muted-foreground">
                   <Brain className="h-3 w-3 md:h-4 md:w-4 mr-2 text-purple-500 flex-shrink-0" />
                   Expert career coaching sessions
                 </div>
@@ -349,35 +349,35 @@ export default function HomePage() {
             transition={{ delay: 0.4 }}
             className="text-center"
           >
-            <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800 px-4">Why Join Our Communities?</h3>
+            <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-foreground px-4">Why Join Our Communities?</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
               <div className="text-center px-2">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
                   <Clock className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Daily Updates</h4>
-                <p className="text-xs md:text-sm text-gray-600">Fresh job postings every day</p>
+                <h4 className="font-medium text-foreground mb-1 text-sm md:text-base">Daily Updates</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Fresh job postings every day</p>
               </div>
               <div className="text-center px-2">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
                   <Users className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Peer Support</h4>
-                <p className="text-xs md:text-sm text-gray-600">Connect with like-minded professionals</p>
+                <h4 className="font-medium text-foreground mb-1 text-sm md:text-base">Peer Support</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Connect with like-minded professionals</p>
               </div>
               <div className="text-center px-2">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
                   <Award className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Expert Advice</h4>
-                <p className="text-xs md:text-sm text-gray-600">Tips from industry professionals</p>
+                <h4 className="font-medium text-foreground mb-1 text-sm md:text-base">Expert Advice</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Tips from industry professionals</p>
               </div>
               <div className="text-center px-2">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
                   <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
                 </div>
-                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">Success Stories</h4>
-                <p className="text-xs md:text-sm text-gray-600">Learn from successful job searches</p>
+                <h4 className="font-medium text-foreground mb-1 text-sm md:text-base">Success Stories</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Learn from successful job searches</p>
               </div>
             </div>
           </motion.div>
@@ -385,7 +385,7 @@ export default function HomePage() {
       </section>
 
       {/* Bottom Banner Ad */}
-      <section className="bg-white py-6 border-t">
+      <section className="bg-background py-6 border-t">
         <div className="container mx-auto px-4">
           <AdSection type="banner" size="large" />
         </div>

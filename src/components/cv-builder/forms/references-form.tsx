@@ -16,7 +16,7 @@ export function ReferencesForm() {
     title: '',
     company: '',
     email: '',
-    phone: '+353 ',
+    phone: '',
     relationship: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -36,9 +36,8 @@ export function ReferencesForm() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ref.email)) {
       newErrors.email = 'Invalid email format'
     }
-    if (!ref.phone?.trim() || ref.phone === '+353 ') {
-      newErrors.phone = 'Phone is required'
-    } else if (!validateIrishPhone(ref.phone)) {
+    // Phone is optional, but if provided, must be valid
+    if (ref.phone && ref.phone.trim() && ref.phone !== '+353 ' && !validateIrishPhone(ref.phone)) {
       newErrors.phone = 'Phone must be in Irish format (+353 XX XXX XXXX)'
     }
     
@@ -55,7 +54,7 @@ export function ReferencesForm() {
         title: '',
         company: '',
         email: '',
-        phone: '+353 ',
+        phone: '',
         relationship: ''
       })
       setErrors({})
@@ -79,7 +78,7 @@ export function ReferencesForm() {
         title: '',
         company: '',
         email: '',
-        phone: '+353 ',
+        phone: '',
         relationship: ''
       })
       setErrors({})
@@ -92,13 +91,22 @@ export function ReferencesForm() {
   }
 
   const handlePhoneChange = (value: string) => {
+    // If the field is empty, keep it empty
+    if (!value.trim()) {
+      setNewReference({ ...newReference, phone: '' })
+      if (errors.phone) {
+        setErrors({ ...errors, phone: '' })
+      }
+      return
+    }
+    
     let formattedPhone = value
     
     if (!value.startsWith('+353')) {
       formattedPhone = '+353 ' + value.replace(/[^\d]/g, '')
     }
     
-    if (value.length > newReference.phone?.length! && validateIrishPhone(value)) {
+    if (value.length > (newReference.phone?.length || 0) && validateIrishPhone(value)) {
       formattedPhone = formatIrishPhone(value)
     }
     
@@ -167,7 +175,8 @@ export function ReferencesForm() {
                     <div className="font-medium text-gray-900">{ref.name}</div>
                     <div className="text-sm text-gray-600">{ref.title} at {ref.company}</div>
                     <div className="text-sm text-gray-500 mt-1">
-                      {ref.email} • {ref.phone}
+                      {ref.email}
+                      {ref.phone && ` • ${ref.phone}`}
                       {ref.relationship && ` • ${ref.relationship}`}
                     </div>
                   </div>
@@ -272,7 +281,7 @@ export function ReferencesForm() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone (Irish) *
+                    Phone (Optional)
                   </label>
                   <input
                     type="tel"

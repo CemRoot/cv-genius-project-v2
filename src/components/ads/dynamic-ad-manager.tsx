@@ -1,8 +1,22 @@
-'use client'
+"use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { AdConfig } from '@/lib/ad-config'
+
+interface AdConfig {
+  id: string
+  type: string
+  enabled: boolean
+  zone?: string
+  position?: string
+  settings?: {
+    delay?: number
+    restrictedPages?: string[]
+    adSenseClient?: string
+    adSenseSlot?: string
+    size?: string
+  }
+}
 
 interface AdminAdSettings {
   enableAds: boolean
@@ -11,6 +25,7 @@ interface AdminAdSettings {
   monetagPopup: boolean
   monetagPush: boolean
   monetagNative: boolean
+  lastUpdated?: string
 }
 
 interface DynamicAdManagerProps {
@@ -29,64 +44,146 @@ export function DynamicAdManager({ children }: DynamicAdManagerProps) {
   })
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [hasError, setHasError] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     let mounted = true
+    let timeoutId: NodeJS.Timeout | null = null
     
     const loadInitialData = async () => {
       if (!mounted) return
       
-      await loadAdConfigs()
-      if (!mounted) return
+      // Load both config and settings
+      const results = await Promise.allSettled([
+        loadAdConfigs(),
+        loadAdminSettings()
+      ])
       
-      await loadAdminSettings()
+      // Check if both succeeded
+      const allSuccessful = results.every(result => result.status === 'fulfilled')
+      if (!allSuccessful && mounted) {
+        console.warn('Some ad data failed to load:', results)
+      }
+      
+      if (mounted) {
+        setLoading(false)
+      }
     }
     
     loadInitialData()
 
-    // Periodic refresh to sync with admin changes - but only if component is still mounted
-    const refreshInterval = setInterval(() => {
-      if (mounted) {
-        loadAdminSettings()
-      }
-    }, 10000) // Reduced frequency to 10 seconds
+    // Periodic refresh - with exponential backoff on errors
+    if (!hasError && retryCount < 3) {
+      const delay = Math.min(15000 * Math.pow(2, retryCount), 60000) // Max 1 minute
+      timeoutId = setTimeout(() => {
+        if (mounted && !hasError) {
+          loadAdminSettings()
+        }
+      }, delay)
+    }
 
     return () => {
       mounted = false
-      clearInterval(refreshInterval)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
     }
-  }, [])
+  }, [hasError, retryCount])
 
-  const loadAdConfigs = async () => {
+  const loadAdConfigs = async (): Promise<boolean> => {
     try {
-      const response = await fetch('/api/ads/config')
+      // Add timeout to fetch
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      
+      const response = await fetch('/api/ads/config', {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const configs = await response.json()
-        setAdConfigs(configs)
+        setAdConfigs(Array.isArray(configs) ? configs : [])
+        setHasError(false)
+        return true
+      } else {
+        console.warn('⚠️ Failed to load ad configs:', response.status)
+        return false
       }
     } catch (error) {
-      console.error('Failed to load ad configs:', error)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('⚠️ Ad configs request timed out')
+      } else {
+        console.warn('⚠️ Failed to load ad configs:', error)
+      }
+      setHasError(true)
+      return false
     }
   }
 
-  const loadAdminSettings = async () => {
+  const loadAdminSettings = async (): Promise<boolean> => {
     try {
-      const response = await fetch('/api/ads/status')
+      // Add timeout to fetch
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      
+      const response = await fetch('/api/ads/status', {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const settings = await response.json()
         
         // Only update if settings actually changed
         if (settings.lastUpdated !== lastUpdated) {
           console.log('🔄 Ad settings updated:', settings)
-          setAdminSettings(settings)
+          setAdminSettings({
+            enableAds: settings.enableAds ?? false,
+            mobileAds: settings.mobileAds ?? false,
+            testMode: settings.testMode ?? true,
+            monetagPopup: settings.monetagPopup ?? false,
+            monetagPush: settings.monetagPush ?? false,
+            monetagNative: settings.monetagNative ?? false,
+            lastUpdated: settings.lastUpdated
+          })
           setLastUpdated(settings.lastUpdated)
         }
+        
+        // Reset error state on successful request
+        setHasError(false)
+        setRetryCount(0)
+        return true
+      } else {
+        console.warn(`⚠️ Ad status API returned ${response.status}`)
+        setRetryCount(prev => Math.min(prev + 1, 3))
+        return false
       }
     } catch (error) {
-      console.error('Failed to load admin ad settings:', error)
-    } finally {
-      setLoading(false)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('⚠️ Ad status request timed out')
+      } else {
+        console.warn('⚠️ Failed to load admin ad settings:', error)
+      }
+      
+      setRetryCount(prev => Math.min(prev + 1, 3))
+      
+      // Stop retrying after 3 attempts
+      if (retryCount >= 2) {
+        setHasError(true)
+        console.warn('⚠️ Ad settings: Too many failures, stopping retries')
+      }
+      return false
     }
   }
 
@@ -122,7 +219,9 @@ export function DynamicAdManager({ children }: DynamicAdManagerProps) {
     adConfigs: loading ? [] : adConfigs.filter(shouldShowAd),
     adminSettings,
     getAdsByType: loading ? () => [] : getAdsByType,
-    shouldShowAd: loading ? () => false : shouldShowAd
+    shouldShowAd: loading ? () => false : shouldShowAd,
+    loading,
+    hasError
   }
 
   // Ad configs'i global context'e ekle
@@ -138,6 +237,8 @@ export const AdConfigContext = React.createContext<{
   adminSettings: AdminAdSettings
   getAdsByType: (type: string) => AdConfig[]
   shouldShowAd: (adConfig: AdConfig) => boolean
+  loading: boolean
+  hasError: boolean
 }>({
   adConfigs: [],
   adminSettings: {
@@ -149,7 +250,9 @@ export const AdConfigContext = React.createContext<{
     monetagNative: false
   },
   getAdsByType: () => [],
-  shouldShowAd: () => false
+  shouldShowAd: () => false,
+  loading: true,
+  hasError: false
 })
 
 export const useAdConfig = () => {
@@ -168,7 +271,9 @@ export const useAdConfig = () => {
         monetagNative: false
       },
       getAdsByType: () => [],
-      shouldShowAd: () => false
+      shouldShowAd: () => false,
+      loading: false,
+      hasError: false
     }
   }
   

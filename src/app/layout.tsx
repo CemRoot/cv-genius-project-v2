@@ -116,6 +116,45 @@ export default function RootLayout({
   return (
     <html lang="en-IE" className="scroll-smooth h-full" suppressHydrationWarning>
       <head>
+        {/* Dark Mode FOUC Prevention Script - Must be first! */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                // Check localStorage for darkMode preference (matching useDarkMode hook)
+                const darkModeStored = localStorage.getItem('darkMode');
+                let shouldBeDark = false;
+                
+                if (darkModeStored !== null) {
+                  // Use stored preference
+                  shouldBeDark = JSON.parse(darkModeStored);
+                } else {
+                  // Default to system preference
+                  shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                
+                // Apply dark mode
+                if (shouldBeDark) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              } catch (error) {
+                // Fallback to system preference
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                }
+              }
+            })();
+          `
+        }} />
+        
+        {/* Color scheme meta tag to prevent browser dark mode inversion */}
+        <meta name="color-scheme" content="light dark" />
+        
         {/* Mobile Web App Capabilities */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

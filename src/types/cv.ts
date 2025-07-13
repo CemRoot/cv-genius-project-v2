@@ -124,6 +124,7 @@ export interface CVData {
   referencesDisplay?: 'available-on-request' | 'detailed'
   designSettings?: DesignSettings
   sections: CVSection[]
+  sectionVisibility?: Record<string, boolean> // For CV Builder compatibility
   template: string
   lastModified: string
   version: number

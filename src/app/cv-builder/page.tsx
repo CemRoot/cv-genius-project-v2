@@ -24,71 +24,39 @@ export default function CvBuilderPage() {
     }
   }, [])
 
-  // Enhanced sticky header with robust scroll detection
+  // Static header - no scroll needed since page is fixed height
   useEffect(() => {
-    let ticking = false
-
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const header = document.querySelector('.cv-builder-header')
-          if (header) {
-            if (window.scrollY > 10) {
-              header.classList.add('scrolled')
-            } else {
-              header.classList.remove('scrolled')
-            }
-          }
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    // Force sticky header positioning on mount
+    // Ensure header is properly positioned
     const header = document.querySelector('.cv-builder-header') as HTMLElement
     if (header) {
-      // Ensure initial sticky state
-      header.style.position = 'sticky'
-      header.style.top = '0'
+      header.style.position = 'relative' // Changed from sticky to relative
       header.style.zIndex = '9999'
-    }
-
-    // Add scroll listener with passive flag for performance
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    
-    // Initial call to set correct state
-    handleScroll()
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
     }
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50 cv-builder-page">
+    <div className="h-screen bg-background cv-builder-page overflow-hidden flex flex-col">
       <CvBuilderProvider>
-        {/* Enhanced Navigation Header - Fixed Sticky */}
-        <header className="cv-builder-header sticky-header">
+        {/* Enhanced Navigation Header - Fixed */}
+        <header className="cv-builder-header flex-shrink-0">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Left Navigation */}
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => router.push('/')}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span className="hidden sm:inline">Back to Home</span>
                   <span className="sm:hidden">Back</span>
                 </button>
                 
-                <div className="hidden sm:block h-5 w-px bg-gray-300" />
+                <div className="hidden sm:block h-5 w-px bg-border" />
                 
                 <button
                   onClick={() => router.push('/builder')}
-                  className="hidden sm:flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                 >
                   <Settings className="h-4 w-4" />
                   Other Builders
@@ -97,10 +65,10 @@ export default function CvBuilderPage() {
 
               {/* Center Title */}
               <div className="flex-1 text-center">
-                <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
+                <h1 className="text-lg sm:text-xl font-semibold text-foreground">
                   Dublin CV Builder
                 </h1>
-                <p className="hidden sm:block text-sm text-gray-500">
+                <p className="hidden sm:block text-sm text-muted-foreground">
                   ATS-optimized for Irish job market
                 </p>
               </div>
@@ -109,7 +77,7 @@ export default function CvBuilderPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => router.push('/')}
-                  className="sm:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="sm:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                   title="Home"
                 >
                   <Home className="h-4 w-4" />
@@ -117,7 +85,7 @@ export default function CvBuilderPage() {
                 
                 <button
                   onClick={() => router.push('/builder')}
-                  className="sm:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="sm:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                   title="Other Builders"
                 >
                   <Settings className="h-4 w-4" />
@@ -127,7 +95,7 @@ export default function CvBuilderPage() {
           </div>
         </header>
 
-        <main className="cv-builder-main-mobile">
+        <main className="cv-builder-main-mobile flex-1 overflow-hidden">
           {/* CV Builder Interface */}
           <Suspense fallback={<CvBuilderLoading />}>
             <CvBuilderInterface />
