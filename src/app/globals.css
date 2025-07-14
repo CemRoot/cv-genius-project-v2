@@ -111,31 +111,52 @@
     font-weight: 400;
     -webkit-font-smoothing: subpixel-antialiased;
     -moz-osx-font-smoothing: auto;
+    color: #111827; /* Darker default text color for better readability */
   }
   
   /* Ensure minimum readability for all text */
   p, span, div, li, td, th {
     font-weight: inherit;
+    color: inherit;
   }
   
-  /* Darker default text colors */
+  /* Enhanced text color overrides for better readability */
   .text-gray-400 {
-    @apply text-gray-600;
+    @apply text-gray-700 !important;
   }
   
   .text-gray-500 {
-    @apply text-gray-700;
+    @apply text-gray-800 !important;
   }
   
-  /* Ensure headers are bold enough */
+  .text-gray-600 {
+    @apply text-gray-900 !important;
+  }
+  
+  /* Ensure headers are bold enough and dark enough */
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
+    color: #111827 !important;
+  }
+  
+  /* Improve button text readability */
+  button {
+    color: inherit;
+  }
+  
+  /* Improve link readability */
+  a {
+    color: #1d4ed8;
+  }
+  
+  a:hover {
+    color: #1e40af;
   }
 }
 
 :root {
   color-scheme: light;
-  --foreground-rgb: 15, 23, 42;
+  --foreground-rgb: 17, 24, 39; /* Darker for better readability */
   --background-start-rgb: 139, 92, 246;
   --background-end-rgb: 99, 102, 241;
   
@@ -151,19 +172,19 @@
   
   /* Background colors */
   --background: 255 255 255;
-  --foreground: 15 23 42;
+  --foreground: 17 24 39; /* Darker for better readability */
   --muted: 248 250 252;
-  --muted-foreground: 51 65 85; /* Darker gray for better readability */
+  --muted-foreground: 31 41 55; /* Much darker for better readability */
   
   /* Primary colors for Tailwind */
   --primary: 139 92 246;
   --primary-foreground: 255 255 255;
   --secondary: 241 245 249;
-  --secondary-foreground: 15 23 42;
+  --secondary-foreground: 17 24 39; /* Darker for better readability */
   
   /* Card colors */
   --card: 255 255 255;
-  --card-foreground: 15 23 42;
+  --card-foreground: 17 24 39; /* Darker for better readability */
   
   /* Border and input colors */
   --border: 226 232 240;
@@ -172,11 +193,11 @@
   
   /* Accent colors */
   --accent: 241 245 249;
-  --accent-foreground: 15 23 42;
+  --accent-foreground: 17 24 39; /* Darker for better readability */
   
   /* Popover colors */
   --popover: 255 255 255;
-  --popover-foreground: 15 23 42;
+  --popover-foreground: 17 24 39; /* Darker for better readability */
   
   /* Destructive colors */
   --destructive: 239 68 68;
@@ -272,11 +293,13 @@ section {
   .btn-primary {
     background: #8B5CF6;
     border-color: #8B5CF6;
+    color: #ffffff !important;
   }
   
   .btn-primary:hover {
     background: #7C3AED;
     border-color: #7C3AED;
+    color: #ffffff !important;
   }
   
   /* Background utilities */
@@ -289,7 +312,7 @@ section {
   }
   
   .text-muted-foreground {
-    color: rgb(var(--muted-foreground));
+    color: rgb(var(--muted-foreground)) !important;
   }
   
   /* Override any conflicting background colors */
@@ -301,18 +324,422 @@ section {
     background-color: rgba(255, 255, 255, 0.95) !important;
   }
   
-  /* Ensure proper text colors */
+  /* Ensure proper text colors with higher contrast */
   .text-gray-900 {
-    color: rgb(15, 23, 42) !important;
+    color: rgb(17, 24, 39) !important;
+  }
+  
+  .text-gray-800 {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  .text-gray-700 {
+    color: rgb(55, 65, 81) !important;
   }
   
   .text-gray-600 {
-    color: rgb(71, 85, 105) !important;
+    color: rgb(75, 85, 99) !important;
   }
   
   .text-gray-500 {
-    color: rgb(100, 116, 139) !important;
+    color: rgb(107, 114, 128) !important;
   }
+  
+  .text-gray-400 {
+    color: rgb(156, 163, 175) !important;
+  }
+  
+  /* Enhanced readability for specific components */
+  .card-text {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  .body-text {
+    color: rgb(55, 65, 81) !important;
+  }
+  
+  .secondary-text {
+    color: rgb(75, 85, 99) !important;
+  }
+  
+  .muted-text {
+    color: rgb(107, 114, 128) !important;
+  }
+}
+
+/* Enhanced Text Readability Overrides */
+.text-lg, .text-xl, .text-2xl, .text-3xl {
+  color: rgb(17, 24, 39) !important;
+}
+
+.text-sm {
+  color: rgb(75, 85, 99) !important;
+}
+
+.text-xs {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Card content readability */
+.card, [class*="card"] {
+  color: rgb(31, 41, 55) !important;
+}
+
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6,
+[class*="card"] h1, [class*="card"] h2, [class*="card"] h3, 
+[class*="card"] h4, [class*="card"] h5, [class*="card"] h6 {
+  color: rgb(17, 24, 39) !important;
+}
+
+/* Button text improvements */
+button {
+  color: rgb(55, 65, 81);
+}
+
+button.bg-blue-600, button.bg-blue-500 {
+  color: rgb(255, 255, 255) !important;
+}
+
+button.bg-white {
+  color: rgb(17, 24, 39) !important;
+}
+
+button[variant="outline"] {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* Cover Letter Results Page Specific Improvements */
+.cover-letter-content {
+  color: rgb(31, 41, 55) !important;
+  line-height: 1.6 !important;
+}
+
+.cover-letter-warning {
+  background-color: rgba(254, 242, 242, 0.9) !important;
+  border-color: rgba(220, 38, 38, 0.8) !important;
+  color: rgb(127, 29, 29) !important;
+}
+
+.cover-letter-warning p {
+  color: rgb(127, 29, 29) !important;
+}
+
+/* Page headers and titles */
+.page-header h1 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.page-header p {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Navigation and layout improvements */
+.main-nav, .navbar {
+  color: rgb(31, 41, 55) !important;
+}
+
+.main-nav a, .navbar a {
+  color: rgb(75, 85, 99) !important;
+}
+
+.main-nav a:hover, .navbar a:hover {
+  color: rgb(17, 24, 39) !important;
+}
+
+/* ATS Check Page Text Improvements */
+.ats-check-content {
+  color: rgb(31, 41, 55) !important;
+}
+
+.ats-check-content h1, .ats-check-content h2, .ats-check-content h3 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.ats-check-content p {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Risk indicator improvements */
+.text-green-600 {
+  color: rgb(22, 163, 74) !important;
+}
+
+.text-yellow-600 {
+  color: rgb(202, 138, 4) !important;
+}
+
+.text-orange-600 {
+  color: rgb(234, 88, 12) !important;
+}
+
+.text-red-600 {
+  color: rgb(220, 38, 38) !important;
+}
+
+/* Form text improvements */
+.form-label {
+  color: rgb(55, 65, 81) !important;
+  font-weight: 500;
+}
+
+.form-description {
+  color: rgb(107, 114, 128) !important;
+}
+
+.form-error {
+  color: rgb(220, 38, 38) !important;
+}
+
+.form-success {
+  color: rgb(22, 163, 74) !important;
+}
+
+/* Modal and dialog improvements */
+.modal-content, .dialog-content {
+  color: rgb(31, 41, 55) !important;
+}
+
+.modal-header h2, .dialog-header h2 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.modal-description, .dialog-description {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Table text improvements */
+table {
+  color: rgb(31, 41, 55) !important;
+}
+
+th {
+  color: rgb(17, 24, 39) !important;
+  font-weight: 600;
+}
+
+td {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* List improvements */
+ul, ol {
+  color: rgb(55, 65, 81) !important;
+}
+
+li {
+  color: inherit;
+}
+
+/* Badge and tag improvements */
+.badge, .tag {
+  color: rgb(31, 41, 55) !important;
+}
+
+.badge-success {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  color: rgb(22, 163, 74) !important;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge-warning {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: rgb(180, 83, 9) !important;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-error {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: rgb(220, 38, 38) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Loading states */
+.loading-text {
+  color: rgb(107, 114, 128) !important;
+}
+
+.spinner {
+  color: rgb(139, 92, 246) !important;
+}
+
+/* Footer improvements */
+footer {
+  color: rgb(107, 114, 128) !important;
+}
+
+footer h3, footer h4 {
+  color: rgb(55, 65, 81) !important;
+}
+
+footer a {
+  color: rgb(107, 114, 128) !important;
+}
+
+footer a:hover {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Specific component overrides */
+.bg-gradient-to-br h1,
+.bg-gradient-to-br h2,
+.bg-gradient-to-br h3 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.bg-gradient-to-br p {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* CV Builder specific text improvements */
+.cv-builder-section {
+  color: rgb(31, 41, 55) !important;
+}
+
+.cv-builder-section h2 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.cv-builder-section p {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* StyledCoverLetter component improvements */
+.styled-cover-letter {
+  color: rgb(31, 41, 55) !important;
+}
+
+.styled-cover-letter h1, .styled-cover-letter h2 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.styled-cover-letter p {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* Comprehensive Cover Letter Content Fixes */
+.cover-letter-preview,
+.cover-letter-content,
+[class*="cover-letter"],
+[id*="cover-letter"] {
+  color: rgb(31, 41, 55) !important;
+}
+
+.cover-letter-preview h1,
+.cover-letter-preview h2,
+.cover-letter-preview h3,
+.cover-letter-content h1,
+.cover-letter-content h2,
+.cover-letter-content h3 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.cover-letter-preview p,
+.cover-letter-content p {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* StyledCoverLetter template-specific fixes */
+[style*="color: #333"] {
+  color: rgb(31, 41, 55) !important;
+}
+
+[style*="color: #666"] {
+  color: rgb(75, 85, 99) !important;
+}
+
+[style*="color: #999"] {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Force dark text on any inline styles */
+div[style*="color: #333"],
+p[style*="color: #333"],
+span[style*="color: #333"] {
+  color: rgb(31, 41, 55) !important;
+}
+
+/* Template-specific content fixes */
+.trinity-modern,
+.corporate-dublin,
+.creative-galway {
+  color: rgb(31, 41, 55) !important;
+}
+
+.trinity-modern h1,
+.trinity-modern h2,
+.corporate-dublin h1,
+.corporate-dublin h2,
+.creative-galway h1,
+.creative-galway h2 {
+  color: rgb(17, 24, 39) !important;
+}
+
+/* Address and contact info readability */
+.cover-letter-address,
+.cover-letter-contact {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* Date and signature area */
+.cover-letter-date,
+.cover-letter-signature {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* Cover letter body paragraphs */
+.cover-letter-body {
+  color: rgb(55, 65, 81) !important;
+  line-height: 1.6 !important;
+}
+
+/* Ensure signature text is visible */
+.signature-text {
+  color: rgb(31, 41, 55) !important;
+}
+
+/* Ensure proper contrast for all text elements */
+* {
+  /* Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override any remaining low contrast text */
+.text-gray-300,
+.text-gray-200,
+.text-gray-100 {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Special case for white backgrounds */
+.bg-white .text-gray-600 {
+  color: rgb(55, 65, 81) !important;
+}
+
+.bg-white .text-gray-500 {
+  color: rgb(75, 85, 99) !important;
+}
+
+.bg-white .text-gray-400 {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Ensure all content is readable on gradient backgrounds */
+.bg-gradient-to-br *,
+.bg-gradient-to-r *,
+.bg-gradient-to-l *,
+.bg-gradient-to-t *,
+.bg-gradient-to-b * {
+  color: rgb(31, 41, 55) !important;
+}
+
+.bg-gradient-to-br h1,
+.bg-gradient-to-br h2,
+.bg-gradient-to-br h3,
+.bg-gradient-to-br h4,
+.bg-gradient-to-br h5,
+.bg-gradient-to-br h6 {
+  color: rgb(17, 24, 39) !important;
 }
 
 /* Google Fonts Import - Lato Font Family */
@@ -365,10 +792,10 @@ html {
   --mobile-touch-target-sm: 36px;
   --mobile-touch-target-lg: 52px;
   
-  /* Mobile-specific colors */
-  --mobile-text-primary: #1f2937;
-  --mobile-text-secondary: #6b7280;
-  --mobile-text-tertiary: #9ca3af;
+  /* Enhanced mobile-specific colors for better readability */
+  --mobile-text-primary: #111827; /* Much darker */
+  --mobile-text-secondary: #374151; /* Darker */
+  --mobile-text-tertiary: #6b7280; /* Darker */
   --mobile-border: #e5e7eb;
   --mobile-border-light: #f3f4f6;
   --mobile-background: #ffffff;
@@ -408,7 +835,7 @@ html {
     font-size: var(--mobile-text-base);
     border-radius: 12px;
     background: rgb(243 244 246);
-    color: rgb(75 85 99);
+    color: rgb(17 24 39); /* Darker text */
     border: 1px solid rgb(209 213 219);
     font-weight: 500;
     display: flex;
@@ -432,7 +859,7 @@ html {
     display: flex;
     align-items: center;
     gap: var(--mobile-space-3);
-    color: rgb(75 85 99);
+    color: rgb(17 24 39); /* Darker text */
     text-decoration: none;
     transition: all 0.2s ease;
     border-radius: 8px;
@@ -600,7 +1027,7 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgb(107, 114, 128);
+    color: rgb(55, 65, 81); /* Darker for better visibility */
     transition: all 0.2s ease;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -636,7 +1063,7 @@ html {
     50% { opacity: 0.5; }
   }
   
-  /* Enhanced mobile typography */
+  /* Enhanced mobile typography with better contrast */
   .mobile-heading-primary {
     font-size: var(--mobile-text-3xl);
     font-weight: 700;
@@ -1012,6 +1439,7 @@ p[class*="text-gray-700"] {
 .cv-builder-input {
   background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 1) 100%);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: rgb(31, 41, 55) !important;
 }
 
 .cv-builder-input:focus {
@@ -1058,4 +1486,309 @@ p[class*="text-gray-700"] {
 .cv-success-state {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
   border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* Component-specific text contrast fixes */
+.toast, .notification {
+  color: rgb(31, 41, 55) !important;
+}
+
+.modal, .dialog {
+  color: rgb(31, 41, 55) !important;
+}
+
+.dropdown, .select {
+  color: rgb(31, 41, 55) !important;
+}
+
+/* Specific gradient background text improvements */
+.bg-gradient-to-br {
+  color: rgb(31, 41, 55) !important;
+}
+
+.bg-gradient-to-r {
+  color: rgb(31, 41, 55) !important;
+}
+
+/* Comprehensive Site-wide Text Readability Fixes */
+
+/* HomePage specific improvements */
+.hero-section h1,
+.hero-section h2 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.hero-section p {
+  color: rgb(55, 65, 81) !important;
+}
+
+/* Card components across all pages */
+.card-title {
+  color: rgb(17, 24, 39) !important;
+}
+
+.card-description {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Button text standardization */
+.btn, .button, button {
+  font-weight: 500;
+}
+
+.btn-outline, .button-outline {
+  color: rgb(55, 65, 81) !important;
+}
+
+.btn-ghost, .button-ghost {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Loading and empty states */
+.loading-spinner {
+  color: rgb(139, 92, 246) !important;
+}
+
+.empty-state-text {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Error and warning states */
+.error-message {
+  color: rgb(220, 38, 38) !important;
+}
+
+.warning-message {
+  color: rgb(180, 83, 9) !important;
+}
+
+.success-message {
+  color: rgb(22, 163, 74) !important;
+}
+
+.info-message {
+  color: rgb(59, 130, 246) !important;
+}
+
+/* ATS Analyzer specific fixes */
+.ats-analyzer h1,
+.ats-analyzer h2,
+.ats-analyzer h3 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.ats-analyzer p,
+.ats-analyzer li {
+  color: rgb(75, 85, 99) !important;
+}
+
+.ats-score {
+  font-weight: 600;
+}
+
+/* CV Builder specific fixes */
+.cv-builder-form label {
+  color: rgb(55, 65, 81) !important;
+  font-weight: 500;
+}
+
+.cv-builder-form input,
+.cv-builder-form textarea,
+.cv-builder-form select {
+  color: rgb(31, 41, 55) !important;
+}
+
+.cv-builder-form input::placeholder,
+.cv-builder-form textarea::placeholder {
+  color: rgb(156, 163, 175) !important;
+}
+
+/* Navigation improvements */
+.nav-link {
+  color: rgb(75, 85, 99) !important;
+}
+
+.nav-link:hover {
+  color: rgb(17, 24, 39) !important;
+}
+
+.nav-link.active {
+  color: rgb(139, 92, 246) !important;
+}
+
+/* Breadcrumb improvements */
+.breadcrumb {
+  color: rgb(107, 114, 128) !important;
+}
+
+.breadcrumb-active {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Sidebar and menu improvements */
+.sidebar-item {
+  color: rgb(75, 85, 99) !important;
+}
+
+.sidebar-item:hover {
+  color: rgb(17, 24, 39) !important;
+}
+
+.sidebar-item.active {
+  color: rgb(139, 92, 246) !important;
+}
+
+/* Tab navigation */
+.tab-item {
+  color: rgb(107, 114, 128) !important;
+}
+
+.tab-item.active {
+  color: rgb(17, 24, 39) !important;
+}
+
+/* Dropdown and select improvements */
+.dropdown-item {
+  color: rgb(55, 65, 81) !important;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(243, 244, 246, 0.8) !important;
+  color: rgb(17, 24, 39) !important;
+}
+
+/* Tooltip improvements */
+.tooltip {
+  background-color: rgba(17, 24, 39, 0.9) !important;
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Progress indicators */
+.progress-text {
+  color: rgb(75, 85, 99) !important;
+}
+
+.progress-percentage {
+  color: rgb(17, 24, 39) !important;
+  font-weight: 600;
+}
+
+/* Status indicators with better contrast */
+.status-complete {
+  color: rgb(22, 163, 74) !important;
+}
+
+.status-pending {
+  color: rgb(202, 138, 4) !important;
+}
+
+.status-failed {
+  color: rgb(220, 38, 38) !important;
+}
+
+/* Form validation messages */
+.field-error {
+  color: rgb(220, 38, 38) !important;
+  font-size: 0.875rem;
+}
+
+.field-success {
+  color: rgb(22, 163, 74) !important;
+  font-size: 0.875rem;
+}
+
+.field-hint {
+  color: rgb(107, 114, 128) !important;
+  font-size: 0.875rem;
+}
+
+/* Accordion and collapsible content */
+.accordion-trigger {
+  color: rgb(17, 24, 39) !important;
+}
+
+.accordion-content {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Pagination */
+.pagination-item {
+  color: rgb(75, 85, 99) !important;
+}
+
+.pagination-item.active {
+  background-color: rgb(139, 92, 246) !important;
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Search and filter components */
+.search-input {
+  color: rgb(31, 41, 55) !important;
+}
+
+.search-input::placeholder {
+  color: rgb(156, 163, 175) !important;
+}
+
+.filter-label {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Code and pre blocks */
+code {
+  color: rgb(17, 24, 39) !important;
+  background-color: rgba(243, 244, 246, 0.8) !important;
+}
+
+pre {
+  color: rgb(31, 41, 55) !important;
+  background-color: rgba(243, 244, 246, 0.8) !important;
+}
+
+/* Quote and blockquote */
+blockquote {
+  color: rgb(75, 85, 99) !important;
+  border-left: 4px solid rgb(139, 92, 246);
+}
+
+/* Caption and small text */
+.caption {
+  color: rgb(107, 114, 128) !important;
+}
+
+.small-text {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Ensure all text on gradient backgrounds is readable */
+.bg-gradient-to-br *:not(svg):not(path):not(circle):not(rect),
+.bg-gradient-to-r *:not(svg):not(path):not(circle):not(rect),
+.bg-gradient-to-l *:not(svg):not(path):not(circle):not(rect),
+.bg-gradient-to-t *:not(svg):not(path):not(circle):not(rect),
+.bg-gradient-to-b *:not(svg):not(path):not(circle):not(rect) {
+  color: rgb(31, 41, 55) !important;
+}
+
+/* Override any remaining problematic text colors */
+.text-muted {
+  color: rgb(107, 114, 128) !important;
+}
+
+.text-subdued {
+  color: rgb(156, 163, 175) !important;
+}
+
+.text-primary {
+  color: rgb(139, 92, 246) !important;
+}
+
+.text-secondary {
+  color: rgb(75, 85, 99) !important;
+}
+
+/* Final catch-all for any remaining low contrast text */
+*[class*="text-gray-3"],
+*[class*="text-gray-2"],
+*[class*="text-gray-1"] {
+  color: rgb(107, 114, 128) !important;
 }

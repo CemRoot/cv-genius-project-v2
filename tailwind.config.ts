@@ -2,7 +2,6 @@ import type { Config } from "tailwindcss";
 
 export default {
   // Dark mode disabled - only light mode supported
-  // darkMode: ["class"], // REMOVED - Dark mode completely disabled
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -84,6 +83,13 @@ export default {
           "primary-dark": "#7C3AED",
           "primary-light": "#A78BFA",
         },
+        // Enhanced text colors for better readability
+        text: {
+          primary: "#111827",
+          secondary: "#374151", 
+          tertiary: "#6b7280",
+          muted: "#9ca3af",
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -101,66 +107,127 @@ export default {
         'card': '4/3',
         'cv': '8.5/11',
       },
-      // Touch-friendly spacing scale
+      // Mobile-optimized typography scale
+      fontSize: {
+        'mobile-xs': ['12px', { lineHeight: '1.4' }],
+        'mobile-sm': ['14px', { lineHeight: '1.4' }],
+        'mobile-base': ['16px', { lineHeight: '1.5' }],
+        'mobile-lg': ['18px', { lineHeight: '1.4' }],
+        'mobile-xl': ['20px', { lineHeight: '1.3' }],
+        'mobile-2xl': ['24px', { lineHeight: '1.2' }],
+        'mobile-3xl': ['30px', { lineHeight: '1.1' }],
+      },
+      // Enhanced spacing scale for touch interfaces
       spacing: {
         'touch': '44px',
-        'touch-lg': '56px',
+        'touch-sm': '36px',
+        'touch-lg': '52px',
         'safe-top': 'env(safe-area-inset-top)',
         'safe-bottom': 'env(safe-area-inset-bottom)',
         'safe-left': 'env(safe-area-inset-left)',
         'safe-right': 'env(safe-area-inset-right)',
       },
-      // Mobile-first font sizes
-      fontSize: {
-        'mobile-xs': ['0.75rem', { lineHeight: '1rem' }],
-        'mobile-sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'mobile-base': ['1rem', { lineHeight: '1.5rem' }],
-        'mobile-lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'mobile-xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        'mobile-2xl': ['1.5rem', { lineHeight: '2rem' }],
-        'mobile-3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+      // Animation and transition improvements
+      transitionDuration: {
+        '250': '250ms',
+        '350': '350ms',
       },
-      // Mobile viewport heights
-      height: {
-        'mobile-screen': 'calc(var(--vh, 1vh) * 100)',
-        'mobile-screen-small': 'calc(var(--vh, 1vh) * 50)',
-        'mobile-screen-large': 'calc(var(--vh, 1vh) * 150)',
+      transitionTimingFunction: {
+        'bounce-in': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
-      minHeight: {
-        'mobile-screen': 'calc(var(--vh, 1vh) * 100)',
-        'touch': '44px',
-        'touch-lg': '56px',
+      // Box shadow optimizations
+      boxShadow: {
+        'mobile': '0 2px 8px 0 rgba(0, 0, 0, 0.12)',
+        'mobile-lg': '0 4px 16px 0 rgba(0, 0, 0, 0.15)',
+        'touch': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        'elevated': '0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
       },
-      maxHeight: {
-        'mobile-screen': 'calc(var(--vh, 1vh) * 100)',
+      // Enhanced backdrop blur
+      backdropBlur: {
+        'xs': '2px',
       },
+      // Z-index scale for layering
+      zIndex: {
+        'modal': '1000',
+        'dropdown': '1000',
+        'sticky': '40',
+        'fixed': '50',
+        'popover': '50',
+        'tooltip': '60',
+      },
+      // Grid system enhancements
+      gridTemplateColumns: {
+        'auto-fit': 'repeat(auto-fit, minmax(0, 1fr))',
+        'auto-fill': 'repeat(auto-fill, minmax(0, 1fr))',
+        'fluid': 'repeat(auto-fit, minmax(250px, 1fr))',
+      },
+      // Animation keyframes
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        // Mobile touch feedback animations
-        "touch-feedback": {
-          "0%": { transform: "scale(1)" },
-          "50%": { transform: "scale(0.98)" },
-          "100%": { transform: "scale(1)" },
+        'slide-up': {
+          '0%': { transform: 'translateY(100%)' },
+          '100%': { transform: 'translateY(0)' },
         },
-        "fade-in-up": {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "touch-feedback": "touch-feedback 0.15s ease-out",
-        "fade-in-up": "fade-in-up 0.3s ease-out",
+        'fade-in': 'fade-in 0.2s ease-out',
+        'scale-in': 'scale-in 0.2s ease-out',
+        'slide-up': 'slide-up 0.3s ease-out',
+        'pulse-slow': 'pulse-slow 2s ease-in-out infinite',
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
-} satisfies Config;
+  plugins: [
+    require("tailwindcss-animate"),
+    // Custom plugin for enhanced mobile utilities
+    function({ addUtilities, theme }: any) {
+      const newUtilities = {
+        '.touch-manipulation': {
+          'touch-action': 'manipulation',
+        },
+        '.safe-area-inset': {
+          'padding-top': 'env(safe-area-inset-top)',
+          'padding-right': 'env(safe-area-inset-right)',
+          'padding-bottom': 'env(safe-area-inset-bottom)',
+          'padding-left': 'env(safe-area-inset-left)',
+        },
+        '.text-balance': {
+          'text-wrap': 'balance',
+        },
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+        // Enhanced text readability utilities
+        '.text-readable': {
+          color: '#111827',
+          'line-height': '1.6',
+        },
+        '.text-readable-secondary': {
+          color: '#374151',
+          'line-height': '1.5',
+        },
+        '.text-readable-muted': {
+          color: '#6b7280',
+          'line-height': '1.5',
+        },
+      }
+      addUtilities(newUtilities)
+    },
+  ],
+} satisfies Config

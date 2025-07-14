@@ -31,26 +31,13 @@ export function MaintenancePage({
         <link rel="alternate icon" href="/favicon.ico" />
         <meta name="robots" content="noindex, nofollow" />
         <style>{`
-          @media (prefers-color-scheme: dark) {
-            :root {
-              --bg-color: #1a1a1a;
-              --text-color: #e0e0e0;
-              --text-secondary: #a0a0a0;
-              --illustration-primary: #03c39d;
-              --illustration-secondary: #2f2e41;
-              --illustration-accent: #3f3d56;
-            }
-          }
-          
-          @media (prefers-color-scheme: light) {
-            :root {
-              --bg-color: #ffffff;
-              --text-color: #333333;
-              --text-secondary: #666666;
-              --illustration-primary: #03c39d;
-              --illustration-secondary: #2f2e41;
-              --illustration-accent: #3f3d56;
-            }
+          :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --illustration-primary: #03c39d;
+            --illustration-secondary: #2f2e41;
+            --illustration-accent: #3f3d56;
           }
           
           * {
