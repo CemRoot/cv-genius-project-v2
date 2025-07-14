@@ -21,12 +21,12 @@ const guideData: GuideItem[] = [
     category: "ATS Optimization",
     content: (
       <div className="space-y-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">What is ATS?</h4>
-              <p className="text-blue-800 leading-relaxed">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">What is ATS?</h4>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
                 ATS (Applicant Tracking Systems) are software applications that help employers manage hiring by automatically filtering and ranking job applications. Major Dublin companies like Google, Meta, LinkedIn, Amazon, and Accenture all use these systems.
               </p>
             </div>
@@ -34,34 +34,34 @@ const guideData: GuideItem[] = [
         </div>
         
         <div>
-          <h4 className="text-xl font-semibold mb-4 text-gray-800">How ATS Works</h4>
+          <h4 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">How ATS Works</h4>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="bg-cvgenius-purple text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">1</div>
               <div>
-                <p className="font-medium text-gray-800">Keyword Scanning</p>
-                <p className="text-gray-600 text-sm mt-1">Scans CVs for specific keywords from job descriptions</p>
+                <p className="font-medium text-gray-800 dark:text-gray-200">Keyword Scanning</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Scans CVs for specific keywords from job descriptions</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <div className="bg-cvgenius-purple text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">2</div>
               <div>
-                <p className="font-medium text-gray-800">Automatic Filtering</p>
-                <p className="text-gray-600 text-sm mt-1">Eliminates CVs that don't match required qualifications</p>
+                <p className="font-medium text-gray-800 dark:text-gray-200">Automatic Filtering</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Eliminates CVs that don't match required qualifications</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <div className="bg-cvgenius-purple text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">3</div>
               <div>
-                <p className="font-medium text-gray-800">Ranking System</p>
-                <p className="text-gray-600 text-sm mt-1">Ranks applications based on keyword density and relevance</p>
+                <p className="font-medium text-gray-800 dark:text-gray-200">Ranking System</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Ranks applications based on keyword density and relevance</p>
               </div>
             </div>
           </div>
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-4 text-gray-800">ATS-Friendly CV Tips</h4>
+          <h4 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">ATS-Friendly CV Tips</h4>
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { label: "Format", tip: "Clean layouts, no graphics" },
@@ -71,21 +71,21 @@ const guideData: GuideItem[] = [
               { label: "Headers", tip: "Use standard section titles" },
               { label: "Size", tip: "11-12pt for body text" }
             ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+              <div key={item.label} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-800 text-sm">{item.label}</p>
-                  <p className="text-gray-600 text-sm">{item.tip}</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200 text-sm">{item.label}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">{item.tip}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-cvgenius-purple/10 border border-cvgenius-purple/20 rounded-lg p-4">
+        <div className="bg-cvgenius-purple/10 dark:bg-cvgenius-purple/20 border border-cvgenius-purple/20 dark:border-cvgenius-purple/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-cvgenius-purple" />
-            <p className="text-sm font-medium text-cvgenius-purple">
+            <Star className="h-4 w-4 text-cvgenius-purple dark:text-cvgenius-purple" />
+            <p className="text-sm font-medium text-cvgenius-purple dark:text-purple-300">
               Key Stat: 98% of Fortune 500 companies and 75% of Dublin companies use ATS systems
             </p>
           </div>
@@ -99,12 +99,12 @@ const guideData: GuideItem[] = [
     category: "CV Formatting",
     content: (
       <div className="space-y-8">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-green-900 mb-2">Irish CV Standards</h4>
-              <p className="text-green-800 leading-relaxed">
+              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">Irish CV Standards</h4>
+              <p className="text-green-800 dark:text-green-200 leading-relaxed">
                 Irish CV standards differ significantly from other countries. Here's what Dublin employers expect for professional applications.
               </p>
             </div>
@@ -113,7 +113,7 @@ const guideData: GuideItem[] = [
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h4 className="text-xl font-semibold mb-4 text-red-700 flex items-center gap-2">
+            <h4 className="text-xl font-semibold mb-4 text-red-700 dark:text-red-400 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               Don't Include
             </h4>
@@ -124,16 +124,16 @@ const guideData: GuideItem[] = [
                 "Marital status",
                 "Nationality details"
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-                  <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                  <p className="text-red-800 text-sm">{item}</p>
+                <div key={item} className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <div className="w-2 h-2 bg-red-500 dark:bg-red-400 rounded-full flex-shrink-0"></div>
+                  <p className="text-red-800 dark:text-red-200 text-sm">{item}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <h4 className="text-xl font-semibold mb-4 text-green-700 flex items-center gap-2">
+            <h4 className="text-xl font-semibold mb-4 text-green-700 dark:text-green-400 flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
               Must Include
             </h4>
@@ -144,9 +144,9 @@ const guideData: GuideItem[] = [
                 "LinkedIn profile", 
                 "Professional email"
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <p className="text-green-800 text-sm">{item}</p>
+                <div key={item} className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <p className="text-green-800 dark:text-green-200 text-sm">{item}</p>
                 </div>
               ))}
             </div>
@@ -154,27 +154,27 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-4 text-gray-800">Length Requirements</h4>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Length Requirements</h4>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
             <ul className="space-y-2">
               <li className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-yellow-800"><strong>Maximum 2 pages</strong> for experienced professionals</span>
+                <div className="w-2 h-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
+                <span className="text-yellow-800 dark:text-yellow-200"><strong>Maximum 2 pages</strong> for experienced professionals</span>
               </li>
               <li className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-yellow-800">1 page for graduates</span>
+                <div className="w-2 h-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
+                <span className="text-yellow-800 dark:text-yellow-200">1 page for graduates</span>
               </li>
               <li className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-yellow-800">Quality over quantity</span>
+                <div className="w-2 h-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
+                <span className="text-yellow-800 dark:text-yellow-200">Quality over quantity</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-4 text-gray-800">Perfect CV Structure</h4>
+          <h4 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Perfect CV Structure</h4>
           <div className="space-y-3">
             {[
               { step: 1, title: "Personal Information", desc: "Name, location, contact details" },
@@ -189,8 +189,8 @@ const guideData: GuideItem[] = [
                   {item.step}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-800">{item.title}</p>
-                  <p className="text-gray-600 text-sm">{item.desc}</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200">{item.title}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -205,12 +205,12 @@ const guideData: GuideItem[] = [
     category: "LinkedIn Strategy",
     content: (
       <div className="space-y-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">LinkedIn's Power in Dublin</h4>
-              <p className="text-blue-800 leading-relaxed">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">LinkedIn's Power in Dublin</h4>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
                 LinkedIn is the most powerful platform for Dublin job seekers, with 85% of local recruiters actively using it for talent acquisition and networking.
               </p>
             </div>
@@ -218,7 +218,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Profile Optimization</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Profile Optimization</h4>
           <div className="space-y-4">
             {[
               {
@@ -244,42 +244,42 @@ const guideData: GuideItem[] = [
                     {item.title}
                   </div>
                 </div>
-                <p className="text-gray-600 mt-2 text-sm">{item.content}</p>
+                <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">{item.content}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Top Dublin Companies</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Top Dublin Companies</h4>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-medium text-gray-800 mb-2">Tech Companies</p>
-                <p className="text-gray-600 text-sm">Google Dublin, Meta Dublin</p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">Tech Companies</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">Google Dublin, Meta Dublin</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-medium text-gray-800 mb-2">Finance</p>
-                <p className="text-gray-600 text-sm">Bank of Ireland, AIB, Stripe</p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">Finance</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">Bank of Ireland, AIB, Stripe</p>
               </div>
             </div>
             <div className="space-y-3">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-medium text-gray-800 mb-2">Pharma</p>
-                <p className="text-gray-600 text-sm">Pfizer Ireland, J&J Dublin</p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">Pharma</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">Pfizer Ireland, J&J Dublin</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-medium text-gray-800 mb-2">Consulting</p>
-                <p className="text-gray-600 text-sm">Accenture, Deloitte</p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">Consulting</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">Accenture, Deloitte</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-cvgenius-purple/10 border border-cvgenius-purple/20 rounded-lg p-4">
+        <div className="bg-cvgenius-purple/10 dark:bg-cvgenius-purple/20 border border-cvgenius-purple/20 dark:border-cvgenius-purple/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-cvgenius-purple" />
-            <p className="text-sm font-medium text-cvgenius-purple">
+            <Star className="h-4 w-4 text-cvgenius-purple dark:text-cvgenius-purple" />
+            <p className="text-sm font-medium text-cvgenius-purple dark:text-purple-300">
               Pro Tip: 75% of Dublin tech jobs are filled through LinkedIn networking before being posted publicly
             </p>
           </div>
@@ -293,12 +293,12 @@ const guideData: GuideItem[] = [
     category: "Interview Preparation",
     content: (
       <div className="space-y-8">
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-purple-900 mb-2">Dublin Interview Process</h4>
-              <p className="text-purple-800 leading-relaxed">
+              <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">Dublin Interview Process</h4>
+              <p className="text-purple-800 dark:text-purple-200 leading-relaxed">
                 Dublin interviews typically follow a structured 2-3 stage process, with cultural nuances specific to Irish business practices and European workplace standards.
               </p>
             </div>
@@ -306,7 +306,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Interview Stages</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Interview Stages</h4>
           <div className="space-y-4">
             {[
               {
@@ -335,10 +335,10 @@ const guideData: GuideItem[] = [
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h5 className="font-medium text-gray-800">{item.title}</h5>
+                      <h5 className="font-medium text-gray-800 dark:text-gray-200">{item.title}</h5>
                       <span className="text-sm text-gray-500">({item.duration})</span>
                     </div>
-                    <p className="text-gray-600 text-sm">{item.content}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">{item.content}</p>
                   </div>
                 </div>
               </div>
@@ -347,7 +347,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Dress Code by Sector</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Dress Code by Sector</h4>
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { sector: "Financial Services/Law", dress: "Formal business attire (suit required)" },
@@ -355,18 +355,18 @@ const guideData: GuideItem[] = [
               { sector: "Startups", dress: "Business casual to smart-casual" },
               { sector: "Pharmaceuticals", dress: "Business professional" }
             ].map((item) => (
-              <div key={item.sector} className="bg-gray-50 rounded-lg p-4">
-                <p className="font-medium text-gray-800 mb-1">{item.sector}</p>
-                <p className="text-gray-600 text-sm">{item.dress}</p>
+              <div key={item.sector} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="font-medium text-gray-800 dark:text-gray-200 mb-1">{item.sector}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{item.dress}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <p className="text-sm font-medium text-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">
               Irish Tip: Use STAR method (Situation, Task, Action, Result) - Dublin employers love structured answers
             </p>
           </div>
@@ -380,12 +380,12 @@ const guideData: GuideItem[] = [
     category: "Common Mistakes",
     content: (
       <div className="space-y-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-red-900 mb-2">Avoid These Critical Mistakes</h4>
-              <p className="text-red-800 leading-relaxed">
+              <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">Avoid These Critical Mistakes</h4>
+              <p className="text-red-800 dark:text-red-200 leading-relaxed">
                 Understanding these common mistakes can significantly improve your chances in Dublin's competitive job market and help you avoid instant rejection.
               </p>
             </div>
@@ -393,7 +393,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Format and Length Errors</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Format and Length Errors</h4>
           <div className="space-y-4">
             {[
               { mistake: "Too Long", description: "CVs over 2 pages are automatically rejected by most Dublin employers" },
@@ -401,11 +401,11 @@ const guideData: GuideItem[] = [
               { mistake: "Including Photos", description: "Unlike Germany or France, Irish CVs never include photographs" },
               { mistake: "Irrelevant Personal Info", description: "Age, marital status, or nationality are not required and can lead to bias" }
             ].map((item, index) => (
-              <div key={index} className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div key={index} className="flex items-start gap-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-red-800">{item.mistake}</p>
-                  <p className="text-red-700 text-sm mt-1">{item.description}</p>
+                  <p className="font-medium text-red-800 dark:text-red-200">{item.mistake}</p>
+                  <p className="text-red-700 dark:text-red-300 text-sm mt-1">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -413,7 +413,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Dublin-Specific Errors</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Dublin-Specific Errors</h4>
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { error: "Work Authorization", issue: "Not mentioning EU status" },
@@ -421,34 +421,34 @@ const guideData: GuideItem[] = [
               { error: "Currency", issue: "Using GBP/USD not EUR (€)" },
               { error: "Contact Info", issue: "Wrong country code" }
             ].map((item) => (
-              <div key={item.error} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="font-medium text-yellow-800">{item.error}</p>
-                <p className="text-yellow-700 text-sm mt-1">{item.issue}</p>
+              <div key={item.error} className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                <p className="font-medium text-yellow-800 dark:text-yellow-200">{item.error}</p>
+                <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">{item.issue}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Better Example</h4>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Better Example</h4>
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <span className="text-red-700 text-sm line-through">Instead of: "Good team player"</span>
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <span className="text-red-700 dark:text-red-300 text-sm line-through">Instead of: "Good team player"</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-green-700 text-sm font-medium">Write: "Led cross-functional team of 6 to deliver €2M project 3 weeks ahead of schedule"</span>
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-green-700 dark:text-green-300 text-sm font-medium">Write: "Led cross-functional team of 6 to deliver €2M project 3 weeks ahead of schedule"</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-cvgenius-purple/10 border border-cvgenius-purple/20 rounded-lg p-4">
+        <div className="bg-cvgenius-purple/10 dark:bg-cvgenius-purple/20 border border-cvgenius-purple/20 dark:border-cvgenius-purple/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-cvgenius-purple" />
-            <p className="text-sm font-medium text-cvgenius-purple">
+            <Star className="h-4 w-4 text-cvgenius-purple dark:text-cvgenius-purple" />
+            <p className="text-sm font-medium text-cvgenius-purple dark:text-purple-300">
               Success Tip: Use Irish English spelling (specialise, colour, centre) and terminology throughout your CV
             </p>
           </div>
@@ -464,7 +464,7 @@ const guideData: GuideItem[] = [
       <div className="space-y-8">
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h4 className="text-xl font-semibold mb-4 text-gray-800">Irish Platforms</h4>
+            <h4 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Irish Platforms</h4>
             <div className="space-y-3">
               {[
                 { platform: "IrishJobs.ie", desc: "Ireland's largest job site" },
@@ -472,16 +472,16 @@ const guideData: GuideItem[] = [
                 { platform: "Recruiters.ie", desc: "Finance & tech roles" },
                 { platform: "TheJournal.ie Jobs", desc: "Dublin startups" }
               ].map((item) => (
-                <div key={item.platform} className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="font-medium text-green-800">{item.platform}</p>
-                  <p className="text-green-700 text-sm">{item.desc}</p>
+                <div key={item.platform} className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                  <p className="font-medium text-green-800 dark:text-green-200">{item.platform}</p>
+                  <p className="text-green-700 dark:text-green-300 text-sm">{item.desc}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <h4 className="text-xl font-semibold mb-4 text-gray-800">International Platforms</h4>
+            <h4 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">International Platforms</h4>
             <div className="space-y-3">
               {[
                 { platform: "LinkedIn Jobs", desc: "Professional roles" },
@@ -489,9 +489,9 @@ const guideData: GuideItem[] = [
                 { platform: "Glassdoor.ie", desc: "Company research" },
                 { platform: "Monster.ie", desc: "Multinational companies" }
               ].map((item) => (
-                <div key={item.platform} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="font-medium text-blue-800">{item.platform}</p>
-                  <p className="text-blue-700 text-sm">{item.desc}</p>
+                <div key={item.platform} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                  <p className="font-medium text-blue-800 dark:text-blue-200">{item.platform}</p>
+                  <p className="text-blue-700 dark:text-blue-300 text-sm">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -499,7 +499,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Platform Usage Strategy</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Platform Usage Strategy</h4>
           <div className="space-y-4">
             {[
               { step: 1, action: "Start with IrishJobs.ie and LinkedIn", desc: "for maximum coverage" },
@@ -513,18 +513,18 @@ const guideData: GuideItem[] = [
                   {item.step}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-800">{item.action}</p>
-                  <p className="text-gray-600 text-sm">{item.desc}</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-200">{item.action}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">{item.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-cvgenius-purple/10 border border-cvgenius-purple/20 rounded-lg p-4">
+        <div className="bg-cvgenius-purple/10 dark:bg-cvgenius-purple/20 border border-cvgenius-purple/20 dark:border-cvgenius-purple/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-cvgenius-purple" />
-            <p className="text-sm font-medium text-cvgenius-purple">
+            <Star className="h-4 w-4 text-cvgenius-purple dark:text-cvgenius-purple" />
+            <p className="text-sm font-medium text-cvgenius-purple dark:text-purple-300">
               Success Tip: Apply within 48 hours of job posting for 3x higher response rate in Dublin's fast-moving market
             </p>
           </div>
@@ -538,12 +538,12 @@ const guideData: GuideItem[] = [
     category: "Interview Follow-up",
     content: (
       <div className="space-y-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">Professional Follow-Up is Crucial</h4>
-              <p className="text-blue-800 leading-relaxed">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Professional Follow-Up is Crucial</h4>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
                 Professional follow-up is crucial in Dublin's business culture. Here's the definitive guide to post-interview etiquette that Dublin employers expect.
               </p>
             </div>
@@ -551,7 +551,7 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Follow-Up Timeline</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Follow-Up Timeline</h4>
           <div className="space-y-4">
             {[
               { time: "Within 24 Hours", action: "Thank you email", color: "green" },
@@ -559,24 +559,24 @@ const guideData: GuideItem[] = [
               { time: "Week 3", action: "Final polite follow-up", color: "orange" },
               { time: "After Week 3", action: "Move on gracefully", color: "gray" }
             ].map((item) => (
-              <div key={item.time} className={`flex items-start gap-4 p-4 bg-${item.color}-50 border border-${item.color}-200 rounded-lg`}>
+              <div key={item.time} className={`flex items-start gap-4 p-4 bg-${item.color}-50 dark:bg-${item.color}-900/20 border border-${item.color}-200 dark:border-${item.color}-700 rounded-lg`}>
                 <div className={`bg-${item.color}-500 text-white rounded-lg px-3 py-1 text-sm font-medium min-w-fit`}>
                   {item.time}
                 </div>
-                <p className={`text-${item.color}-800 font-medium`}>{item.action}</p>
+                <p className={`text-${item.color}-800 dark:text-${item.color}-200 font-medium`}>{item.action}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Sample Thank You Email</h4>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Sample Thank You Email</h4>
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <div className="space-y-4 text-sm">
               <div>
-                <p className="font-medium text-gray-800">Subject: Thank you - Senior Marketing Manager Interview - Sarah Johnson</p>
+                <p className="font-medium text-gray-800 dark:text-gray-200">Subject: Thank you - Senior Marketing Manager Interview - Sarah Johnson</p>
               </div>
-              <div className="space-y-3 text-gray-700">
+              <div className="space-y-3 text-gray-700 dark:text-gray-300">
                 <p>Dear Ms. Murphy,</p>
                 <p>Thank you for taking the time to meet with me yesterday to discuss the Senior Marketing Manager position. I enjoyed our conversation about Dublin's evolving fintech landscape and your team's innovative approach to digital customer acquisition.</p>
                 <p>Our discussion reinforced my enthusiasm for contributing to [Company]'s continued growth in the Irish market. I'm particularly excited about the opportunity to lead the expansion into the Dublin startup ecosystem that we discussed.</p>
@@ -588,47 +588,47 @@ const guideData: GuideItem[] = [
         </div>
 
         <div>
-          <h4 className="text-xl font-semibold mb-6 text-gray-800">Communication Channels</h4>
+          <h4 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Communication Channels</h4>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="font-medium text-green-800">Preferred Methods</span>
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <span className="font-medium text-green-800 dark:text-green-200">Preferred Methods</span>
               </div>
               <div className="space-y-2">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-green-800 text-sm">Email (primary)</p>
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
+                  <p className="text-green-800 dark:text-green-200 text-sm">Email (primary)</p>
                 </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-green-800 text-sm">LinkedIn message</p>
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
+                  <p className="text-green-800 dark:text-green-200 text-sm">LinkedIn message</p>
                 </div>
               </div>
             </div>
             
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <span className="font-medium text-red-800">Avoid These</span>
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                <span className="font-medium text-red-800 dark:text-red-200">Avoid These</span>
               </div>
               <div className="space-y-2">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-800 text-sm">Text messages</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
+                  <p className="text-red-800 dark:text-red-200 text-sm">Text messages</p>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-800 text-sm">Social media</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
+                  <p className="text-red-800 dark:text-red-200 text-sm">Social media</p>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-800 text-sm">Unannounced visits</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
+                  <p className="text-red-800 dark:text-red-200 text-sm">Unannounced visits</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <p className="text-sm font-medium text-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">
               Dublin Success Tip: 68% of Dublin employers say thoughtful follow-up emails positively influence their hiring decisions
             </p>
           </div>
@@ -651,7 +651,7 @@ export default function CareerGuidePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -661,16 +661,16 @@ export default function CareerGuidePage() {
             className="text-center mb-16"
           >
             <div className="flex justify-center mb-6">
-              <div className="bg-cvgenius-purple/10 p-4 rounded-full">
-                <BookOpen className="h-12 w-12 text-cvgenius-purple" />
+              <div className="bg-cvgenius-purple/10 dark:bg-cvgenius-purple/20 p-4 rounded-full">
+                <BookOpen className="h-12 w-12 text-cvgenius-purple dark:text-purple-400" />
               </div>
             </div>
-            <h1 className="text-5xl font-bold mb-6 text-gray-900">Dublin Career Mastery Guide</h1>
+            <h1 className="text-5xl font-bold mb-6 text-gray-900 dark:text-gray-100">Dublin Career Mastery Guide</h1>
             <div className="space-y-4">
-              <p className="text-xl text-cvgenius-purple font-medium">
+              <p className="text-xl text-cvgenius-purple dark:text-purple-400 font-medium">
                 🚀 Your pathway to Irish job market success
               </p>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
                 🎯 Master Dublin's competitive job market with insider strategies! From ATS optimization to Irish business culture, this guide reveals the secrets that land interviews at Google Dublin, AIB, Stripe, and Ireland's top employers.
               </p>
             </div>
@@ -689,10 +689,10 @@ export default function CareerGuidePage() {
               { icon: MapPin, label: "Dublin Focus", value: "100%" },
               { icon: Briefcase, label: "ATS Optimized", value: "98%" }
             ].map((stat) => (
-              <div key={stat.label} className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                <stat.icon className="h-8 w-8 text-cvgenius-purple mx-auto mb-3" />
-                <div className="font-bold text-2xl text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
+              <div key={stat.label} className="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <stat.icon className="h-8 w-8 text-cvgenius-purple dark:text-purple-400 mx-auto mb-3" />
+                <div className="font-bold text-2xl text-gray-900 dark:text-gray-100 mb-1">{stat.value}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -710,25 +710,25 @@ export default function CareerGuidePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
                 <button
                   onClick={() => toggleItem(item.id)}
-                  className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-3">
-                      <div className="bg-cvgenius-purple/10 text-cvgenius-purple px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="bg-cvgenius-purple/10 dark:bg-cvgenius-purple/20 text-cvgenius-purple dark:text-purple-400 px-3 py-1 rounded-full text-sm font-medium">
                         {item.category}
                       </div>
                     </div>
-                    <h3 className="font-semibold text-xl text-gray-900">{item.question}</h3>
+                    <h3 className="font-semibold text-xl text-gray-900 dark:text-gray-100">{item.question}</h3>
                   </div>
                   <motion.div
                     animate={{ rotate: expandedItems.includes(item.id) ? 90 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <ChevronRight className="h-6 w-6 text-gray-400" />
+                    <ChevronRight className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                   </motion.div>
                 </button>
                 
@@ -741,13 +741,13 @@ export default function CareerGuidePage() {
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-8 pb-8 border-t border-gray-100">
+                      <div className="px-8 pb-8 border-t border-gray-100 dark:border-gray-700">
                         <div className="pt-6">
                           {item.content}
                         </div>
-                        <div className="mt-8 pt-6 border-t border-gray-100">
-                          <div className="flex items-center gap-3 text-cvgenius-purple">
-                            <div className="w-2 h-2 bg-cvgenius-purple rounded-full"></div>
+                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center gap-3 text-cvgenius-purple dark:text-purple-400">
+                            <div className="w-2 h-2 bg-cvgenius-purple dark:bg-purple-400 rounded-full"></div>
                             <span className="font-medium text-sm">Expert insights for Dublin job market success</span>
                           </div>
                         </div>
@@ -764,13 +764,13 @@ export default function CareerGuidePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="mt-20 bg-white rounded-xl shadow-sm border border-gray-200 p-8"
+            className="mt-20 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8"
           >
-            <h2 className="text-3xl font-bold mb-8 text-gray-900">Useful Resources</h2>
+            <h2 className="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">Useful Resources</h2>
             
             <div className="grid lg:grid-cols-2 gap-10">
               <div>
-                <h3 className="text-xl font-semibold mb-6 text-gray-800">Essential Links</h3>
+                <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Essential Links</h3>
                 <div className="space-y-4">
                   {[
                     { name: "IrishJobs.ie", url: "https://www.irishjobs.ie", description: "Ireland's largest job portal with 20,000+ active listings" },
@@ -786,18 +786,18 @@ export default function CareerGuidePage() {
                     { name: "Rent.ie", url: "https://www.rent.ie", description: "Dublin accommodation for job seekers" },
                     { name: "Dublin.ie", url: "https://www.dublin.ie", description: "Official Dublin city information & services" }
                   ].map((link) => (
-                    <div key={link.name} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                      <ExternalLink className="h-5 w-5 text-cvgenius-purple mt-1 flex-shrink-0" />
+                    <div key={link.name} className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <ExternalLink className="h-5 w-5 text-cvgenius-purple dark:text-purple-400 mt-1 flex-shrink-0" />
                       <div>
                         <Link 
                           href={link.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="font-medium text-cvgenius-purple hover:underline"
+                          className="font-medium text-cvgenius-purple dark:text-purple-400 hover:underline"
                         >
                           {link.name}
                         </Link>
-                        <p className="text-sm text-gray-600 mt-1">{link.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{link.description}</p>
                       </div>
                     </div>
                   ))}
@@ -805,14 +805,14 @@ export default function CareerGuidePage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-6 text-gray-800">Key Dublin Business Districts</h3>
+                <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Key Dublin Business Districts</h3>
                 <div className="space-y-6">
-                  <div className="bg-cvgenius-purple/5 border border-cvgenius-purple/20 rounded-lg p-4">
+                  <div className="bg-cvgenius-purple/5 dark:bg-cvgenius-purple/20 border border-cvgenius-purple/20 rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <MapPin className="h-5 w-5 text-cvgenius-purple" />
-                      <span className="font-medium text-cvgenius-purple">Why This Matters</span>
+                      <MapPin className="h-5 w-5 text-cvgenius-purple dark:text-purple-400" />
+                      <span className="font-medium text-cvgenius-purple dark:text-purple-400">Why This Matters</span>
                     </div>
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                       Understanding Dublin's business districts helps you target the right companies, choose optimal commute routes, and demonstrate local market knowledge in interviews.
                     </p>
                   </div>
@@ -824,9 +824,9 @@ export default function CareerGuidePage() {
                       { district: "Sandyford Business District", companies: "Microsoft, Oracle, Salesforce, and pharmaceutical companies" },
                       { district: "Citywest Business Park", companies: "SAP, startups and emerging tech companies with lower property costs" }
                     ].map((area) => (
-                      <div key={area.district} className="border border-gray-200 rounded-lg p-4">
-                        <h4 className="font-medium text-gray-900 mb-2">{area.district}</h4>
-                        <p className="text-sm text-gray-600">{area.companies}</p>
+                      <div key={area.district} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">{area.district}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{area.companies}</p>
                       </div>
                     ))}
                   </div>

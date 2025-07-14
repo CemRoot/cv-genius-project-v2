@@ -117,55 +117,52 @@ export default function RootLayout({
   return (
     <html lang="en-IE" className="scroll-smooth h-full" suppressHydrationWarning>
       <head>
-        {/* Dark Mode FOUC Prevention Script - Safari Compatible */}
+        {/* FOUC Prevention Script with Safari Support */}
         <script dangerouslySetInnerHTML={{
           __html: `
+            // FOUC (Flash of Unstyled Content) Prevention
             (function() {
+              // Always use light mode - dark mode disabled
+              document.documentElement.style.colorScheme = 'light';
+              document.documentElement.className = 'light'; // Force light mode
+              
+              // Safari-specific color scheme handling
+              if (window.safari || /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+                document.documentElement.style.setProperty('--webkit-color-scheme', 'light');
+              }
+              
               try {
-                // Safari compatibility check
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                
-                // Check localStorage for darkMode preference (matching useDarkMode hook)
-                const darkModeStored = localStorage.getItem('darkMode');
-                let shouldBeDark = false;
-                
-                if (darkModeStored !== null) {
-                  // Use stored preference
-                  shouldBeDark = JSON.parse(darkModeStored);
-                } else {
-                  // Default to system preference with Safari fallback
-                  if (window.matchMedia) {
-                    shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  }
-                }
-                
-                // Apply dark mode with Safari-specific handling
-                if (shouldBeDark) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.style.colorScheme = 'dark';
-                  if (isSafari) {
-                    document.documentElement.style.setProperty('--webkit-color-scheme', 'dark');
-                  }
-                } else {
-                  document.documentElement.classList.remove('dark');
-                  document.documentElement.style.colorScheme = 'light';
-                  if (isSafari) {
-                    document.documentElement.style.setProperty('--webkit-color-scheme', 'light');
-                  }
-                }
-              } catch (error) {
-                // Enhanced fallback for Safari
-                try {
-                  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.style.colorScheme = 'dark';
-                  }
-                } catch (e) {
-                  // Ultimate fallback - light mode
-                  document.documentElement.style.colorScheme = 'light';
-                }
+                // Store light mode preference permanently
+                localStorage.setItem('theme', 'light');
+              } catch(e) {
+                console.warn('LocalStorage not available for theme storage');
               }
             })();
+          `
+        }} />
+        
+        {/* Theme Configuration - Light Mode Only */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Force light mode permanently - no theme switching
+            function setLightMode() {
+              document.documentElement.classList.remove('dark');
+              document.documentElement.classList.add('light');
+              document.documentElement.style.colorScheme = 'light';
+              
+              try {
+                localStorage.setItem('theme', 'light');
+              } catch(e) {
+                console.warn('LocalStorage not available');
+              }
+            }
+            
+            // Apply light mode immediately
+            setLightMode();
+            
+            // Ensure light mode is maintained throughout the session
+            document.addEventListener('DOMContentLoaded', setLightMode);
+            window.addEventListener('load', setLightMode);
           `
         }} />
         
