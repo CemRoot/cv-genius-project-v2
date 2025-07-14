@@ -624,14 +624,20 @@ export function CvBuilderInterface() {
                                   section.id as keyof typeof cvData.sectionVisibility
                                 ] ?? section.defaultVisible;
 
+                              // Special handling for certifications section
+                              const isCertifications = section.id === 'certifications';
+                              const borderClass = isCertifications
+                                ? selectedSection === section.id
+                                  ? "bg-red-100 border-red-500 border-2 shadow-md"
+                                  : "hover:bg-red-50 border-red-300 border-2 hover:border-red-400 hover:shadow-sm"
+                                : selectedSection === section.id
+                                  ? "bg-blue-50 border-blue-300 shadow-sm"
+                                  : "hover:bg-muted border-orange-200 hover:border-orange-300";
+
                               return (
                                 <div key={section.id} className="mb-1">
                                   <div
-                                    className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
-                                      selectedSection === section.id
-                                        ? "bg-blue-50 border-blue-300 shadow-sm"
-                                        : "hover:bg-muted border-orange-200 hover:border-orange-300"
-                                    }`}
+                                    className={`flex items-center justify-between p-2 rounded-lg border transition-all ${borderClass}`}
                                   >
                                     <button
                                       onClick={() =>
@@ -639,41 +645,50 @@ export function CvBuilderInterface() {
                                       }
                                       className="flex items-center flex-1"
                                     >
-                                      <FileText className="h-4 w-4 mr-2 text-orange-600" />
-                                      <span className="font-medium text-sm text-gray-800">
-                                        {section.label}
+                                      <FileText className={`h-4 w-4 mr-2 ${isCertifications ? 'text-red-600' : 'text-orange-600'}`} />
+                                      <span className={`font-medium text-sm ${isCertifications ? 'text-red-800 font-bold' : 'text-gray-800'}`}>
+                                        {isCertifications ? '📜 ' + section.label : section.label}
+                                        {isCertifications && (
+                                          <span className="ml-1 text-xs text-red-600 font-bold bg-red-100 px-1 py-0.5 rounded">
+                                            ATS Critical
+                                          </span>
+                                        )}
                                       </span>
                                     </button>
-
                                     <div className="flex items-center space-x-2">
-                                      {completeness === 100 ? (
-                                        <CheckCircle className="h-3 w-3 text-green-600" />
-                                      ) : completeness > 0 ? (
-                                        <AlertTriangle className="h-3 w-3 text-yellow-600" />
-                                      ) : (
-                                        <div className="h-3 w-3 rounded-full border-2 border-orange-300" />
-                                      )}
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs px-1"
-                                      >
-                                        {completeness}%
-                                      </Badge>
-
-                                      <button
-                                        onClick={() =>
-                                          toggleSectionVisibility(
-                                            section.id as any,
-                                            !isVisible,
-                                          )
-                                        }
-                                        className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
-                                          isVisible
-                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                      <div
+                                        className={`h-2 w-8 rounded-full ${
+                                          completeness > 75
+                                            ? "bg-green-400"
+                                            : completeness > 25
+                                              ? "bg-yellow-400"
+                                              : "bg-red-400"
                                         }`}
+                                      ></div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleSectionVisibility(
+                                            section.id,
+                                            !isVisible,
+                                          );
+                                        }}
+                                        className={`w-4 h-4 rounded-sm border transition-colors ${
+                                          isVisible
+                                            ? isCertifications 
+                                              ? "bg-red-600 border-red-600 text-white"
+                                              : "bg-orange-600 border-orange-600 text-white"
+                                            : "border-gray-300 hover:border-gray-400"
+                                        }`}
+                                        title={
+                                          isVisible
+                                            ? `Hide ${section.label}`
+                                            : `Show ${section.label}`
+                                        }
                                       >
-                                        {isVisible ? "ON" : "OFF"}
+                                        {isVisible && (
+                                          <CheckCircle className="h-3 w-3" />
+                                        )}
                                       </button>
                                     </div>
                                   </div>
@@ -970,14 +985,20 @@ export function CvBuilderInterface() {
                                   section.id as keyof typeof cvData.sectionVisibility
                                 ] ?? section.defaultVisible;
 
+                              // Special handling for certifications section
+                              const isCertifications = section.id === 'certifications';
+                              const borderClass = isCertifications
+                                ? selectedSection === section.id
+                                  ? "bg-red-100 border-red-500 border-2 shadow-md"
+                                  : "hover:bg-red-50 border-red-300 border-2 hover:border-red-400 hover:shadow-sm"
+                                : selectedSection === section.id
+                                  ? "bg-blue-50 border-blue-300 shadow-sm"
+                                  : "hover:bg-muted border-orange-200 hover:border-orange-300";
+
                               return (
                                 <div key={section.id} className="mb-1">
                                   <div
-                                    className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
-                                      selectedSection === section.id
-                                        ? "bg-blue-50 border-blue-300 shadow-sm"
-                                        : "hover:bg-muted border-orange-200 hover:border-orange-300"
-                                    }`}
+                                    className={`flex items-center justify-between p-2 rounded-lg border transition-all ${borderClass}`}
                                   >
                                     <button
                                       onClick={() =>
@@ -985,41 +1006,50 @@ export function CvBuilderInterface() {
                                       }
                                       className="flex items-center flex-1"
                                     >
-                                      <FileText className="h-4 w-4 mr-2 text-orange-600" />
-                                      <span className="font-medium text-sm text-gray-800">
-                                        {section.label}
+                                      <FileText className={`h-4 w-4 mr-2 ${isCertifications ? 'text-red-600' : 'text-orange-600'}`} />
+                                      <span className={`font-medium text-sm ${isCertifications ? 'text-red-800 font-bold' : 'text-gray-800'}`}>
+                                        {isCertifications ? '📜 ' + section.label : section.label}
+                                        {isCertifications && (
+                                          <span className="ml-1 text-xs text-red-600 font-bold bg-red-100 px-1 py-0.5 rounded">
+                                            ATS Critical
+                                          </span>
+                                        )}
                                       </span>
                                     </button>
-
                                     <div className="flex items-center space-x-2">
-                                      {completeness === 100 ? (
-                                        <CheckCircle className="h-3 w-3 text-green-600" />
-                                      ) : completeness > 0 ? (
-                                        <AlertTriangle className="h-3 w-3 text-yellow-600" />
-                                      ) : (
-                                        <div className="h-3 w-3 rounded-full border-2 border-orange-300" />
-                                      )}
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs px-1"
-                                      >
-                                        {completeness}%
-                                      </Badge>
-
-                                      <button
-                                        onClick={() =>
-                                          toggleSectionVisibility(
-                                            section.id as any,
-                                            !isVisible,
-                                          )
-                                        }
-                                        className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
-                                          isVisible
-                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                      <div
+                                        className={`h-2 w-8 rounded-full ${
+                                          completeness > 75
+                                            ? "bg-green-400"
+                                            : completeness > 25
+                                              ? "bg-yellow-400"
+                                              : "bg-red-400"
                                         }`}
+                                      ></div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleSectionVisibility(
+                                            section.id,
+                                            !isVisible,
+                                          );
+                                        }}
+                                        className={`w-4 h-4 rounded-sm border transition-colors ${
+                                          isVisible
+                                            ? isCertifications 
+                                              ? "bg-red-600 border-red-600 text-white"
+                                              : "bg-orange-600 border-orange-600 text-white"
+                                            : "border-gray-300 hover:border-gray-400"
+                                        }`}
+                                        title={
+                                          isVisible
+                                            ? `Hide ${section.label}`
+                                            : `Show ${section.label}`
+                                        }
                                       >
-                                        {isVisible ? "ON" : "OFF"}
+                                        {isVisible && (
+                                          <CheckCircle className="h-3 w-3" />
+                                        )}
                                       </button>
                                     </div>
                                   </div>

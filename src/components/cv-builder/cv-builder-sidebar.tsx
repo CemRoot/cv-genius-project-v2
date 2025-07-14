@@ -27,7 +27,7 @@ const sections = [
   { key: 'experience' as const, label: 'Experience', icon: '💼', description: 'Work history' },
   { key: 'education' as const, label: 'Education', icon: '🎓', description: 'Academic background' },
   { key: 'skills' as const, label: 'Skills', icon: '🔧', description: 'Technical skills' },
-  { key: 'certifications' as const, label: 'Certifications', icon: '📜', description: 'Professional certs' },
+  { key: 'certifications' as const, label: 'Certifications & Licenses', icon: '📜', description: '🚨 ATS Critical - Professional certs', priority: 'critical' },
   { key: 'languages' as const, label: 'Languages', icon: '🌍', description: 'Language skills' },
   { key: 'volunteer' as const, label: 'Volunteer', icon: '🤝', description: 'Community service' },
   { key: 'awards' as const, label: 'Awards', icon: '🏆', description: 'Achievements' },
@@ -53,14 +53,19 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
         <nav className="space-y-2">
           {sections.map((section) => {
             const isVisible = section.key === 'personal' ? true : (sectionVisibility[section.key as keyof typeof sectionVisibility] ?? true)
+            const isCertifications = section.key === 'certifications'
             
             return (
               <div
                 key={section.key}
                 className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                   activeSection === section.key
-                    ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
-                    : 'hover:bg-gray-50 text-gray-700'
+                    ? isCertifications
+                      ? 'bg-red-100 border-l-4 border-red-600 text-red-800 shadow-md'
+                      : 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
+                    : isCertifications
+                      ? 'hover:bg-red-50 text-red-700 border border-red-200 hover:border-red-400'
+                      : 'hover:bg-gray-50 text-gray-700'
                 } ${!isVisible && section.key !== 'personal' ? 'opacity-60' : ''}`}
               >
                 <div className="flex items-center">
@@ -70,8 +75,17 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
                   >
                     <span className="text-lg mr-3">{section.icon}</span>
                     <div className="flex-1">
-                      <div className="font-medium text-sm">{section.label}</div>
-                      <div className="text-xs text-gray-500">{section.description}</div>
+                      <div className={`font-medium text-sm ${isCertifications ? 'font-bold' : ''}`}>
+                        {section.label}
+                        {isCertifications && (
+                          <span className="ml-2 text-xs bg-red-600 text-white px-2 py-1 rounded-full font-bold">
+                            IMPORTANT
+                          </span>
+                        )}
+                      </div>
+                      <div className={`text-xs ${isCertifications ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                        {section.description}
+                      </div>
                     </div>
                   </button>
                   
@@ -86,14 +100,14 @@ export function CvBuilderSidebar({ activeSection, onSectionChange }: CvBuilderSi
                           onChange={() => toggleSectionVisibility(section.key, !isVisible)}
                           aria-label={`Toggle ${section.label} visibility`}
                         />
-                        <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className={`w-9 h-5 ${isCertifications ? 'bg-red-300 peer-checked:bg-red-600' : 'bg-gray-300 peer-checked:bg-blue-600'} peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all`}></div>
                       </label>
                     </div>
                   )}
                   
                   {activeSection === section.key && (
                     <div className="flex items-center ml-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                      <div className={`w-1.5 h-1.5 ${isCertifications ? 'bg-red-600' : 'bg-blue-500'} rounded-full`}></div>
                     </div>
                   )}
                 </div>
