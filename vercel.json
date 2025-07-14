@@ -1,5 +1,4 @@
 {
-  "regions": ["iad1"],
   "headers": [
     {
       "source": "/(.*)",
@@ -51,23 +50,19 @@
   "functions": {
     "src/app/api/parse-pdf/route.ts": {
       "maxDuration": 30,
-      "memory": 1024,
-      "regions": ["iad1"]
+      "memory": 1024
     },
     "src/app/api/ai/improve-cv-text/route.ts": {
       "maxDuration": 30,
-      "memory": 1024,
-      "regions": ["iad1"]
+      "memory": 1024
     },
     "src/app/api/ai/generate-cover-letter/route.ts": {
       "maxDuration": 30,
-      "memory": 1024,
-      "regions": ["iad1"]
+      "memory": 1024
     },
     "src/app/api/ai/analyze/route.ts": {
       "maxDuration": 30,
-      "memory": 1024,
-      "regions": ["iad1"]
+      "memory": 1024
     }
   }
 }
