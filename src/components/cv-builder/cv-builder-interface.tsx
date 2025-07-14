@@ -330,8 +330,8 @@ export function CvBuilderInterface() {
   const allSections = [...sectionGroups.essential, ...sectionGroups.important, ...sectionGroups.optional, ...sectionGroups.academic]
 
   return (
-    <div className="h-screen bg-muted flex flex-col">
-      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col p-4">
+    <div className="h-screen bg-muted flex flex-col overflow-hidden">
+      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col p-4 overflow-hidden">
         {/* Header */}
         <div className="mb-4 flex-shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -377,7 +377,7 @@ export function CvBuilderInterface() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
           {/* Mobile Tabs */}
           <div className="lg:hidden col-span-full">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-[calc(100vh-12rem)]">
@@ -394,9 +394,9 @@ export function CvBuilderInterface() {
                       CV Builder
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-1 p-0 flex flex-col min-h-0">
+                  <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
                     {/* Section Navigation - Scrollable */}
-                    <div className="flex-1 overflow-y-auto p-6 pt-0 pb-24 lg:pb-6">
+                    <div className="flex-1 overflow-y-auto p-6 pt-0 pb-24 lg:pb-6 min-h-0">
                       <div className="space-y-1 mb-4">
                         {/* Essential Sections */}
                         <div className="mb-3">
@@ -769,7 +769,7 @@ export function CvBuilderInterface() {
           </div>
 
           {/* Desktop Layout - Left Sidebar - CV Builder */}
-          <div className="hidden lg:block lg:col-span-4">
+          <div className="hidden lg:block lg:col-span-4 overflow-hidden">
             <Card className="h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="flex items-center text-lg">
@@ -777,7 +777,7 @@ export function CvBuilderInterface() {
                   CV Builder
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 p-0 flex flex-col min-h-0">
+              <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
                 {/* Section Navigation - Scrollable */}
                 <div className="overflow-y-auto p-6 pt-0 pb-20 lg:pb-6 flex-1 min-h-0">
                   <div className="space-y-1 mb-4">
@@ -957,7 +957,7 @@ export function CvBuilderInterface() {
           </div>
 
           {/* Center - CV Preview */}
-          <div className={`hidden lg:block ${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'}`}>
+          <div className={`hidden lg:block ${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'} overflow-hidden`}>
             <Card className="h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0 flex items-center justify-between">
                 <CardTitle className="flex items-center text-lg">
@@ -999,7 +999,7 @@ export function CvBuilderInterface() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-0 flex-1">
+              <CardContent className="p-0 flex-1 overflow-hidden">
                 <CvBuilderPreview zoom={previewZoom} />
               </CardContent>
             </Card>
@@ -1007,7 +1007,7 @@ export function CvBuilderInterface() {
 
           {/* Right Sidebar - ATS Optimization */}
           {showATSPanel && (
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 overflow-hidden">
               <div className="h-full flex flex-col space-y-3">
                 {/* Job Description Input */}
                 <Card className="flex-shrink-0">
@@ -1048,7 +1048,7 @@ export function CvBuilderInterface() {
                 </Card>
 
                 {/* ATS Optimization Panel */}
-                <div className="flex-1">
+                <div className="flex-1 overflow-hidden">
                   <ATSOptimizationPanel
                     cvData={cvData}
                     jobDescription={jobDescription}
