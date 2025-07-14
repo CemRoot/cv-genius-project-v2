@@ -248,7 +248,7 @@ export function SkillsForm() {
 
           {skills.length > 0 && skills.length < 8 && !error && (
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-              <p className="text-sm text-yellow-700">
+              <p className="text-sm text-yellow-800">
                 Consider adding {8 - skills.length} more skills to strengthen your profile.
               </p>
             </div>
@@ -381,7 +381,7 @@ export function SkillsForm() {
                     addSkillFromSuggestion(skill)
                   }}
                   disabled={skills.length >= 20}
-                  className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-gray-50 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 border border-gray-200 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-gray-50 text-gray-800 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 border border-gray-200 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   type="button"
                 >
                   <Plus className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 pointer-events-none" />

@@ -768,7 +768,7 @@ export function CvBuilderInterface() {
                                         className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
                                           isVisible
                                             ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                                         }`}
                                       >
                                         {isVisible ? "ON" : "OFF"}
@@ -1129,7 +1129,7 @@ export function CvBuilderInterface() {
                                         className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
                                           isVisible
                                             ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                                         }`}
                                       >
                                         {isVisible ? "ON" : "OFF"}

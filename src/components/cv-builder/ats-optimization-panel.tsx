@@ -115,7 +115,7 @@ export function ATSOptimizationPanel({
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600'
-    if (score >= 60) return 'text-yellow-600'
+    if (score >= 60) return 'text-yellow-800'
     if (score >= 40) return 'text-orange-600'
     return 'text-red-600'
   }
@@ -129,7 +129,7 @@ export function ATSOptimizationPanel({
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'low': return 'text-green-600 bg-green-50 border-green-200'
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'medium': return 'text-yellow-800 bg-yellow-50 border-yellow-200'
       case 'high': return 'text-orange-600 bg-orange-50 border-orange-200'
       case 'critical': return 'text-red-600 bg-red-50 border-red-200'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'

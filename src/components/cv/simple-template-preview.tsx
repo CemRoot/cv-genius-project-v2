@@ -5,7 +5,7 @@ interface SimpleTemplatePreviewProps {
 }
 
 const templateColors: Record<string, { bg: string; accent: string; text: string }> = {
-  'classic': { bg: 'bg-white', accent: 'bg-black', text: 'text-black' },
+  'classic': { bg: 'bg-white', accent: 'bg-black', text: 'text-white' },
   'dublin-tech': { bg: 'bg-white', accent: 'bg-blue-600', text: 'text-white' },
   'irish-finance': { bg: 'bg-white', accent: 'bg-green-800', text: 'text-white' },
   'dublin-pharma': { bg: 'bg-white', accent: 'bg-teal-600', text: 'text-white' },
