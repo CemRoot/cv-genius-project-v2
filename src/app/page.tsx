@@ -28,27 +28,8 @@ const staggerChildren = {
 
 // Sidebar Ad Section with admin controls
 function SidebarAdSection() {
-  // Always call hooks unconditionally
-  const adConfigHook = useAdConfig() ?? {}
-  const adminSettings = adConfigHook.adminSettings ?? { enableAds: false }
-  
-  // If context is not available, return null after hooks
-  if (!adConfigHook.adminSettings) {
-    return null
-  }
-
-  // Don't render the entire sidebar section if ads are disabled
-  if (!adminSettings.enableAds) {
-    return null
-  }
-
-  return (
-    <div className="lg:w-80 w-full flex justify-center lg:justify-start">
-      <div className="sticky top-8 w-full max-w-xs mx-auto lg:mx-0">
-        <AdController type="sidebar" />
-      </div>
-    </div>
-  )
+  // Use the existing AdSection component which handles all logic internally
+  return <AdSection type="sidebar" />
 }
 
 export default function HomePage() {

@@ -9,13 +9,11 @@ interface AdSectionProps {
 }
 
 export function AdSection(props: AdSectionProps) {
-  let adminSettings
-  try {
-    ({ adminSettings } = useAdConfig())
-  } catch (error) {
-    // Context not ready, ads gösterme
-    return null
-  }
+  // Always call hooks unconditionally first
+  const adConfigHook = useAdConfig()
+  
+  // Get admin settings with fallback
+  const adminSettings = adConfigHook?.adminSettings ?? { enableAds: false, mobileAds: false }
 
   if (!adminSettings.enableAds) {
     return null
