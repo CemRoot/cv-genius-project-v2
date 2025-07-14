@@ -35,7 +35,7 @@ export default function CvBuilderPage() {
   }, [])
 
   return (
-    <div className="h-screen bg-background cv-builder-page overflow-hidden flex flex-col">
+    <div className="h-screen bg-background cv-builder-page flex flex-col">
       <CvBuilderProvider>
         {/* Enhanced Navigation Header - Fixed */}
         <header className="cv-builder-header flex-shrink-0">
@@ -95,7 +95,7 @@ export default function CvBuilderPage() {
           </div>
         </header>
 
-        <main className="cv-builder-main-mobile flex-1 overflow-hidden">
+        <main className="cv-builder-main-mobile flex-1">
           {/* CV Builder Interface */}
           <Suspense fallback={<CvBuilderLoading />}>
             <CvBuilderInterface />

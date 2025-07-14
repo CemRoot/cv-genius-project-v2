@@ -8,6 +8,7 @@ import {
   formatIrishPhone 
 } from '@/types/cv-builder'
 import { z } from 'zod'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 
 interface ValidationErrors {
   fullName?: string
@@ -266,31 +267,33 @@ export function PersonalInfoForm() {
           <label htmlFor="workPermit" className="block text-base font-semibold text-gray-700 mb-3">
             Work Permit Status
           </label>
-          <select
-            id="workPermit"
+          <Select
             value={personal.workPermit || ''}
-            onChange={(e) => handleFieldChange('workPermit', e.target.value)}
-            onBlur={() => handleBlur('workPermit')}
-            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-3 focus:ring-blue-500/20 text-base transition-all duration-200 ${
-              getFieldError('workPermit') 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
-                : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
-            }`}
-            suppressHydrationWarning
+            onValueChange={(value) => handleFieldChange('workPermit', value)}
           >
-            <option value="">Select your work permit status</option>
-            <option value="EU Citizen">EU Citizen (No permit required)</option>
-            <option value="Stamp 1">Stamp 1 - Work Permit Holder</option>
-            <option value="Stamp 1G">Stamp 1G - Graduate Scheme</option>
-            <option value="Stamp 2">Stamp 2 - Student Visa</option>
-            <option value="Stamp 2A">Stamp 2A - Student (Non-ILEP)</option>
-            <option value="Stamp 3">Stamp 3 - Dependent/Non-Working</option>
-            <option value="Stamp 4">Stamp 4 - Long Term Residency</option>
-            <option value="Stamp 5">Stamp 5 - Without Condition as to Time</option>
-            <option value="Stamp 6">Stamp 6 - Dual Citizenship</option>
-            <option value="Critical Skills">Critical Skills Employment Permit</option>
-            <option value="General Employment Permit">General Employment Permit</option>
-          </select>
+            <SelectTrigger
+              className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm text-base transition-all duration-200 ${
+                getFieldError('workPermit')
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                  : 'border-gray-300 focus:border-blue-500 hover:border-gray-400'
+              }`}
+            >
+              <SelectValue placeholder="Select your work permit status" />
+            </SelectTrigger>
+            <SelectContent className="w-[90vw] sm:w-full max-h-72">
+              <SelectItem value="EU Citizen">EU Citizen (No permit required)</SelectItem>
+              <SelectItem value="Stamp 1">Stamp 1 - Work Permit Holder</SelectItem>
+              <SelectItem value="Stamp 1G">Stamp 1G - Graduate Scheme</SelectItem>
+              <SelectItem value="Stamp 2">Stamp 2 - Student Visa</SelectItem>
+              <SelectItem value="Stamp 2A">Stamp 2A - Student (Non-ILEP)</SelectItem>
+              <SelectItem value="Stamp 3">Stamp 3 - Dependent/Non-Working</SelectItem>
+              <SelectItem value="Stamp 4">Stamp 4 - Long Term Residency</SelectItem>
+              <SelectItem value="Stamp 5">Stamp 5 - Without Condition as to Time</SelectItem>
+              <SelectItem value="Stamp 6">Stamp 6 - Dual Citizenship</SelectItem>
+              <SelectItem value="Critical Skills">Critical Skills Employment Permit</SelectItem>
+              <SelectItem value="General Employment Permit">General Employment Permit</SelectItem>
+            </SelectContent>
+          </Select>
           {getFieldError('workPermit') && (
             <p className="mt-2 text-sm text-red-600 font-medium">{getFieldError('workPermit')}</p>
           )}

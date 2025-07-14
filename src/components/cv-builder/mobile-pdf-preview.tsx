@@ -5,30 +5,7 @@ import { PDFTemplate } from '@/components/export/pdf-templates-core'
 import { cvTemplates } from '@/lib/cv-templates/templates-data'
 import { X } from 'lucide-react'
 
-// Test için basit PDF dökümanı
-const SimpleTestDocument = dynamic(
-  () => import('@react-pdf/renderer').then((mod) => {
-    const { Document, Page, Text } = mod
-    return function TestDoc() {
-      return (
-        <Document>
-          <Page size="A4" style={{ padding: 20, backgroundColor: '#ffffff' }}>
-            <Text style={{ fontSize: 20, color: '#000000', marginBottom: 20 }}>
-              🎉 Hello World! PDFViewer Test Successful! 🎉
-            </Text>
-            <Text style={{ fontSize: 14, color: '#333333', marginBottom: 10 }}>
-              If you can see this text, PDFViewer is working correctly.
-            </Text>
-            <Text style={{ fontSize: 12, color: '#666666' }}>
-              The issue might be with the CVData or PDFTemplate component.
-            </Text>
-          </Page>
-        </Document>
-      )
-    }
-  }),
-  { ssr: false }
-)
+// Test kodunu kaldırdık - artık sadece gerçek PDFTemplate kullanılacak
 
 // PDFViewer'ı sadece client-side'da yüklenecek şekilde dinamik olarak import et
 const PDFViewer = dynamic(
@@ -60,8 +37,8 @@ export default function MobilePDFPreviewModal({ isOpen, onClose, cvData, templat
   console.log("🔍 Mobile Preview Modal is rendering with cvData:", cvData)
   console.log("🔍 Template data:", template)
 
-  // Use fallback template if template is null
-  const fallbackTemplate = template || cvTemplates[0] || { id: 'dublin-professional', name: 'Dublin Professional' }
+  // Template prop'u direkt olarak kullan - Context'ten doğru veri geliyor
+  console.log('🔍 Template Prop Debug:', template)
 
   // --- YENİ KORUMA KALKANI ---
   // Eğer veri hazır değilse, yükleniyor ekranı göster.
@@ -150,7 +127,7 @@ export default function MobilePDFPreviewModal({ isOpen, onClose, cvData, templat
     languages: transformedLanguages,
     sections: cvData.sections,
     sectionVisibility: cvData.sectionVisibility || {},
-    template: fallbackTemplate?.id || 'dublin-professional'
+    template: template?.id || 'classic'
   }
 
   return (
@@ -168,11 +145,13 @@ export default function MobilePDFPreviewModal({ isOpen, onClose, cvData, templat
       </div>
       
       {/* 2. PDF Konteyneri (flex-1) - En Kritik Kısım! */}
-      <div className="flex-1 w-full h-full bg-white">
-        <PDFViewer width="100%" height="100%" showToolbar={true}>
-          {/* Gerçek PDFTemplate - fallbackTemplate.id ile */}
-          <PDFTemplate data={cvDataForPDF} template={fallbackTemplate.id || 'dublin-professional'} />
-        </PDFViewer>
+      <div className="flex-1 w-full bg-white overflow-hidden">
+        <div className="w-full h-full">
+          <PDFViewer width="100%" height="100%" showToolbar={true}>
+            {/* Gerçek PDFTemplate - template?.id ile güvenli fallback */}
+            <PDFTemplate data={cvDataForPDF} template={template?.id || 'classic'} />
+          </PDFViewer>
+        </div>
       </div>
     </div>
   )

@@ -19,6 +19,14 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* Ensure mobile select inputs and their dropdown are easily tappable */
+  .cv-builder-page select {
+    font-size: 16px; /* Larger tap-friendly text size */
+    min-width: 100%; /* Force dropdown width to full input width */
+  }
+}
+
 /* Print styles */
 @media print {
   .cv-builder-header,
