@@ -103,8 +103,8 @@ export function CertificationsForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Certifications</h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <h3 className="text-lg font-semibold text-foreground mb-2">Certifications</h3>
+        <p className="text-sm text-muted-foreground mb-4">
           Add your professional certifications and licenses
         </p>
       </div>
@@ -113,29 +113,29 @@ export function CertificationsForm() {
       {certifications.items.length > 0 && (
         <div className="space-y-3">
           {certifications.items.map((cert, index) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-4 relative">
+            <div key={index} className="bg-muted/50 rounded-lg p-4 relative">
               <div className="pr-20">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="font-medium text-gray-900">{cert.name}</div>
-                    <div className="text-sm text-gray-600">{cert.issuer}</div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="font-medium text-foreground">{cert.name}</div>
+                    <div className="text-sm text-muted-foreground">{cert.issuer}</div>
+                    <div className="text-sm text-muted-foreground mt-1">
                       Issued: {formatDateForDisplay(cert.date)}
                       {cert.expiryDate && (
-                        <span className={isExpired(cert.expiryDate) ? 'text-red-600' : ''}>
+                        <span className={isExpired(cert.expiryDate) ? 'text-destructive' : ''}>
                           {' • '}Expires: {formatDateForDisplay(cert.expiryDate)}
                           {isExpired(cert.expiryDate) && ' (Expired)'}
                         </span>
                       )}
                     </div>
                     {cert.credentialId && (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         Credential ID: {cert.credentialId}
                       </div>
                     )}
                   </div>
                   {isExpired(cert.expiryDate) && (
-                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-destructive/10 text-destructive">
                       Expired
                     </span>
                   )}
@@ -163,13 +163,13 @@ export function CertificationsForm() {
       {/* Add/Edit Certification Form */}
       {(certifications.items.length < 10 || editingIndex !== null) && (
         <div className="border-t pt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-4">
+          <h4 className="text-sm font-medium text-foreground mb-4">
             {editingIndex !== null ? 'Edit Certification' : 'Add Certification'}
           </h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Certification Name *
               </label>
               <input
@@ -187,7 +187,7 @@ export function CertificationsForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Issuing Organization *
               </label>
               <input
@@ -205,7 +205,7 @@ export function CertificationsForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Credential ID (Optional)
               </label>
               <input
@@ -218,7 +218,7 @@ export function CertificationsForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Issue Date *
               </label>
               <input
@@ -236,7 +236,7 @@ export function CertificationsForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Expiry Date (Optional)
               </label>
               <input
@@ -251,7 +251,7 @@ export function CertificationsForm() {
               {errors.expiryDate && (
                 <p className="mt-1 text-sm text-red-600">{errors.expiryDate}</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Leave blank if certification doesn't expire
               </p>
             </div>
@@ -271,7 +271,7 @@ export function CertificationsForm() {
                   })
                   setErrors({})
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-border rounded-md hover:bg-muted"
               >
                 Cancel
               </button>
@@ -287,7 +287,7 @@ export function CertificationsForm() {
       )}
 
       {certifications.items.length >= 10 && editingIndex === null && (
-        <div className="text-sm text-gray-500 italic">
+        <div className="text-sm text-muted-foreground italic">
           Maximum 10 certifications allowed
         </div>
       )}
