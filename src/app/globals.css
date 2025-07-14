@@ -144,14 +144,14 @@
   --background-end-rgb: 99, 102, 241;
   
   /* CVGenius Brand Colors - Fixed cross-browser */
-  --cvgenius-primary: #8B5CF6 !important;
-  --cvgenius-secondary: #6366F1 !important;
-  --cvgenius-purple: #8B5CF6 !important;
-  --cvgenius-purple-light: #A78BFA !important;
-  --cvgenius-purple-dark: #7C3AED !important;
-  --cvgenius-blue: #3B82F6 !important;
-  --cvgenius-green: #10B981 !important;
-  --cvgenius-orange: #F59E0B !important;
+  --cvgenius-primary: #8B5CF6;
+  --cvgenius-secondary: #6366F1;
+  --cvgenius-purple: #8B5CF6;
+  --cvgenius-purple-light: #A78BFA;
+  --cvgenius-purple-dark: #7C3AED;
+  --cvgenius-blue: #3B82F6;
+  --cvgenius-green: #10B981;
+  --cvgenius-orange: #F59E0B;
   
   /* Background colors */
   --background: 255 255 255;
@@ -232,9 +232,8 @@ html.dark body {
       rgba(99, 102, 241, 0.08) 25%,
       rgba(30, 41, 59, 0.98) 50%,
       rgba(15, 23, 42, 1) 100%
-    ) !important;
-  /* Fallback */
-  background-color: rgba(15, 23, 42, 1) !important;
+    );
+  background-color: rgba(15, 23, 42, 1);
   color: rgb(var(--foreground-rgb));
 }
 
@@ -283,9 +282,8 @@ body {
       rgba(99, 102, 241, 0.03) 25%,
       rgba(255, 255, 255, 0.98) 50%,
       rgba(248, 250, 252, 1) 100%
-    ) !important;
-  /* Fallback for older browsers */
-  background-color: rgba(248, 250, 252, 1) !important;
+    );
+  background-color: rgba(248, 250, 252, 1);
 }
 
 /* Section backgrounds */
@@ -376,47 +374,43 @@ html.dark .bg-gray-100 {
   
   /* CVGenius Brand Utility Classes - Cross-browser compatible */
   .cvgenius-gradient {
-    background: linear-gradient(135deg, #8B5CF6, #6366F1) !important;
+    background: linear-gradient(135deg, #8B5CF6, #6366F1);
     /* Fallback for older browsers */
-    background: #8B5CF6 !important;
-    /* Force consistent rendering across browsers */
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: #8B5CF6;
   }
   
   .cvgenius-gradient-light {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)) !important;
-    /* Fallback */
-    background: rgba(139, 92, 246, 0.1) !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+    background-color: rgba(139, 92, 246, 0.1);
   }
   
   .cvgenius-text-gradient {
-    background: linear-gradient(135deg, #8B5CF6, #6366F1) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
+    background: linear-gradient(135deg, #8B5CF6, #6366F1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     /* Fallback for browsers that don't support background-clip */
-    color: #8B5CF6 !important;
+    color: #8B5CF6;
   }
   
   .bg-cvgenius-primary {
-    background-color: #8B5CF6 !important;
+    background-color: #8B5CF6;
   }
   
   .text-cvgenius-primary {
-    color: #8B5CF6 !important;
+    color: #8B5CF6;
   }
   
   .border-cvgenius-primary {
-    border-color: #8B5CF6 !important;
+    border-color: #8B5CF6;
   }
   
   .bg-cvgenius-purple {
-    background-color: #8B5CF6 !important;
+    background-color: #8B5CF6;
   }
   
   .text-cvgenius-purple {
-    color: #8B5CF6 !important;
+    color: #8B5CF6;
   }
   
   /* Homepage and main section styling */
@@ -435,13 +429,13 @@ html.dark .bg-gray-100 {
   
   /* Force brand colors on important elements */
   .btn-primary {
-    background: #8B5CF6 !important;
-    border-color: #8B5CF6 !important;
+    background: #8B5CF6;
+    border-color: #8B5CF6;
   }
   
   .btn-primary:hover {
-    background: #7C3AED !important;
-    border-color: #7C3AED !important;
+    background: #7C3AED;
+    border-color: #7C3AED;
   }
   
   /* Background utilities */
@@ -496,22 +490,8 @@ html {
 
 /* Force consistent gradient rendering across browsers */
 .gradient-fix {
-  background-attachment: local !important;
-  background-repeat: no-repeat !important;
-}
-
-/* Safari-specific fixes */
-@supports (-webkit-appearance: none) {
-  .cvgenius-gradient {
-    background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%) !important;
-  }
-}
-
-/* Chrome-specific fixes */
-@supports (background: -webkit-linear-gradient(left, white, black)) {
-  .cvgenius-gradient {
-    background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%) !important;
-  }
+  background-attachment: local;
+  background-repeat: no-repeat;
 }
 
 /* Mobile-Optimized Variables */
