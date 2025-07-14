@@ -143,15 +143,15 @@
   --background-start-rgb: 139, 92, 246;
   --background-end-rgb: 99, 102, 241;
   
-  /* CVGenius Brand Colors */
-  --cvgenius-primary: #8B5CF6;
-  --cvgenius-secondary: #6366F1;
-  --cvgenius-purple: #8B5CF6;
-  --cvgenius-purple-light: #A78BFA;
-  --cvgenius-purple-dark: #7C3AED;
-  --cvgenius-blue: #3B82F6;
-  --cvgenius-green: #10B981;
-  --cvgenius-orange: #F59E0B;
+  /* CVGenius Brand Colors - Fixed cross-browser */
+  --cvgenius-primary: #8B5CF6 !important;
+  --cvgenius-secondary: #6366F1 !important;
+  --cvgenius-purple: #8B5CF6 !important;
+  --cvgenius-purple-light: #A78BFA !important;
+  --cvgenius-purple-dark: #7C3AED !important;
+  --cvgenius-blue: #3B82F6 !important;
+  --cvgenius-green: #10B981 !important;
+  --cvgenius-orange: #F59E0B !important;
   
   /* Background colors */
   --background: 255 255 255;
@@ -224,15 +224,17 @@
   --ring: 167 139 250;
 }
 
-/* Dark mode background */
+/* Dark mode background - Cross-browser compatible */
 html.dark body {
   background: linear-gradient(
       135deg,
-      rgba(139, 92, 246, 0.1) 0%,
-      rgba(99, 102, 241, 0.1) 25%,
-      rgba(30, 41, 59, 0.95) 50%,
+      rgba(139, 92, 246, 0.08) 0%,
+      rgba(99, 102, 241, 0.08) 25%,
+      rgba(30, 41, 59, 0.98) 50%,
       rgba(15, 23, 42, 1) 100%
     ) !important;
+  /* Fallback */
+  background-color: rgba(15, 23, 42, 1) !important;
   color: rgb(var(--foreground-rgb));
 }
 
@@ -273,15 +275,17 @@ body {
   min-height: 100vh;
 }
 
-/* Default light mode background */
+/* Default light mode background - Cross-browser compatible */
 body {
   background: linear-gradient(
       135deg,
-      rgba(139, 92, 246, 0.05) 0%,
-      rgba(99, 102, 241, 0.05) 25%,
-      rgba(255, 255, 255, 0.95) 50%,
+      rgba(139, 92, 246, 0.03) 0%,
+      rgba(99, 102, 241, 0.03) 25%,
+      rgba(255, 255, 255, 0.98) 50%,
       rgba(248, 250, 252, 1) 100%
-    );
+    ) !important;
+  /* Fallback for older browsers */
+  background-color: rgba(248, 250, 252, 1) !important;
 }
 
 /* Section backgrounds */
@@ -370,40 +374,49 @@ html.dark .bg-gray-100 {
     text-wrap: balance;
   }
   
-  /* CVGenius Brand Utility Classes */
+  /* CVGenius Brand Utility Classes - Cross-browser compatible */
   .cvgenius-gradient {
-    background: linear-gradient(135deg, var(--cvgenius-primary), var(--cvgenius-secondary));
+    background: linear-gradient(135deg, #8B5CF6, #6366F1) !important;
+    /* Fallback for older browsers */
+    background: #8B5CF6 !important;
+    /* Force consistent rendering across browsers */
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
   
   .cvgenius-gradient-light {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)) !important;
+    /* Fallback */
+    background: rgba(139, 92, 246, 0.1) !important;
   }
   
   .cvgenius-text-gradient {
-    background: linear-gradient(135deg, var(--cvgenius-primary), var(--cvgenius-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    background: linear-gradient(135deg, #8B5CF6, #6366F1) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    /* Fallback for browsers that don't support background-clip */
+    color: #8B5CF6 !important;
   }
   
   .bg-cvgenius-primary {
-    background-color: var(--cvgenius-primary);
+    background-color: #8B5CF6 !important;
   }
   
   .text-cvgenius-primary {
-    color: var(--cvgenius-primary);
+    color: #8B5CF6 !important;
   }
   
   .border-cvgenius-primary {
-    border-color: var(--cvgenius-primary);
+    border-color: #8B5CF6 !important;
   }
   
   .bg-cvgenius-purple {
-    background-color: var(--cvgenius-purple);
+    background-color: #8B5CF6 !important;
   }
   
   .text-cvgenius-purple {
-    color: var(--cvgenius-purple);
+    color: #8B5CF6 !important;
   }
   
   /* Homepage and main section styling */
@@ -422,13 +435,13 @@ html.dark .bg-gray-100 {
   
   /* Force brand colors on important elements */
   .btn-primary {
-    background: var(--cvgenius-primary) !important;
-    border-color: var(--cvgenius-primary) !important;
+    background: #8B5CF6 !important;
+    border-color: #8B5CF6 !important;
   }
   
   .btn-primary:hover {
-    background: var(--cvgenius-purple-dark) !important;
-    border-color: var(--cvgenius-purple-dark) !important;
+    background: #7C3AED !important;
+    border-color: #7C3AED !important;
   }
   
   /* Background utilities */
@@ -469,6 +482,37 @@ html.dark .bg-gray-100 {
 
 /* Google Fonts Import - Lato Font Family */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;900&display=swap');
+
+/* Cross-browser CSS Reset and Normalization */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Force consistent gradient rendering across browsers */
+.gradient-fix {
+  background-attachment: local !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-appearance: none) {
+  .cvgenius-gradient {
+    background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%) !important;
+  }
+}
+
+/* Chrome-specific fixes */
+@supports (background: -webkit-linear-gradient(left, white, black)) {
+  .cvgenius-gradient {
+    background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%) !important;
+  }
+}
 
 /* Mobile-Optimized Variables */
 @media (max-width: 768px) {
