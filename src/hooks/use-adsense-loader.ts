@@ -28,6 +28,12 @@ export function useAdSenseLoader(clientId?: string) {
       return false
     }
 
+    // Safari compatibility check
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    if (isSafari) {
+      console.log('🦋 [AdSense Loader] Safari detected - using compatible mode')
+    }
+
     // Check for development mode
     const isDevelopment = window.location.hostname === 'localhost' || 
                          window.location.hostname === '127.0.0.1' || 
@@ -83,14 +89,18 @@ export function useAdSenseLoader(clientId?: string) {
     return false
   }, [])
 
-  // Push ad configuration safely
+  // Push ad configuration safely with Safari compatibility
   const pushAdConfig = useCallback((config?: any) => {
     // Use ref to get current state without dependencies
     const currentState = stateRef.current
     
+    // Safari compatibility check
+    const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    
     console.log('🎯 [AdSense Loader] pushAdConfig called:', {
       isLoaded: currentState.isLoaded,
       isAvailable: currentState.isAvailable,
+      isSafari,
       config: config || 'empty config'
     })
     
@@ -104,12 +114,23 @@ export function useAdSenseLoader(clientId?: string) {
           }
           
           const beforeLength = (window as any).adsbygoogle.length
-          ;(window as any).adsbygoogle.push(config || {})
+          
+          // Safari-specific delay for better compatibility
+          if (isSafari) {
+            setTimeout(() => {
+              ;(window as any).adsbygoogle.push(config || {})
+              console.log('🦋 [AdSense Loader] Safari - Config pushed with delay')
+            }, 100)
+          } else {
+            ;(window as any).adsbygoogle.push(config || {})
+          }
+          
           const afterLength = (window as any).adsbygoogle.length
           
           console.log('✅ [AdSense Loader] Config pushed successfully:', {
             beforeLength,
             afterLength,
+            isSafari: isSafari ? 'with delay' : 'immediate',
             config: config || 'empty config'
           })
           
@@ -117,6 +138,19 @@ export function useAdSenseLoader(clientId?: string) {
         }
       } catch (e) {
         console.error('❌ [AdSense Loader] Push failed:', e)
+        if (isSafari) {
+          console.log('🦋 [AdSense Loader] Safari error - retrying in 500ms')
+          setTimeout(() => {
+            try {
+              if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+                ;(window as any).adsbygoogle.push(config || {})
+                console.log('🦋 [AdSense Loader] Safari retry successful')
+              }
+            } catch (retryError) {
+              console.error('🦋 [AdSense Loader] Safari retry failed:', retryError)
+            }
+          }, 500)
+        }
         return false
       }
     } else {

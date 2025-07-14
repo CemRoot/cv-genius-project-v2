@@ -15,6 +15,7 @@ import AccessibilityWidget, { AccessibilityCSS } from "@/components/accessibilit
 import { PWAProvider } from "@/components/pwa-provider"
 import "@/lib/console-error-filter"
 import "@/lib/adsense-debug-helper"
+import "@/lib/safari-compatibility"
 
 // Load font for admin and base layout
 const inter = Inter({ subsets: ["latin"] })
@@ -116,11 +117,14 @@ export default function RootLayout({
   return (
     <html lang="en-IE" className="scroll-smooth h-full" suppressHydrationWarning>
       <head>
-        {/* Dark Mode FOUC Prevention Script - Must be first! */}
+        {/* Dark Mode FOUC Prevention Script - Safari Compatible */}
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
               try {
+                // Safari compatibility check
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                
                 // Check localStorage for darkMode preference (matching useDarkMode hook)
                 const darkModeStored = localStorage.getItem('darkMode');
                 let shouldBeDark = false;
@@ -129,23 +133,36 @@ export default function RootLayout({
                   // Use stored preference
                   shouldBeDark = JSON.parse(darkModeStored);
                 } else {
-                  // Default to system preference
-                  shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  // Default to system preference with Safari fallback
+                  if (window.matchMedia) {
+                    shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  }
                 }
                 
-                // Apply dark mode
+                // Apply dark mode with Safari-specific handling
                 if (shouldBeDark) {
                   document.documentElement.classList.add('dark');
                   document.documentElement.style.colorScheme = 'dark';
+                  if (isSafari) {
+                    document.documentElement.style.setProperty('--webkit-color-scheme', 'dark');
+                  }
                 } else {
                   document.documentElement.classList.remove('dark');
                   document.documentElement.style.colorScheme = 'light';
+                  if (isSafari) {
+                    document.documentElement.style.setProperty('--webkit-color-scheme', 'light');
+                  }
                 }
               } catch (error) {
-                // Fallback to system preference
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.style.colorScheme = 'dark';
+                // Enhanced fallback for Safari
+                try {
+                  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.colorScheme = 'dark';
+                  }
+                } catch (e) {
+                  // Ultimate fallback - light mode
+                  document.documentElement.style.colorScheme = 'light';
                 }
               }
             })();
