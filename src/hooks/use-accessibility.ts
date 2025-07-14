@@ -81,24 +81,16 @@ export function useAccessibility() {
     }
     highContrastQuery.addEventListener('change', handleHighContrastChange)
 
-    // Check for color scheme preference
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const lightModeQuery = window.matchMedia('(prefers-color-scheme: light)')
-    
+    // Always use light color scheme
     const updateColorScheme = () => {
-      if (darkModeQuery.matches) {
-        setColorScheme('dark')
-      } else if (lightModeQuery.matches) {
-        setColorScheme('light')
-      } else {
-        setColorScheme('auto')
-      }
+      setColorScheme('light')
     }
     
-    updateColorScheme()
-    darkModeQuery.addEventListener('change', updateColorScheme)
-    lightModeQuery.addEventListener('change', updateColorScheme)
-
+    // Set initial values
+    setPrefersReducedMotion(reducedMotionQuery.matches)
+    setPrefersHighContrast(highContrastQuery.matches)
+    updateColorScheme() // Force light mode
+    
     // Detect screen reader
     const detectScreenReader = () => {
       // Check for common screen reader indicators
@@ -124,8 +116,6 @@ export function useAccessibility() {
     return () => {
       reducedMotionQuery.removeEventListener('change', handleReducedMotionChange)
       highContrastQuery.removeEventListener('change', handleHighContrastChange)
-      darkModeQuery.removeEventListener('change', updateColorScheme)
-      lightModeQuery.removeEventListener('change', updateColorScheme)
       observer.disconnect()
     }
   }, [])
@@ -155,10 +145,10 @@ export function useAccessibility() {
     // Keyboard navigation
     body.classList.toggle('keyboard-navigation', preferences.keyboardNavigation)
 
-    // Color scheme
-    html.setAttribute('data-theme', colorScheme)
+    // Force light theme always
+    html.setAttribute('data-theme', 'light')
 
-  }, [preferences, prefersReducedMotion, prefersHighContrast, isScreenReaderActive, colorScheme])
+  }, [preferences, prefersReducedMotion, prefersHighContrast, isScreenReaderActive])
 
   // Update specific preference
   const updatePreference = useCallback((key: keyof AccessibilityPreferences, value: boolean) => {

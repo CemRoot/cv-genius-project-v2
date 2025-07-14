@@ -115,16 +115,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en-IE" className="scroll-smooth h-full" suppressHydrationWarning>
+    <html lang="en-IE" className="scroll-smooth h-full light" suppressHydrationWarning>
       <head>
-        {/* FOUC Prevention Script with Safari Support */}
+        {/* Light mode only - dark mode completely disabled */}
         <script dangerouslySetInnerHTML={{
           __html: `
-            // FOUC (Flash of Unstyled Content) Prevention
+            // Force light mode permanently
             (function() {
               // Always use light mode - dark mode disabled
               document.documentElement.style.colorScheme = 'light';
-              document.documentElement.className = 'light'; // Force light mode
+              document.documentElement.className = 'light scroll-smooth h-full';
               
               // Safari-specific color scheme handling
               if (window.safari || /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
@@ -134,6 +134,8 @@ export default function RootLayout({
               try {
                 // Store light mode preference permanently
                 localStorage.setItem('theme', 'light');
+                localStorage.setItem('darkMode', 'false');
+                localStorage.setItem('autoMode', 'false');
               } catch(e) {
                 console.warn('LocalStorage not available for theme storage');
               }
@@ -141,38 +143,13 @@ export default function RootLayout({
           `
         }} />
         
-        {/* Theme Configuration - Light Mode Only */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            // Force light mode permanently - no theme switching
-            function setLightMode() {
-              document.documentElement.classList.remove('dark');
-              document.documentElement.classList.add('light');
-              document.documentElement.style.colorScheme = 'light';
-              
-              try {
-                localStorage.setItem('theme', 'light');
-              } catch(e) {
-                console.warn('LocalStorage not available');
-              }
-            }
-            
-            // Apply light mode immediately
-            setLightMode();
-            
-            // Ensure light mode is maintained throughout the session
-            document.addEventListener('DOMContentLoaded', setLightMode);
-            window.addEventListener('load', setLightMode);
-          `
-        }} />
-        
-        {/* Color scheme meta tag to prevent browser dark mode inversion */}
-        <meta name="color-scheme" content="light dark" />
+        {/* Color scheme meta tag - light mode only */}
+        <meta name="color-scheme" content="light" />
         
         {/* Mobile Web App Capabilities */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="CVGenius" />
         <meta name="viewport-fit" content="cover" />
         

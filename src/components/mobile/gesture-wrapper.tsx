@@ -234,7 +234,7 @@ export const gestureWrapperStyles = `
 .gesture-ripple {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(139, 92, 246, 0.3);
   transform: scale(0);
   animation: ripple-animation 0.6s ease-out;
   pointer-events: none;
@@ -279,11 +279,6 @@ export const gestureWrapperStyles = `
   .gesture-wrapper.gesture-doubletap {
     transform: none;
   }
-}
-
-/* Dark mode support */
-.dark .gesture-ripple {
-  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Touch device specific styles */

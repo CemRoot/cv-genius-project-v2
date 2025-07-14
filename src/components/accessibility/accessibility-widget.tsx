@@ -350,19 +350,6 @@ export const AccessibilityCSS = () => (
       top: 6px;
     }
 
-    /* Dark theme support */
-    [data-theme="dark"] {
-      color-scheme: dark;
-    }
-    
-    [data-theme="light"] {
-      color-scheme: light;
-    }
-    
-    [data-theme="auto"] {
-      color-scheme: light dark;
-    }
-
     /* Print styles for accessibility */
     @media print {
       .high-contrast {
