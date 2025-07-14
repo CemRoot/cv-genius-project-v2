@@ -386,7 +386,7 @@ export function ModernTemplateGallery({ onSelectTemplate }: ModernTemplateGaller
                       
                       {/* Popular Badge */}
                       {index < 3 && (
-                        <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-lg">
+                        <div className="absolute top-3 left-3 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-lg">
                           <Star className="w-3.5 h-3.5 fill-current" />
                           Popular
                         </div>

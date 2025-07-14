@@ -58,7 +58,7 @@ export function MobileTemplateCard({
           
           {/* Popular Badge */}
           {index < 3 && (
-            <div className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 shadow">
+            <div className="absolute top-2 left-2 bg-amber-500 text-white px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 shadow">
               <Star className="w-3 h-3 fill-current" />
               Popular
             </div>
