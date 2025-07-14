@@ -330,8 +330,29 @@ export function CvBuilderInterface() {
   const allSections = [...sectionGroups.essential, ...sectionGroups.important, ...sectionGroups.optional, ...sectionGroups.academic]
 
   return (
-    <div className="h-screen bg-muted flex flex-col overflow-hidden">
-      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col p-4 overflow-hidden">
+    <>
+      {/* Mobile Scroll Optimization */}
+      <style jsx>{`
+        @media (max-width: 1023px) {
+          .mobile-scroll {
+            -webkit-overflow-scrolling: touch;
+            overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            overscroll-behavior-y: contain;
+            touch-action: pan-y;
+          }
+          
+          /* iOS Safari specific */
+          @supports (-webkit-touch-callout: none) {
+            .mobile-scroll {
+              -webkit-overflow-scrolling: touch;
+              will-change: scroll-position;
+            }
+          }
+        }
+      `}</style>
+      <div className="h-screen bg-muted flex flex-col">
+      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col p-4">
         {/* Header */}
         <div className="mb-4 flex-shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -377,10 +398,10 @@ export function CvBuilderInterface() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
-          {/* Mobile Tabs */}
-          <div className="lg:hidden col-span-full">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-[calc(100vh-12rem)]">
+        <div className="flex-1">
+          {/* --- MOBİL GÖRÜNÜM (Sadece mobilde görünür) --- */}
+          <div className="lg:hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-[calc(100dvh-12rem)] min-h-[500px]">
               <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
                 <TabsTrigger value="builder">CV Builder</TabsTrigger>
                 <TabsTrigger value="preview">Live Preview</TabsTrigger>
@@ -394,9 +415,9 @@ export function CvBuilderInterface() {
                       CV Builder
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
-                    {/* Section Navigation - Scrollable */}
-                    <div className="flex-1 overflow-y-auto p-6 pt-0 pb-24 lg:pb-6 min-h-0">
+                  <CardContent className="flex-1 p-0 flex flex-col">
+                    {/* Mobil İçin Kaydırılabilir Alan */}
+                    <div className="h-[calc(100dvh-16rem)] overflow-y-auto p-6 pt-0 pb-24 mobile-scroll">
                       <div className="space-y-1 mb-4">
                         {/* Essential Sections */}
                         <div className="mb-3">
@@ -607,8 +628,8 @@ export function CvBuilderInterface() {
                     </div>
                   </div>
                   
-                  {/* Mobile Preview Content */}
-                  <div className="flex-1 overflow-auto bg-gray-100 p-4 pb-24 lg:pb-6">
+                  {/* Mobil Preview İçeriği - Kaydırılabilir */}
+                  <div className="h-[calc(100dvh-20rem)] overflow-y-auto bg-gray-100 p-4 pb-24 mobile-scroll">
                     <div className="max-w-sm mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
                       {/* Mobile CV Preview */}
                       <div className="p-4 space-y-4" style={{ fontSize: '12px', lineHeight: '1.4' }}>
@@ -768,18 +789,22 @@ export function CvBuilderInterface() {
             </Tabs>
           </div>
 
-          {/* Desktop Layout - Left Sidebar - CV Builder */}
-          <div className="hidden lg:block lg:col-span-4 overflow-hidden">
-            <Card className="h-full flex flex-col">
-              <CardHeader className="pb-3 flex-shrink-0">
-                <CardTitle className="flex items-center text-lg">
-                  <FileText className="h-5 w-5 mr-2" />
-                  CV Builder
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
-                {/* Section Navigation - Scrollable */}
-                <div className="overflow-y-auto p-6 pt-0 pb-20 lg:pb-6 flex-1 min-h-0">
+          {/* --- MASAÜSTÜ GÖRÜNÜM (Sadece masaüstünde görünür) --- */}
+          <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4 h-full">
+            {/* Sütun 1: CV Builder Formu */}
+            <div className="lg:col-span-4">
+              {/* BU İÇERİK KENDİ İÇİNDE KAYDIRILA౭BILIR OLMALI */}
+              <div className="h-full overflow-y-auto">
+                <Card className="h-full flex flex-col">
+                  <CardHeader className="pb-3 flex-shrink-0">
+                    <CardTitle className="flex items-center text-lg">
+                      <FileText className="h-5 w-5 mr-2" />
+                      CV Builder
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 p-0 flex flex-col">
+                    {/* Masaüstü İçin Kaydırılabilir Alan */}
+                    <div className="overflow-y-auto p-6 pt-0 pb-6 flex-1 min-h-0">
                   <div className="space-y-1 mb-4">
                     {/* Essential Sections */}
                     <div className="mb-3">
@@ -950,64 +975,67 @@ export function CvBuilderInterface() {
                   {/* Section Form - Also Scrollable */}
                   <div className="border-t pt-4">
                     {renderBuilderContent()}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+              </div>
+            </div>
 
-          {/* Center - CV Preview */}
-          <div className={`hidden lg:block ${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'} overflow-hidden`}>
-            <Card className="h-full flex flex-col">
-              <CardHeader className="pb-3 flex-shrink-0 flex items-center justify-between">
-                <CardTitle className="flex items-center text-lg">
-                  <Eye className="h-5 w-5 mr-2" />
-                  Live Preview
-                </CardTitle>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleZoomOut}
-                    disabled={previewZoom <= 50}
-                    className="h-8 w-8"
-                    title="Zoom Out (Ctrl/⌘ -)"
-                  >
-                    <ZoomOut className="h-4 w-4" />
-                  </Button>
-                  <div className="px-2 py-1 text-sm font-medium bg-muted rounded-md min-w-[60px] text-center">
-                    {previewZoom}%
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleZoomIn}
-                    disabled={previewZoom >= 200}
-                    className="h-8 w-8"
-                    title="Zoom In (Ctrl/⌘ +)"
-                  >
-                    <ZoomIn className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleZoomReset}
-                    className="h-8 w-8"
-                    title="Reset Zoom (Ctrl/⌘ 0)"
-                  >
-                    <RotateCw className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 flex-1 overflow-hidden">
-                <CvBuilderPreview zoom={previewZoom} />
-              </CardContent>
-            </Card>
-          </div>
+            {/* Sütun 2: Live Preview */}
+            <div className={`${showATSPanel ? 'lg:col-span-5' : 'lg:col-span-8'}`}>
+              <div className="h-full overflow-y-auto">
+                <Card className="h-full flex flex-col">
+                  <CardHeader className="pb-3 flex-shrink-0 flex items-center justify-between">
+                    <CardTitle className="flex items-center text-lg">
+                      <Eye className="h-5 w-5 mr-2" />
+                      Live Preview
+                    </CardTitle>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleZoomOut}
+                        disabled={previewZoom <= 50}
+                        className="h-8 w-8"
+                        title="Zoom Out (Ctrl/⌘ -)"
+                      >
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                      <div className="px-2 py-1 text-sm font-medium bg-muted rounded-md min-w-[60px] text-center">
+                        {previewZoom}%
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleZoomIn}
+                        disabled={previewZoom >= 200}
+                        className="h-8 w-8"
+                        title="Zoom In (Ctrl/⌘ +)"
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleZoomReset}
+                        className="h-8 w-8"
+                        title="Reset Zoom (Ctrl/⌘ 0)"
+                      >
+                        <RotateCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0 flex-1">
+                    <CvBuilderPreview zoom={previewZoom} />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
 
-          {/* Right Sidebar - ATS Optimization */}
-          {showATSPanel && (
-            <div className="lg:col-span-3 overflow-hidden">
+            {/* Sütun 3: ATS Optimization (Koşullu) */}
+            {showATSPanel && (
+              <div className="lg:col-span-3">
               <div className="h-full flex flex-col space-y-3">
                 {/* Job Description Input */}
                 <Card className="flex-shrink-0">
@@ -1048,7 +1076,7 @@ export function CvBuilderInterface() {
                 </Card>
 
                 {/* ATS Optimization Panel */}
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1">
                   <ATSOptimizationPanel
                     cvData={cvData}
                     jobDescription={jobDescription}
@@ -1056,9 +1084,10 @@ export function CvBuilderInterface() {
                     onOptimizationChange={handleATSOptimizationChange}
                   />
                 </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -1129,6 +1158,7 @@ export function CvBuilderInterface() {
         cvData={cvData}
         template={template}
       />
-    </div>
+      </div>
+    </>
   )
 }
