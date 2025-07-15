@@ -301,6 +301,7 @@ export function StyledCoverLetter({
         
         <div style={styles.contentStyle}>
           {sections.date && <p style={{ textAlign: 'right', marginBottom: '30px' }}>{sections.date}</p>}
+          {!sections.date && <p style={{ textAlign: 'right', marginBottom: '30px' }}>{new Date().toLocaleDateString('en-GB')}</p>}
           
           <div style={{ marginBottom: '30px' }}>
             <p style={{ marginBottom: '5px', textAlign: 'left' }}>{sections.recipientName}</p>
@@ -344,7 +345,11 @@ export function StyledCoverLetter({
         </div>
         
         <div style={styles.mainContent}>
-          {sections.date && <p style={{ textAlign: 'right', marginBottom: isMobile && !isPdfExport ? '15px' : '30px', color: '#6b7280', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>{sections.date}</p>}
+          <p style={{ textAlign: 'right', marginBottom: isMobile && !isPdfExport ? '15px' : '30px', color: '#6b7280', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>
+            {sections.date && !sections.date.includes('+353') && !sections.date.includes('(0)') 
+              ? sections.date 
+              : new Date().toLocaleDateString('en-GB')}
+          </p>
           
           <div style={{ marginBottom: isMobile && !isPdfExport ? '15px' : '30px' }}>
             <p style={{ marginBottom: '5px', fontWeight: 'bold', textAlign: 'left', fontSize: isMobile && !isPdfExport ? '11px' : '14px' }}>{sections.recipientName}</p>
@@ -386,7 +391,11 @@ export function StyledCoverLetter({
         </div>
         
         <div style={styles.content}>
-          {sections.date && <p style={{ textAlign: 'right', marginBottom: '25px', color: '#64748b' }}>{sections.date}</p>}
+          <p style={{ textAlign: 'right', marginBottom: '25px', color: '#64748b' }}>
+            {sections.date && !sections.date.includes('+353') && !sections.date.includes('(0)') 
+              ? sections.date 
+              : new Date().toLocaleDateString('en-GB')}
+          </p>
           
           <div style={{ marginBottom: '25px' }}>
             <p style={{ marginBottom: '5px', fontWeight: 'bold', textAlign: 'left' }}>{sections.recipientName}</p>
@@ -429,7 +438,11 @@ export function StyledCoverLetter({
       </div>
       
       <div style={styles.mainContent}>
-        {sections.date && <p style={{ textAlign: 'right', marginBottom: '30px' }}>{sections.date}</p>}
+        <p style={{ textAlign: 'right', marginBottom: '30px' }}>
+          {sections.date && !sections.date.includes('+353') && !sections.date.includes('(0)') 
+            ? sections.date 
+            : new Date().toLocaleDateString('en-GB')}
+        </p>
         
         <div style={{ marginBottom: '30px' }}>
           <p style={{ marginBottom: '5px', textAlign: 'left' }}>{sections.recipientName}</p>
@@ -551,11 +564,14 @@ function parseCoverLetter(content: string) {
     }
   }
   
-  // Find date
+  // Find date - exclude phone numbers
   for (const line of firstNonEmptyLines) {
     if ((line.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/) || 
         line.match(/\d{1,2}\s+\w+\s+\d{4}/) || 
-        line.match(/\w+\s+\d{1,2},?\s+\d{4}/)) && !date) {
+        line.match(/\w+\s+\d{1,2},?\s+\d{4}/)) && 
+        !line.includes('+353') && 
+        !line.includes('(0)') && 
+        !date) {
       date = line
       console.log('📄 Found date:', date)
     }
