@@ -1,69 +1,208 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+#═══════════════════════════════════════════════════════════════════════
+# CVGenius - Git Ignore Configuration
+# Next.js + TypeScript Project
+#═══════════════════════════════════════════════════════════════════════
 
-# dependencies
+#═══════════════════════════════════════════════════════════════════════
+# DEPENDENCIES
+#═══════════════════════════════════════════════════════════════════════
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
-# testing
+#═══════════════════════════════════════════════════════════════════════
+# TESTING
+#═══════════════════════════════════════════════════════════════════════
 /coverage
+*.lcov
+.nyc_output
+cypress/videos
+cypress/screenshots
+cypress/downloads
+.cypress-cache
 
-# next.js
+#═══════════════════════════════════════════════════════════════════════
+# NEXT.JS BUILD OUTPUT
+#═══════════════════════════════════════════════════════════════════════
 /.next/
 /out/
-
-# production
 /build
+/dist
 
-# misc
+# Next.js cache
+.next-backup*
+.cache
+
+#═══════════════════════════════════════════════════════════════════════
+# TYPESCRIPT
+#═══════════════════════════════════════════════════════════════════════
+*.tsbuildinfo
+next-env.d.ts
+*.d.ts.map
+
+#═══════════════════════════════════════════════════════════════════════
+# ENVIRONMENT VARIABLES & SECRETS
+#═══════════════════════════════════════════════════════════════════════
+
+# Local environment files
+.env
+.env.local
+.env*.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+
+# Environment backup files
+.env.backup
+.env.bak
+
+#═══════════════════════════════════════════════════════════════════════
+# VERCEL
+#═══════════════════════════════════════════════════════════════════════
+.vercel
+.vercel.json
+*.vercel.json
+
+#═══════════════════════════════════════════════════════════════════════
+# IDE & EDITOR FILES
+#═══════════════════════════════════════════════════════════════════════
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.code-workspace
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+#═══════════════════════════════════════════════════════════════════════
+# OPERATING SYSTEM FILES
+#═══════════════════════════════════════════════════════════════════════
+
+# macOS
 .DS_Store
-*.pem
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
-# debug
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+#═══════════════════════════════════════════════════════════════════════
+# LOGS & DEBUG FILES
+#═══════════════════════════════════════════════════════════════════════
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+.pnpm-debug.log*
 
-# local env files
-.env*.local
-.env
+# Runtime logs
+debug*.log
+error*.log
+combined*.log
 
-# vercel
-.vercel
-
-# Backup folders
-.next-backup*
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-Thumbs.db
-
-# Temporary files
+#═══════════════════════════════════════════════════════════════════════
+# TEMPORARY FILES
+#═══════════════════════════════════════════════════════════════════════
 *.tmp
 *.temp
+*.cache
+tmp/
+temp/
+.tmp/
+.temp/
 
-# Logs
-logs
-*.log
+#═══════════════════════════════════════════════════════════════════════
+# CERTIFICATES & KEYS
+#═══════════════════════════════════════════════════════════════════════
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+ssl/
+certs/
 
-# Security - 2FA state file (contains sensitive data)
+#═══════════════════════════════════════════════════════════════════════
+# SECURITY - ADMIN & AUTHENTICATION (CRITICAL)
+#═══════════════════════════════════════════════════════════════════════
+
+# 2FA state and authentication files
 .2fa-state.json
-
-# Admin settings files (contains sensitive configuration)
 .ai-settings.json
-
-# IP whitelist file (contains security data)
 .ip-whitelist.json
 
-# SECURITY: Admin scripts and access generators (CRITICAL - DO NOT SHARE)
+# Admin scripts and access generators (NEVER COMMIT)
 scripts/admin/
 /scripts/admin/
 scripts/admin/**
@@ -71,29 +210,13 @@ scripts/admin/**
 **/admin-*.js
 
 # Security keys and secrets
-*.key
 *.secret
 admin-keys/
 security/
 auth-keys/
 .config/
 
-# Production environment files
-.env.production
-.env.production.local
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup and temporary files
-*.backup
-*.bak
-*.tmp
-*.temp
-
-# API Keys and credentials (even if accidentally saved)
+# API Keys and credentials
 **/api-keys.*
 **/credentials.*
 **/secrets.*
@@ -102,36 +225,150 @@ auth-keys/
 **/*token*
 **/*key*.json
 
-# Allow admin API routes even if they contain security keywords
-!src/app/api/admin/auth/change-password/
-!src/app/api/admin/auth/change-password/**
+# Exception: Allow admin API routes
+!src/app/api/admin/
+!src/app/api/admin/**
 
 # Admin authentication files (CRITICAL - NEVER COMMIT)
 auth.json
 auth_test.json
 auth_response.json
 auth*.json
+.auth
 
 # Admin data files (contains sensitive information)
 data/admin-*
 data/*.json
 !data/cover-letter-prompts.json
+!data/cv-builder-prompts.json
 
-# Debug and development files
-debug*.log
-test*.json
-mock*.json
+#═══════════════════════════════════════════════════════════════════════
+# DATABASE FILES
+#═══════════════════════════════════════════════════════════════════════
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
 
-# Build output
+# Database dumps
+*.sql
+*.dump
+
+#═══════════════════════════════════════════════════════════════════════
+# BACKUP FILES
+#═══════════════════════════════════════════════════════════════════════
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+#═══════════════════════════════════════════════════════════════════════
+# BUILD & COMPILATION
+#═══════════════════════════════════════════════════════════════════════
+build/
 dist/
+compiled/
+lib/
+*.compiled
+
+#═══════════════════════════════════════════════════════════════════════
+# PACKAGE MANAGER LOCKS (Keep package-lock.json)
+#═══════════════════════════════════════════════════════════════════════
+# Uncomment if using Yarn exclusively
+# package-lock.json
+
+# yarn.lock is typically committed
+# Uncomment if using npm exclusively
+# yarn.lock
+
+#═══════════════════════════════════════════════════════════════════════
+# DEVELOPMENT & TESTING FILES
+#═══════════════════════════════════════════════════════════════════════
 
 # Test files that might contain sensitive data
 test-*.js
 setup-*.js
 *-test.js
 *-setup.js
+mock*.json
 
 # Temporary scripts and debug files
 *.tmp.js
 *.debug.js
 *.test.json
+debug*.log
+
+#═══════════════════════════════════════════════════════════════════════
+# DOCKER
+#═══════════════════════════════════════════════════════════════════════
+.dockerignore.local
+docker-compose.override.yml
+Dockerfile.local
+
+#═══════════════════════════════════════════════════════════════════════
+# MISCELLANEOUS
+#═══════════════════════════════════════════════════════════════════════
+
+# Sentry
+.sentryclirc
+
+# Service workers
+sw.js.map
+
+# Storybook
+.storybook/build
+
+# GraphQL
+.graphqlconfig
+
+# Local Netlify folder
+.netlify
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Serverless
+.serverless/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB Local
+.dynamodb/
+
+# TernJS
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.parcel-cache
+
+# Next.js Turbopack
+.turbopack
+
+#═══════════════════════════════════════════════════════════════════════
+# PROJECT-SPECIFIC
+#═══════════════════════════════════════════════════════════════════════
+
+# Generated CV files (if stored locally)
+generated-cvs/
+exports/
+
+# User uploads (if stored locally)
+uploads/
+
+# Public uploads (if any)
+public/uploads/
+
+#═══════════════════════════════════════════════════════════════════════
+# END OF .GITIGNORE
+#═══════════════════════════════════════════════════════════════════════
